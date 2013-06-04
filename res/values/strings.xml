@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AndroidConmmunication</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="hint_input_message">Input message</string>
+    <string name="btn_send">Send</string>
+    <string name="btn_start_server">Start Server</string>
+    <string name="btn_start_client">Start Client</string>
+    <string name="server">Server</string>
+    <string name="client">Client</string>
+    <string name="send">Send</string>
+    <string name="app_name_server">Server</string>
+    <string name="app_name_client">Client</string>
+    <string name="action_server_config">Server Config</string>
+    <string name="action_client_config">Connect</string>
+    <string name="menu_network_status">Network Status</string>
+    <string name="menu_search">Search</string>
+
+</resources>

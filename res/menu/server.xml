@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/action_server_config"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_server_config"/>
+    <item
+        android:id="@+id/menu_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:orderInCategory="101"
+        android:showAsAction="ifRoom"
+        android:title="@string/menu_search"/>
+    <item
+        android:id="@+id/menu_network_status"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:orderInCategory="102"
+        android:showAsAction="ifRoom"
+        android:title="@string/menu_network_status"/>
+
+</menu>

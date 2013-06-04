@@ -1,0 +1,4 @@
+eclipse.preferences.version=1
+encoding//src/com/dreamlink/communication/SocketCommunication.java=UTF-8
+encoding//src/com/dreamlink/communication/client/SocketClientTask.java=UTF-8
+encoding//src/com/dreamlink/communication/server/SocketServerTask.java=UTF-8
