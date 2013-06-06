@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 
 public class SocketCommunication extends Thread {
+	public static final String PORT = "55555";
 
 	public interface OnCommunicationChangedListener {
 		void OnCommunicationEstablished(SocketCommunication communication);
@@ -55,7 +56,7 @@ public class SocketCommunication extends Thread {
 					byte[] msg = new byte[dataInputStream.available()];
 					dataInputStream.read(msg, 0, dataInputStream.available());
 
-					sendHandler(whatMsgSocket,  new String(msg));
+					sendHandler(whatMsgSocket, new String(msg));
 				}
 			}
 		} catch (IOException e) {

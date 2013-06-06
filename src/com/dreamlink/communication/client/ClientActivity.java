@@ -4,6 +4,7 @@ import java.net.Socket;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -18,6 +19,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.Search;
+import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.client.ClientConfig.OnClientConfigListener;
@@ -27,9 +30,11 @@ import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 public class ClientActivity extends Activity implements OnClickListener,
-		OnClientConfigListener, OnSearchListener {
+		OnClientConfigListener {
 	@SuppressWarnings("unused")
 	private static final String TAG = "ClientActivity";
+
+	private static final int REQUEST_SERACH_SERVER = 1;
 
 	private EditText mMessageEidtText;
 	private Button mSendButton;
@@ -41,6 +46,8 @@ public class ClientActivity extends Activity implements OnClickListener,
 	private Notice mNotice;
 
 	private SocketCommunicationManager mCommunicationManager;
+
+	private SearchSever mSearchServer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +76,6 @@ public class ClientActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (mCommunicationManager.getCommunications().size() == 0) {
-			configClient();
-		}
 	}
 
 	@Override
@@ -83,7 +87,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 				if (TextUtils.isEmpty(message)) {
 					mNotice.showToast("Please input message");
 				} else {
-					mCommunicationManager.sendMessage(message,-1);
+					mCommunicationManager.sendMessage(message, -1);
 					mHistoricListAdapter.add("Send: " + message);
 					mHistoricListAdapter.notifyDataSetChanged();
 					mMessageEidtText.setText("");
@@ -167,7 +171,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 				case SocketMessage.MSG_SOCKET_MESSAGE:
 					String messageBT = (String) (msg.obj);
 
-					mHistoricListAdapter.add("Receive" + ": "+messageBT);
+					mHistoricListAdapter.add("Receive" + ": " + messageBT);
 					mHistoricListAdapter.notifyDataSetChanged();
 					break;
 				}
@@ -175,36 +179,26 @@ public class ClientActivity extends Activity implements OnClickListener,
 		};
 	};
 
-	private SearchSever mSearchServer;
-	
 	private void searchServer() {
-		mSearchServer = new SearchSever(this);
-		mSearchServer.startSearch(getApplicationContext());
-		mNotice.showToast("Start Search");
+		Intent intent = new Intent();
+		intent.setClass(this, ServerListActivity.class);
+		startActivityForResult(intent, REQUEST_SERACH_SERVER);
 	}
 
 	@Override
-	public void onSearchSuccess(String clineIP) {
-		Message message = mHandler
-				.obtainMessage(SocketMessage.MSG_SOCKET_NOTICE,
-						"onSearchSuccess + " + clineIP);
-		mHandler.sendMessage(message);
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (resultCode == RESULT_OK) {
+			switch (requestCode) {
+			case REQUEST_SERACH_SERVER:
+				String serverIP = data.getStringExtra(Search.EXTRA_IP);
+				onClientConfig(serverIP, SocketCommunication.PORT);
+				break;
 
+			default:
+				break;
+			}
+		}
+
+		super.onActivityResult(requestCode, resultCode, data);
 	}
-
-	@Override
-	public void onSearchFail() {
-		Message message = mHandler.obtainMessage(
-				SocketMessage.MSG_SOCKET_NOTICE, "onSearchFail");
-		mHandler.sendMessage(message);
-	}
-
-	@Override
-	public void onOffLine(String clineIP) {
-		Message message = mHandler.obtainMessage(
-				SocketMessage.MSG_SOCKET_NOTICE, "onOffLine");
-		mHandler.sendMessage(message);
-
-	}
-
 }

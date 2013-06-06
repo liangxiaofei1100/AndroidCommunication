@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -28,7 +29,7 @@ import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 public class ServerActivity extends Activity implements OnClickListener,
-		OnServerConfigListener, OnSearchListener {
+		OnServerConfigListener {
 	@SuppressWarnings("unused")
 	private static final String TAG = "ServerActivity";
 
@@ -41,7 +42,6 @@ public class ServerActivity extends Activity implements OnClickListener,
 	private Notice mNotice;
 
 	private SocketCommunicationManager mCommunicationManager;
-	private SearchClient mSearchClient;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,9 +71,6 @@ public class ServerActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (mCommunicationManager.getCommunications().size() == 0) {
-			configServer();
-		}
 	}
 
 	@Override
@@ -85,7 +82,7 @@ public class ServerActivity extends Activity implements OnClickListener,
 				if (TextUtils.isEmpty(message)) {
 					mNotice.showToast("Please input message");
 				} else {
-					mCommunicationManager.sendMessage(message,-1);
+					mCommunicationManager.sendMessage(message, -1);
 					mHistoricListAdapter.add("Send: " + message);
 					mHistoricListAdapter.notifyDataSetChanged();
 					mMessageEditText.setText("");
@@ -146,10 +143,6 @@ public class ServerActivity extends Activity implements OnClickListener,
 	protected void onDestroy() {
 		super.onDestroy();
 		closeCommunication();
-
-		if (mSearchClient != null) {
-			mSearchClient.stopSearch();
-		}
 	}
 
 	private Handler mHandler = new Handler() {
@@ -171,7 +164,7 @@ public class ServerActivity extends Activity implements OnClickListener,
 					final String messageBT = (String) (msg.obj);
 					final int id = msg.arg1;
 
-					mHistoricListAdapter.add("Receive" + ": "+messageBT);
+					mHistoricListAdapter.add("Receive" + ": " + messageBT);
 					mHistoricListAdapter.notifyDataSetChanged();
 					// add by liucheng
 					new Thread() {
@@ -191,32 +184,9 @@ public class ServerActivity extends Activity implements OnClickListener,
 	};
 
 	private void searchServer() {
-		mSearchClient = new SearchClient(this);
-		mSearchClient.startSearch(getApplicationContext());
-		mNotice.showToast("Start Search");
+		Intent intent = new Intent();
+		intent.setClass(this, ClientListActivity.class);
+		startActivity(intent);
 	}
 
-	@Override
-	public void onSearchSuccess(String clineIP) {
-		Message message = mHandler
-				.obtainMessage(SocketMessage.MSG_SOCKET_NOTICE,
-						"onSearchSuccess + " + clineIP);
-		mHandler.sendMessage(message);
-
-	}
-
-	@Override
-	public void onSearchFail() {
-		Message message = mHandler.obtainMessage(
-				SocketMessage.MSG_SOCKET_NOTICE, "onSearchFail");
-		mHandler.sendMessage(message);
-	}
-
-	@Override
-	public void onOffLine(String clineIP) {
-		Message message = mHandler.obtainMessage(
-				SocketMessage.MSG_SOCKET_NOTICE, "onOffLine");
-		mHandler.sendMessage(message);
-
-	}
 }

@@ -1,10 +1,14 @@
 package com.dreamlink.communication.server;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 import android.content.Context;
 
@@ -14,35 +18,37 @@ import com.dreamlink.communication.util.NetWorkUtil;
 
 public class SearchClient implements Runnable {
 	interface OnSearchListener {
-		void onSearchSuccess(String clientIP);
+		void onSearchSuccess(String serverIP);
 
 		void onSearchFail();
-
-		void onOffLine(String clinetIP);
 	}
 
 	private static final String TAG = "SearchClient";
 
 	// Broadcast address.
-	private InetAddress broadAddress;
 	// Socket for receive broadcast message.
 	private MulticastSocket broadSocket;
 	// Socket for send broadcast message.
-	private DatagramSocket sender;
-
-	private String msg;
-	private String ip;
-	private String hostName;
+	private DatagramSocket mSocket;
+	private DatagramPacket mPacket;
 
 	private OnSearchListener mListener;
 	private boolean mStopped = false;
+	private boolean mStarted = false;
 
-	public SearchClient(OnSearchListener listener) {
+	private static SearchClient mInstance;
+
+	public static SearchClient getInstance(OnSearchListener listener) {
+		if (mInstance == null) {
+			mInstance = new SearchClient(listener);
+		}
+		return mInstance;
+	}
+
+	private SearchClient(OnSearchListener listener) {
 		try {
-			broadSocket = new MulticastSocket(Search.BROADCAST_INT_PORT);
+			broadSocket = new MulticastSocket(Search.BROADCAST_RECEIVE_PORT);
 			broadSocket.setSoTimeout(Search.TIME_OUT);
-			broadAddress = InetAddress.getByName(Search.BROADCAST_IP);
-			sender = new DatagramSocket();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -52,22 +58,55 @@ public class SearchClient implements Runnable {
 
 	@Override
 	public void run() {
-		InetAddress addr;
 		try {
-			addr = InetAddress.getLocalHost();
-			ip = addr.getHostAddress().toString();
-			hostName = addr.getHostName().toString();
+			join(InetAddress.getByName(Search.BROADCAST_IP));
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+		}
+		startListenServerMessage();
+		try {
+			mSocket = new DatagramSocket(Search.BROADCAST_SEND_PORT);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+		byte[] buffer = NetWorkUtil.getLocalIpAddress().getBytes();
+		try {
+			mPacket = new DatagramPacket(buffer, buffer.length,
+					InetAddress.getByName(Search.BROADCAST_IP),
+					Search.BROADCAST_RECEIVE_PORT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		msg = ip + "@" + hostName;
+		while (!mStopped) {
+			startBroadcastData();
+		}
+	}
 
-		join(broadAddress);
-		startListenServerMessage();
+	private void startBroadcastData() {
+
+		try {
+			mSocket.send(mPacket);
+			Log.d(TAG,
+					"Send broadcast ok, data = "
+							+ new String(mPacket.getData()));
+		} catch (IOException e) {
+			e.printStackTrace();
+			Log.e(TAG, "Send broadcast fail, data = " + mPacket.getData());
+		}
+
+		try {
+			Thread.sleep(Search.BROADCAST_SLEEP_TIME);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void startSearch(Context context) {
-		// TODO
+		if (mStarted) {
+			Log.d(TAG, "startSearch() igonre, search is already started.");
+			return;
+		}
+		mStarted = true;
 		NetWorkUtil.acquireWifiMultiCastLock(context);
 
 		Thread searchThread = new Thread(this);
@@ -75,6 +114,7 @@ public class SearchClient implements Runnable {
 	}
 
 	public void stopSearch() {
+		mStarted = false;
 		mStopped = true;
 		NetWorkUtil.releaseWifiMultiCastLock();
 	}
@@ -96,6 +136,7 @@ public class SearchClient implements Runnable {
 	 */
 	private void startListenServerMessage() {
 		new Thread(new GetPacket()).start();
+
 	}
 
 	/**
@@ -106,58 +147,36 @@ public class SearchClient implements Runnable {
 		public void run() {
 			DatagramPacket inPacket;
 
-			String[] message;
+			String message;
 			while (!mStopped) {
 				try {
 					inPacket = new DatagramPacket(new byte[1024], 1024);
-					broadSocket.receive(inPacket); // 接收广播信息并将信息封装到inPacket中
+					broadSocket.receive(inPacket);
 					message = new String(inPacket.getData(), 0,
-							inPacket.getLength()).split("@"); // 获取信息，并切割头部，判断是何种信息（find--上线，retn--回答，offl--下线）
+							inPacket.getLength());
+					Log.d(TAG, "Received broadcast message: " + message);
 
-					if (message[1].equals(ip))
-						// ignore myself.
-						continue;
-					if (message[0].equals("find")) {
-						// message: find。
-						Log.d(TAG, "find client success, ip: " + message[1]
-								+ ", client ip: " + message[2]);
+					if (message.equals(NetWorkUtil.getLocalIpAddress())) {
+						// ignore.
+					} else {
+						// Got another server. because client will not broadcast
+						// message.
 						if (mListener != null) {
-							mListener.onSearchSuccess(message[2]);
-						}
-
-						returnUserMsg(message[1]);
-					} else if (message[0].equals("offl")) { // 如果是离线信息
-						// Message: off line.
-						Log.d(TAG, "off line, ip: " + message[1]
-								+ ", client ip: " + message[2]);
-						if (mListener != null) {
-							mListener.onOffLine(message[2]);
+							mListener.onSearchSuccess(message);
 						}
 					}
-
 				} catch (Exception e) {
-					Log.e(TAG, "GetPacket error. " + e.toString());
-					if (mListener != null) {
-						mListener.onSearchFail();
+					if (e instanceof SocketTimeoutException) {
+						// time out, search again.
+						Log.d(TAG, "GetPacket time out. search again.");
+					} else {
+						Log.e(TAG, "GetPacket error," + e.toString());
+						if (mListener != null) {
+							mListener.onSearchFail();
+						}
 					}
 				}
 			}
 		}
 	}
-
-	// 当局域网内的在线机子收到广播信息时响应并向发送广播的ip地址主机发送返还信息，达到交换信息的目的
-	private void returnUserMsg(String ip) {
-		byte[] b = new byte[1024];
-		DatagramPacket packet;
-		try {
-			b = ("retn@" + msg).getBytes();
-			packet = new DatagramPacket(b, b.length, InetAddress.getByName(ip),
-					Search.BROADCAST_INT_PORT);
-			sender.send(packet);
-			Log.d(TAG, "returnUserMsg sucess: " + ip);
-		} catch (Exception e) {
-			Log.e(TAG, "returnUserMsg fail: " + ip);
-		}
-	}
-
 }

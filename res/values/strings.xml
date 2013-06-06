@@ -17,5 +17,7 @@
     <string name="action_client_config">Connect</string>
     <string name="menu_network_status">Network Status</string>
     <string name="menu_search">Search</string>
+    <string name="btn_quit">Quit</string>
+    <string name="btn_start">Start</string>
 
 </resources>

@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <application
         android:allowBackup="true"
@@ -35,6 +35,16 @@
         <activity
             android:name="com.dreamlink.communication.server.ServerActivity"
             android:label="@string/app_name_server"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.server.ClientListActivity"
+            android:label="Client List"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.client.ServerListActivity"
+            android:label="Server List"
             android:screenOrientation="portrait" >
         </activity>
     </application>
