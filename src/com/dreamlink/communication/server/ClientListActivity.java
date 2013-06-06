@@ -15,10 +15,14 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
-public class ClientListActivity extends Activity implements OnSearchListener {
+public class ClientListActivity extends Activity implements OnSearchListener,
+		OnClickListener {
 
 	private Context mContext;
 
@@ -32,7 +36,9 @@ public class ClientListActivity extends Activity implements OnSearchListener {
 	private static final int MSG_SEARCH_SUCCESS = 1;
 	private static final int MSG_SEARCH_FAIL = 2;
 
-	private Handler mHandler = new Handler() {
+	private SocketCommunicationManager mCommunicationManager;
+
+	private Handler mSearchHandler = new Handler() {
 
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
@@ -75,7 +81,6 @@ public class ClientListActivity extends Activity implements OnSearchListener {
 			}
 		}
 	};
-	SocketCommunicationManager mCommunicationManager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +108,10 @@ public class ClientListActivity extends Activity implements OnSearchListener {
 				android.R.layout.simple_list_item_1, mClients);
 		mListView.setAdapter(mAdapter);
 
+		Button startButton = (Button) findViewById(R.id.btn_start);
+		startButton.setOnClickListener(this);
+		Button quitButton = (Button) findViewById(R.id.btn_quit);
+		quitButton.setOnClickListener(this);
 	}
 
 	@Override
@@ -123,15 +132,29 @@ public class ClientListActivity extends Activity implements OnSearchListener {
 	@Override
 	public void onSearchSuccess(String clientIP) {
 		if (!mClients.contains(clientIP)) {
-			Message message = mHandler.obtainMessage(MSG_SEARCH_SUCCESS);
+			Message message = mSearchHandler.obtainMessage(MSG_SEARCH_SUCCESS);
 			message.obj = clientIP;
-			mHandler.sendMessage(message);
+			mSearchHandler.sendMessage(message);
 		}
 	}
 
 	@Override
 	public void onSearchFail() {
-		Message message = mHandler.obtainMessage(MSG_SEARCH_FAIL);
-		mHandler.sendMessage(message);
+		Message message = mSearchHandler.obtainMessage(MSG_SEARCH_FAIL);
+		mSearchHandler.sendMessage(message);
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.btn_start:
+			finish();
+			break;
+		case R.id.btn_quit:
+			finish();
+			break;
+		default:
+			break;
+		}
 	}
 }

@@ -8,7 +8,6 @@ import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 import android.content.Context;
 
@@ -27,10 +26,9 @@ public class SearchClient implements Runnable {
 
 	// Broadcast address.
 	// Socket for receive broadcast message.
-	private MulticastSocket broadSocket;
+	private MulticastSocket mBroadcastReceiveSocket;
 	// Socket for send broadcast message.
 	private DatagramSocket mSocket;
-	private DatagramPacket mPacket;
 
 	private OnSearchListener mListener;
 	private boolean mStopped = false;
@@ -47,8 +45,9 @@ public class SearchClient implements Runnable {
 
 	private SearchClient(OnSearchListener listener) {
 		try {
-			broadSocket = new MulticastSocket(Search.BROADCAST_RECEIVE_PORT);
-			broadSocket.setSoTimeout(Search.TIME_OUT);
+			mBroadcastReceiveSocket = new MulticastSocket(
+					Search.BROADCAST_RECEIVE_PORT);
+			mBroadcastReceiveSocket.setSoTimeout(Search.TIME_OUT);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -58,40 +57,45 @@ public class SearchClient implements Runnable {
 
 	@Override
 	public void run() {
-		try {
-			join(InetAddress.getByName(Search.BROADCAST_IP));
-		} catch (UnknownHostException e1) {
-			e1.printStackTrace();
-		}
-		startListenServerMessage();
+		// Listen other server messages.
+		joinGroup(Search.BROADCAST_IP);
+		new Thread(new GetBroadcastPacket()).start();
+
+		// Broadcast our message.
 		try {
 			mSocket = new DatagramSocket(Search.BROADCAST_SEND_PORT);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
-		byte[] buffer = NetWorkUtil.getLocalIpAddress().getBytes();
+		DatagramPacket packet = null;
+		byte[] localIPAddresss = NetWorkUtil.getLocalIpAddress().getBytes();
 		try {
-			mPacket = new DatagramPacket(buffer, buffer.length,
+			packet = new DatagramPacket(localIPAddresss,
+					localIPAddresss.length,
 					InetAddress.getByName(Search.BROADCAST_IP),
 					Search.BROADCAST_RECEIVE_PORT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
 		while (!mStopped) {
-			startBroadcastData();
+			startBroadcastData(packet);
 		}
 	}
 
-	private void startBroadcastData() {
-
+	private void startBroadcastData(DatagramPacket packet) {
+		if (mSocket == null) {
+			Log.e(TAG, "startBroadcastData() fail, mSocket is null");
+			return;
+		}
 		try {
-			mSocket.send(mPacket);
+			mSocket.send(packet);
 			Log.d(TAG,
-					"Send broadcast ok, data = "
-							+ new String(mPacket.getData()));
+					"Send broadcast ok, data = " + new String(packet.getData()));
 		} catch (IOException e) {
 			e.printStackTrace();
-			Log.e(TAG, "Send broadcast fail, data = " + mPacket.getData());
+			Log.e(TAG,
+					"Send broadcast fail, data = "
+							+ new String(packet.getData()));
 		}
 
 		try {
@@ -102,6 +106,7 @@ public class SearchClient implements Runnable {
 	}
 
 	public void startSearch(Context context) {
+		Log.d(TAG, "Start search");
 		if (mStarted) {
 			Log.d(TAG, "startSearch() igonre, search is already started.");
 			return;
@@ -114,36 +119,58 @@ public class SearchClient implements Runnable {
 	}
 
 	public void stopSearch() {
+		Log.d(TAG, "Stop search.");
 		mStarted = false;
 		mStopped = true;
+		closeSocket();
 		NetWorkUtil.releaseWifiMultiCastLock();
+
+		mInstance = null;
+	}
+
+	private void closeSocket() {
+		if (mSocket != null) {
+			mSocket.close();
+		}
+
+		if (mBroadcastReceiveSocket != null) {
+			leaveGroup(Search.BROADCAST_IP);
+			mBroadcastReceiveSocket.close();
+		}
 	}
 
 	/**
 	 * Join broadcast group.
 	 */
-	private void join(InetAddress groupAddr) {
+	private void joinGroup(String broadcastIP) {
 		try {
+			InetAddress groupAddr = InetAddress.getByName(broadcastIP);
 			// Join broadcast group.
-			broadSocket.joinGroup(groupAddr);
+			mBroadcastReceiveSocket.joinGroup(groupAddr);
 		} catch (Exception e) {
 			Log.e(TAG, "Join group fail");
 		}
 	}
 
 	/**
-	 * Listen client message.
+	 * Leave broadcast group.
 	 */
-	private void startListenServerMessage() {
-		new Thread(new GetPacket()).start();
-
+	private void leaveGroup(String broadcastIP) {
+		try {
+			InetAddress groupAddr = InetAddress.getByName(broadcastIP);
+			// leave broadcast group.
+			mBroadcastReceiveSocket.leaveGroup(groupAddr);
+		} catch (Exception e) {
+			Log.e(TAG, "leave group fail");
+		}
 	}
 
 	/**
-	 * Get message from client.
+	 * Get message from other server broadcast.
 	 * 
 	 */
-	class GetPacket implements Runnable {
+	class GetBroadcastPacket implements Runnable {
+
 		public void run() {
 			DatagramPacket inPacket;
 
@@ -151,7 +178,7 @@ public class SearchClient implements Runnable {
 			while (!mStopped) {
 				try {
 					inPacket = new DatagramPacket(new byte[1024], 1024);
-					broadSocket.receive(inPacket);
+					mBroadcastReceiveSocket.receive(inPacket);
 					message = new String(inPacket.getData(), 0,
 							inPacket.getLength());
 					Log.d(TAG, "Received broadcast message: " + message);

@@ -5,6 +5,7 @@ import java.net.Socket;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
@@ -42,9 +43,39 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 		if (server.isServerStarted()) {
 			notice.showToast("Server is already started");
 		} else {
-			progressDialog = ProgressDialog.show(context, "Server",
-					"Waiting for client...");
+			showProgressDialog();
 		}
+	}
+
+	private void showProgressDialog() {
+		if (progressDialog != null && progressDialog.isShowing()) {
+			// already showing, ignore.
+			return;
+		}
+
+		// show progress dialog.
+		progressDialog = new ProgressDialog(context);
+		progressDialog.setTitle("Server");
+		progressDialog.setMessage("Waiting for client...");
+		progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, "Hide",
+				new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						progressDialog.dismiss();
+					}
+				});
+		progressDialog.setButton(ProgressDialog.BUTTON_NEGATIVE, "Cancel",
+				new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						cancel(true);
+						server.stopServer();
+						progressDialog.dismiss();
+					}
+				});
+		progressDialog.show();
 	}
 
 	@Override

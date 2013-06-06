@@ -73,14 +73,14 @@ public class SocketServer {
 	public boolean isServerStarted() {
 		return mIsServerStarted;
 	}
-	/**branch liucheng_1*/
+
+	/** branch liucheng_1 */
 	public void stopServer() {
 		if (server != null) {
 			try {
 				server.close();
 				server = null;
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

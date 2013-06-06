@@ -58,6 +58,7 @@ public class SearchSever implements Runnable {
 	}
 
 	public void startSearch(Context context) {
+		Log.d(TAG, "Start search.");
 		if (mStarted) {
 			Log.d(TAG, "startSearch() ignore, search is already started.");
 			return;
@@ -69,10 +70,13 @@ public class SearchSever implements Runnable {
 	}
 
 	public void stopSearch() {
-		Log.d(TAG, "stopSearch()");
+		Log.d(TAG, "Stop search");
 		mStarted = false;
 		mStopped = true;
+		leaveGroup(mBroadAddress);
 		NetWorkUtil.releaseWifiMultiCastLock();
+
+		mInstance = null;
 	}
 
 	/**
@@ -84,6 +88,18 @@ public class SearchSever implements Runnable {
 			mReceiveSocket.joinGroup(groupAddr);
 		} catch (Exception e) {
 			Log.e(TAG, "Join group fail");
+		}
+	}
+
+	/**
+	 * Leave broadcast group.
+	 */
+	private void leaveGroup(InetAddress groupAddr) {
+		try {
+			// leave broadcast group.
+			mReceiveSocket.leaveGroup(groupAddr);
+		} catch (Exception e) {
+			Log.e(TAG, "leave group fail");
 		}
 	}
 
