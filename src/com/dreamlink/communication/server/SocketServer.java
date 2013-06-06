@@ -7,7 +7,7 @@ import java.net.Socket;
 import android.util.Log;
 
 public class SocketServer {
-	
+
 	public interface OnClientConnectedListener {
 		public Socket onClientConnected(Socket socket);
 	}
@@ -60,7 +60,6 @@ public class SocketServer {
 					server.setSoTimeout(TIME_OUT);
 					socket = server.accept();
 				}
-				Log.d("ArbiterLiu", "client connect--------------------------------");
 				listener.onClientConnected(socket);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -74,5 +73,16 @@ public class SocketServer {
 	public boolean isServerStarted() {
 		return mIsServerStarted;
 	}
-
+	/**branch liucheng_1*/
+	public void stopServer() {
+		if (server != null) {
+			try {
+				server.close();
+				server = null;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 }

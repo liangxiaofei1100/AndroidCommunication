@@ -1,5 +1,6 @@
 package com.dreamlink.communication;
 
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
@@ -11,6 +12,7 @@ import android.os.Handler;
 import android.text.TextUtils;
 
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
+import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
@@ -40,6 +42,7 @@ public class SocketCommunicationManager implements
 		if (mInstance == null) {
 			mInstance = new SocketCommunicationManager(context);
 		}
+		mInstance.clientFlag = false;
 		return mInstance;
 	}
 
@@ -58,9 +61,11 @@ public class SocketCommunicationManager implements
 
 	public void sendMessage(String message, int id) {// if the id==-1,send all
 		if (mCommunications != null && mCommunications.size() > 0) {
-			for (SocketCommunication communication : mCommunications) {
-				if (communication.getId() != id) {
-					sendMessage(communication, message);
+			synchronized (mCommunications) {
+				for (SocketCommunication communication : mCommunications) {
+					if (communication.getId() != id) {
+						sendMessage(communication, message);
+					}
 				}
 			}
 		} else {
@@ -75,7 +80,9 @@ public class SocketCommunicationManager implements
 			}
 		}
 		mCommunications.clear();
-
+		if (!clientFlag) {
+			SocketServer.getInstance().stopServer();
+		}
 		if (mExecutorService != null) {
 			mExecutorService.shutdown();
 		}
@@ -104,12 +111,39 @@ public class SocketCommunicationManager implements
 
 	@Override
 	public void OnCommunicationEstablished(SocketCommunication communication) {
-		mCommunications.add(communication);
+		synchronized (mCommunications) {
+			mCommunications.add(communication);
+			if (!mCommunications.isEmpty()) {
+				for (SocketCommunication comm : mCommunications) {
+					if ((comm.getConnectIP()
+							.equals(communication.getConnectIP()))
+							&& (comm.getId() != communication.getId())) {
+						comm.stopComunication();
+					}
+				}
+			}
+		}
 	}
 
 	@Override
 	public void OnCommunicationLost(SocketCommunication communication) {
-		mCommunications.remove(communication);
+		synchronized (communication) {
+			mCommunications.remove(communication);
+		}
+		if (mCommunications.isEmpty()) {
+			mExecutorService.shutdown();
+			mExecutorService = null;
+		}
 	}
 
+	private boolean clientFlag = false;
+
+	public static synchronized SocketCommunicationManager getInstance(
+			Context context, boolean flag) {
+		if (mInstance == null) {
+			mInstance = new SocketCommunicationManager(context);
+		}
+		mInstance.clientFlag = flag;
+		return mInstance;
+	}
 }

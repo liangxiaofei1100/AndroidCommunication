@@ -2,6 +2,7 @@ package com.dreamlink.communication;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.io.IOException;
 
@@ -17,6 +18,7 @@ public class SocketCommunication extends Thread {
 		void OnCommunicationLost(SocketCommunication communication);
 	}
 
+	private boolean clientFlag = false;
 	private int whatMsgSocket;
 	private int whatMsgNotice;
 
@@ -34,6 +36,13 @@ public class SocketCommunication extends Thread {
 		this.handler = handler;
 		this.whatMsgSocket = whatMsgSocket;
 		this.whatMsgNotice = whatMsgNotice;
+	}
+
+	public void setClientFlag(boolean flag) {
+		clientFlag = flag;
+	}
+	public InetAddress getConnectIP(){
+		return socket.getInetAddress();
 	}
 
 	public void setOnCommunicationChangedListener(
