@@ -50,7 +50,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 		mNotice = new Notice(mContext);
 		initView();
 		mCommunicationManager = SocketCommunicationManager
-				.getInstance(mContext);
+				.getInstance(mContext,true);
 	}
 
 	private void initView() {
