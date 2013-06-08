@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.dreamlink.communication.OnCommunicationListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
@@ -29,7 +31,7 @@ import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 public class ServerActivity extends Activity implements OnClickListener,
-		OnServerConfigListener {
+		OnCommunicationListener, OnServerConfigListener {
 	@SuppressWarnings("unused")
 	private static final String TAG = "ServerActivity";
 
@@ -53,6 +55,7 @@ public class ServerActivity extends Activity implements OnClickListener,
 
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(mContext);
+		mCommunicationManager.registered(this);
 	}
 
 	private void initView() {
@@ -101,8 +104,8 @@ public class ServerActivity extends Activity implements OnClickListener,
 	@Override
 	public void onServerConfig(String portNumber) {
 		// closeCommunication();
-		SocketServerTask serverTask = new SocketServerTask(mContext, mHandler,
-				SocketMessage.MSG_SOCKET_CONNECTED);
+		SocketServerTask serverTask = new SocketServerTask(mContext,
+				mCommunicationManager);
 		serverTask.execute(new String[] { portNumber });
 	}
 
@@ -142,6 +145,7 @@ public class ServerActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		mCommunicationManager.unregistered(this);
 		closeCommunication();
 	}
 
@@ -150,8 +154,6 @@ public class ServerActivity extends Activity implements OnClickListener,
 			synchronized (msg) {
 				switch (msg.what) {
 				case SocketMessage.MSG_SOCKET_CONNECTED:
-					Socket socket = (Socket) (msg.obj);
-					mCommunicationManager.addCommunication(socket, mHandler);
 					break;
 
 				case SocketMessage.MSG_SOCKET_NOTICE:
@@ -161,22 +163,10 @@ public class ServerActivity extends Activity implements OnClickListener,
 					break;
 
 				case SocketMessage.MSG_SOCKET_MESSAGE:
-					final String messageBT = (String) (msg.obj);
-					final int id = msg.arg1;
-
-					mHistoricListAdapter.add("Receive" + ": " + messageBT);
+					mHistoricListAdapter.add("Receive" + ": "
+							+ (String) (msg.obj));
 					mHistoricListAdapter.notifyDataSetChanged();
-					// add by liucheng
-					new Thread() {
 
-						@Override
-						public void run() {
-							// TODO Auto-generated method stub
-							super.run();
-							mCommunicationManager.sendMessage(messageBT, id);
-						}
-					}.start();
-					// end add by liucheng
 					break;
 				}
 			}
@@ -187,6 +177,36 @@ public class ServerActivity extends Activity implements OnClickListener,
 		Intent intent = new Intent();
 		intent.setClass(this, ClientListActivity.class);
 		startActivity(intent);
+	}
+
+	@Override
+	public void onReceiveMessage(byte[] msg, int id) {
+		// TODO Auto-generated method stub
+		final String messageBT = new String(msg);
+		final int ID = id;
+		mHandler.obtainMessage(SocketMessage.MSG_SOCKET_MESSAGE, messageBT)
+				.sendToTarget();
+		new Thread() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				super.run();
+				mCommunicationManager.sendMessage(messageBT, ID);
+			}
+		}.start();
+	}
+
+	@Override
+	public void onSendResult(byte[] msg) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void notifyConnectChanged(SocketCommunication com, boolean addFlag) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

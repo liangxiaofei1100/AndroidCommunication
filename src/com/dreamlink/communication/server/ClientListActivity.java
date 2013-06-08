@@ -63,8 +63,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 
 			case SocketMessage.MSG_SOCKET_CONNECTED:
 				Socket socket = (Socket) msg.obj;
-				mCommunicationManager.addCommunication(socket,
-						mSockMessageHandler);
+				mCommunicationManager.addCommunication(socket);
 				addClient(socket.getInetAddress().getHostAddress());
 				break;
 			case SocketMessage.MSG_SOCKET_MESSAGE:
@@ -90,12 +89,10 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 		mNotice = new Notice(mContext);
 
 		initView();
-
-		SocketServerTask serverTask = new SocketServerTask(mContext,
-				mSockMessageHandler, SocketMessage.MSG_SOCKET_CONNECTED);
-		serverTask.execute(new String[] { SocketCommunication.PORT });
-
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
+		SocketServerTask serverTask = new SocketServerTask(mContext,
+				mCommunicationManager);
+		serverTask.execute(new String[] { SocketCommunication.PORT });
 
 		mSearchClient = SearchClient.getInstance(this);
 		mSearchClient.startSearch(getApplicationContext());

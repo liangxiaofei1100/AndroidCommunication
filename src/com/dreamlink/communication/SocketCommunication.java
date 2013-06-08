@@ -18,30 +18,20 @@ public class SocketCommunication extends Thread {
 		void OnCommunicationLost(SocketCommunication communication);
 	}
 
-	private boolean clientFlag = false;
-	private int whatMsgSocket;
-	private int whatMsgNotice;
-
 	private Socket socket;
-	private Handler handler;
+	private ICommunicate iCommunicate;
 
 	private DataInputStream dataInputStream = null;
 	private DataOutputStream dataOutputStream = null;
 
 	private OnCommunicationChangedListener mListener;
 
-	public SocketCommunication(Socket socket, Handler handler,
-			int whatMsgSocket, int whatMsgNotice) {
+	public SocketCommunication(Socket socket, ICommunicate iCommunicate) {
 		this.socket = socket;
-		this.handler = handler;
-		this.whatMsgSocket = whatMsgSocket;
-		this.whatMsgNotice = whatMsgNotice;
+		this.iCommunicate = iCommunicate;
 	}
 
-	public void setClientFlag(boolean flag) {
-		clientFlag = flag;
-	}
-	public InetAddress getConnectIP(){
+	public InetAddress getConnectIP() {
 		return socket.getInetAddress();
 	}
 
@@ -57,15 +47,13 @@ public class SocketCommunication extends Thread {
 		try {
 			dataInputStream = new DataInputStream(socket.getInputStream());
 			dataOutputStream = new DataOutputStream(socket.getOutputStream());
-
 			mListener.OnCommunicationEstablished(this);
-
 			while (true) {
 				if (dataInputStream.available() > 0) {
 					byte[] msg = new byte[dataInputStream.available()];
 					dataInputStream.read(msg, 0, dataInputStream.available());
-
-					sendHandler(whatMsgSocket, new String(msg));
+					iCommunicate.receiveMessage(msg,
+							(int) SocketCommunication.this.getId());
 				}
 			}
 		} catch (IOException e) {
@@ -73,18 +61,9 @@ public class SocketCommunication extends Thread {
 
 			dataInputStream = null;
 			dataOutputStream = null;
-
 			mListener.OnCommunicationLost(this);
 
-			sendHandler(whatMsgNotice, "Get message fail");
 		}
-	}
-
-	public void sendHandler(int what, Object object) {
-		Message message = handler.obtainMessage(what, object);
-		message.arg1 = (int) this.getId();
-		message.sendToTarget();
-		// handler.obtainMessage(what, object).sendToTarget();
 	}
 
 	public void sendMsg(String msg) {
@@ -94,13 +73,11 @@ public class SocketCommunication extends Thread {
 				dataOutputStream.flush();
 			} else {
 				mListener.OnCommunicationLost(this);
-				sendHandler(whatMsgNotice, "Connection lost.");
 			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
 			mListener.OnCommunicationLost(this);
-			sendHandler(whatMsgNotice, "Send fail");
 		}
 	}
 

@@ -2,6 +2,7 @@ package com.dreamlink.communication;
 
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,7 +18,7 @@ import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
 public class SocketCommunicationManager implements
-		OnCommunicationChangedListener {
+		OnCommunicationChangedListener, ICommunicate {
 	private static final String TAG = "SocketCommunicationManager";
 	private static SocketCommunicationManager mInstance;
 
@@ -26,6 +27,7 @@ public class SocketCommunicationManager implements
 	private ExecutorService mExecutorService = null;
 	private Context mContext;
 	private Notice mNotice;
+	private ArrayList<OnCommunicationListener> list;
 
 	private SocketCommunicationManager() {
 
@@ -33,6 +35,7 @@ public class SocketCommunicationManager implements
 
 	private SocketCommunicationManager(Context context) {
 		mContext = context;
+		list = new ArrayList<OnCommunicationListener>();
 		mNotice = new Notice(context);
 		mCommunications = new HashSet<SocketCommunication>();
 	}
@@ -59,11 +62,13 @@ public class SocketCommunicationManager implements
 		}
 	}
 
-	public void sendMessage(String message, int id) {// if the id==-1,send all
+	public void sendMessage(String message, int idThread) {
+		Log.d("ArbiterLiu", idThread
+				+ "----------------------------------------------");
 		if (mCommunications != null && mCommunications.size() > 0) {
 			synchronized (mCommunications) {
 				for (SocketCommunication communication : mCommunications) {
-					if (communication.getId() != id) {
+					if (communication.getId() != idThread) {
 						sendMessage(communication, message);
 					}
 				}
@@ -88,14 +93,14 @@ public class SocketCommunicationManager implements
 		}
 	}
 
-	public void addCommunication(Socket socket, Handler handler) {
+	public void addCommunication(Socket socket) {
 		if (mExecutorService == null) {
 			mExecutorService = Executors.newCachedThreadPool();
 		}
 		SocketCommunication communication = new SocketCommunication(socket,
-				handler, SocketMessage.MSG_SOCKET_MESSAGE,
-				SocketMessage.MSG_SOCKET_NOTICE);
+				this);
 		communication.setOnCommunicationChangedListener(this);
+		notifyComunicationChange(communication, true);
 		try {
 			mExecutorService.execute(communication);
 		} catch (RejectedExecutionException e) {
@@ -115,8 +120,8 @@ public class SocketCommunicationManager implements
 			mCommunications.add(communication);
 			if (!mCommunications.isEmpty()) {
 				for (SocketCommunication comm : mCommunications) {
-					if ((comm.getConnectIP()
-							.equals(communication.getConnectIP()))
+					if ((comm.getConnectIP().equals(communication
+							.getConnectIP()))
 							&& (comm.getId() != communication.getId())) {
 						comm.stopComunication();
 					}
@@ -129,6 +134,7 @@ public class SocketCommunicationManager implements
 	public void OnCommunicationLost(SocketCommunication communication) {
 		synchronized (communication) {
 			mCommunications.remove(communication);
+			notifyComunicationChange(communication, false);
 		}
 		if (mCommunications.isEmpty()) {
 			mExecutorService.shutdown();
@@ -145,5 +151,34 @@ public class SocketCommunicationManager implements
 		}
 		mInstance.clientFlag = flag;
 		return mInstance;
+	}
+
+	public void registered(OnCommunicationListener iSubscribe) {
+		list.add(iSubscribe);
+	}
+
+	public void unregistered(OnCommunicationListener iSubscribe) {
+		list.remove(iSubscribe);
+	}
+
+	@Override
+	public void receiveMessage(byte[] msg, int ID) {
+		// TODO Auto-generated method stub
+		sendMessage(new String(msg), ID);
+		if (!list.isEmpty()) {
+			for (OnCommunicationListener listener : list) {
+				listener.onReceiveMessage(msg, ID);
+			}
+		}
+	}
+
+	@Override
+	public void sendMessage(byte[] msg) {
+		// TODO Auto-generated method stub
+	}
+
+	private void notifyComunicationChange(SocketCommunication com,
+			boolean addFlag) {
+
 	}
 }

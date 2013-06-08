@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 
+import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.server.SocketServer.OnClientConnectedListener;
 import com.dreamlink.communication.util.Notice;
 
@@ -25,16 +26,13 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 	private Notice notice;
 
 	private SocketServer server;
+	private SocketCommunicationManager manager;
 
-	public SocketServerTask(Context context, Handler handler, int what) {
+	public SocketServerTask(Context context, SocketCommunicationManager manager) {
 		this.context = context;
-		this.handler = handler;
-
-		message = new Message();
-		message.what = what;
-
 		server = SocketServer.getInstance();
 		notice = new Notice(context);
+		this.manager = manager;
 	}
 
 	@Override
@@ -103,7 +101,6 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 		} else {
 			notice.showToast("Client connected.");
 			message.obj = result;
-			handler.dispatchMessage(message);
 		}
 	}
 
@@ -116,8 +113,7 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 			notice.showToast("Waiting for client timeout.");
 		} else if (values.length == 1) {
 			notice.showToast("Client connected.");
-			message.obj = values[0];
-			handler.dispatchMessage(message);
+			manager.addCommunication(values[0]);
 		} else {
 			// should not be here.
 		}

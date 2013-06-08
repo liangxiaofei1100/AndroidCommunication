@@ -18,11 +18,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.dreamlink.communication.OnCommunicationListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.Search;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketMessage;
+import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.client.ClientConfig.OnClientConfigListener;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
 import com.dreamlink.communication.server.SearchClient;
@@ -30,7 +32,7 @@ import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 public class ClientActivity extends Activity implements OnClickListener,
-		OnClientConfigListener {
+		OnCommunicationListener, OnClientConfigListener {
 	@SuppressWarnings("unused")
 	private static final String TAG = "ClientActivity";
 
@@ -56,8 +58,9 @@ public class ClientActivity extends Activity implements OnClickListener,
 		mContext = this;
 		mNotice = new Notice(mContext);
 		initView();
-		mCommunicationManager = SocketCommunicationManager
-				.getInstance(mContext,true);
+		mCommunicationManager = SocketCommunicationManager.getInstance(
+				mContext, true);
+		mCommunicationManager.registered(this);
 	}
 
 	private void initView() {
@@ -105,8 +108,8 @@ public class ClientActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void onClientConfig(String serverIP, String portNumber) {
-		SocketClientTask clientTask = new SocketClientTask(mContext, mHandler,
-				SocketMessage.MSG_SOCKET_CONNECTED);
+		SocketClientTask clientTask = new SocketClientTask(mContext,
+				mCommunicationManager, SocketMessage.MSG_SOCKET_CONNECTED);
 		clientTask.execute(new String[] { serverIP, portNumber });
 	}
 
@@ -146,6 +149,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		mCommunicationManager.unregistered(this);
 		mCommunicationManager.closeCommunication();
 		if (mSearchServer != null) {
 			mSearchServer.stopSearch();
@@ -158,8 +162,8 @@ public class ClientActivity extends Activity implements OnClickListener,
 			synchronized (msg) {
 				switch (msg.what) {
 				case SocketMessage.MSG_SOCKET_CONNECTED:
-					Socket socket = (Socket) (msg.obj);
-					mCommunicationManager.addCommunication(socket, mHandler);
+//					Socket socket = (Socket) (msg.obj);
+//					mCommunicationManager.addCommunication(socket, mHandler);
 					break;
 
 				case SocketMessage.MSG_SOCKET_NOTICE:
@@ -200,5 +204,26 @@ public class ClientActivity extends Activity implements OnClickListener,
 		}
 
 		super.onActivityResult(requestCode, resultCode, data);
+	}
+
+	@Override
+	public void onReceiveMessage(byte[] msg, int id) {
+		// TODO Auto-generated method stub
+		/** need to parse the msg */
+		String messageBT = new String(msg);
+		mHandler.obtainMessage(SocketMessage.MSG_SOCKET_MESSAGE, messageBT)
+				.sendToTarget();
+	}
+
+	@Override
+	public void onSendResult(byte[] msg) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void notifyConnectChanged(SocketCommunication com, boolean addFlag) {
+		// TODO Auto-generated method stub
+		
 	}
 }
