@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.Search;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
+import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 import android.app.Activity;
@@ -21,7 +23,7 @@ import android.widget.ListView;
 
 public class ServerListActivity extends Activity implements OnSearchListener,
 		OnItemClickListener {
-
+	private static final String TAG = "ServerListActivity";
 	private Context mContext;
 
 	private ArrayAdapter<String> mAdapter;
@@ -30,6 +32,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	private Notice mNotice;
 	private SearchSever mSearchServer;
+	private SearchSeverLanAndroidAP mSeverAPMode;
 
 	private static final int MSG_SEARCH_SUCCESS = 1;
 	private static final int MSG_SEARCH_FAIL = 2;
@@ -62,7 +65,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		initView();
 
 		mSearchServer = SearchSever.getInstance(this);
-		mSearchServer.startSearch(getApplicationContext());
+		mSearchServer.setOnSearchListener(this);
+		mSearchServer.startSearch();
+
 		mNotice.showToast("Start Search");
 	}
 
@@ -79,6 +84,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		super.onDestroy();
 		if (mSearchServer != null) {
 			mSearchServer.stopSearch();
+		}
+		if (mSeverAPMode != null) {
+			mSeverAPMode.stopSearch();
 		}
 	}
 

@@ -1,9 +1,12 @@
 package com.dreamlink.communication.util;
 
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+
+import com.dreamlink.communication.Search;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -11,6 +14,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.text.TextUtils;
 
 public class NetWorkUtil {
 	private static final String TAG = "NetWorkUtil";
@@ -20,10 +24,26 @@ public class NetWorkUtil {
 		ConnectivityManager cm = (ConnectivityManager) context
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-		if (networkInfo == null) {
+
+		boolean isWifiApEnabled = isWifiApEnabled(context);
+
+		if (networkInfo == null && isWifiApEnabled == false) {
 			return false;
 		} else {
 			return true;
+		}
+	}
+
+	public static boolean isWifiApEnabled(Context context) {
+		WifiManager wifiManager = (WifiManager) context
+				.getSystemService(Context.WIFI_SERVICE);
+		try {
+			Method method = wifiManager.getClass().getMethod("isWifiApEnabled");
+			boolean enabled = (Boolean) method.invoke(wifiManager);
+			return enabled;
+		} catch (Exception e) {
+			Log.e(TAG, "Cannot get wifi AP sate: " + e);
+			return false;
 		}
 	}
 
@@ -59,7 +79,10 @@ public class NetWorkUtil {
 						.getInetAddresses(); enumIpAddr.hasMoreElements();) {
 					InetAddress inetAddress = enumIpAddr.nextElement();
 					if (!inetAddress.isLoopbackAddress()
-							&& !inetAddress.isLinkLocalAddress()) {
+							&& !inetAddress.isLinkLocalAddress()
+							&& (intf.getDisplayName().contains("wlan")
+									|| intf.getDisplayName().contains("eth") || intf
+									.getDisplayName().contains("ap"))) {
 						return inetAddress.getHostAddress();
 					}
 				}
@@ -91,6 +114,16 @@ public class NetWorkUtil {
 		if (mMulticastLock != null) {
 			mMulticastLock.release();
 			mMulticastLock = null;
+		}
+	}
+
+	public static boolean isAndroidAPNetwork(Context context) {
+		String ipAddress = getLocalIpAddress();
+		if (!TextUtils.isEmpty(ipAddress)
+				&& ipAddress.startsWith(Search.ANDROID_STA_ADDRESS_START)) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 }

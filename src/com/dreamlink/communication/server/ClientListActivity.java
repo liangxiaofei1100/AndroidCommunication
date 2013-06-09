@@ -3,6 +3,7 @@ package com.dreamlink.communication.server;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import com.dreamlink.communication.OnCommunicationListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
@@ -22,7 +23,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 public class ClientListActivity extends Activity implements OnSearchListener,
-		OnClickListener {
+		OnClickListener, OnCommunicationListener {
 
 	private Context mContext;
 
@@ -90,12 +91,14 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 
 		initView();
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
+		mCommunicationManager.registered(this);
 		SocketServerTask serverTask = new SocketServerTask(mContext,
 				mCommunicationManager);
 		serverTask.execute(new String[] { SocketCommunication.PORT });
 
 		mSearchClient = SearchClient.getInstance(this);
-		mSearchClient.startSearch(getApplicationContext());
+		mSearchClient.setOnSearchListener(this);
+		mSearchClient.startSearch();
 		mNotice.showToast("Start Search");
 	}
 
@@ -152,6 +155,25 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 			break;
 		default:
 			break;
+		}
+	}
+
+	@Override
+	public void onReceiveMessage(byte[] msg, int id) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onSendResult(byte[] msg) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void notifyConnectChanged(SocketCommunication com, boolean addFlag) {
+		if (addFlag) {
+			addClient(com.getConnectIP().getHostAddress());
 		}
 	}
 }

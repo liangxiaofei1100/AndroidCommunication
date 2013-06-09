@@ -1,22 +1,37 @@
 package com.dreamlink.communication.server;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-
 import android.content.Context;
 
-import com.dreamlink.communication.Search;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
-public class SearchClient implements Runnable {
+/**
+ * This class is used by server for search clients.</br>
+ * 
+ * There are two kind of lan network:</br>
+ * 
+ * 1. No Android AP Lan.</br>
+ * 
+ * 2. Has Android AP Lan.</br>
+ * 
+ * In the situation 1, we use lan multicast to find clients.</br>
+ * 
+ * In the situation 2, we use lan mulitcast and UDP communication to search
+ * clients</br>
+ * 
+ * This is because AP can not send or receive multicast in Android AP lan
+ * network.</br>
+ * 
+ * Notice: SearchClient do not get clint IP, Only client can get server IP, and
+ * client connect server.</br>
+ */
+public class SearchClient {
 	interface OnSearchListener {
+		/**
+		 * Found other server.
+		 * 
+		 * @param serverIP
+		 */
 		void onSearchSuccess(String serverIP);
 
 		void onSearchFail();
@@ -24,186 +39,87 @@ public class SearchClient implements Runnable {
 
 	private static final String TAG = "SearchClient";
 
-	// Broadcast address.
-	// Socket for receive broadcast message.
-	private MulticastSocket mBroadcastReceiveSocket;
-	// Socket for send broadcast message.
-	private DatagramSocket mSocket;
-
 	private OnSearchListener mListener;
-	private boolean mStopped = false;
 	private boolean mStarted = false;
 
 	private static SearchClient mInstance;
 
-	public static SearchClient getInstance(OnSearchListener listener) {
+	private Context mContext;
+
+	private SearchClientLanAndroidAP mSearchClientLanAndroidAP;
+	private SearchClientLan mSearchClientLan;
+
+	public static SearchClient getInstance(Context context) {
 		if (mInstance == null) {
-			mInstance = new SearchClient(listener);
+			mInstance = new SearchClient(context);
 		}
 		return mInstance;
 	}
 
-	private SearchClient(OnSearchListener listener) {
-		try {
-			mBroadcastReceiveSocket = new MulticastSocket(
-					Search.BROADCAST_RECEIVE_PORT);
-			mBroadcastReceiveSocket.setSoTimeout(Search.TIME_OUT);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	private SearchClient(Context context) {
+		mContext = context;
+	}
 
+	public void setOnSearchListener(OnSearchListener listener) {
 		mListener = listener;
-	}
-
-	@Override
-	public void run() {
-		// Listen other server messages.
-		joinGroup(Search.BROADCAST_IP);
-		new Thread(new GetBroadcastPacket()).start();
-
-		// Broadcast our message.
-		try {
-			mSocket = new DatagramSocket(Search.BROADCAST_SEND_PORT);
-		} catch (SocketException e) {
-			e.printStackTrace();
+		if (mSearchClientLan != null) {
+			mSearchClientLan.setOnSearchListener(listener);
 		}
-		DatagramPacket packet = null;
-		byte[] localIPAddresss = NetWorkUtil.getLocalIpAddress().getBytes();
-		try {
-			packet = new DatagramPacket(localIPAddresss,
-					localIPAddresss.length,
-					InetAddress.getByName(Search.BROADCAST_IP),
-					Search.BROADCAST_RECEIVE_PORT);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
-		while (!mStopped) {
-			startBroadcastData(packet);
+		if (mSearchClientLanAndroidAP != null) {
+			mSearchClientLanAndroidAP.setOnSearchListener(listener);
 		}
 	}
 
-	private void startBroadcastData(DatagramPacket packet) {
-		if (mSocket == null) {
-			Log.e(TAG, "startBroadcastData() fail, mSocket is null");
-			return;
-		}
-		try {
-			mSocket.send(packet);
-			Log.d(TAG,
-					"Send broadcast ok, data = " + new String(packet.getData()));
-		} catch (IOException e) {
-			e.printStackTrace();
-			Log.e(TAG,
-					"Send broadcast fail, data = "
-							+ new String(packet.getData()));
-		}
-
-		try {
-			Thread.sleep(Search.BROADCAST_SLEEP_TIME);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void startSearch(Context context) {
+	/**
+	 * start search client.
+	 */
+	public void startSearch() {
 		Log.d(TAG, "Start search");
 		if (mStarted) {
 			Log.d(TAG, "startSearch() igonre, search is already started.");
 			return;
 		}
 		mStarted = true;
-		NetWorkUtil.acquireWifiMultiCastLock(context);
+		NetWorkUtil.acquireWifiMultiCastLock(mContext);
 
-		Thread searchThread = new Thread(this);
-		searchThread.start();
+		if (NetWorkUtil.isAndroidAPNetwork(mContext)) {
+			// Android AP network.
+			Log.d(TAG, "Android AP network.");
+			mSearchClientLanAndroidAP = SearchClientLanAndroidAP
+					.getInstance(mContext);
+			mSearchClientLanAndroidAP.setOnSearchListener(mListener);
+			mSearchClientLanAndroidAP.startSearch();
+		} else {
+			Log.d(TAG, "not Android AP network.");
+		}
+
+		if (!NetWorkUtil.isWifiApEnabled(mContext)) {
+			Log.d(TAG, "This is not Android AP");
+			mSearchClientLan = SearchClientLan.getInstance(mContext);
+			mSearchClientLan.setOnSearchListener(mListener);
+			mSearchClientLan.startSearch();
+		} else {
+			Log.d(TAG, "This is AP");
+			// Android AP is enabled
+			// Because Android AP can not send or receive Lan
+			// multicast/broadcast,So it does not need to listen multicast.
+		}
 	}
 
 	public void stopSearch() {
 		Log.d(TAG, "Stop search.");
 		mStarted = false;
-		mStopped = true;
-		closeSocket();
 		NetWorkUtil.releaseWifiMultiCastLock();
 
+		if (mSearchClientLan != null) {
+			mSearchClientLan.stopSearch();
+			mSearchClientLan = null;
+		}
+
+		if (mSearchClientLanAndroidAP != null) {
+			mSearchClientLanAndroidAP.stopSearch();
+			mSearchClientLanAndroidAP = null;
+		}
 		mInstance = null;
-	}
-
-	private void closeSocket() {
-		if (mSocket != null) {
-			mSocket.close();
-		}
-
-		if (mBroadcastReceiveSocket != null) {
-			leaveGroup(Search.BROADCAST_IP);
-			mBroadcastReceiveSocket.close();
-		}
-	}
-
-	/**
-	 * Join broadcast group.
-	 */
-	private void joinGroup(String broadcastIP) {
-		try {
-			InetAddress groupAddr = InetAddress.getByName(broadcastIP);
-			// Join broadcast group.
-			mBroadcastReceiveSocket.joinGroup(groupAddr);
-		} catch (Exception e) {
-			Log.e(TAG, "Join group fail");
-		}
-	}
-
-	/**
-	 * Leave broadcast group.
-	 */
-	private void leaveGroup(String broadcastIP) {
-		try {
-			InetAddress groupAddr = InetAddress.getByName(broadcastIP);
-			// leave broadcast group.
-			mBroadcastReceiveSocket.leaveGroup(groupAddr);
-		} catch (Exception e) {
-			Log.e(TAG, "leave group fail");
-		}
-	}
-
-	/**
-	 * Get message from other server broadcast.
-	 * 
-	 */
-	class GetBroadcastPacket implements Runnable {
-
-		public void run() {
-			DatagramPacket inPacket;
-
-			String message;
-			while (!mStopped) {
-				try {
-					inPacket = new DatagramPacket(new byte[1024], 1024);
-					mBroadcastReceiveSocket.receive(inPacket);
-					message = new String(inPacket.getData(), 0,
-							inPacket.getLength());
-					Log.d(TAG, "Received broadcast message: " + message);
-
-					if (message.equals(NetWorkUtil.getLocalIpAddress())) {
-						// ignore.
-					} else {
-						// Got another server. because client will not broadcast
-						// message.
-						if (mListener != null) {
-							mListener.onSearchSuccess(message);
-						}
-					}
-				} catch (Exception e) {
-					if (e instanceof SocketTimeoutException) {
-						// time out, search again.
-						Log.d(TAG, "GetPacket time out. search again.");
-					} else {
-						Log.e(TAG, "GetPacket error," + e.toString());
-						if (mListener != null) {
-							mListener.onSearchFail();
-						}
-					}
-				}
-			}
-		}
 	}
 }
