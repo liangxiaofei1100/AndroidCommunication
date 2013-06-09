@@ -63,8 +63,6 @@ public class SocketCommunicationManager implements
 	}
 
 	public void sendMessage(String message, int idThread) {
-		Log.d("ArbiterLiu", idThread
-				+ "----------------------------------------------");
 		if (mCommunications != null && mCommunications.size() > 0) {
 			synchronized (mCommunications) {
 				for (SocketCommunication communication : mCommunications) {
@@ -177,8 +175,12 @@ public class SocketCommunicationManager implements
 		// TODO Auto-generated method stub
 	}
 
+	/**
+	 * @param addFlag
+	 *            ,if true ,connect add ,else connect remove
+	 * */
 	private void notifyComunicationChange(SocketCommunication com,
 			boolean addFlag) {
-
+		//if need notify someone ,doing here
 	}
 }
