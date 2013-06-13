@@ -182,6 +182,10 @@ public class ServerActivity extends Activity implements OnClickListener,
 	@Override
 	public void onReceiveMessage(byte[] msg, SocketCommunication id) {
 		// TODO Auto-generated method stub
+		if (!parseMessage(msg)) {
+			// doSomething
+			return;
+		}
 		final String messageBT = new String(msg);
 		mHandler.obtainMessage(SocketMessage.MSG_SOCKET_MESSAGE, messageBT)
 				.sendToTarget();
@@ -193,7 +197,7 @@ public class ServerActivity extends Activity implements OnClickListener,
 			public void run() {
 				// TODO Auto-generated method stub
 				super.run();
-				mCommunicationManager.sendMessage(message, (int)com.getId());
+				mCommunicationManager.sendMessage(message, (int) com.getId());
 			}
 
 		}.start();
@@ -211,4 +215,11 @@ public class ServerActivity extends Activity implements OnClickListener,
 
 	}
 
+	private boolean parseMessage(byte[] msg) {
+		if (true) { // msg is String CMD
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

@@ -73,6 +73,9 @@ public class SocketCommunicationManager implements
 	}
 
 	public void sendMessage(byte[] message, int idThread) {
+		if (idThread == -1) {
+			return;
+		}
 		if (mCommunications != null && mCommunications.size() > 0) {
 			HashSet<SocketCommunication> hash = mCommunications;
 			for (SocketCommunication communication : hash) {
