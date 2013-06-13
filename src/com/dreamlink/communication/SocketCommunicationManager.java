@@ -10,8 +10,10 @@ import java.util.concurrent.RejectedExecutionException;
 
 import android.content.Context;
 import android.os.Handler;
+import android.sax.StartElementListener;
 import android.text.TextUtils;
 
+import com.dreamlink.communication.SocketCommunication.ICommunicate;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.util.Log;
@@ -33,6 +35,16 @@ public class SocketCommunicationManager implements
 
 	}
 
+	public interface OnCommunicationListener {
+
+		void onReceiveMessage(byte[] msg, SocketCommunication ip);
+
+		void onSendResult(byte[] msg);
+
+		void notifyConnectChanged();
+
+	}
+
 	private SocketCommunicationManager(Context context) {
 		mContext = context;
 		list = new ArrayList<OnCommunicationListener>();
@@ -49,26 +61,23 @@ public class SocketCommunicationManager implements
 		return mInstance;
 	}
 
-	public void sendMessage(SocketCommunication communication, String message) {
-		if (TextUtils.isEmpty(message)) {
+	public void sendMessage(SocketCommunication communication, byte[] message) {
+		if (message.length == 0) {
 			return;
 		}
 		if (communication != null) {
-			if (message.trim().length() > 0) {
-				communication.sendMsg(message);
-			}
+			communication.sendMsg(message);
 		} else {
 			mNotice.showToast("Connection lost.");
 		}
 	}
 
-	public void sendMessage(String message, int idThread) {
+	public void sendMessage(byte[] message, int idThread) {
 		if (mCommunications != null && mCommunications.size() > 0) {
-			synchronized (mCommunications) {
-				for (SocketCommunication communication : mCommunications) {
-					if (communication.getId() != idThread) {
-						sendMessage(communication, message);
-					}
+			HashSet<SocketCommunication> hash = mCommunications;
+			for (SocketCommunication communication : hash) {
+				if (communication.getId() != idThread) {
+					sendMessage(communication, message);
 				}
 			}
 		} else {
@@ -78,8 +87,15 @@ public class SocketCommunicationManager implements
 
 	public void closeCommunication() {
 		if (mCommunications != null) {
-			for (SocketCommunication communication : mCommunications) {
-				communication.stopComunication();
+			for (final SocketCommunication communication : mCommunications) {
+				new Thread() {
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						super.run();
+						communication.stopComunication();
+					}
+				}.start();
 			}
 		}
 		mCommunications.clear();
@@ -98,7 +114,7 @@ public class SocketCommunicationManager implements
 		SocketCommunication communication = new SocketCommunication(socket,
 				this);
 		communication.setOnCommunicationChangedListener(this);
-		notifyComunicationChange(communication, true);
+		notifyComunicationChange();
 		try {
 			mExecutorService.execute(communication);
 		} catch (RejectedExecutionException e) {
@@ -116,6 +132,7 @@ public class SocketCommunicationManager implements
 	public void OnCommunicationEstablished(SocketCommunication communication) {
 		synchronized (mCommunications) {
 			mCommunications.add(communication);
+			notifyComunicationChange();
 			if (!mCommunications.isEmpty()) {
 				for (SocketCommunication comm : mCommunications) {
 					if ((comm.getConnectIP().equals(communication
@@ -131,8 +148,10 @@ public class SocketCommunicationManager implements
 	@Override
 	public void OnCommunicationLost(SocketCommunication communication) {
 		synchronized (communication) {
-			mCommunications.remove(communication);
-			notifyComunicationChange(communication, false);
+			if (mCommunications.contains(communication)) {
+				mCommunications.remove(communication);
+				notifyComunicationChange();
+			}
 		}
 		if (mCommunications.isEmpty()) {
 			mExecutorService.shutdown();
@@ -160,12 +179,12 @@ public class SocketCommunicationManager implements
 	}
 
 	@Override
-	public void receiveMessage(byte[] msg, int ID) {
+	public void receiveMessage(byte[] msg,
+			SocketCommunication socketCommunication) {
 		// TODO Auto-generated method stub
-		sendMessage(new String(msg), ID);
 		if (!list.isEmpty()) {
 			for (OnCommunicationListener listener : list) {
-				listener.onReceiveMessage(msg, ID);
+				listener.onReceiveMessage(msg, socketCommunication);
 			}
 		}
 	}
@@ -179,8 +198,12 @@ public class SocketCommunicationManager implements
 	 * @param addFlag
 	 *            ,if true ,connect add ,else connect remove
 	 * */
-	private void notifyComunicationChange(SocketCommunication com,
-			boolean addFlag) {
-		//if need notify someone ,doing here
+	private void notifyComunicationChange() {
+		// if need notify someone ,doing here
+		if (!list.isEmpty()) {
+			for (OnCommunicationListener listener : list) {
+				listener.notifyConnectChanged();
+			}
+		}
 	}
 }

@@ -18,6 +18,12 @@ public class SocketCommunication extends Thread {
 		void OnCommunicationLost(SocketCommunication communication);
 	}
 
+	public interface ICommunicate {
+		void receiveMessage(byte[] msg, SocketCommunication socketCommunication);
+
+		void sendMessage(byte[] msg);
+	}
+
 	private Socket socket;
 	private ICommunicate iCommunicate;
 
@@ -52,13 +58,11 @@ public class SocketCommunication extends Thread {
 				if (dataInputStream.available() > 0) {
 					byte[] msg = new byte[dataInputStream.available()];
 					dataInputStream.read(msg, 0, dataInputStream.available());
-					iCommunicate.receiveMessage(msg,
-							(int) SocketCommunication.this.getId());
+					iCommunicate.receiveMessage(msg, this);
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-
 			dataInputStream = null;
 			dataOutputStream = null;
 			mListener.OnCommunicationLost(this);
@@ -66,10 +70,11 @@ public class SocketCommunication extends Thread {
 		}
 	}
 
-	public void sendMsg(String msg) {
+	public void sendMsg(byte[] msg) {
 		try {
+//			msg = this.getName() + " : " + msg;
 			if (dataOutputStream != null) {
-				dataOutputStream.write(msg.getBytes());
+				dataOutputStream.write(msg);
 				dataOutputStream.flush();
 			} else {
 				mListener.OnCommunicationLost(this);

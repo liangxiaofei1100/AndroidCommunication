@@ -20,10 +20,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.dreamlink.communication.OnCommunicationListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.server.SearchClient.OnSearchListener;
 import com.dreamlink.communication.server.ServerConfig.OnServerConfigListener;
@@ -85,7 +85,7 @@ public class ServerActivity extends Activity implements OnClickListener,
 				if (TextUtils.isEmpty(message)) {
 					mNotice.showToast("Please input message");
 				} else {
-					mCommunicationManager.sendMessage(message, -1);
+					mCommunicationManager.sendMessage(message.getBytes(), -1);
 					mHistoricListAdapter.add("Send: " + message);
 					mHistoricListAdapter.notifyDataSetChanged();
 					mMessageEditText.setText("");
@@ -180,20 +180,22 @@ public class ServerActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
-	public void onReceiveMessage(byte[] msg, int id) {
+	public void onReceiveMessage(byte[] msg, SocketCommunication id) {
 		// TODO Auto-generated method stub
 		final String messageBT = new String(msg);
-		final int ID = id;
 		mHandler.obtainMessage(SocketMessage.MSG_SOCKET_MESSAGE, messageBT)
 				.sendToTarget();
+		final byte[] message = msg;
+		final SocketCommunication com = id;
 		new Thread() {
 
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
 				super.run();
-				mCommunicationManager.sendMessage(messageBT, ID);
+				mCommunicationManager.sendMessage(message, (int)com.getId());
 			}
+
 		}.start();
 	}
 
@@ -204,7 +206,7 @@ public class ServerActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
-	public void notifyConnectChanged(SocketCommunication com, boolean addFlag) {
+	public void notifyConnectChanged() {
 		// TODO Auto-generated method stub
 
 	}

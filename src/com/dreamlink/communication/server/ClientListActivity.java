@@ -3,10 +3,10 @@ package com.dreamlink.communication.server;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import com.dreamlink.communication.OnCommunicationListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.server.SearchClient.OnSearchListener;
 import com.dreamlink.communication.util.Notice;
@@ -16,6 +16,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -63,9 +64,15 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 			switch (msg.what) {
 
 			case SocketMessage.MSG_SOCKET_CONNECTED:
-				Socket socket = (Socket) msg.obj;
-				mCommunicationManager.addCommunication(socket);
-				addClient(socket.getInetAddress().getHostAddress());
+				// Socket socket = (Socket) msg.obj;
+				// mCommunicationManager.addCommunication(socket);
+				// addClient(socket.getInetAddress().getHostAddress());
+				mClients.clear();
+				for (SocketCommunication com : mCommunicationManager
+						.getCommunications()) {
+					mClients.add(com.getConnectIP().getHostAddress());
+				}
+				mAdapter.notifyDataSetChanged();
 				break;
 			case SocketMessage.MSG_SOCKET_MESSAGE:
 				String message = (String) msg.obj;
@@ -100,6 +107,8 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 		mSearchClient.setOnSearchListener(this);
 		mSearchClient.startSearch();
 		mNotice.showToast("Start Search");
+		mSockMessageHandler.obtainMessage(SocketMessage.MSG_SOCKET_CONNECTED)
+				.sendToTarget();
 	}
 
 	private void initView() {
@@ -123,10 +132,10 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	}
 
 	private void addClient(String ip) {
-		if (!mClients.contains(ip)) {
-			mClients.add(ip);
-			mAdapter.notifyDataSetChanged();
-		}
+		// if (!mClients.contains(ip)) {
+		// mClients.add(ip);
+		// mAdapter.notifyDataSetChanged();
+		// }
 	}
 
 	@Override
@@ -159,7 +168,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	}
 
 	@Override
-	public void onReceiveMessage(byte[] msg, int id) {
+	public void onReceiveMessage(byte[] msg, SocketCommunication id) {
 		// TODO Auto-generated method stub
 
 	}
@@ -171,9 +180,9 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	}
 
 	@Override
-	public void notifyConnectChanged(SocketCommunication com, boolean addFlag) {
-		if (addFlag) {
-			addClient(com.getConnectIP().getHostAddress());
-		}
+	public void notifyConnectChanged() {
+		Log.e("ArbiterLiu", "notifyConnectChanged");
+		mSockMessageHandler.obtainMessage(SocketMessage.MSG_SOCKET_CONNECTED)
+				.sendToTarget();
 	}
 }

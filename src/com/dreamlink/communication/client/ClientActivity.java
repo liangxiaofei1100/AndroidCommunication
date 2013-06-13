@@ -18,11 +18,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.dreamlink.communication.OnCommunicationListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.Search;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.client.ClientConfig.OnClientConfigListener;
@@ -90,7 +90,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 				if (TextUtils.isEmpty(message)) {
 					mNotice.showToast("Please input message");
 				} else {
-					mCommunicationManager.sendMessage(message, -1);
+					mCommunicationManager.sendMessage(message.getBytes(), -1);
 					mHistoricListAdapter.add("Send: " + message);
 					mHistoricListAdapter.notifyDataSetChanged();
 					mMessageEidtText.setText("");
@@ -207,7 +207,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
-	public void onReceiveMessage(byte[] msg, int id) {
+	public void onReceiveMessage(byte[] msg, SocketCommunication id) {
 		// TODO Auto-generated method stub
 		/** need to parse the msg */
 		String messageBT = new String(msg);
@@ -222,7 +222,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
-	public void notifyConnectChanged(SocketCommunication com, boolean addFlag) {
+	public void notifyConnectChanged() {
 		// TODO Auto-generated method stub
 		
 	}
