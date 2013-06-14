@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fileshare_label">远程服务器共享</string>
+    <string name="access_server">访问远程服务器</string>
+    <string name="no_connect">未连接</string>
+</resources>

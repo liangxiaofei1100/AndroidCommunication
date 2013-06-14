@@ -79,7 +79,6 @@ public class SocketCommunication extends Thread {
 			} else {
 				mListener.OnCommunicationLost(this);
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 			mListener.OnCommunicationLost(this);

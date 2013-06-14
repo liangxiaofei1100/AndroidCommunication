@@ -29,5 +29,14 @@
             android:text="@string/send" >
         </Button>
     </LinearLayout>
+    
+    <!-- add a button that access remote server -->
+    <Button 
+        android:id="@+id/btnAccess"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="@string/access_server"
+        />
 
 </LinearLayout>

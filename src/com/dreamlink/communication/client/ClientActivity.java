@@ -27,7 +27,9 @@ import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.client.ClientConfig.OnClientConfigListener;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
+import com.dreamlink.communication.fileshare.FileListActivity;
 import com.dreamlink.communication.server.SearchClient;
+import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
@@ -50,6 +52,10 @@ public class ClientActivity extends Activity implements OnClickListener,
 	private SocketCommunicationManager mCommunicationManager;
 
 	private SearchSever mSearchServer;
+	
+	//add by yuri
+	//add a button to access remote server
+	private Button mAccessBtn;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +73,9 @@ public class ClientActivity extends Activity implements OnClickListener,
 		mMessageEidtText = (EditText) findViewById(R.id.edtMsg);
 		mSendButton = (Button) findViewById(R.id.btnSend);
 		mHistoricList = (ListView) findViewById(R.id.lstHistoric);
+		
+		mAccessBtn = (Button) findViewById(R.id.btnAccess);
+		mAccessBtn.setVisibility(View.VISIBLE);
 
 		mHistoricListAdapter = new ArrayAdapter<String>(mContext,
 				android.R.layout.simple_list_item_1);
@@ -74,6 +83,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 
 		mMessageEidtText.setOnClickListener(this);
 		mSendButton.setOnClickListener(this);
+		mAccessBtn.setOnClickListener(this);
 	}
 
 	@Override
@@ -90,7 +100,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 				if (TextUtils.isEmpty(message)) {
 					mNotice.showToast("Please input message");
 				} else {
-					mCommunicationManager.sendMessage(message.getBytes(), -1);
+					mCommunicationManager.sendMessage(message.getBytes(), 0);
 					mHistoricListAdapter.add("Send: " + message);
 					mHistoricListAdapter.notifyDataSetChanged();
 					mMessageEidtText.setText("");
@@ -98,6 +108,13 @@ public class ClientActivity extends Activity implements OnClickListener,
 			} else {
 				mNotice.showToast("No network");
 			}
+			break;
+			
+		case R.id.btnAccess:
+			//start FileListActivity
+			Intent intent = new Intent(ClientActivity.this, FileListActivity.class);
+			startActivity(intent);
+			break;
 		}
 	}
 
@@ -209,6 +226,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 	@Override
 	public void onReceiveMessage(byte[] msg, SocketCommunication id) {
 		// TODO Auto-generated method stub
+		Log.d(TAG, "onReceiveMessage");
 		/** need to parse the msg */
 		String messageBT = new String(msg);
 		mHandler.obtainMessage(SocketMessage.MSG_SOCKET_MESSAGE, messageBT)
@@ -226,4 +244,5 @@ public class ClientActivity extends Activity implements OnClickListener,
 		// TODO Auto-generated method stub
 		
 	}
+	
 }

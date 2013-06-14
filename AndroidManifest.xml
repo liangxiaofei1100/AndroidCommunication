@@ -47,6 +47,11 @@
             android:label="Server List"
             android:screenOrientation="portrait" >
         </activity>
+        <activity
+            android:name="com.dreamlink.communication.fileshare.FileListActivity"
+            android:label="@string/fileshare_label"
+            android:screenOrientation="portrait">
+        </activity>
     </application>
 
 </manifest>

@@ -1,0 +1,109 @@
+package com.dreamlink.communication.fileshare;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+/**
+ * 描述远程服务器一个文件的各种属性 
+ */
+public class FileInfo implements Parcelable,Comparable{
+	
+	//是否为文件夹
+	public boolean isDir = false;
+	//File name
+	public String fileName = "";
+	//File Size，单位是Bytes
+	public double fileSize = 0;
+	//File Last modifed date
+	public long fileDate;
+	//文件的绝对路径
+	public String filePath;
+	
+	
+	public FileInfo(String filename){
+		this.fileName = filename;
+	}
+	
+	private FileInfo(Parcel in){
+		readFromParcel(in);
+	}
+	
+	/**
+	 * 字节单位转换
+	 */
+	public String getFormatFileSize(){
+		if ((int)fileSize == 0) {
+			return "";
+		}
+		
+		if (fileSize > 1024 * 1024) {
+			Double dsize = (double) (fileSize / (1024 * 1024));
+			//保留小数点后两位
+			return new DecimalFormat("#.00").format(dsize) + "MB";
+		}else if (fileSize > 1024) {
+			Double dsize = (double)fileSize / (1024);
+			return new DecimalFormat("#.00").format(dsize) + "KB";
+		}else {
+			return String.valueOf((int)fileSize) + " Bytes";
+		}
+	}
+	
+	/**
+	 * 将日期格式化显示
+	 */
+	public String getFormateDate(){
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String dateString = format.format(new Date(fileDate));
+		
+		return dateString;
+	}
+	
+	public static final Parcelable.Creator<FileInfo> CREATOR  = new Parcelable.Creator<FileInfo>() {
+
+		@Override
+		public FileInfo createFromParcel(Parcel source) {
+			return new FileInfo(source);
+		}
+
+		@Override
+		public FileInfo[] newArray(int size) {
+			return new FileInfo[size];
+		}
+	};
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeInt(isDir ? 1 : 0);
+		dest.writeString(fileName);
+		dest.writeDouble(fileSize);
+		dest.writeLong(fileDate);
+	}
+	
+	public void readFromParcel(Parcel in){
+		isDir = in.readInt() == 1 ? true : false;
+		fileName = in.readString();
+		fileSize = in.readDouble();
+		fileDate = in.readLong();
+	}
+
+	//使之支持排序
+	@Override
+	public int compareTo(Object another) {
+		FileInfo tmp = (FileInfo) another;
+		if (fileName.compareTo(tmp.fileName) < 0) {
+			return -1 ;
+		}else if (fileName.compareTo(tmp.fileName) > 0) {
+			return 1;
+		}
+		return 0;
+	}
+}
