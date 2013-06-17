@@ -8,19 +8,18 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * ÃèÊöÔ¶³Ì·şÎñÆ÷Ò»¸öÎÄ¼şµÄ¸÷ÖÖÊôĞÔ 
+ * æè¿°è¿œç¨‹æœåŠ¡å™¨ä¸€ä¸ªæ–‡ä»¶çš„å„ç§å±æ€§ 
  */
 public class FileInfo implements Parcelable,Comparable{
 	
-	//ÊÇ·ñÎªÎÄ¼ş¼Ğ
 	public boolean isDir = false;
 	//File name
 	public String fileName = "";
-	//File Size£¬µ¥Î»ÊÇBytes
+	//File Size,(bytes)
 	public double fileSize = 0;
 	//File Last modifed date
 	public long fileDate;
-	//ÎÄ¼şµÄ¾ø¶ÔÂ·¾¶
+	//absoulte path
 	public String filePath;
 	
 	
@@ -33,7 +32,7 @@ public class FileInfo implements Parcelable,Comparable{
 	}
 	
 	/**
-	 * ×Ö½Úµ¥Î»×ª»»
+	 * å­—èŠ‚å•ä½è½¬æ¢
 	 */
 	public String getFormatFileSize(){
 		if ((int)fileSize == 0) {
@@ -42,7 +41,7 @@ public class FileInfo implements Parcelable,Comparable{
 		
 		if (fileSize > 1024 * 1024) {
 			Double dsize = (double) (fileSize / (1024 * 1024));
-			//±£ÁôĞ¡ÊıµãºóÁ½Î»
+			//ä¿ç•™å°æ•°ç‚¹åä¸¤ä½
 			return new DecimalFormat("#.00").format(dsize) + "MB";
 		}else if (fileSize > 1024) {
 			Double dsize = (double)fileSize / (1024);
@@ -53,7 +52,7 @@ public class FileInfo implements Parcelable,Comparable{
 	}
 	
 	/**
-	 * ½«ÈÕÆÚ¸ñÊ½»¯ÏÔÊ¾
+	 * å°†æ—¥æœŸæ ¼å¼åŒ–æ˜¾ç¤º
 	 */
 	public String getFormateDate(){
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -95,7 +94,7 @@ public class FileInfo implements Parcelable,Comparable{
 		fileDate = in.readLong();
 	}
 
-	//Ê¹Ö®Ö§³ÖÅÅĞò
+	//ä½¿ä¹‹æ”¯æŒæ’åº
 	@Override
 	public int compareTo(Object another) {
 		FileInfo tmp = (FileInfo) another;

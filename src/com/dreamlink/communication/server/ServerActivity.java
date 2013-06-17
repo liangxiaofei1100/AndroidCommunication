@@ -220,29 +220,29 @@ public class ServerActivity extends Activity implements OnClickListener,
 	}
 
 	/**
-	 * ½âÎöÃüÁîÏûÏ¢
-	 * @param msg ÃüÁîÏûÏ¢
+	 * è§£æå‘½ä»¤æ¶ˆæ¯
+	 * @param msg å‘½ä»¤æ¶ˆæ¯
 	 * @return 
 	 */
 	private boolean parseMessage(byte[] msg) {
 		Log.d(TAG, "parseMessage");
 		String cmdMsg = new String(msg);
-		//·¢ËÍ»Ø´«ÏûÏ¢
+		//å‘é€å›ä¼ æ¶ˆæ¯
 		String retMsg = "";
 		
-		//ÏûÏ¢·Ö¸î
+		//æ¶ˆæ¯åˆ†å‰²
 		String[] splitMsg = cmdMsg.split(Command.AITE);
 		
-		//ÃüÁî½âÎö
+		//å‘½ä»¤è§£æ
 		if (Command.LS.equals(splitMsg[0])) {
-			//Ô­À´ÊÇÒªÎÒ¸øÄãÎÄ¼şä¯ÀÀÈ¨ÏŞ°¡
-			//¿´Ò»ÏÂ£¬ÄãÒª¿´ÄÄ¸öÄ¿Â¼µÄÎÄ¼ş
+			//åŸæ¥æ˜¯è¦æˆ‘ç»™ä½ æ–‡ä»¶æµè§ˆæƒé™å•Š
+			//çœ‹ä¸€ä¸‹ï¼Œä½ è¦çœ‹å“ªä¸ªç›®å½•çš„æ–‡ä»¶
 			String path = "";
 			if (Command.ROOT_PATH.equals(splitMsg[1])) {
 				if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 					path = Environment.getExternalStorageDirectory().getAbsolutePath();
 				}else {
-					//sdcard²»´æÔÚ£¬²»ÏÔÊ¾
+					//sdcardä¸å­˜åœ¨ï¼Œä¸æ˜¾ç¤º
 					return false;
 				}
 			}else {
@@ -254,30 +254,30 @@ public class ServerActivity extends Activity implements OnClickListener,
 			if (!file.exists()) {
 				return false;
 			}else if (file.isDirectory()) {
-				//¸ø»ØÀ¡ĞÅÏ¢Í·ÎÄ¼ş±êÊ¾
+				//ç»™å›é¦ˆä¿¡æ¯å¤´æ–‡ä»¶æ ‡ç¤º
 				retMsg = Command.LSRETN + Command.ENTER;
-				//µÚ¶ş¸ö±íÊ¾µ±Ç°Â·¾¶
+				//ç¬¬äºŒä¸ªè¡¨ç¤ºå½“å‰è·¯å¾„
 				retMsg += file.getPath() + Command.ENTER;
-				//µÚÈı¸ö±êÊ¾¸¸Â·¾¶
+				//ç¬¬ä¸‰ä¸ªæ ‡ç¤ºçˆ¶è·¯å¾„
 				retMsg += file.getParentFile().getPath() + Command.ENTER;
 				
 				File[] files = file.listFiles();
 				Log.e(TAG, "files.length=" + files.length);
 				for (int i = 0; i < files.length; i++) {
 					if (files[i].isHidden()) {
-						//Òş²ØÎÄ¼ş²»¸øÏÔÊ¾
+						//éšè—æ–‡ä»¶ä¸ç»™æ˜¾ç¤º
 					}else {
 						if (files[i].isDirectory()) {
-							//Ä¿Â¼Ò»Ö», 2013-05-04 22:22:22,<DIR>,0,Camera
-							//[×îºóĞŞ¸ÄÊ±¼ä],[Ä¿Â¼±êÊ¶],[Ä¿Â¼´óĞ¡],[Â·¾¶][Ä¿Â¼Ãû³Æ]
+							//ç›®å½•ä¸€åª, 2013-05-04 22:22:22,<DIR>,0,Camera
+							//[æœ€åä¿®æ”¹æ—¶é—´],[ç›®å½•æ ‡è¯†],[ç›®å½•å¤§å°],[è·¯å¾„][ç›®å½•åç§°]
 							retMsg += files[i].lastModified() + Command.SEPARTOR 
 									+ Command.DIR_FLAG + Command.SEPARTOR
 									+ Command.DIR_SIZE  + Command.SEPARTOR 
 									+ files[i].getAbsolutePath() + Command.SEPARTOR
 									+ files[i].getName() + Command.ENTER;
 						}else {
-							//ÎÄ¼şÒ»Ã¶£¬2013-05-04 22:22:22,,123123 Bytes,xxx.jpg
-							//[×îºóĞŞ¸ÄÊ±¼ä],[ÎÄ¼ş±êÊ¶],[ÎÄ¼ş´óĞ¡],[Â·¾¶],[ÎÄ¼şÃû³Æ]
+							//æ–‡ä»¶ä¸€æšï¼Œ2013-05-04 22:22:22,,123123 Bytes,xxx.jpg
+							//[æœ€åä¿®æ”¹æ—¶é—´],[æ–‡ä»¶æ ‡è¯†],[æ–‡ä»¶å¤§å°],[è·¯å¾„],[æ–‡ä»¶åç§°]
 							retMsg += files[i].lastModified() + Command.SEPARTOR 
 									+ Command.FILE_FLGA + Command.SEPARTOR
 									+ files[i].length()  + Command.SEPARTOR 
@@ -286,17 +286,17 @@ public class ServerActivity extends Activity implements OnClickListener,
 						}
 					}
 				}
-				//Ôö¼Ó½áÊø±êÊ¶·û
+				//å¢åŠ ç»“æŸæ ‡è¯†ç¬¦
 				retMsg += Command.END_FLAG;
 			}else {
-				//²»ÊÇÎÄ¼ş¼Ğ£¬ÔõÃ´ä¯ÀÀ
+				//ä¸æ˜¯æ–‡ä»¶å¤¹ï¼Œæ€ä¹ˆæµè§ˆ
 				return false;
 			}
 			Log.d(TAG, "retMsg=" + retMsg);
 			mCommunicationManager.sendMessage(retMsg.getBytes(), 0);
 			return true;
 		}else {
-			//ÆäËûÇé¿öÃüÁî½âÎö
+			//å…¶ä»–æƒ…å†µå‘½ä»¤è§£æ
 			return false;
 		}
 	}

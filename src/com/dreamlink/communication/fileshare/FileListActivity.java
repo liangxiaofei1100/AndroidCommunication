@@ -26,8 +26,9 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
 /**
- * Ô¶³Ì·şÎñÆ÷ÎÄ¼şÄ¿Â¼½çÃæ
+ *	è¿œç¨‹æœåŠ¡å™¨æ–‡ä»¶ç›®å½•ç•Œé¢
  * @author Yuri
+ * @deprecated use FileMainUI instead
  */
 public class FileListActivity extends ListActivity implements OnItemClickListener, OnCommunicationListener, OnItemLongClickListener{
 	private static final String TAG = "FileListActivity";
@@ -46,14 +47,14 @@ public class FileListActivity extends ListActivity implements OnItemClickListene
 	private TextView mTipText;
 	private Notice mNotice = null;
 	
-	//±£´æµ±Ç°Â·¾¶
+	//ä¿å­˜å½“å‰è·¯å¾„
 	private static String currentPath = "";
-	//±£´æÉÏÒ»¼¶Â·¾¶
+	//ä¿å­˜ä¸Šä¸€çº§è·¯å¾„
 	private static String parentPath = "";
 	
 	private static final int UPDATE_UI = 0x00;
 	
-	//ÓÉÓÚ·¢ËÍµÄÏûÏ¢ÓĞ¿ÉÄÜ¹ı´ó¶ø·Ö´Î·¢ËÍ£¬ËùÒÔ½ÓÊÕ·½ĞèÒªµÈ´ıËùÓĞ·¢ÍêÁË£¬ÔÙ½âÎö
+	//ç”±äºå‘é€çš„æ¶ˆæ¯æœ‰å¯èƒ½è¿‡å¤§è€Œåˆ†æ¬¡å‘é€ï¼Œæ‰€ä»¥æ¥æ”¶æ–¹éœ€è¦ç­‰å¾…æ‰€æœ‰å‘å®Œäº†ï¼Œå†è§£æ
 	private static String allMsg = "";
 	
 	@Override
@@ -70,12 +71,12 @@ public class FileListActivity extends ListActivity implements OnItemClickListene
 		mTipText = (TextView) findViewById(R.id.tip_text);
 		mListView = getListView();
 		
-		//ÅĞ¶ÏÊÇ·ñÁ¬½Ó·şÎñÆ÷
+		//åˆ¤æ–­æ˜¯å¦è¿æ¥æœåŠ¡å™¨
 		if (mCommunicationManager.getCommunications().isEmpty()) {
 			mTipText.setVisibility(View.VISIBLE);
 		}else {
 			mTipText.setVisibility(View.GONE);
-			//³õÊ¼»¯µÄÊ±ºò£¬ÏòÔ¶³Ì·şÎñÆ÷·¢ËÍÒ»¸öLSÃüÁî£¬¸æÖªÁĞ³ö/sdcardµÄÎÄ¼ş
+			//åˆå§‹åŒ–çš„æ—¶å€™ï¼Œå‘è¿œç¨‹æœåŠ¡å™¨å‘é€ä¸€ä¸ªLSå‘½ä»¤ï¼Œå‘ŠçŸ¥åˆ—å‡º/sdcardçš„æ–‡ä»¶
 			sendCommandMsg(Command.LS, Command.ROOT_PATH);
 		}
 		
@@ -100,21 +101,20 @@ public class FileListActivity extends ListActivity implements OnItemClickListene
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		//½øÈë×ÓÄ¿Â¼£¬µÃ·ÖÁ½²½Öè
-		//½«¸ÃÎÄ¼ş¼ĞµÄ¾ø¶ÔÂ·¾¶·¢¸ø·şÎñÆ÷£¬
-		//·şÎñÆ÷ÊÕµ½CDÃüÁî£¬²¢¸ù¾İÎÄ¼ş¼ĞµÄ¾ø¶ÔÂ·¾¶£¬ÁĞ¾Ù³ö¸ÃÎÄ¼ş¼ĞÏÂµÄËùÓĞÎÄ¼ş/ÎÄ¼ş¼Ğ£¬·µ»Ø¸ø¿Í»§¶Ë
+		//è¿›å…¥å­ç›®å½•ï¼Œå¾—åˆ†ä¸¤æ­¥éª¤
+		//å°†è¯¥æ–‡ä»¶å¤¹çš„ç»å¯¹è·¯å¾„å‘ç»™æœåŠ¡å™¨ï¼Œ
+		//æœåŠ¡å™¨æ”¶åˆ°CDå‘½ä»¤ï¼Œå¹¶æ ¹æ®æ–‡ä»¶å¤¹çš„ç»å¯¹è·¯å¾„ï¼Œåˆ—ä¸¾å‡ºè¯¥æ–‡ä»¶å¤¹ä¸‹çš„æ‰€æœ‰æ–‡ä»¶/æ–‡ä»¶å¤¹ï¼Œè¿”å›ç»™å®¢æˆ·ç«¯
 		String msg = "";
 		if (position == 0) {
-			//±íÊ¾·µ»ØÉÏÒ»¼¶
-			mNotice.showToast("·µ»ØÉÏÒ»¼¶" + parentPath);
-			//ÈçºÎµÃÖªµ±Ç°µÄpath£¿
+			//è¡¨ç¤ºè¿”å›ä¸Šä¸€çº§
+			mNotice.showToast("back to " + parentPath);
 			msg = Command.LS + Command.AITE + parentPath;
 		}else {
 			position = position -1;
 			String filePath = mList.get(position).filePath;
 			mNotice.showToast(filePath);
 			
-			//¸æËß·şÎñÆ÷ÎÒÒª½øÈëÖ¸¶¨µÄÄ¿Â¼
+			//å‘Šè¯‰æœåŠ¡å™¨æˆ‘è¦è¿›å…¥æŒ‡å®šçš„ç›®å½•
 			FileInfo fileInfo = mList.get(position);
 			if (fileInfo.isDir) {
 				msg = Command.LS + Command.AITE + fileInfo.filePath;
@@ -129,31 +129,30 @@ public class FileListActivity extends ListActivity implements OnItemClickListene
 		mList.clear();
 		String retMsg = new String(msg);
 		
-		//°´ĞĞ·Ö¸î
+		//æŒ‰è¡Œåˆ†å‰²
 		String[] splitMsg = retMsg.split(Command.ENTER);
 		
-		//¿´µ½½áÊø±êÖ¾£¬²ÅÕæµÄ½áÊø£¬·ñÔò²»½âÎö
+		//çœ‹åˆ°ç»“æŸæ ‡å¿—ï¼Œæ‰çœŸçš„ç»“æŸï¼Œå¦åˆ™ç»§ç»­
 		if (Command.END_FLAG.equals(splitMsg[splitMsg.length -1])) {
-			//½áÊøÁË
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			allMsg += retMsg;
 			String[] newSplitMsg = allMsg.split(Command.ENTER);
 			if (Command.LSRETN.equals(newSplitMsg[0])) {
 				Log.d(TAG, "=========================");
-				//Ô­À´ÊÇÄ¿Â¼ä¯ÀÀ·´À¡£¬ÄÇÃ´½ÓÏÂÀ´µÄÃ¿Ò»ĞĞ¶¼±íÊ¾Ò»¸öÎÄ¼ş£¨ÎÄ¼ş¼Ğ£©
-				//[LSRTN][µ±Ç°Â·¾¶][ÉÏÒ»¼¶Â·¾¶][ÎÄ¼ş1][ÎÄ¼ş2][ÎÄ¼ş3][ÎÄ¼ş4][...]
+				//åŸæ¥æ˜¯ç›®å½•æµè§ˆåé¦ˆï¼Œé‚£ä¹ˆæ¥ä¸‹æ¥çš„æ¯ä¸€è¡Œéƒ½è¡¨ç¤ºä¸€ä¸ªæ–‡ä»¶ï¼ˆæ–‡ä»¶å¤¹ï¼‰
+				//[LSRTN][å½“å‰è·¯å¾„][ä¸Šä¸€çº§è·¯å¾„][æ–‡ä»¶1][æ–‡ä»¶2][æ–‡ä»¶3][æ–‡ä»¶4][...]
 				currentPath = splitMsg[1];
 				parentPath = splitMsg[2];
 				
-				//ÎÄ¼ş¼Ğ
+				//folder list
 				ArrayList<FileInfo> folderList = new ArrayList<FileInfo>();
-				//ÎÄ¼ş
+				//file list
 				ArrayList<FileInfo> fileList = new ArrayList<FileInfo>();
 				
 				FileInfo fileInfo = null;
 				Log.d(TAG, "11111length=" + newSplitMsg.length);
 				for (int i = 3; i < newSplitMsg.length - 1; i++) {
-					//·Ö¸îÃ¿Ò»ĞĞ
-					Log.d(TAG, "i=" + i);
+					//åˆ†å‰²æ¯ä¸€è¡Œ
 					String[] fileStr = newSplitMsg[i].split(Command.SEPARTOR);
 					if (fileStr.length != 5) {
 						//do nothing
@@ -166,28 +165,26 @@ public class FileListActivity extends ListActivity implements OnItemClickListene
 						fileInfo.filePath = fileStr[3];
 						Log.d(TAG, "filePaht=" + fileInfo.filePath);
 						if (fileInfo.isDir) {
-							//ÎÄ¼ş¼Ğ
 							folderList.add(fileInfo);
 						}else {
-							//ÎÄ¼ş
 							fileList.add(fileInfo);
 						}
 					}
 				}
-				//ÅÅĞò
+				//sort
 				Collections.sort(folderList);
 				Collections.sort(fileList);
-				//ºÏ²¢
+				//åˆå¹¶
 				mList.addAll(folderList);
 				mList.addAll(fileList);
 				
-				//Çë0
+				//clear
 				allMsg = "";
 				
 				uihandler.sendMessage(uihandler.obtainMessage(UPDATE_UI));
 			}
 		}else {
-			//»¹Ã»½áÊø
+			//è¿˜æ²¡ç»“æŸ
 			allMsg += retMsg;
 		}
 	}

@@ -28,6 +28,7 @@ import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedLis
 import com.dreamlink.communication.client.ClientConfig.OnClientConfigListener;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
 import com.dreamlink.communication.fileshare.FileListActivity;
+import com.dreamlink.communication.fileshare.FileMainUI;
 import com.dreamlink.communication.server.SearchClient;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -112,7 +113,11 @@ public class ClientActivity extends Activity implements OnClickListener,
 			
 		case R.id.btnAccess:
 			//start FileListActivity
-			Intent intent = new Intent(ClientActivity.this, FileListActivity.class);
+//			Intent intent = new Intent(ClientActivity.this, FileListActivity.class);
+//			startActivity(intent);
+			
+			//use new file share activity
+			Intent intent = new Intent(ClientActivity.this, FileMainUI.class);
 			startActivity(intent);
 			break;
 		}

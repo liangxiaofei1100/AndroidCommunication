@@ -22,22 +22,22 @@ public class Command {
 	public static final String PUT = "PUT";
 	
 	/////////////////////////////////
-	/**ÃüÁî·Ö¸ô·û*/
+	/**command split*/
 	public static final String AITE = "@";
-	/**ÎÄ¼şÊôĞÔ·Ö¸ô·û*/
+	/**æ–‡ä»¶å±æ€§åˆ†éš”ç¬¦*/
 	public static final String SEPARTOR = ",";
-	/**Ä¿Â¼±êÊ¶*/
+	/**Dir flagÊ¶*/
 	public static final String DIR_FLAG = "<DIR>";
-	/**ÎÄ¼ş±êÊ¶*/
+	/**file flagÊ¶*/
 	public static final String FILE_FLGA = "";
-	/**Èç¹ûÊÇÄ¿Â¼£¬´óĞ¡ÖÃÎª0*/
+	/**if is dir,set the size to 0*/
 	public static final int DIR_SIZE = 0;
-	/**»»ĞĞ±êÊ¶*/
+	/**enter*/
 	public static final String ENTER = "\n";
-	/**LS·µ»ØÃüÁî±êÊ¶·û*/
+	/**LSè¿”å›å‘½ä»¤æ ‡è¯†ç¬¦*/
 	public static final String LSRETN = "lsretn";
-	/**¸ùÄ¿Â¼*/
+	/**tell server ls root dir*/
 	public static final String ROOT_PATH = "root";
-	/**½áÊø±êÊ¶·û*/
+	/**end flag*/
 	public static final String END_FLAG = "&_&";
 }
