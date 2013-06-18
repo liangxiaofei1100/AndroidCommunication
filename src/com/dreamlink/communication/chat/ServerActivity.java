@@ -1,4 +1,4 @@
-package com.dreamlink.communication.server;
+package com.dreamlink.communication.chat;
 
 import java.io.File;
 import java.net.Socket;
@@ -27,6 +27,10 @@ import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.fileshare.Command;
+import com.dreamlink.communication.server.ClientListActivity;
+import com.dreamlink.communication.server.ServerConfig;
+import com.dreamlink.communication.server.ServerStatus;
+import com.dreamlink.communication.server.SocketServerTask;
 import com.dreamlink.communication.server.SearchClient.OnSearchListener;
 import com.dreamlink.communication.server.ServerConfig.OnServerConfigListener;
 import com.dreamlink.communication.util.Log;

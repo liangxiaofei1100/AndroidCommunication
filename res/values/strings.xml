@@ -6,8 +6,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="hint_input_message">Input message</string>
     <string name="btn_send">Send</string>
-    <string name="btn_start_server">Start Server</string>
-    <string name="btn_start_client">Start Client</string>
+    <string name="btn_start_server">创建连接</string>
+    <string name="btn_start_client">加入连接</string>
     <string name="server">Server</string>
     <string name="client">Client</string>
     <string name="send">Send</string>
@@ -19,5 +19,8 @@
     <string name="menu_search">Search</string>
     <string name="btn_quit">Quit</string>
     <string name="btn_start">Start</string>
+    <string name="funcions">Funcions</string>
+    <string name="chat">Chat</string>
+    <string name="label_applist">应用程序列表</string>
 
 </resources>

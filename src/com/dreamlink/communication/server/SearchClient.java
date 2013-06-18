@@ -26,7 +26,7 @@ import com.dreamlink.communication.util.NetWorkUtil;
  * client connect server.</br>
  */
 public class SearchClient {
-	interface OnSearchListener {
+	public interface OnSearchListener {
 		/**
 		 * Found other server.
 		 * 

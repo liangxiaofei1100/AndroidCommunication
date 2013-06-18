@@ -41,7 +41,8 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 		if (server.isServerStarted()) {
 			notice.showToast("Server is already started");
 		} else {
-			showProgressDialog();
+			// remove dialog.
+			// showProgressDialog();
 		}
 	}
 

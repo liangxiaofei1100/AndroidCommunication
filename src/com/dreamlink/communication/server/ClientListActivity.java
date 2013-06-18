@@ -8,15 +8,21 @@ import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.SocketMessage;
+import com.dreamlink.communication.AppListActivity;
 import com.dreamlink.communication.server.SearchClient.OnSearchListener;
+import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -25,7 +31,7 @@ import android.widget.ListView;
 
 public class ClientListActivity extends Activity implements OnSearchListener,
 		OnClickListener, OnCommunicationListener {
-
+	private static final String TAG = "ClientListActivity";
 	private Context mContext;
 
 	private ArrayAdapter<String> mAdapter;
@@ -97,6 +103,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 		mNotice = new Notice(mContext);
 
 		initView();
+
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
 		mCommunicationManager.registered(this);
 		SocketServerTask serverTask = new SocketServerTask(mContext,
@@ -105,11 +112,64 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 
 		mSearchClient = SearchClient.getInstance(this);
 		mSearchClient.setOnSearchListener(this);
-		mSearchClient.startSearch();
 		mNotice.showToast("Start Search");
 		mSockMessageHandler.obtainMessage(SocketMessage.MSG_SOCKET_CONNECTED)
 				.sendToTarget();
+
+		NetWorkUtil.setWifiAPEnabled(mContext, true);
+		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
+		registerReceiver(mBroadcastReceiver, filter);
 	}
+
+	WifiManager mWifiManager;
+	private static final String WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED";
+	private static final String EXTRA_WIFI_AP_STATE = "wifi_state";
+	private static final int WIFI_AP_STATE_ENABLING = 12;
+	private static final int WIFI_AP_STATE_ENABLED = 13;
+	private static final int WIFI_AP_STATE_DISABLING = 10;
+	private static final int WIFI_AP_STATE_DISABLED = 11;
+	private static final int WIFI_AP_STATE_FAILED = 14;
+
+	BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			Log.d(TAG, "onReceive, action: " + action);
+			if (WIFI_AP_STATE_CHANGED_ACTION.equals(action)) {
+				handleWifiApchanged(intent.getIntExtra(EXTRA_WIFI_AP_STATE,
+						WIFI_AP_STATE_FAILED));
+			}
+		}
+
+		private void handleWifiApchanged(int wifiApState) {
+			switch (wifiApState) {
+			case WIFI_AP_STATE_ENABLING:
+				Log.d(TAG, "WIFI_AP_STATE_ENABLING");
+				break;
+			case WIFI_AP_STATE_ENABLED:
+				Log.d(TAG, "WIFI_AP_STATE_ENABLED");
+				mSearchClient.startSearch();
+				break;
+			case WIFI_AP_STATE_DISABLING:
+				Log.d(TAG, "WIFI_AP_STATE_DISABLING");
+				break;
+			case WIFI_AP_STATE_DISABLED:
+				Log.d(TAG, "WIFI_AP_STATE_DISABLED");
+				break;
+			case WIFI_AP_STATE_FAILED:
+				Log.d(TAG, "WIFI_AP_STATE_FAILED");
+				break;
+
+			default:
+				Log.d(TAG, "handleWifiApchanged, unkown state: " + wifiApState);
+				break;
+			}
+		}
+
+	};
 
 	private void initView() {
 		mListView = (ListView) findViewById(R.id.list_client);
@@ -123,12 +183,21 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 		quitButton.setOnClickListener(this);
 	}
 
+	private void unregisterReceiverSafe(BroadcastReceiver receiver) {
+		try {
+			unregisterReceiver(receiver);
+		} catch (Exception e) {
+			Log.e(TAG, e.toString());
+		}
+	}
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
 		}
+		unregisterReceiverSafe(mBroadcastReceiver);
 	}
 
 	private void addClient(String ip) {
@@ -157,7 +226,10 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.btn_start:
-			finish();
+			Intent intent = new Intent();
+			intent.putExtra(AppListActivity.EXTRA_IS_SERVER, true);
+			intent.setClass(this, AppListActivity.class);
+			startActivity(intent);
 			break;
 		case R.id.btn_quit:
 			finish();

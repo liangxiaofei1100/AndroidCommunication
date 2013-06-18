@@ -23,4 +23,7 @@ public class Search {
 	public static final int ANDROID_AP_RECEIVE_PORT = 55557;
 	/** Search request send delay time (second) */
 	public static final long ANDROID_AP_SEARCH_DELAY = 2000;
+
+	/** Set AP name to specific name for search */
+	public static final String WIFI_AP_NAME = "DreamlinkAP";
 }

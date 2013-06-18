@@ -5,12 +5,16 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.List;
 
 import com.dreamlink.communication.Search;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
@@ -78,6 +82,8 @@ public class NetWorkUtil {
 				for (Enumeration<InetAddress> enumIpAddr = intf
 						.getInetAddresses(); enumIpAddr.hasMoreElements();) {
 					InetAddress inetAddress = enumIpAddr.nextElement();
+					Log.d(TAG, "name = " + intf.getDisplayName() + ", ip: "
+							+ inetAddress.getHostAddress());
 					if (!inetAddress.isLoopbackAddress()
 							&& !inetAddress.isLinkLocalAddress()
 							&& (intf.getDisplayName().contains("wlan")
@@ -126,4 +132,35 @@ public class NetWorkUtil {
 			return false;
 		}
 	}
+
+	/**
+	 * Enable WiFi AP or close.
+	 * 
+	 * @param enabled
+	 *            ? enable AP : close AP.
+	 */
+	public static boolean setWifiAPEnabled(Context context, boolean enabled) {
+		WifiManager wifiManager = (WifiManager) context
+				.getSystemService(Context.WIFI_SERVICE);
+		if (enabled) {
+			// disable wifi.
+			wifiManager.setWifiEnabled(false);
+		}
+
+		try {
+			WifiConfiguration configuration = new WifiConfiguration();
+			configuration.SSID = Search.WIFI_AP_NAME;
+			configuration.allowedKeyManagement
+					.set(WifiConfiguration.KeyMgmt.NONE);
+			Method method = wifiManager.getClass().getMethod(
+					"setWifiApEnabled", WifiConfiguration.class, Boolean.TYPE);
+			boolean open = (Boolean) method.invoke(wifiManager, configuration,
+					enabled);
+			return open;
+		} catch (Exception e) {
+			Log.e(TAG, "Can not set WiFi AP state, " + e);
+			return false;
+		}
+	}
+
 }

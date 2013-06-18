@@ -6,7 +6,7 @@ import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 public class SearchSever {
-	interface OnSearchListener {
+	public interface OnSearchListener {
 		void onSearchSuccess(String serverIP);
 
 		void onSearchFail();

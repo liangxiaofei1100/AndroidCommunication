@@ -1,13 +1,16 @@
 package com.dreamlink.communication;
 
-import com.dreamlink.communication.client.ClientActivity;
-import com.dreamlink.communication.server.ServerActivity;
+import com.dreamlink.communication.chat.ClientActivity;
+import com.dreamlink.communication.chat.ServerActivity;
+import com.dreamlink.communication.client.ServerListActivity;
+import com.dreamlink.communication.server.ClientListActivity;
 
 import android.R.anim;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
@@ -35,10 +38,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.btn_start_server:
-			startServer();
+			searchClient();
 			break;
 		case R.id.btn_start_client:
-			startClient();
+			searchServer();
 			break;
 
 		default:
@@ -46,15 +49,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		}
 	}
 
-	private void startServer() {
+	private void searchServer() {
 		Intent intent = new Intent();
-		intent.setClass(this, ServerActivity.class);
+		intent.setClass(this, ServerListActivity.class);
 		startActivity(intent);
 	}
 
-	private void startClient() {
+	private void searchClient() {
 		Intent intent = new Intent();
-		intent.setClass(this, ClientActivity.class);
+		intent.setClass(this, ClientListActivity.class);
 		startActivity(intent);
 	}
 
