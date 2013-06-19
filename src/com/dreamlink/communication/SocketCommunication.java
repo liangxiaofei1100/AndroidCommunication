@@ -56,9 +56,13 @@ public class SocketCommunication extends Thread {
 			mListener.OnCommunicationEstablished(this);
 			while (true) {
 				if (dataInputStream.available() > 0) {
-					byte[] msg = new byte[dataInputStream.available()];
-					dataInputStream.read(msg, 0, dataInputStream.available());
-					iCommunicate.receiveMessage(msg, this);
+					synchronized (dataInputStream) {
+						int length = dataInputStream.available();
+						byte[] msg = new byte[length];
+						dataInputStream.read(msg, 0, msg.length);
+						iCommunicate.receiveMessage(msg, this);
+					}
+					
 				}
 			}
 		} catch (IOException e) {

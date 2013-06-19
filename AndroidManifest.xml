@@ -65,7 +65,7 @@
         <activity
             android:name="com.dreamlink.communication.fileshare.FileShareLauncher"
             android:label="@string/fileshare_label" >
-           <intent-filter>
+            <intent-filter>
                 <action android:name="com.dreamlink.communication.action.app" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -79,6 +79,25 @@
         <activity
             android:name="com.dreamlink.communication.fileshare.FileMainUI"
             android:label="@string/fileshare_label"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.StabilityTest"
+            android:label="StabilityTest" >
+            <intent-filter>
+                <action android:name="com.dreamlink.communication.action.app" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.StabilityTestClient"
+            android:label="StabilityTestClient"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.StabilityTestServer"
+            android:label="StabilityTestServer"
             android:screenOrientation="portrait" >
         </activity>
     </application>
