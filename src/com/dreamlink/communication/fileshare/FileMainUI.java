@@ -59,11 +59,11 @@ public class FileMainUI extends FragmentActivity{
 			Fragment fragment = null;
 			switch (position) {
 			case 0:
-				//远程服务器
+				//remote server
 				fragment = new RemoteFileFragment();
 				break;
 			case 1:
-				//本地文件
+				//local files
 				fragment = new LocalFileFragment();
 				break;
 

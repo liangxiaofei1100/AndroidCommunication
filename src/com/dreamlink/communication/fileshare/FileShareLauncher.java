@@ -4,6 +4,9 @@ import com.dreamlink.communication.AppListActivity;
 import com.dreamlink.communication.chat.ServerActivity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -20,17 +23,38 @@ public class FileShareLauncher extends Activity {
 		if (intent != null) {
 			launchActivity(intent.getBooleanExtra(
 					AppListActivity.EXTRA_IS_SERVER, false));
-			finish();
 		}
 	}
 
 	private void launchActivity(boolean isServer) {
 		Intent intent = new Intent();
 		if (isServer) {
-			intent.setClass(this, ServerActivity.class);
+//			intent.setClass(this, ServerActivity.class);
+			//start service 
+			intent.setClass(this, FileShareServerService.class);
+			startService(intent);
+			showDialog();
 		} else {
 			intent.setClass(this, FileMainUI.class);
+			startActivity(intent);
+			finish();
 		}
-		startActivity(intent);
+	}
+	
+	private void showDialog(){
+		AlertDialog.Builder dialog = new Builder(this);
+		dialog.setTitle("Service");
+		dialog.setMessage("File share service is starting...");
+		dialog.setPositiveButton("Stop", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent intent = new Intent();
+				intent.setClass(FileShareLauncher.this, FileShareServerService.class);
+				stopService(intent);
+				FileShareLauncher.this.finish();
+			}
+		});
+		dialog.setCancelable(false);
+		dialog.create().show();
 	}
 }

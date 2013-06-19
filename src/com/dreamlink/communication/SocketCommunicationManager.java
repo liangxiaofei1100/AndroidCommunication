@@ -1,5 +1,6 @@
 package com.dreamlink.communication;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
+import android.R.integer;
 import android.content.Context;
 import android.os.Handler;
 import android.sax.StartElementListener;
@@ -85,6 +87,47 @@ public class SocketCommunicationManager implements
 			}
 		} else {
 			mNotice.showToast("No connection.");
+		}
+	}
+	
+	/**
+	 * send file to client
+	 * @param file the file that need to send
+	 * @param idThread i don't know also
+	 * @author yuri
+	 */
+	public void sendMessage(File file,int idThread){
+		if (idThread == -1) {
+			return;
+		}
+		
+		if (mCommunications != null && mCommunications.size() > 0) {
+			HashSet<SocketCommunication> hash = mCommunications;
+			for (SocketCommunication communication : hash) {
+				if (communication.getId() != idThread) {
+					sendMessage(communication, file);
+				}
+			}
+		}else {
+			mNotice.showToast("No connection.");
+		}
+	}
+	
+	/**
+	 * send file 
+	 * @param communication
+	 * @param file
+	 * @author yuri
+	 */
+	public void sendMessage(SocketCommunication communication, File file){
+		if (file == null) {
+			return;
+		}
+		
+		if (communication != null) {
+			communication.sendMsg(file);
+		} else {
+			mNotice.showToast("Connection lost.");
 		}
 	}
 

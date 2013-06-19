@@ -1,15 +1,22 @@
 package com.dreamlink.communication;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.io.IOException;
+
+import com.dreamlink.communication.util.Log;
 
 import android.os.Handler;
 import android.os.Message;
 
 public class SocketCommunication extends Thread {
+	private static final String TAG = "SocketCommunication";
 	public static final String PORT = "55555";
 
 	public interface OnCommunicationChangedListener {
@@ -57,7 +64,8 @@ public class SocketCommunication extends Thread {
 			while (true) {
 				if (dataInputStream.available() > 0) {
 					byte[] msg = new byte[dataInputStream.available()];
-					dataInputStream.read(msg, 0, dataInputStream.available());
+					/////////////////////////////////////
+					dataInputStream.read(msg, 0, msg.length);
 					iCommunicate.receiveMessage(msg, this);
 				}
 			}
@@ -80,6 +88,43 @@ public class SocketCommunication extends Thread {
 				mListener.OnCommunicationLost(this);
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
+			mListener.OnCommunicationLost(this);
+		}
+	}
+	
+	/**
+	 * send file 
+	 * @param file
+	 */
+	public void sendMsg(File file){
+		Log.d(TAG, "sendMsg-->" + file.getName());
+		DataInputStream dis = null;
+		try {
+			dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+			
+			if (dataOutputStream != null) {
+				int bufferSize = 1024;
+				byte[] buf = new byte[bufferSize];
+				int read_len = 0;
+				int total = 0;
+				while ((read_len = dis.read(buf)) != -1) {
+					//for debug
+//					total += read_len;
+//					Log.d(TAG, "total=" + total);
+					//for debug
+					dataOutputStream.write(buf, 0, read_len);
+					dataOutputStream.flush();
+				}
+			}else {
+				mListener.OnCommunicationLost(this);
+			}
+		} catch (FileNotFoundException e) {
+			Log.e(TAG, "File not found exception:" + e.toString());
+			e.printStackTrace();
+			mListener.OnCommunicationLost(this);
+		} catch (IOException e) {
+			Log.e(TAG, "IO exception:" + e.toString());
 			e.printStackTrace();
 			mListener.OnCommunicationLost(this);
 		}

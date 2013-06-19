@@ -20,21 +20,23 @@ public class Command {
 	public static final String GET = "GET";
 	/** Upload file */
 	public static final String PUT = "PUT";
+	/**copy command*/
+	public static final String COPY = "copy";
 	
 	/////////////////////////////////
 	/**command split*/
 	public static final String AITE = "@";
-	/**文件属性分隔符*/
+	/**file info split*/
 	public static final String SEPARTOR = ",";
-	/**Dir flagʶ*/
+	/**Dir flag*/
 	public static final String DIR_FLAG = "<DIR>";
-	/**file flagʶ*/
+	/**file flag*/
 	public static final String FILE_FLGA = "";
 	/**if is dir,set the size to 0*/
 	public static final int DIR_SIZE = 0;
 	/**enter*/
 	public static final String ENTER = "\n";
-	/**LS返回命令标识符*/
+	/**LRETN*/
 	public static final String LSRETN = "lsretn";
 	/**tell server ls root dir*/
 	public static final String ROOT_PATH = "root";

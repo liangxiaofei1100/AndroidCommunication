@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -81,6 +82,11 @@
             android:label="@string/fileshare_label"
             android:screenOrientation="portrait" >
         </activity>
+        
+        <service 
+            android:name="com.dreamlink.communication.fileshare.FileShareServerService"
+            >
+        </service>
     </application>
 
 </manifest>

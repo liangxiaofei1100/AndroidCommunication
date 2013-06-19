@@ -1,5 +1,11 @@
 package com.dreamlink.communication.fileshare;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -7,15 +13,20 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.view.ActionMode;
+import android.view.ActionMode.Callback;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
@@ -24,10 +35,13 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
+/**
+ * list remote server /sdcard files to client
+ * @author yuri
+ */
 public class RemoteFileFragment extends Fragment implements OnCommunicationListener, 
 							OnItemClickListener{
 	private static final String TAG = "RemoteFileFragment";
@@ -47,15 +61,33 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 	
 	private Notice mNotice = null;
 	
-	//保存当前路径
+	//save current path
 	private  String currentPath = "";
-	//保存上一级路径
+	//save parent path
 	private  String parentPath = "";
 	
 	private static final int UPDATE_UI = 0x00;
 	
-	//由于发送的消息有可能过大而分次发送，所以接收方需要等待所有发完了，再解析
-	private static String allMsg = "";
+	private ActionMode mActionMode = null;
+	private RemoteActionModeCallBack mActionModeCallBack = new RemoteActionModeCallBack();
+	
+	/**record the file that need copy*/
+	public FileInfo currentCopyFile = null;
+	public static String copyPath = "";
+	public  String currentFileNmae = "";
+	private DataOutputStream mFileOutStream = null;
+	private FileOutputStream fos = null;
+	
+	private int copyLen = 0;
+	
+	/**file transfer progress dialog*/
+	private ProgressDialog mFileTransferDialog = null;
+	/**file list progress dialog*/
+	private ProgressDialog mFileListDialog = null;
+	
+	//test var
+	private long start_time = 0;
+	private long end_time = 0;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -70,15 +102,16 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 		mListView = (ListView) rootView.findViewById(R.id.file_listview);
 		mTipView = (TextView) rootView.findViewById(R.id.tip_text);
 		
-		// 判断是否连接服务器
+		// is connected to server
 		if (mCommunicationManager.getCommunications().isEmpty()) {
 			mTipView.setVisibility(View.VISIBLE);
 			mListView.setVisibility(View.GONE);
 		} else {
 			mTipView.setVisibility(View.GONE);
 			mListView.setVisibility(View.VISIBLE);
-			//初始化的时候，向远程服务器发送一个LS命令，告知列出/sdcard的文件
-			sendCommandMsg(Command.LS, Command.ROOT_PATH);
+			//tell server that i want look u sdcard files
+			String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
+			sendCommandMsg(cmdMsg);
 		}
 		
 		mAdapter = new FileListAdapter(mContext, mList);
@@ -96,90 +129,150 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 	 * @param cmd command
 	 * @param path file path
 	 */
-	public void sendCommandMsg(String cmd, String path){
-		String accessMsg = cmd + Command.AITE + path;
-		mCommunicationManager.sendMessage(accessMsg.getBytes(), 0);
+	public void sendCommandMsg(String cmdMsg){
+		if (mFileListDialog == null) {
+			mFileListDialog = new ProgressDialog(mContext);
+			mFileListDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			mFileListDialog.setIndeterminate(true);
+			mFileListDialog.setCancelable(false);
+			mFileListDialog.show();
+		}
+		mCommunicationManager.sendMessage(cmdMsg.getBytes(), 0);
 	}
 
+	private static String wholeReceiveMsg = "";
 	@Override
 	public void onReceiveMessage(byte[] msg, SocketCommunication ip) {
-		Log.d(TAG, "onReceiveMessage");
-		// Clear File array list
-		mList.clear();
+		Log.d(TAG, "onReceiveMessage:" + msg.length);
+		
+		if (currentCopyFile != null) {
+			//receive file from server
+			try {
+				copyLen += msg.length;
+				if (mFileTransferDialog != null) {
+					//update progresDialog
+					mFileTransferDialog.setProgress(copyLen);
+				}else {
+					Log.e(TAG, "mProgressDialog is null");
+				}
 
-		// convert byte[] to String
-		String ret_msg = new String(msg);
+				Log.d(TAG, "copyLen=" + copyLen);
+				Log.d(TAG, "totalSize=" + (int)currentCopyFile.fileSize);
+				//use FileOutPutStream do not use DataOutPutStrem
+				if (fos != null) {
+					fos.write(msg);
+					fos.flush();
+				} else {
+					Log.e(TAG, "fos is null");
+				}
+				
+				//receive over,close fileoutputstream
+				if (copyLen == ((int)currentCopyFile.fileSize)) {
+					///////////for test/////////////
+					end_time = System.currentTimeMillis();
+					Log.d(TAG, "end copy time:"+ end_time);
+					//bytes/second
+					long bytes_per = (long) (currentCopyFile.fileSize /((end_time - start_time) / 1000));
+					Log.d(TAG, "bytes/per:" + bytes_per);
+					///////////for test/////////////
+					
+					//********clear begin***********//
+					fos.close();
+					fos = null;
+					
+					currentCopyFile = null;
+					copyLen = 0;
+					
+					start_time = 0;
+					end_time = 0;
+					
+					if (mFileTransferDialog != null) {
+						mFileTransferDialog.cancel();
+					}
+					//********clear end***********//
+				}
+				
+			} catch (Exception e) {
+				Log.e(TAG, "Receive error:" + e.toString());
+				e.printStackTrace();
+			}
+		}else {
+			// Clear File array list
+			mList.clear();
+			
+			// convert byte[] to String
+			String ret_msg = new String(msg);
 
-		// 按行分割
-		// 第一行为命令标志，最后一行为结束标志־
-		String[] splitMsg = ret_msg.split(Command.ENTER);
+			// split msg
+			//the first line is command flag
+			//the last line is end flag
+			String[] splitMsg = ret_msg.split(Command.ENTER);
 
-		// 看到结束标志，才真的结束，否则不解析
-		if (Command.END_FLAG.equals(splitMsg[splitMsg.length - 1])) {
-			// 结束了
-			allMsg += ret_msg;
-			String[] newSplitMsg = allMsg.split(Command.ENTER);
-			if (Command.LSRETN.equals(newSplitMsg[0])) {
-				Log.d(TAG, "=========================");
-				// 原来是目录浏览反馈，那么接下来的每一行都表示一个文件（文件夹）
-				// [LSRTN][当前路径][上一级路径][文件1][文件2][文件3][文件4][...]
-				currentPath = splitMsg[1];
-				parentPath = splitMsg[2];
+			// 看到结束标志，才真的结束，否则不解析
+			if (Command.END_FLAG.equals(splitMsg[splitMsg.length - 1])) {
+				wholeReceiveMsg += ret_msg;
+				String[] newSplitMsg = wholeReceiveMsg.split(Command.ENTER);
+				if (Command.LSRETN.equals(newSplitMsg[0])) {
+					//LSRETN, is ls command return msg
+					//every line is a folder or file
+					//command format:[LSRTN][...]
+					currentPath = splitMsg[1];
+					parentPath = splitMsg[2];
 
-				//folder list
-				ArrayList<FileInfo> folderList = new ArrayList<FileInfo>();
-				//file list
-				ArrayList<FileInfo> fileList = new ArrayList<FileInfo>();
+					//folder list
+					ArrayList<FileInfo> folderList = new ArrayList<FileInfo>();
+					//file list
+					ArrayList<FileInfo> fileList = new ArrayList<FileInfo>();
 
-				FileInfo fileInfo = null;
-				Log.d(TAG, "11111length=" + newSplitMsg.length);
-				for (int i = 3; i < newSplitMsg.length - 1; i++) {
-					// 分割每一行
-					String[] fileStr = newSplitMsg[i].split(Command.SEPARTOR);
-					if (fileStr.length != 5) {
-						// do nothing
-					} else {
-						fileInfo = new FileInfo(fileStr[4]);
-						fileInfo.fileDate = Long.parseLong(fileStr[0]);
-						fileInfo.isDir = Command.DIR_FLAG.equals(fileStr[1]);
-						fileInfo.fileSize = Double.parseDouble(fileStr[2]);
-						fileInfo.filePath = fileStr[3];
-						Log.d(TAG, "filePath=" + fileInfo.filePath);
-						if (fileInfo.isDir) {
-							folderList.add(fileInfo);
+					FileInfo fileInfo = null;
+					Log.d(TAG, "files nums:" + newSplitMsg.length);
+					for (int i = 3; i < newSplitMsg.length - 1; i++) {
+						// split again
+						String[] fileStr = newSplitMsg[i].split(Command.SEPARTOR);
+						if (fileStr.length != 5) {
+							// do nothing
 						} else {
-							fileList.add(fileInfo);
+							fileInfo = new FileInfo(fileStr[4]);
+							fileInfo.fileDate = Long.parseLong(fileStr[0]);
+							fileInfo.isDir = Command.DIR_FLAG.equals(fileStr[1]);
+							fileInfo.fileSize = Double.parseDouble(fileStr[2]);
+							fileInfo.filePath = fileStr[3];
+//							Log.d(TAG, "filePath=" + fileInfo.filePath);
+							if (fileInfo.isDir) {
+								folderList.add(fileInfo);
+							} else {
+								fileList.add(fileInfo);
+							}
 						}
 					}
+					// sort
+					Collections.sort(folderList);
+					Collections.sort(fileList);
+					// combine
+					mList.addAll(folderList);
+					mList.addAll(fileList);
+
+					// clear 0
+					wholeReceiveMsg = "";
+
+					uihandler.sendMessage(uihandler.obtainMessage(UPDATE_UI));
 				}
-				// sort
-				Collections.sort(folderList);
-				Collections.sort(fileList);
-				// 合并
-				mList.addAll(folderList);
-				mList.addAll(fileList);
-
-				// clear 0
-				allMsg = "";
-
-				uihandler.sendMessage(uihandler.obtainMessage(UPDATE_UI));
+			} else {
+				// not over yet
+				wholeReceiveMsg += ret_msg;
 			}
-		} else {
-			// 还没结束
-			allMsg += ret_msg;
 		}
+		
 	}
 
 	@Override
 	public void onSendResult(byte[] msg) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void notifyConnectChanged() {
 		// TODO Auto-generated method stub
-		
 	}
 	
 	private Handler uihandler = new Handler(){
@@ -188,6 +281,10 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 			case UPDATE_UI:
 				//update ui
 				Log.d(TAG, "update remote file ui ");
+				if (mFileListDialog != null) {
+					mFileListDialog.cancel();
+					mFileListDialog = null;
+				}
 				mAdapter.notifyDataSetChanged();
 				break;
 
@@ -199,52 +296,141 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		// 进入子目录，得分两步骤
-		// 将该文件夹的绝对路径发给服务器，
-		// 服务器收到CD命令，并根据文件夹的绝对路径，列举出该文件夹下的所有文件/文件夹，返回给客户端
+		//click to into subdirectory
+		//first you need send a command to tell server i want to ls the path
+		//server return all the folders and files about the path to client
+		//ps:english is so so
 		String msg = "";
 		if (position == 0) {
-			// 表示返回上一级
-			mNotice.showToast("back to " + parentPath);
+			//click to back to parent path
+//			mNotice.showToast("back to " + parentPath);
 			msg = Command.LS + Command.AITE + parentPath;
 		} else {
+			//why - 1?beacuse the first position is back button.
 			position = position - 1;
-			String filePath = mList.get(position).filePath;
-			mNotice.showToast(filePath);
+//			String filePath = mList.get(position).filePath;
+//			mNotice.showToast(filePath);
 
-			// 告诉服务器我要进入指定的目录
+			//tell server that the path you want into
 			FileInfo fileInfo = mList.get(position);
 			if (fileInfo.isDir) {
 				msg = Command.LS + Command.AITE + fileInfo.filePath;
 			}
 		}
-		mCommunicationManager.sendMessage(msg.getBytes(), 0);
+		sendCommandMsg(msg);
 	}
 	
+	private static final int MENU_COPY = 0x01;
+	/**context menu*/
 	class ListOnCreateContext implements OnCreateContextMenuListener{
-
 		@Override
 		public void onCreateContextMenu(ContextMenu menu, View v,
 				ContextMenuInfo menuInfo) {
-			// TODO Auto-generated method stub
-			menu.setHeaderTitle("OP");
-			menu.add(0, 1, 0, "Copy");
+			menu.setHeaderTitle(R.string.operitor_title);
+			menu.add(0, MENU_COPY, 0, "Copy");
 		}
 	}
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
 		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
+		int position = menuInfo.position;
+		FileInfo fileInfo = null;
 		switch (item.getItemId()) {
-		case 1:
-			mNotice.showToast("context menu-->" + menuInfo.position);
-			mListView.startActionMode(new ActionModeCallBack(mContext));
+		case MENU_COPY:
+			
+			if (position == 0) {
+				mNotice.showToast("invalid");
+			}else {
+				fileInfo = mList.get(position -1);
+				if (fileInfo.isDir) {
+					mNotice.showToast("not support dir,now(english is so so)");
+				}else {
+					//tell server i want this file
+					currentCopyFile = fileInfo;
+					copyPath = fileInfo.filePath;
+					currentFileNmae = fileInfo.fileName;
+					
+					mActionMode = mListView.startActionMode(mActionModeCallBack);
+				}
+			}
 			break;
 
 		default:
 			break;
 		}
 		return super.onContextItemSelected(item);
+	}
+	
+	/**
+	 * Remote Action Mode Call Back
+	 */
+	class RemoteActionModeCallBack implements Callback{
+		@Override
+		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+			switch (item.getItemId()) {
+			case R.id.file_paste:
+				mActionMode.finish();
+				
+				//start copy
+				mNotice.showToast("start copy " + currentCopyFile.fileName);
+				
+				try {
+					File file = new File(LocalFileFragment.mCurrentPath + "/" + currentCopyFile.fileName);
+					if (!file.exists()) {
+						file.createNewFile();
+					}
+					Log.d(TAG, "Current copy file is " + file.getAbsolutePath());
+					fos = new FileOutputStream(file);
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "file error:" + e.toString());
+					e.printStackTrace();
+				} catch (IOException e) {
+					Log.e(TAG, "IO error:" + e.toString());
+					e.printStackTrace();
+				}
+				mFileTransferDialog = new ProgressDialog(mContext);
+				mFileTransferDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+				mFileTransferDialog.setMax((int) currentCopyFile.fileSize);
+				//set it false that can update progress
+				mFileTransferDialog.setIndeterminate(false);
+				mFileTransferDialog.setCancelable(false);
+				mFileTransferDialog.show();
+				
+				start_time = System.currentTimeMillis();
+				Log.d(TAG, "start copy time:"+ start_time);
+				
+				//send msg to server that i want this file
+				String copyCmd = Command.COPY + Command.AITE + currentCopyFile.filePath;
+				mCommunicationManager.sendMessage(copyCmd.getBytes(), 0);
+				break;
+				
+			case R.id.menu_cancel:
+				mode.finish();
+				break;
+				
+			default:
+				break;
+			}
+			return true;
+		}
+
+		@Override
+		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			MenuInflater menuInflater = mode.getMenuInflater();
+	        menuInflater.inflate(R.menu.file_menu, menu);
+			return true;
+		}
+
+		@Override
+		public void onDestroyActionMode(ActionMode mode) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+			// TODO Auto-generated method stub
+			return true;
+		}
 	}
 }

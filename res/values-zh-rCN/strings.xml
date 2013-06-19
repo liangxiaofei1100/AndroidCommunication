@@ -7,4 +7,6 @@
     <string name="section_remote">远程服务器</string>
     <string name="section_local">本地文件</string>
     <string name="menu_paste">粘贴</string>
+    
+    <string name="operitor_title">操作</string>
 </resources>

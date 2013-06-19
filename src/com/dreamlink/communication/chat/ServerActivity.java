@@ -299,6 +299,14 @@ public class ServerActivity extends Activity implements OnClickListener,
 			Log.d(TAG, "retMsg=" + retMsg);
 			mCommunicationManager.sendMessage(retMsg.getBytes(), 0);
 			return true;
+		}else if (Command.COPY.equals(splitMsg[0])) {
+			//copy file command
+			Log.d(TAG, "OK,I got copy command");
+			String copypath = splitMsg[1];
+			File file = new File(copypath);
+			mCommunicationManager.sendMessage(file, 0);
+			
+			return true;
 		}else {
 			//其他情况命令解析
 			return false;

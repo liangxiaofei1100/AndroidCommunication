@@ -85,34 +85,6 @@ public class LocalFileFragment extends Fragment implements OnItemClickListener, 
 		return rootView;
 	}
 	
-	@Override
-	public void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-		Log.d(TAG, "onResume");
-	}
-	
-	@Override
-	public void onHiddenChanged(boolean hidden) {
-		// TODO Auto-generated method stub
-		super.onHiddenChanged(hidden);
-		Log.d(TAG, "onHiddenChanged");
-	}
-	
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		super.onViewCreated(view, savedInstanceState);
-		Log.d(TAG, "onViewCreated");
-	}
-	
-	@Override
-	public void onViewStateRestored(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		super.onViewStateRestored(savedInstanceState);
-		Log.d(TAG, "onViewStateRestored");
-	}
-	
 	public void browserTo(File file){
 		if (file.isDirectory()) {
 			mCurrentPath = file.getAbsolutePath();
@@ -177,9 +149,8 @@ public class LocalFileFragment extends Fragment implements OnItemClickListener, 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		// TODO Auto-generated method stub
-		mListView.startActionMode(mActionModeCallBack);
-		return true;
+//		mListView.startActionMode(mActionModeCallBack);
+		return false;
 	}
 
 	@Override
@@ -199,10 +170,8 @@ public class LocalFileFragment extends Fragment implements OnItemClickListener, 
 	}
 	
 	protected class ActionModeCallBack implements Callback{
-
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			// TODO Auto-generated method stub
 			switch (item.getItemId()) {
 			case R.id.file_paste:
 				//start copy
@@ -229,7 +198,6 @@ public class LocalFileFragment extends Fragment implements OnItemClickListener, 
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
 			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
@@ -237,6 +205,5 @@ public class LocalFileFragment extends Fragment implements OnItemClickListener, 
 			// TODO Auto-generated method stub
 			return true;
 		}
-		
 	}
 }

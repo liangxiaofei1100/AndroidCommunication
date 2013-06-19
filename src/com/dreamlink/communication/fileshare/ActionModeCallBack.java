@@ -10,6 +10,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+/**
+ * @deprecated use RemoteActionModeCallBack instead
+ * @author yuri
+ */
 public class ActionModeCallBack implements Callback{
 	private Notice mNotice = null;
 	

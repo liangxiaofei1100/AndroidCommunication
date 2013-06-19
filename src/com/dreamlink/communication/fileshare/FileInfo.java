@@ -8,7 +8,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * 描述远程服务器一个文件的各种属性 
+ *description a file infos 
  */
 public class FileInfo implements Parcelable,Comparable{
 	
@@ -32,7 +32,7 @@ public class FileInfo implements Parcelable,Comparable{
 	}
 	
 	/**
-	 * 字节单位转换
+	 * bytes convert
 	 */
 	public String getFormatFileSize(){
 		if ((int)fileSize == 0) {
@@ -41,7 +41,6 @@ public class FileInfo implements Parcelable,Comparable{
 		
 		if (fileSize > 1024 * 1024) {
 			Double dsize = (double) (fileSize / (1024 * 1024));
-			//保留小数点后两位
 			return new DecimalFormat("#.00").format(dsize) + "MB";
 		}else if (fileSize > 1024) {
 			Double dsize = (double)fileSize / (1024);
@@ -52,7 +51,7 @@ public class FileInfo implements Parcelable,Comparable{
 	}
 	
 	/**
-	 * 将日期格式化显示
+	 * date format
 	 */
 	public String getFormateDate(){
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -94,7 +93,7 @@ public class FileInfo implements Parcelable,Comparable{
 		fileDate = in.readLong();
 	}
 
-	//使之支持排序
+	//make it can sort
 	@Override
 	public int compareTo(Object another) {
 		FileInfo tmp = (FileInfo) another;
