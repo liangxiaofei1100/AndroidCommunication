@@ -9,10 +9,10 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.dreamlink.communication.Search;
 import com.dreamlink.communication.server.SearchClient.OnSearchListener;
-import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 /**

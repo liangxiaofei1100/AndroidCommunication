@@ -7,10 +7,10 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.dreamlink.communication.Search;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
-import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 public class SearchSeverLanAndroidAP implements Runnable {

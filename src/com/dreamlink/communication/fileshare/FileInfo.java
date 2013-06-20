@@ -35,10 +35,6 @@ public class FileInfo implements Parcelable,Comparable{
 	 * bytes convert
 	 */
 	public String getFormatFileSize(){
-		if ((int)fileSize == 0) {
-			return "";
-		}
-		
 		if (fileSize > 1024 * 1024) {
 			Double dsize = (double) (fileSize / (1024 * 1024));
 			return new DecimalFormat("#.00").format(dsize) + "MB";

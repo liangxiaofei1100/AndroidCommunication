@@ -51,6 +51,7 @@ public class FileListAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
+		System.out.println("mData.size=" + mData.size());
 		View view = null;
 		ViewHolder holder = null;
 		
@@ -72,21 +73,18 @@ public class FileListAdapter extends BaseAdapter {
 			holder = (ViewHolder) view.getTag();
 		}
 		
+		String size = mData.get(position -1).getFormatFileSize();
+		String date = mData.get(position -1).getFormateDate();
+		
 		if (mData.get(position - 1).isDir) {
 			holder.iconView.setImageResource(R.drawable.folder);
+			holder.fileInfoText.setText(date);
 		}else {
 			holder.iconView.setImageResource(R.drawable.file);
+			holder.fileInfoText.setText(size + " | " + date);
 		}
 		
 		holder.filenameText.setText(mData.get(position -1).fileName);
-		
-		String size = mData.get(position -1).getFormatFileSize();
-		String date = mData.get(position -1).getFormateDate();
-		if ("".equals(size)) {
-			holder.fileInfoText.setText(date);
-		}else {
-			holder.fileInfoText.setText(size + " | " + date);
-		}
 		
 		return view;
 	}

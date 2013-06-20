@@ -78,11 +78,12 @@ public class SocketCommunicationManager implements
 		if (idThread == -1) {
 			return;
 		}
-		if (mCommunications != null && mCommunications.size() > 0) {
-			HashSet<SocketCommunication> hash = mCommunications;
-			for (SocketCommunication communication : hash) {
-				if (communication.getId() != idThread) {
-					sendMessage(communication, message);
+		if (mCommunications != null) {
+			synchronized (mCommunications) {
+					for (SocketCommunication communication : mCommunications) {
+						if (communication.getId() != idThread) {
+							sendMessage(communication, message);
+						}
 				}
 			}
 		} else {
