@@ -4,11 +4,13 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.Search;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.SearchClient.OnSearchListener;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -116,7 +118,8 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 		mSockMessageHandler.obtainMessage(SocketMessage.MSG_SOCKET_CONNECTED)
 				.sendToTarget();
 
-		NetWorkUtil.setWifiAPEnabled(mContext, true);
+		NetWorkUtil.setWifiAPEnabled(mContext,
+				Search.WIFI_AP_NAME + UserHelper.getUserName(mContext), true);
 		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
