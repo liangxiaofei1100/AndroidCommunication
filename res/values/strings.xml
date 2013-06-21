@@ -22,5 +22,6 @@
     <string name="funcions">Funcions</string>
     <string name="chat">Chat</string>
     <string name="label_applist">应用程序列表</string>
+    <string name="wifiP2p_on">开启Wifi-Driect</string>
 
 </resources>
