@@ -1,9 +1,6 @@
 package com.dreamlink.communication.client;
 
-import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.dreamlink.communication.R;
@@ -19,19 +16,16 @@ import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 import com.dreamlink.communication.wifip2p.WifiDirectManager;
+import com.dreamlink.communication.wifip2p.WifiDirectManager.ManagerP2pDeivce;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver;
-import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
@@ -40,6 +34,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -57,7 +52,7 @@ import android.widget.Toast;
 
 @TargetApi(14)
 public class ServerListActivity extends Activity implements OnSearchListener,
-		OnItemClickListener, OnClickListener, WifiDirectDeviceNotify {
+		OnItemClickListener, OnClickListener, ManagerP2pDeivce {
 	private static final String TAG = "ServerListActivity";
 	private Context mContext;
 
@@ -74,8 +69,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	private WifiDirectManager mWifiDirectManager;
 	private WifiDirectReciver wifiDirectReciver;
 	private WifiManager mWifiManager;
-	private WifiP2pInfo info;
-
+	private IntentFilter intentFilter;
 	private static final int MSG_SEARCH_SUCCESS = 1;
 	private static final int MSG_SEARCH_FAIL = 2;
 	private ProgressDialog progressDialog;
@@ -147,7 +141,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		mWiFiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		mWiFiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 		mWiFiFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-
+		initReceiver();
 	}
 
 	/**
@@ -217,11 +211,11 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		case R.id.btn_start:
 			if (mWifiDirectManager != null) {
 				mWifiDirectManager.stopSearch();
+				wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
 				mWifiDirectManager.unRegisterObserver(this);
-				this.unregisterReceiver(mWifiDirectManager.mWifiDirectRecevier);
 				mWifiDirectManager = null;
 			}
-			launchFunction(false);
+			launchFunction();
 			break;
 		case R.id.btn_quit:
 			finish();
@@ -231,13 +225,10 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		}
 	}
 
-	private void launchFunction(boolean WifiP2p) {
+	private void launchFunction() {
 		Intent intent = new Intent();
 		intent.putExtra(AppListActivity.EXTRA_IS_SERVER, false);
 		intent.setClass(this, AppListActivity.class);
-		if (WifiP2p) {
-			intent.putExtra("WifiP2p", WifiP2p);
-		}
 		startActivity(intent);
 	}
 
@@ -253,6 +244,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	protected void onResume() {
 		super.onResume();
 		forWifiP2p(false);
+		this.registerReceiver(wifiDirectReciver, intentFilter);
 		registerReceiver(mWifiBroadcastReceiver, mWiFiFilter);
 	}
 
@@ -260,6 +252,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	protected void onPause() {
 		super.onPause();
 		unregisterReceiverSafe(mWifiBroadcastReceiver);
+		this.unregisterReceiver(wifiDirectReciver);
 	}
 
 	@Override
@@ -269,9 +262,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			mSearchServer.stopSearch();
 		}
 		if (mWifiDirectManager != null) {
-			this.unregisterReceiver(wifiDirectReciver);
 			mWifiDirectManager.unRegisterObserver(this);
 			mWifiDirectManager.stopSearch();
+			wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
 			mWifiDirectManager = null;
 		}
 		unregisterReceiverSafe(mWifiBroadcastReceiver);
@@ -297,7 +290,13 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			long arg3) {
 		String ip = mServer.get(position);
 		connectServer(ip);
-		launchFunction(false);
+		if (mWifiDirectManager != null) {
+			mWifiDirectManager.stopSearch();
+			wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
+			mWifiDirectManager.unRegisterObserver(this);
+			mWifiDirectManager = null;
+		}
+		launchFunction();
 	}
 
 	private void connectServer(String ip) {
@@ -391,76 +390,26 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		}
 	}
 
-	@TargetApi(14)
-	@SuppressLint({ "NewApi", "NewApi" })
-	@Override
-	public void notifyDeviceChange(ArrayList<WifiP2pDevice> serverList) {
-		// TODO Auto-generated method stub
-		ArrayList<String> temp = new ArrayList<String>();
-		if (serverList != null) {
-			deviceList = serverList;
-			for (WifiP2pDevice device : serverList) {
-				temp.add(device.deviceName);
-			}
-			mHandler.obtainMessage(90, temp).sendToTarget();
-		}
-	}
-
 	private void forWifiP2p(boolean flag) {
 		if (mWifiManager.isWifiEnabled()) {
 			if (Build.VERSION.SDK_INT >= 14) {
-				if (mWifiDirectManager != null) {
-					mWifiDirectManager.stopSearch();
-					mWifiDirectManager.unRegisterObserver(this);
-					this.unregisterReceiver(mWifiDirectManager.mWifiDirectRecevier);
-					mWifiDirectManager = null;
-				}
-				mWifiDirectManager = new WifiDirectManager(this, flag);
-				wifiDirectReciver = mWifiDirectManager.mWifiDirectRecevier;
-				this.registerReceiver(wifiDirectReciver,
-						mWifiDirectManager.mIntentFilter);
-				mWifiDirectManager.registerObserver(this);
-				new Thread() {
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-						super.run();
-						mWifiDirectManager.discover();
+				if (Build.VERSION.SDK_INT >= 14) {
+					if (mWifiDirectManager != null) {
+						mWifiDirectManager.setServerFlag(flag);
+						return;
 					}
-				}.start();
-			}
-		}
-	}
-
-	@SuppressLint({ "NewApi", "NewApi" })
-	@Override
-	public void wifiP2pConnected(WifiP2pInfo info) {
-		// TODO Auto-generated method stub
-		Log.e("ArbiterLiu", "" + info.isGroupOwner);
-		if (this.info == null) {
-			this.info = info;
-
-			if (info.isGroupOwner) {
-				SocketServerTask serverTask = new SocketServerTask(mContext,
-						mCommunicationManager);
-				serverTask.execute(new String[] { SocketCommunication.PORT });
-			} else {
-				SocketClientTask clientTask = new SocketClientTask(mContext,
-						mCommunicationManager,
-						SocketMessage.MSG_SOCKET_CONNECTED);
-				clientTask.execute(new String[] {
-						info.groupOwnerAddress.getHostAddress(),
-						SocketCommunication.PORT });
-				if (mWifiDirectManager != null) {
-					mWifiDirectManager.stopSearch();
-					mWifiDirectManager.unRegisterObserver(this);
-					this.unregisterReceiver(mWifiDirectManager.mWifiDirectRecevier);
-					mWifiDirectManager = null;
+					mWifiDirectManager = new WifiDirectManager(this, flag);
+					mWifiDirectManager.registerObserver(this);
+					wifiDirectReciver.registerObserver(mWifiDirectManager);
+					new Thread() {
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							super.run();
+							mWifiDirectManager.discover();
+						}
+					}.start();
 				}
-				if (progressDialog != null && progressDialog.isShowing()) {
-					progressDialog.dismiss();
-				}
-				launchFunction(true);
 			}
 		}
 	}
@@ -479,12 +428,6 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// TODO Auto-generated method stub
 		if (mWifiManager.isWifiEnabled()) {
-			if (mWifiDirectManager != null) {
-				mWifiDirectManager.stopSearch();
-				mWifiDirectManager.unRegisterObserver(this);
-				this.unregisterReceiver(mWifiDirectManager.mWifiDirectRecevier);
-				mWifiDirectManager = null;
-			}
 			forWifiP2p(true);
 			// directListView.setVisibility(View.GONE);
 			directList.clear();
@@ -495,4 +438,56 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public void deviceChange(ArrayList<WifiP2pDevice> serverList) {
+		// TODO Auto-generated method stub
+		ArrayList<String> temp = new ArrayList<String>();
+		if (serverList != null) {
+			deviceList = serverList;
+			for (WifiP2pDevice device : serverList) {
+				temp.add(device.deviceName);
+			}
+			mHandler.obtainMessage(90, temp).sendToTarget();
+		}
+	}
+
+	@Override
+	public void hasConnect(WifiP2pInfo info) {
+		// TODO Auto-generated method stub
+		Log.e("ArbiterLiu", "" + info.isGroupOwner);
+
+		if (info.isGroupOwner) {
+			SocketServerTask serverTask = new SocketServerTask(mContext,
+					mCommunicationManager);
+			serverTask.execute(new String[] { SocketCommunication.PORT });
+		} else {
+			SocketClientTask clientTask = new SocketClientTask(mContext,
+					mCommunicationManager, SocketMessage.MSG_SOCKET_CONNECTED);
+			clientTask.execute(new String[] {
+					info.groupOwnerAddress.getHostAddress(),
+					SocketCommunication.PORT });
+			if (mWifiDirectManager != null) {
+				mWifiDirectManager.stopSearch();
+				mWifiDirectManager.unRegisterObserver(this);
+				wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
+				mWifiDirectManager = null;
+			}
+			if (progressDialog != null && progressDialog.isShowing()) {
+				progressDialog.dismiss();
+			}
+			launchFunction();
+		}
+	}
+
+	private void initReceiver() {
+		intentFilter = new IntentFilter();
+		intentFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+		intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+		intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+		intentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+		intentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+		wifiDirectReciver = new WifiDirectReciver();
+	}
 }

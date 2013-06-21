@@ -1,80 +1,58 @@
 package com.dreamlink.communication.wifip2p;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import org.apache.http.conn.ManagedClientConnection;
+import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.widget.Toast;
-
-import com.dreamlink.communication.SocketCommunicationManager;
+import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
+import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
 
 @TargetApi(14)
-public class WifiDirectManager {
+public class WifiDirectManager implements WifiDirectDeviceNotify {
 	@SuppressLint("NewApi")
 	private WifiP2pManager mWifiP2pManager;
 	private WifiManager mWifiManager;
-	public IntentFilter mIntentFilter;
 	private boolean serverFlag = false;
 	public Channel channel;
-	private Context context;
-	public WifiDirectReciver mWifiDirectRecevier;
-	private SocketCommunicationManager communicationManager;
+	private ArrayList<ManagerP2pDeivce> observerList;
 
-	public WifiDirectManager(Context context, boolean flag) {
+	public interface ManagerP2pDeivce {
+		public void deviceChange(ArrayList<WifiP2pDevice> list);
+
+		public void hasConnect(WifiP2pInfo info);
+	};
+
+	public WifiDirectManager(Context context) {
 		mWifiP2pManager = (WifiP2pManager) context
 				.getSystemService(Context.WIFI_P2P_SERVICE);
 		mWifiManager = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);
-		serverFlag = flag;
-		this.context = context;
-		this.communicationManager = SocketCommunicationManager
-				.getInstance(context);
 		if (mWifiManager.isWifiEnabled()) {
 			channel = mWifiP2pManager.initialize(context,
 					context.getMainLooper(), null);
+			observerList = new ArrayList<WifiDirectManager.ManagerP2pDeivce>();
 		}
-		registerReceiver();
 	}
 
-	private void registerReceiver() {
-		mIntentFilter = new IntentFilter();
-		mIntentFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
-		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-		mIntentFilter
-				.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-		mIntentFilter
-				.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-		mWifiDirectRecevier = new WifiDirectReciver(mWifiP2pManager, channel,
-				communicationManager, serverFlag);
-		// context.registerReceiver(mWifiDirectRecevier, mIntentFilter);
+	public WifiDirectManager(Context context, boolean flag) {
+		this(context);
+		this.serverFlag = flag;
 	}
 
 	@SuppressLint({ "NewApi", "NewApi" })
 	public void discover() {
-		if (serverFlag) {
-			setDeviceName(mWifiP2pManager, channel, "DreamLink"
-					+ mWifiManager.getConnectionInfo().getMacAddress(), null);
-		} else {
-			setDeviceName(mWifiP2pManager, channel, mWifiManager
-					.getConnectionInfo().getMacAddress(), null);
-		}
 		mWifiP2pManager.discoverPeers(channel, null);
 	}
 
@@ -115,28 +93,87 @@ public class WifiDirectManager {
 	}
 
 	public void stopConnect() {
-
-		try {
-			if (mWifiDirectRecevier.serverSocket != null) {
-				mWifiDirectRecevier.serverSocket.close();
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		mWifiP2pManager.cancelConnect(channel, null);
 		mWifiP2pManager.removeGroup(channel, null);
 	}
 
-	public void registerObserver(WifiDirectDeviceNotify notify) {
-		mWifiDirectRecevier.registerObserver(notify);
+	public void registerObserver(ManagerP2pDeivce notify) {
+		observerList.add(notify);
 	}
 
-	public void unRegisterObserver(WifiDirectDeviceNotify notify) {
-		mWifiDirectRecevier.unRegisterObserver(notify);
+	public void unRegisterObserver(ManagerP2pDeivce notify) {
+		observerList.remove(notify);
 	}
 
 	public void connect(WifiP2pConfig config) {
 		mWifiP2pManager.connect(channel, config, null);
 	}
+
+	@Override
+	public void wifiP2pConnected() {
+		// TODO Auto-generated method stub
+		notifyConnect();
+	}
+
+	private void getPeerDevice(final boolean flag) {
+		final ArrayList<WifiP2pDevice> serverList = new ArrayList<WifiP2pDevice>();
+		mWifiP2pManager.requestPeers(channel, new PeerListListener() {
+			@SuppressLint({ "NewApi", "NewApi", "NewApi", "NewApi", "NewApi",
+					"NewApi", "NewApi", "NewApi", "NewApi", "NewApi", "NewApi",
+					"NewApi", "NewApi", "NewApi" })
+			public void onPeersAvailable(WifiP2pDeviceList peers) {
+				// // TODO Auto-generated method stub
+				if (!flag) {
+					for (WifiP2pDevice device : peers.getDeviceList()) {
+						if (device.deviceName.contains("DreamLink")) {
+							serverList.add(device);
+						}
+					}
+				}
+				if (observerList != null) {
+					for (ManagerP2pDeivce f : observerList) {
+						f.deviceChange(serverList);
+					}
+				}
+			}
+		});
+	}
+
+	private void notifyConnect() {
+		mWifiP2pManager.requestConnectionInfo(this.channel,
+				new ConnectionInfoListener() {
+					public void onConnectionInfoAvailable(WifiP2pInfo info) {
+						// TODO Auto-generated method stub
+						if (observerList != null) {
+							for (ManagerP2pDeivce f : observerList) {
+								f.hasConnect(info);
+							}
+						}
+					}
+				});
+	}
+
+	@Override
+	public void notifyDeviceChange() {
+		// TODO Auto-generated method stub
+		getPeerDevice(serverFlag);
+	}
+
+	public void setServerFlag(boolean flag) {
+		if (serverFlag == flag) {
+			return;
+		}
+		this.serverFlag = flag;
+		this.stopSearch();
+		if (serverFlag) {
+			setDeviceName(mWifiP2pManager, channel, "DreamLink"
+					+ mWifiManager.getConnectionInfo().getMacAddress(), null);
+		} else {
+			setDeviceName(mWifiP2pManager, channel, mWifiManager
+					.getConnectionInfo().getMacAddress(), null);
+		}
+		this.discover();
+		getPeerDevice(serverFlag);
+	}
+
 }
