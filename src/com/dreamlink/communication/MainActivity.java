@@ -1,11 +1,9 @@
 package com.dreamlink.communication;
 
-import com.dreamlink.communication.chat.ClientActivity;
-import com.dreamlink.communication.chat.ServerActivity;
 import com.dreamlink.communication.client.ServerListActivity;
+import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.ClientListActivity;
 
-import android.R.anim;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,6 +23,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		initView();
+		checkUserInfo();
+	}
+
+	private void checkUserInfo() {
+		if (UserHelper.getUserName(getApplicationContext()) == null) {
+			launchUserInfo();
+		}
+	}
+
+	private void launchUserInfo() {
+		Intent intent = new Intent();
+		intent.setClass(this, UserInformationActivity.class);
+		startActivity(intent);
 	}
 
 	private void initView() {
@@ -66,6 +77,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_user_info:
+			launchUserInfo();
+			return true;
+
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 }
