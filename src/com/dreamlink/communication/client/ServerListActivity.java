@@ -14,6 +14,7 @@ import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.AppListActivity;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
 import com.dreamlink.communication.server.SocketServerTask;
+import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
@@ -159,7 +160,8 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		if (enable) {
 			// If Android AP is enabled, disable AP.
 			if (NetWorkUtil.isAndroidAPNetwork(mContext)) {
-				NetWorkUtil.setWifiAPEnabled(mContext, false);
+				NetWorkUtil.setWifiAPEnabled(mContext, Search.WIFI_AP_NAME
+						+ UserHelper.getUserName(mContext), false);
 			}
 			// Enable WiFi.
 			if (!mWifiManager.isWifiEnabled()) {

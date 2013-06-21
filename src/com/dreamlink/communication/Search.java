@@ -25,5 +25,5 @@ public class Search {
 	public static final long ANDROID_AP_SEARCH_DELAY = 2000;
 
 	/** Set AP name to specific name for search */
-	public static final String WIFI_AP_NAME = "DreamlinkAP";
+	public static final String WIFI_AP_NAME = "DreamlinkAP-";
 }

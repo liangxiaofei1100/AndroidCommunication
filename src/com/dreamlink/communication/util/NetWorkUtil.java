@@ -23,6 +23,7 @@ import android.text.TextUtils;
 public class NetWorkUtil {
 	private static final String TAG = "NetWorkUtil";
 	private static MulticastLock mMulticastLock;
+	private static String mAPName;
 
 	public static boolean isNetworkConnected(Context context) {
 		ConnectivityManager cm = (ConnectivityManager) context
@@ -139,7 +140,10 @@ public class NetWorkUtil {
 	 * @param enabled
 	 *            ? enable AP : close AP.
 	 */
-	public static boolean setWifiAPEnabled(Context context, boolean enabled) {
+	public static boolean setWifiAPEnabled(Context context, String apName,
+			boolean enabled) {
+		// TODO If disable wifi ap, should get ap name from ap info in case of
+		// the name is different from the enabled name.
 		WifiManager wifiManager = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);
 		if (enabled) {
@@ -147,16 +151,22 @@ public class NetWorkUtil {
 			wifiManager.setWifiEnabled(false);
 		}
 
+		if (apName == null) {
+			apName = Search.WIFI_AP_NAME + (int) Math.random() * 10000;
+			Log.d(TAG, "setWifiAPEnabled, Ap name is null, create temp name: "
+					+ apName);
+		}
+
 		try {
 			WifiConfiguration configuration = new WifiConfiguration();
-			configuration.SSID = Search.WIFI_AP_NAME;
+			configuration.SSID = apName;
 			configuration.allowedKeyManagement
 					.set(WifiConfiguration.KeyMgmt.NONE);
 			Method method = wifiManager.getClass().getMethod(
 					"setWifiApEnabled", WifiConfiguration.class, Boolean.TYPE);
-			boolean open = (Boolean) method.invoke(wifiManager, configuration,
-					enabled);
-			return open;
+			boolean result = (Boolean) method.invoke(wifiManager,
+					configuration, enabled);
+			return result;
 		} catch (Exception e) {
 			Log.e(TAG, "Can not set WiFi AP state, " + e);
 			return false;

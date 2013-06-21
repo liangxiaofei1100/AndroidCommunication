@@ -82,13 +82,11 @@
             android:label="@string/fileshare_label"
             android:screenOrientation="portrait" >
         </activity>
-<<<<<<< HEAD
         
         <service 
             android:name="com.dreamlink.communication.fileshare.FileShareServerService"
             >
         </service>
-=======
         <activity
             android:name="com.dreamlink.communication.StabilityTest"
             android:label="StabilityTest" >
@@ -108,7 +106,13 @@
             android:label="StabilityTestServer"
             android:screenOrientation="portrait" >
         </activity>
->>>>>>> 5f9775858acce6b68abf0812e009a143927036ad
+        
+        <activity
+            android:name="com.dreamlink.communication.UserInformationActivity"
+            android:label="@string/lable_user_info"
+            android:screenOrientation="portrait" >
+        </activity>
+        
     </application>
 
 </manifest>

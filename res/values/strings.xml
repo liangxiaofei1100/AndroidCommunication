@@ -23,5 +23,12 @@
     <string name="chat">Chat</string>
     <string name="label_applist">应用程序列表</string>
     <string name="wifiP2p_on">开启Wifi-Driect</string>
+    <string name="userinfo_name">名称：</string>
+    <string name="userinfo_name_hint">请输入用户名</string>
+    <string name="userinfo_ip">IP：%s</string>
+    <string name="userinfo_android_version">系統版本：%s</string>
+    <string name="ui_menu_save">Save</string>
+    <string name="lable_user_info">用户资料</string>
+    <string name="menu_user_info">用户资料</string>
 
 </resources>

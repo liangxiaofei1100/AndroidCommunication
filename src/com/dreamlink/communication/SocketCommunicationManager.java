@@ -81,15 +81,23 @@ public class SocketCommunicationManager implements
 		if (idThread == -1) {
 			return;
 		}
-		if (mCommunications != null && mCommunications.size() > 0) {
-			HashSet<SocketCommunication> hash = mCommunications;
-			for (SocketCommunication communication : hash) {
-				if (communication.getId() != idThread) {
-					sendMessage(communication, message);
+		if (mCommunications != null) {
+			synchronized (mCommunications) {
+				HashSet<SocketCommunication> hash = mCommunications;
+				for (SocketCommunication communication : hash) {
+					if (communication.getId() != idThread) {
+						sendMessage(communication, message);
+					}
 				}
 			}
+
 		} else {
-			mNotice.showToast("No connection.");
+			try {
+				mNotice.showToast("No connection.");
+			} catch (Exception e) {
+				// call in thread that has not called Looper.prepare().
+			}
+
 		}
 	}
 	
