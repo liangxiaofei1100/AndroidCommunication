@@ -8,7 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Handler;
 import android.sax.StartElementListener;
 import android.text.TextUtils;
@@ -18,6 +20,7 @@ import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedLis
 import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
 
 public class SocketCommunicationManager implements
 		OnCommunicationChangedListener, ICommunicate {
@@ -157,6 +160,9 @@ public class SocketCommunicationManager implements
 			}
 		}
 		if (mCommunications.isEmpty()) {
+			if (mExecutorService == null) {
+				return;
+			}
 			mExecutorService.shutdown();
 			mExecutorService = null;
 		}
@@ -209,4 +215,5 @@ public class SocketCommunicationManager implements
 			}
 		}
 	}
+
 }
