@@ -197,7 +197,6 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 				config.groupOwnerIntent = 0;
 				mWifiDirectManager.connect(config);
 				progressDialog = new ProgressDialog(ServerListActivity.this);
-				progressDialog.setCancelable(false);
 				progressDialog.setTitle("Click to cancel it");
 				progressDialog.setMessage("Waiting for connect...");
 				progressDialog.show();
