@@ -105,6 +105,13 @@
             android:label="StabilityTestServer"
             android:screenOrientation="portrait" >
         </activity>
+        
+        <activity
+            android:name="com.dreamlink.communication.UserInformationActivity"
+            android:label="@string/lable_user_info"
+            android:screenOrientation="portrait" >
+        </activity>
+        
     </application>
 
 </manifest>

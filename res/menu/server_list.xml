@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/wifip2p_on"
+        android:icon="@drawable/ic_launcher"
+        android:orderInCategory="101"
+        android:showAsAction="ifRoom"
+        android:title="@string/wifiP2p_on"/>
+
+</menu>

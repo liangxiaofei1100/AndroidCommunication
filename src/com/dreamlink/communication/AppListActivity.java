@@ -8,11 +8,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.dreamlink.communication.wifip2p.WifiDirectManager;
+import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
+
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -44,14 +51,15 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 	private boolean mIsServer = false;
 	/** Flag for server or client. True means server, False means client. */
 	public static final String EXTRA_IS_SERVER = "isServer";
-	/** Action for find apps. Add a intent-filter including the action in manifest.
-	 * Example as below:
-	 * <intent-filter>
-                <action android:name="com.dreamlink.communication.action.app" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-        </intent-filter>
-      */
+	private boolean WifiP2p = false;
+	/**
+	 * Action for find apps. Add a intent-filter including the action in
+	 * manifest. Example as below: <intent-filter> <action
+	 * android:name="com.dreamlink.communication.action.app" />
+	 * 
+	 * <category android:name="android.intent.category.DEFAULT" />
+	 * </intent-filter>
+	 */
 	public static final String ACTION_APP = "com.dreamlink.communication.action.app";
 
 	@Override
@@ -147,6 +155,17 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 		Intent intent = (Intent) mApps.get(position).get(KEY_INTENT);
 		intent.putExtra(EXTRA_IS_SERVER, mIsServer);
 		startActivity(intent);
+	}
+
+	@Override
+	public void finish() {
+		// TODO Auto-generated method stub
+		super.finish();
+		if (Build.VERSION.SDK_INT >= 14) {
+			WifiDirectManager manager = new WifiDirectManager(this, false);
+			SocketCommunicationManager.getInstance(this).closeCommunication();
+			manager.stopConnect();
+		}
 	}
 
 }

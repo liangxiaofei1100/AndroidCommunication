@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_ui_save"
+        android:showAsAction="ifRoom"
+        android:orderInCategory="100"
+        android:title="@string/ui_menu_save"
+        android:icon="@android:drawable/ic_menu_save"/>
+
+</menu>
