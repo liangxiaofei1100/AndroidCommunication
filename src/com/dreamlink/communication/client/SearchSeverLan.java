@@ -151,7 +151,7 @@ public class SearchSeverLan implements Runnable {
 					} else {
 						Log.e(TAG, "GetPacket error," + e.toString());
 						if (mListener != null) {
-							mListener.onSearchFail();
+							mListener.onSearchStop();
 						}
 					}
 				}

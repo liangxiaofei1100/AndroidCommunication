@@ -17,12 +17,14 @@ import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
+import android.util.Log;
 
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
 
 @TargetApi(14)
 public class WifiDirectManager implements WifiDirectDeviceNotify {
+	private static final String TAG = "WifiDirectManager";
 	@SuppressLint("NewApi")
 	private WifiP2pManager mWifiP2pManager;
 	private WifiManager mWifiManager;
@@ -99,8 +101,12 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 	}
 
 	public void stopConnect() {
-		mWifiP2pManager.cancelConnect(channel, null);
-		mWifiP2pManager.removeGroup(channel, null);
+		try {
+			mWifiP2pManager.cancelConnect(channel, null);
+			mWifiP2pManager.removeGroup(channel, null);
+		} catch (Exception e) {
+			Log.e(TAG, "stopConnect()" + e);
+		}
 	}
 
 	public void registerObserver(ManagerP2pDeivce notify) {

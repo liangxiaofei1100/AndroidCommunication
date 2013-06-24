@@ -129,7 +129,13 @@ public class SocketCommunication extends Thread {
 			if (mRemainHeader == null) {
 				// There is no remain head.
 				Log.d(TAG, "There is no remain head");
+				// TODO dataReceivedLength maybe -1. This condition should
+				// process.
 				dataReceivedLength = in.read(mHeadBuffer);
+				if (dataReceivedLength == -1) {
+					Log.d(TAG, "Connection lost. dataReceivedLength = -1");
+					return;
+				}
 				Log.d(TAG, "received header size: " + dataReceivedLength);
 				if (dataReceivedLength < HEAD_SIZE) {
 					Log.d(TAG,
@@ -199,7 +205,7 @@ public class SocketCommunication extends Thread {
 				// 2. Save the received data into buff.
 				mRemainPacket = Arrays.copyOfRange(mReceiveBuffer, 0,
 						dataReceivedLength);
-			}else {
+			} else {
 				// should not be here
 				Log.e(TAG, "Decode data error.");
 			}
@@ -289,22 +295,22 @@ public class SocketCommunication extends Thread {
 			Log.d(TAG, "open file ok.");
 			if (dataOutputStream != null) {
 				Log.d(TAG, "Connection is ok");
-				int bufferSize = 1024;
+				int bufferSize = 4 * 1024;
 				byte[] buf = new byte[bufferSize];
 				int read_len = 0;
 				while ((read_len = dis.read(buf)) != -1) {
-					Log.d(TAG, "read_len = " +read_len);
+					Log.d(TAG, "read_len = " + read_len);
 					if (read_len < bufferSize) {
-						Log.d(TAG, "send file: " +read_len);
+						Log.d(TAG, "send file: " + read_len);
 						// read length less than buff.
 						sendMsg(Arrays.copyOfRange(buf, 0, read_len));
-					}else {
-						Log.d(TAG, "send file: " +read_len);
+					} else {
+						Log.d(TAG, "send file: " + read_len);
 						// read length less than buff.
 						sendMsg(buf);
 					}
 				}
-				Log.d(TAG, "read_len11 = " +read_len);
+				Log.d(TAG, "read_len11 = " + read_len);
 			} else {
 				mListener.OnCommunicationLost(this);
 			}

@@ -5,11 +5,36 @@ import android.content.Context;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
+/**
+ * This class is used for search the server in current WiFi network connection.</br>
+ * 
+ * Before {@link #startSearch()}, make sure the device is already connected wifi network.</br>
+ * 
+ * It can find STA server, Android WiFi AP server in current network.</br>
+ *
+ */
 public class SearchSever {
 	public interface OnSearchListener {
+		/**
+		 * Search server success and found a server</br>
+		 * 
+		 * Be careful:</br>
+		 * 
+		 * This method is not in activity main thread.</br>
+		 * 
+		 * @param serverIP The server IP address.
+		 */
 		void onSearchSuccess(String serverIP);
 
-		void onSearchFail();
+		/**
+		 * Search server stop</br>
+		 * 
+		 * Be careful:</br>
+		 * 
+		 * This method is not in activity main thread.</br>
+		 * 
+		 */
+		void onSearchStop();
 	}
 
 	private static final String TAG = "SearchSever";
