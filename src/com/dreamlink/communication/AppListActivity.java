@@ -162,7 +162,7 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 		// TODO Auto-generated method stub
 		super.finish();
 		if (Build.VERSION.SDK_INT >= 14) {
-			WifiDirectManager manager = new WifiDirectManager(this, false);
+			WifiDirectManager manager = new WifiDirectManager(this);
 			SocketCommunicationManager.getInstance(this).closeCommunication();
 			manager.stopConnect();
 		}
