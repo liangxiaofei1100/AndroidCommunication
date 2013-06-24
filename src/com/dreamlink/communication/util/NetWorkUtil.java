@@ -18,6 +18,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.text.TextUtils;
 
 public class NetWorkUtil {
@@ -32,11 +33,19 @@ public class NetWorkUtil {
 
 		boolean isWifiApEnabled = isWifiApEnabled(context);
 
-		if (networkInfo == null && isWifiApEnabled == false) {
+		boolean isWifiDirectEnabled = isWifiDirectEnabled(context);
+
+		if (networkInfo == null && isWifiApEnabled == false
+				&& isWifiDirectEnabled == false) {
 			return false;
 		} else {
 			return true;
 		}
+	}
+
+	private static boolean isWifiDirectEnabled(Context context) {
+		// TODO need implement.
+		return true;
 	}
 
 	public static boolean isWifiApEnabled(Context context) {

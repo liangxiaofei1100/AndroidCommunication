@@ -1,10 +1,9 @@
 package com.dreamlink.communication.client;
 
-import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.Search;
@@ -19,19 +18,16 @@ import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 import com.dreamlink.communication.wifip2p.WifiDirectManager;
+import com.dreamlink.communication.wifip2p.WifiDirectManager.ManagerP2pDeivce;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver;
-import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
@@ -40,6 +36,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -53,35 +50,62 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 @TargetApi(14)
 public class ServerListActivity extends Activity implements OnSearchListener,
-		OnItemClickListener, OnClickListener, WifiDirectDeviceNotify {
+		OnItemClickListener, OnClickListener, ManagerP2pDeivce {
 	private static final String TAG = "ServerListActivity";
 	private Context mContext;
 
-	private ArrayAdapter<String> mAdapter;
-	private ArrayList<String> mServer = new ArrayList<String>();
+	/**
+	 * Map structure: </br>
+	 * 
+	 * KEY_NAME - server name</br>
+	 * 
+	 * KEY_TYPE - server network type： IP, AP, WiFi Direct</br>
+	 */
+	private ArrayList<Map<String, Object>> mServerData = new ArrayList<Map<String, Object>>();
+	/** Server name */
+	private static final String KEY_NAME = "name";
+	/** Server type */
+	private static final String KEY_TYPE = "type";
+	/** Server is a WiFi STA */
+	private static final int SERVER_TYPE_IP = 1;
+	/** Server is a WiFi AP */
+	private static final int SERVER_TYPE_AP = 2;
+	private SimpleAdapter mServerAdapter;
+	/** Flag for decide to auto connect AP or not. */
+	private boolean mIsAPSelected = false;
+	/** WiFi network server ListView */
 	private ListView mListView;
+	private WifiManager mWifiManager;
+
+	/** WiFi network server ListView */
 	private ListView directListView;
 	private ArrayList<String> directList;
 	private ArrayAdapter<String> directAdapter;
 	private ArrayList<WifiP2pDevice> deviceList;
-	private Notice mNotice;
-	private SearchSever mSearchServer;
-	private SocketCommunicationManager mCommunicationManager;
 	private WifiDirectManager mWifiDirectManager;
 	private WifiDirectReciver wifiDirectReciver;
-	private WifiManager mWifiManager;
-	private WifiP2pInfo info;
+	private IntentFilter mWifiDirectIntentFilter;
+	private ProgressDialog progressDialog;
+
+	private Notice mNotice;
+
+	private SearchSever mSearchServer;
+	private SocketCommunicationManager mCommunicationManager;
 
 	private static final int MSG_SEARCH_SUCCESS = 1;
 	private static final int MSG_SEARCH_FAIL = 2;
-	private ProgressDialog progressDialog;
+	/** Connect to the server and launch app list activity. */
+	private static final int MSG_CONNECT_SERVER = 3;
+	private static final int MSG_SEARCH_WIFI_DIRECT_FOUND = 4;
 
 	private Handler mHandler = new Handler() {
 
+		@SuppressWarnings("unchecked")
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_SEARCH_SUCCESS:
@@ -90,25 +114,26 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			case MSG_SEARCH_FAIL:
 
 				break;
-			case 90:
+			case MSG_CONNECT_SERVER:
+				connectServer((String) msg.obj);
+				launchAppList();
+				// TODO finish it to avoid connect repeat.
+				finish();
+				break;
+			case MSG_SEARCH_WIFI_DIRECT_FOUND:
 				directList.clear();
 				directList.addAll((ArrayList<String>) msg.obj);
 				directAdapter.notifyDataSetChanged();
 				break;
-
 			default:
 				break;
 			}
 		}
 	};
 
-	private static final int SERVER_TYPE_IP = 1;
-	private static final int SERVER_TYPE_AP = 2;
-
 	/**
 	 * add found server to server list. If server type is IP, just add and wait
-	 * user to choose. If server is AP, connect to it, Then search will found
-	 * the server IP.
+	 * user to choose. If server is AP, show the user name.
 	 * 
 	 * @param name
 	 * @param type
@@ -116,18 +141,41 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	private void addServer(String name, int type) {
 		switch (type) {
 		case SERVER_TYPE_IP:
+			if (isServerAlreadyAdded(name)) {
+				Log.d(TAG, "addServer()	ignore, name = " + name);
+				break;
+			}
+			if (name.equals(Search.ANDROID_AP_ADDRESS)) {
+				Log.d(TAG, "This ip is android wifi ap, ignore, name = " + name);
+				break;
+			}
 			// This device is connected to WiFi, So add the server IP.
-			mServer.add(name);
-			mAdapter.notifyDataSetChanged();
+			HashMap<String, Object> ipServer = new HashMap<String, Object>();
+			ipServer.put(KEY_NAME, name);
+			ipServer.put(KEY_TYPE, SERVER_TYPE_IP);
+			mServerData.add(ipServer);
+			mServerAdapter.notifyDataSetChanged();
 			break;
 		case SERVER_TYPE_AP:
-			// Found a AP, maybe not connected. So connect to it.After connected
-			// to the AP, the search process is the same as connected process.
-			connetAP(name);
+			if (isServerAlreadyAdded(apName2UserName(name))) {
+				// TODO if two server has the same name, How to do?
+				Log.d(TAG, "addServer()	ignore, name = " + name);
+				return;
+			}
+			// Found a AP, add the user name to the server list.
+			HashMap<String, Object> apServer = new HashMap<String, Object>();
+			apServer.put(KEY_NAME, apName2UserName(name));
+			apServer.put(KEY_TYPE, SERVER_TYPE_AP);
+			mServerData.add(apServer);
+			mServerAdapter.notifyDataSetChanged();
 		default:
 			break;
 		}
+	}
 
+	private void clearServer() {
+		mServerData.clear();
+		mServerAdapter.notifyDataSetChanged();
 	}
 
 	@Override
@@ -147,7 +195,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		mWiFiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		mWiFiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 		mWiFiFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+		initReceiver();
 
+		mIsAPSelected = false;
 	}
 
 	/**
@@ -168,7 +218,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 				mWifiManager.setWifiEnabled(true);
 			}
 		} else {
-			// Enable WiFi.
+			// Disable WiFi.
 			if (mWifiManager.isWifiEnabled()) {
 				mWifiManager.setWifiEnabled(false);
 			}
@@ -177,9 +227,13 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	private void initView() {
 		mListView = (ListView) findViewById(R.id.list_client);
-		mAdapter = new ArrayAdapter<String>(mContext,
-				android.R.layout.simple_list_item_1, mServer);
-		mListView.setAdapter(mAdapter);
+		mServerAdapter = new SimpleAdapter(this, mServerData,
+				android.R.layout.simple_list_item_1, new String[] { KEY_NAME },
+				new int[] { android.R.id.text1 });
+		mListView.setAdapter(mServerAdapter);
+		// mAdapter = new ArrayAdapter<String>(mContext,
+		// android.R.layout.simple_list_item_1, mServer);
+		// mListView.setAdapter(mAdapter);
 		mListView.setOnItemClickListener(this);
 		directListView = (ListView) findViewById(R.id.list_direct);
 		directList = new ArrayList<String>();
@@ -193,7 +247,6 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				// TODO Auto-generated method stub
 				WifiP2pConfig config = new WifiP2pConfig();
 				config.deviceAddress = deviceList.get(arg2).deviceAddress;
 				config.groupOwnerIntent = 0;
@@ -217,11 +270,13 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		case R.id.btn_start:
 			if (mWifiDirectManager != null) {
 				mWifiDirectManager.stopSearch();
+				wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
 				mWifiDirectManager.unRegisterObserver(this);
-				this.unregisterReceiver(mWifiDirectManager.mWifiDirectRecevier);
 				mWifiDirectManager = null;
 			}
-			launchFunction(false);
+			launchAppList();
+			// TODO finish it to avoid connect repeat.
+			finish();
 			break;
 		case R.id.btn_quit:
 			finish();
@@ -231,16 +286,21 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		}
 	}
 
-	private void launchFunction(boolean WifiP2p) {
+	/***
+	 * launch app list activity.
+	 */
+	private void launchAppList() {
 		Intent intent = new Intent();
 		intent.putExtra(AppListActivity.EXTRA_IS_SERVER, false);
 		intent.setClass(this, AppListActivity.class);
-		if (WifiP2p) {
-			intent.putExtra("WifiP2p", WifiP2p);
-		}
 		startActivity(intent);
 	}
 
+	/**
+	 * catch broadcast not register exception.
+	 * 
+	 * @param receiver
+	 */
 	private void unregisterReceiverSafe(BroadcastReceiver receiver) {
 		try {
 			unregisterReceiver(receiver);
@@ -253,6 +313,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	protected void onResume() {
 		super.onResume();
 		forWifiP2p(false);
+		this.registerReceiver(wifiDirectReciver, mWifiDirectIntentFilter);
 		registerReceiver(mWifiBroadcastReceiver, mWiFiFilter);
 	}
 
@@ -260,8 +321,10 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	protected void onPause() {
 		super.onPause();
 		unregisterReceiverSafe(mWifiBroadcastReceiver);
+		unregisterReceiverSafe(wifiDirectReciver);
 	}
 
+	@SuppressLint("HandlerLeak")
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -269,17 +332,39 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			mSearchServer.stopSearch();
 		}
 		if (mWifiDirectManager != null) {
-			this.unregisterReceiver(wifiDirectReciver);
 			mWifiDirectManager.unRegisterObserver(this);
 			mWifiDirectManager.stopSearch();
+			wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
 			mWifiDirectManager = null;
 		}
-		unregisterReceiverSafe(mWifiBroadcastReceiver);
 	}
 
+	/**
+	 * Check whether the server is already added to list or not.
+	 * 
+	 * @param serverName
+	 * @return
+	 */
+	private boolean isServerAlreadyAdded(String serverName) {
+		for (Map<String, Object> map : mServerData) {
+			if (serverName.equals(map.get(KEY_NAME))) {
+				// The server is already added to list.
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@SuppressLint("HandlerLeak")
 	@Override
 	public void onSearchSuccess(String serverIP) {
-		if (!mServer.contains(serverIP)) {
+		if (mIsAPSelected && serverIP.equals(Search.ANDROID_AP_ADDRESS)) {
+			// Auto connect to the server.
+			Message message = mHandler.obtainMessage(MSG_CONNECT_SERVER);
+			message.obj = serverIP;
+			mHandler.sendMessage(message);
+		} else {
+			// Add to server list and wait user for choose.
 			Message message = mHandler.obtainMessage(MSG_SEARCH_SUCCESS);
 			message.obj = serverIP;
 			mHandler.sendMessage(message);
@@ -287,7 +372,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	}
 
 	@Override
-	public void onSearchFail() {
+	public void onSearchStop() {
 		Message message = mHandler.obtainMessage(MSG_SEARCH_FAIL);
 		mHandler.sendMessage(message);
 	}
@@ -295,9 +380,33 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View view, int position,
 			long arg3) {
-		String ip = mServer.get(position);
-		connectServer(ip);
-		launchFunction(false);
+		HashMap<String, Object> server = (HashMap<String, Object>) mServerData
+				.get(position);
+		int type = (Integer) server.get(KEY_TYPE);
+		switch (type) {
+		case SERVER_TYPE_AP:
+			mIsAPSelected = true;
+			String apName = (String) server.get(KEY_NAME);
+			connetAP(userName2ApName(apName));
+			break;
+		case SERVER_TYPE_IP:
+			String ip = (String) server.get(KEY_NAME);
+			connectServer(ip);
+			if (mWifiDirectManager != null) {
+				mWifiDirectManager.stopSearch();
+				wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
+				mWifiDirectManager.unRegisterObserver(this);
+				mWifiDirectManager = null;
+			}
+			launchAppList();
+			// TODO finish it to avoid connect repeat.
+			finish();
+			break;
+
+		default:
+			break;
+		}
+
 	}
 
 	private void connectServer(String ip) {
@@ -357,6 +466,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	private void handleScanReuslt() {
 		Log.d(TAG, "handleScanReuslt()");
+		clearServer();
 		final List<ScanResult> results = mWifiManager.getScanResults();
 		if (results != null) {
 			for (ScanResult result : results) {
@@ -391,83 +501,31 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		}
 	}
 
-	@TargetApi(14)
-	@SuppressLint({ "NewApi", "NewApi" })
-	@Override
-	public void notifyDeviceChange(ArrayList<WifiP2pDevice> serverList) {
-		// TODO Auto-generated method stub
-		ArrayList<String> temp = new ArrayList<String>();
-		if (serverList != null) {
-			deviceList = serverList;
-			for (WifiP2pDevice device : serverList) {
-				temp.add(device.deviceName);
-			}
-			mHandler.obtainMessage(90, temp).sendToTarget();
-		}
-	}
-
 	private void forWifiP2p(boolean flag) {
 		if (mWifiManager.isWifiEnabled()) {
 			if (Build.VERSION.SDK_INT >= 14) {
-				if (mWifiDirectManager != null) {
-					mWifiDirectManager.stopSearch();
-					mWifiDirectManager.unRegisterObserver(this);
-					this.unregisterReceiver(mWifiDirectManager.mWifiDirectRecevier);
-					mWifiDirectManager = null;
-				}
-				mWifiDirectManager = new WifiDirectManager(this, flag);
-				wifiDirectReciver = mWifiDirectManager.mWifiDirectRecevier;
-				this.registerReceiver(wifiDirectReciver,
-						mWifiDirectManager.mIntentFilter);
-				mWifiDirectManager.registerObserver(this);
-				new Thread() {
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-						super.run();
-						mWifiDirectManager.discover();
+				if (Build.VERSION.SDK_INT >= 14) {
+					if (mWifiDirectManager != null) {
+						mWifiDirectManager.setServerFlag(flag);
+						return;
 					}
-				}.start();
-			}
-		}
-	}
-
-	@SuppressLint({ "NewApi", "NewApi" })
-	@Override
-	public void wifiP2pConnected(WifiP2pInfo info) {
-		// TODO Auto-generated method stub
-		Log.e("ArbiterLiu", "" + info.isGroupOwner);
-		if (this.info == null) {
-			this.info = info;
-
-			if (info.isGroupOwner) {
-				SocketServerTask serverTask = new SocketServerTask(mContext,
-						mCommunicationManager);
-				serverTask.execute(new String[] { SocketCommunication.PORT });
-			} else {
-				SocketClientTask clientTask = new SocketClientTask(mContext,
-						mCommunicationManager,
-						SocketMessage.MSG_SOCKET_CONNECTED);
-				clientTask.execute(new String[] {
-						info.groupOwnerAddress.getHostAddress(),
-						SocketCommunication.PORT });
-				if (mWifiDirectManager != null) {
-					mWifiDirectManager.stopSearch();
-					mWifiDirectManager.unRegisterObserver(this);
-					this.unregisterReceiver(mWifiDirectManager.mWifiDirectRecevier);
-					mWifiDirectManager = null;
+					mWifiDirectManager = new WifiDirectManager(this, flag);
+					mWifiDirectManager.registerObserver(this);
+					wifiDirectReciver.registerObserver(mWifiDirectManager);
+					new Thread() {
+						@Override
+						public void run() {
+							super.run();
+							mWifiDirectManager.discover();
+						}
+					}.start();
 				}
-				if (progressDialog != null && progressDialog.isShowing()) {
-					progressDialog.dismiss();
-				}
-				launchFunction(true);
 			}
 		}
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// TODO Auto-generated method stub
 		getMenuInflater().inflate(R.menu.server_list, menu);
 		if (Build.VERSION.SDK_INT < 14) {
 			menu.removeItem(R.id.wifip2p_on);
@@ -477,14 +535,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
 		if (mWifiManager.isWifiEnabled()) {
-			if (mWifiDirectManager != null) {
-				mWifiDirectManager.stopSearch();
-				mWifiDirectManager.unRegisterObserver(this);
-				this.unregisterReceiver(mWifiDirectManager.mWifiDirectRecevier);
-				mWifiDirectManager = null;
-			}
 			forWifiP2p(true);
 			// directListView.setVisibility(View.GONE);
 			directList.clear();
@@ -495,4 +546,91 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public void deviceChange(ArrayList<WifiP2pDevice> serverList) {
+		ArrayList<String> temp = new ArrayList<String>();
+		if (serverList != null) {
+			deviceList = serverList;
+			for (WifiP2pDevice device : serverList) {
+				String name = device.deviceName;
+				temp.add(name.substring(9));
+			}
+			mHandler.obtainMessage(MSG_SEARCH_WIFI_DIRECT_FOUND, temp)
+					.sendToTarget();
+		}
+	}
+
+	@Override
+	public void hasConnect(WifiP2pInfo info) {
+		Log.e("ArbiterLiu", "" + info.isGroupOwner);
+
+		if (info.isGroupOwner) {
+			SocketServerTask serverTask = new SocketServerTask(mContext,
+					mCommunicationManager);
+			serverTask.execute(new String[] { SocketCommunication.PORT });
+		} else {
+			SocketClientTask clientTask = new SocketClientTask(mContext,
+					mCommunicationManager, SocketMessage.MSG_SOCKET_CONNECTED);
+			clientTask.execute(new String[] {
+					info.groupOwnerAddress.getHostAddress(),
+					SocketCommunication.PORT });
+			if (mWifiDirectManager != null) {
+				mWifiDirectManager.stopSearch();
+				mWifiDirectManager.unRegisterObserver(this);
+				wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
+				mWifiDirectManager = null;
+			}
+			if (progressDialog != null && progressDialog.isShowing()) {
+				progressDialog.dismiss();
+			}
+			launchAppList();
+		}
+	}
+
+	private void initReceiver() {
+		mWifiDirectIntentFilter = new IntentFilter();
+		mWifiDirectIntentFilter
+				.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+		mWifiDirectIntentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+		mWifiDirectIntentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+		mWifiDirectIntentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+		mWifiDirectIntentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+		wifiDirectReciver = new WifiDirectReciver();
+	}
+
+	/**
+	 * Get user name from WiFi AP name.</br>
+	 * 
+	 * WiFi AP naming rule: WiFi AP name = Search.WIFI_AP_NAME + User name
+	 * 
+	 * @param SSID
+	 *            WiFi AP SSID.
+	 * @return
+	 */
+	private String apName2UserName(String SSID) {
+		if (SSID.startsWith(Search.WIFI_AP_NAME)) {
+			return SSID.substring(Search.WIFI_AP_NAME.length());
+		} else {
+			Log.e(TAG, "getAPServerUserName(), SSID is not match. SSID ="
+					+ SSID);
+			return "";
+		}
+	}
+
+	/**
+	 * Get WiFi AP name from user name.</br>
+	 * 
+	 * WiFi AP naming rule: WiFi AP name = Search.WIFI_AP_NAME + User name
+	 * 
+	 * @param SSID
+	 *            WiFi AP SSID.
+	 * @return
+	 */
+	private String userName2ApName(String userName) {
+		return Search.WIFI_AP_NAME + userName;
+	}
 }
