@@ -63,12 +63,12 @@ public class SocketCommunication extends Thread {
 			mListener.OnCommunicationEstablished(this);
 			while (true) {
 				if (dataInputStream.available() > 0) {
-					synchronized (dataInputStream) {
+//					synchronized (dataInputStream) {
 						int length = dataInputStream.available();
 						byte[] msg = new byte[length];
 						dataInputStream.read(msg, 0, msg.length);
 						iCommunicate.receiveMessage(msg, this);
-					}
+//					}
 				}
 			}
 		} catch (IOException e) {
@@ -110,13 +110,25 @@ public class SocketCommunication extends Thread {
 				byte[] buf = new byte[bufferSize];
 				int read_len = 0;
 				int total = 0;
-				while ((read_len = dis.read(buf)) != -1) {
-					//for debug
-//					total += read_len;
-//					Log.d(TAG, "total=" + total);
-					//for debug
-					dataOutputStream.write(buf, 0, read_len);
+				//if file size is 0bytes,cannot into while xunhuan
+				//and then the client will crash
+				//so we do something error handler
+				if (file.length() == 0) {
+					Log.d(TAG, "the file's size is 0");
+					//这样做，虽然客户端不会卡住进度条，
+					//但是不应该write 0 吧，0是1bytes啊 大小变了
+					//暂时先这样，解决0bytes卡主bug再说
+					dataOutputStream.write(0);
 					dataOutputStream.flush();
+				}else {
+					while ((read_len = dis.read(buf)) != -1) {
+						//for debug
+//						total += read_len;
+//						Log.d(TAG, "total=" + total);
+						//for debug
+						dataOutputStream.write(buf, 0, read_len);
+						dataOutputStream.flush();
+					}
 				}
 			}else {
 				mListener.OnCommunicationLost(this);

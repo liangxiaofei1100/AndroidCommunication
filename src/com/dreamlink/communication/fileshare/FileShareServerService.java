@@ -93,7 +93,7 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 				//add end flag
 				retMsg += Command.END_FLAG;
 				
-				Log.d(TAG, "retMsg=" + retMsg);
+				//Log.d(TAG, "retMsg=" + retMsg);
 				mCommunicationManager.sendMessage(retMsg.getBytes(), 0);
 			} else {
 				// not folder,can not enter here

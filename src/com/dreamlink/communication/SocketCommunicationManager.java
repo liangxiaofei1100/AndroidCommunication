@@ -125,7 +125,7 @@ public class SocketCommunicationManager implements
 	
 	/**
 	 * send file 
-	 * @param communication
+	 * @param communication don't know also
 	 * @param file
 	 * @author yuri
 	 */
