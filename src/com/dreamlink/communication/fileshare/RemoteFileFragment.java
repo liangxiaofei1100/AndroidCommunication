@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
@@ -75,19 +77,23 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 	public FileInfo currentCopyFile = null;
 	public static String copyPath = "";
 	public  String currentFileNmae = "";
-	private DataOutputStream mFileOutStream = null;
 	private FileOutputStream fos = null;
 	
 	private int copyLen = 0;
 	
 	/**file transfer progress dialog*/
-	private ProgressDialog mFileTransferDialog = null;
+	//use custom progressbar dialog
+	private ProgressBarDialog mFileTransferBarDialog = null;
 	/**file list progress dialog*/
 	private ProgressDialog mFileListDialog = null;
 	
 	//test var
 	private long start_time = 0;
 	private long end_time = 0;
+	//record time to jisuan transfer speed
+	private long now_time = 0;
+	//start a thread record transfer speed
+	private Timer mSpeedTimer;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -109,6 +115,15 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 		} else {
 			mTipView.setVisibility(View.GONE);
 			mListView.setVisibility(View.VISIBLE);
+			
+			if (mFileListDialog == null) {
+				mFileListDialog = new ProgressDialog(mContext);
+				mFileListDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+				mFileListDialog.setIndeterminate(true);
+				mFileListDialog.setCancelable(false);
+				mFileListDialog.show();
+			}
+			
 			//tell server that i want look u sdcard files
 			String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
 			sendCommandMsg(cmdMsg);
@@ -130,13 +145,6 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 	 * @param path file path
 	 */
 	public void sendCommandMsg(String cmdMsg){
-		if (mFileListDialog == null) {
-			mFileListDialog = new ProgressDialog(mContext);
-			mFileListDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			mFileListDialog.setIndeterminate(true);
-			mFileListDialog.setCancelable(false);
-			mFileListDialog.show();
-		}
 		mCommunicationManager.sendMessage(cmdMsg.getBytes(), 0);
 	}
 
@@ -149,9 +157,8 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 			//receive file from server
 			try {
 				copyLen += msg.length;
-				if (mFileTransferDialog != null) {
-					//update progresDialog
-					mFileTransferDialog.setProgress(copyLen);
+				if (mFileTransferBarDialog != null) {
+					mFileTransferBarDialog.setDProgress(copyLen);
 				}else {
 					Log.e(TAG, "mProgressDialog is null");
 				}
@@ -185,9 +192,15 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					
 					start_time = 0;
 					end_time = 0;
+					now_time = 0;
+					if (mSpeedTimer != null) {
+						mSpeedTimer.cancel();
+						mSpeedTimer = null;
+					}
 					
-					if (mFileTransferDialog != null) {
-						mFileTransferDialog.cancel();
+					////////////////
+					if (mFileTransferBarDialog != null) {
+						mFileTransferBarDialog.cancel();
 					}
 					//********clear end***********//
 				}
@@ -207,7 +220,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 			//the first line is command flag
 			//the last line is end flag
 			String[] splitMsg = ret_msg.split(Command.ENTER);
-
+			
 			// 看到结束标志，才真的结束，否则不解析
 			if (Command.END_FLAG.equals(splitMsg[splitMsg.length - 1])) {
 				wholeReceiveMsg += ret_msg;
@@ -216,8 +229,8 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					//LSRETN, is ls command return msg
 					//every line is a folder or file
 					//command format:[LSRTN][...]
-					currentPath = splitMsg[1];
-					parentPath = splitMsg[2];
+					currentPath = newSplitMsg[1];
+					parentPath = newSplitMsg[2];
 
 					//folder list
 					ArrayList<FileInfo> folderList = new ArrayList<FileInfo>();
@@ -225,7 +238,6 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					ArrayList<FileInfo> fileList = new ArrayList<FileInfo>();
 
 					FileInfo fileInfo = null;
-					Log.d(TAG, "files nums:" + newSplitMsg.length);
 					for (int i = 3; i < newSplitMsg.length - 1; i++) {
 						// split again
 						String[] fileStr = newSplitMsg[i].split(Command.SEPARTOR);
@@ -251,7 +263,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					// combine
 					mList.addAll(folderList);
 					mList.addAll(fileList);
-
+					Log.d(TAG, "files list nums:" + mList.size());
 					// clear 0
 					wholeReceiveMsg = "";
 
@@ -317,6 +329,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 				msg = Command.LS + Command.AITE + fileInfo.filePath;
 			}
 		}
+		Log.d(TAG, "send cmd=>" + msg);
 		sendCommandMsg(msg);
 	}
 	
@@ -389,16 +402,25 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					Log.e(TAG, "IO error:" + e.toString());
 					e.printStackTrace();
 				}
-				mFileTransferDialog = new ProgressDialog(mContext);
-				mFileTransferDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-				mFileTransferDialog.setMax((int) currentCopyFile.fileSize);
-				//set it false that can update progress
-				mFileTransferDialog.setIndeterminate(false);
-				mFileTransferDialog.setCancelable(false);
-				mFileTransferDialog.show();
+				
+				mFileTransferBarDialog = new ProgressBarDialog(mContext);
+				mFileTransferBarDialog.setDMax(currentCopyFile.fileSize);
+				mFileTransferBarDialog.setMessage("copying:" + currentCopyFile.fileName);
+				mFileTransferBarDialog.setCancelable(false);
+				mFileTransferBarDialog.show();
 				
 				start_time = System.currentTimeMillis();
 				Log.d(TAG, "start copy time:"+ start_time);
+				
+				mSpeedTimer = new Timer();
+				mSpeedTimer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						now_time = System.currentTimeMillis();
+						 long speed = (long) ((double)copyLen / ((now_time - start_time) / 1000));
+						 mFileTransferBarDialog.setSpeed(speed);
+					}
+				}, 1000, 1000);
 				
 				//send msg to server that i want this file
 				String copyCmd = Command.COPY + Command.AITE + currentCopyFile.filePath;

@@ -82,7 +82,6 @@
             android:label="@string/fileshare_label"
             android:screenOrientation="portrait" >
         </activity>
-        
         <service 
             android:name="com.dreamlink.communication.fileshare.FileShareServerService"
             >

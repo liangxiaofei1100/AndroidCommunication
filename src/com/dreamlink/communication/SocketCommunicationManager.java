@@ -1,7 +1,6 @@
 package com.dreamlink.communication;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,19 +9,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.os.Handler;
-import android.sax.StartElementListener;
-import android.text.TextUtils;
-
 import com.dreamlink.communication.SocketCommunication.ICommunicate;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
-import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
 
 public class SocketCommunicationManager implements
 		OnCommunicationChangedListener, ICommunicate {
@@ -83,11 +75,10 @@ public class SocketCommunicationManager implements
 		}
 		if (mCommunications != null) {
 			synchronized (mCommunications) {
-				HashSet<SocketCommunication> hash = mCommunications;
-				for (SocketCommunication communication : hash) {
-					if (communication.getId() != idThread) {
-						sendMessage(communication, message);
-					}
+					for (SocketCommunication communication : mCommunications) {
+						if (communication.getId() != idThread) {
+							sendMessage(communication, message);
+						}
 				}
 			}
 

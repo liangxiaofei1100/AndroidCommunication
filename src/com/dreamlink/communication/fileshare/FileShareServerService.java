@@ -36,8 +36,6 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 		serviceIsStart = true;
 		
 		String cmdMsg = new String(msg);
-		// send return msg
-		String retMsg = "";
 
 		// split msg
 		String[] splitMsg = cmdMsg.split(Command.AITE);
@@ -63,6 +61,9 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 			if (!file.exists()) {
 				return;
 			} else if (file.isDirectory()) {
+				// send return msg
+				String retMsg = "";
+				
 				// add head flag
 				retMsg = Command.LSRETN + Command.ENTER;
 				//add current path 
@@ -91,12 +92,13 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 				}
 				//add end flag
 				retMsg += Command.END_FLAG;
+				
+				Log.d(TAG, "retMsg=" + retMsg);
+				mCommunicationManager.sendMessage(retMsg.getBytes(), 0);
 			} else {
 				// not folder,can not enter here
 				return;
 			}
-//			Log.d(TAG, "retMsg=" + retMsg);
-			mCommunicationManager.sendMessage(retMsg.getBytes(), 0);
 		} else if (Command.COPY.equals(splitMsg[0])) {
 			// copy file command
 			Log.d(TAG, "OK,I got copy command");
