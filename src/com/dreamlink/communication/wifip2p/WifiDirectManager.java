@@ -17,6 +17,8 @@ import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
+
+import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
 
 @TargetApi(14)
@@ -26,6 +28,7 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 	private WifiManager mWifiManager;
 	private boolean serverFlag = false;
 	public Channel channel;
+	private Context context;
 	private ArrayList<ManagerP2pDeivce> observerList;
 
 	public interface ManagerP2pDeivce {
@@ -35,6 +38,7 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 	};
 
 	public WifiDirectManager(Context context) {
+		this.context = context;
 		mWifiP2pManager = (WifiP2pManager) context
 				.getSystemService(Context.WIFI_P2P_SERVICE);
 		mWifiManager = (WifiManager) context
@@ -44,6 +48,8 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 					context.getMainLooper(), null);
 			observerList = new ArrayList<WifiDirectManager.ManagerP2pDeivce>();
 		}
+		setDeviceName(mWifiP2pManager, channel,
+				UserHelper.getUserName(context), null);
 	}
 
 	public WifiDirectManager(Context context, boolean flag) {
@@ -166,11 +172,11 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 		this.serverFlag = flag;
 		this.stopSearch();
 		if (serverFlag) {
-			setDeviceName(mWifiP2pManager, channel, "DreamLink"
-					+ mWifiManager.getConnectionInfo().getMacAddress(), null);
+			setDeviceName(mWifiP2pManager, channel,
+					"DreamLink" + UserHelper.getUserName(context), null);
 		} else {
-			setDeviceName(mWifiP2pManager, channel, mWifiManager
-					.getConnectionInfo().getMacAddress(), null);
+			setDeviceName(mWifiP2pManager, channel,
+					UserHelper.getUserName(context), null);
 		}
 		this.discover();
 		getPeerDevice(serverFlag);

@@ -76,6 +76,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	private Handler mHandler = new Handler() {
 
+		@SuppressWarnings("unchecked")
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_SEARCH_SUCCESS:
@@ -255,6 +256,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		this.unregisterReceiver(wifiDirectReciver);
 	}
 
+	@SuppressLint("HandlerLeak")
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -267,9 +269,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
 			mWifiDirectManager = null;
 		}
-		unregisterReceiverSafe(mWifiBroadcastReceiver);
 	}
 
+	@SuppressLint("HandlerLeak")
 	@Override
 	public void onSearchSuccess(String serverIP) {
 		if (!mServer.contains(serverIP)) {
@@ -445,7 +447,8 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		if (serverList != null) {
 			deviceList = serverList;
 			for (WifiP2pDevice device : serverList) {
-				temp.add(device.deviceName);
+				String name=device.deviceName;
+				temp.add(name.substring(9));
 			}
 			mHandler.obtainMessage(90, temp).sendToTarget();
 		}
