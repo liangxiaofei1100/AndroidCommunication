@@ -129,7 +129,6 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 		serviceIsStart = false;
 		
 		mCommunicationManager.unregistered(this);
-		mCommunicationManager.closeCommunication();
 	}
 
 }

@@ -1,6 +1,5 @@
 package com.dreamlink.communication.wifip2p;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
@@ -22,6 +21,10 @@ import android.util.Log;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
 
+/**
+ * Manage WiFi direct to search peers and connect peers.
+ * 
+ */
 @TargetApi(14)
 public class WifiDirectManager implements WifiDirectDeviceNotify {
 	private static final String TAG = "WifiDirectManager";
@@ -70,18 +73,8 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 			Method method = manager.getClass().getMethod("setDeviceName",
 					Channel.class, String.class, ActionListener.class);
 			method.invoke(manager, channel, name, listener);
-		} catch (NoSuchMethodException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			Log.e(TAG, "setDeviceName fail: " + e);
 		}
 	}
 
@@ -123,7 +116,6 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 
 	@Override
 	public void wifiP2pConnected() {
-		// TODO Auto-generated method stub
 		notifyConnect();
 	}
 
@@ -134,7 +126,6 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 					"NewApi", "NewApi", "NewApi", "NewApi", "NewApi", "NewApi",
 					"NewApi", "NewApi", "NewApi" })
 			public void onPeersAvailable(WifiP2pDeviceList peers) {
-				// // TODO Auto-generated method stub
 				if (!flag) {
 					for (WifiP2pDevice device : peers.getDeviceList()) {
 						if (device.deviceName.contains("DreamLink")) {
@@ -155,7 +146,6 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 		mWifiP2pManager.requestConnectionInfo(this.channel,
 				new ConnectionInfoListener() {
 					public void onConnectionInfoAvailable(WifiP2pInfo info) {
-						// TODO Auto-generated method stub
 						if (observerList != null) {
 							for (ManagerP2pDeivce f : observerList) {
 								f.hasConnect(info);
@@ -167,7 +157,6 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 
 	@Override
 	public void notifyDeviceChange() {
-		// TODO Auto-generated method stub
 		getPeerDevice(serverFlag);
 	}
 

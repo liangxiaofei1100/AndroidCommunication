@@ -3,40 +3,57 @@ package com.dreamlink.communication.client;
 import java.net.Socket;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Message;
 
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.util.Notice;
 
+/**
+ * This class is a AsyncTask, used for creating client socket and connecting to
+ * server.</br>
+ * 
+ * After connected server, start communication with server socket.</br>
+ * 
+ */
 @SuppressLint("UseValueOf")
 public class SocketClientTask extends AsyncTask<String, Void, Socket> {
 
 	private SocketCommunicationManager manager;
-	private Context activity;
+	private Context mContext;
 	private ProgressDialog progressDialog;
 	private Notice notice;
 
 	private SocketClient client;
 
-	public SocketClientTask(Context context,
-			SocketCommunicationManager mangaer, int what) {
-		this.activity = context;
-		this.manager = mangaer;
+	public SocketClientTask(Context context, SocketCommunicationManager manager) {
+		this.mContext = context;
+		this.manager = manager;
 
 		client = new SocketClient();
-		notice = new Notice(activity);
+		notice = new Notice(mContext);
 	}
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		progressDialog = ProgressDialog.show(activity, "Client",
-				"Connecting to server...");
+		
+		progressDialog = new ProgressDialog(mContext);
+		progressDialog.setTitle("Server");
+		progressDialog.setMessage("Connecting to server...");
+		progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, "Stop",
+				new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						cancel(true);
+						progressDialog.dismiss();
+					}
+				});
+		progressDialog.setCancelable(false);
+		progressDialog.show();
 	}
 
 	@Override

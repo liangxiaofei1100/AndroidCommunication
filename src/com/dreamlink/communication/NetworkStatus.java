@@ -1,4 +1,4 @@
-package com.dreamlink.communication.server;
+package com.dreamlink.communication;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -8,14 +8,14 @@ import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 /**
- * Show client status dialog. It is used for debug.
+ * Show Network Status dialog. It is used for debug.
  * 
  */
-public class ServerStatus {
+public class NetworkStatus {
 	private Context mContext;
 	private SocketCommunicationManager mCommunicationManager;
 
-	public ServerStatus(Context context) {
+	public NetworkStatus(Context context) {
 		mContext = context;
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(mContext);
@@ -25,7 +25,7 @@ public class ServerStatus {
 		AlertDialog.Builder alertConfig = new AlertDialog.Builder(mContext);
 		alertConfig.setIcon(mContext.getResources().getDrawable(
 				R.drawable.ic_launcher));
-		alertConfig.setTitle("Server status");
+		alertConfig.setTitle("Network status");
 		alertConfig.setMessage(getStatus());
 
 		alertConfig.create().show();

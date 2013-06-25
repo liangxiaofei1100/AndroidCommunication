@@ -1,13 +1,9 @@
 package com.dreamlink.communication.chat;
 
-import java.net.Socket;
-
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,36 +15,26 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.Search;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
-import com.dreamlink.communication.SocketMessage;
-import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
-import com.dreamlink.communication.client.ClientConfig;
 import com.dreamlink.communication.client.ClientStatus;
-import com.dreamlink.communication.client.SearchSever;
-import com.dreamlink.communication.client.ServerListActivity;
-import com.dreamlink.communication.client.SocketClientTask;
-import com.dreamlink.communication.client.ClientConfig.OnClientConfigListener;
-import com.dreamlink.communication.client.SearchSever.OnSearchListener;
-import com.dreamlink.communication.fileshare.FileListActivity;
-import com.dreamlink.communication.fileshare.FileMainUI;
-import com.dreamlink.communication.server.SearchClient;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
-public class ClientActivity extends Activity implements OnClickListener,
-		OnCommunicationListener, OnClientConfigListener {
+/**
+ * This activity is a chat client. It can send to chat server and receive
+ * message from chat server.
+ * 
+ */
+public class ChatClientActivity extends Activity implements OnClickListener,
+		OnCommunicationListener {
 	@SuppressWarnings("unused")
-	private static final String TAG = "ClientActivity";
-
-	private static final int REQUEST_SERACH_SERVER = 1;
+	private static final String TAG = "ChatClientActivity";
 
 	private EditText mMessageEidtText;
 	private Button mSendButton;
-
 	private ListView mHistoricList;
 	private ArrayAdapter<String> mHistoricListAdapter;
 
@@ -57,11 +43,8 @@ public class ClientActivity extends Activity implements OnClickListener,
 
 	private SocketCommunicationManager mCommunicationManager;
 
-	private SearchSever mSearchServer;
-	
-	//add by yuri
-	//add a button to access remote server
-	private Button mAccessBtn;
+	// Handler message
+	private static final int MSG_RECEIVED_MESSAGE = 1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +62,6 @@ public class ClientActivity extends Activity implements OnClickListener,
 		mMessageEidtText = (EditText) findViewById(R.id.edtMsg);
 		mSendButton = (Button) findViewById(R.id.btnSend);
 		mHistoricList = (ListView) findViewById(R.id.lstHistoric);
-		
-		mAccessBtn = (Button) findViewById(R.id.btnAccess);
-		mAccessBtn.setVisibility(View.VISIBLE);
 
 		mHistoricListAdapter = new ArrayAdapter<String>(mContext,
 				android.R.layout.simple_list_item_1);
@@ -89,7 +69,6 @@ public class ClientActivity extends Activity implements OnClickListener,
 
 		mMessageEidtText.setOnClickListener(this);
 		mSendButton.setOnClickListener(this);
-		mAccessBtn.setOnClickListener(this);
 	}
 
 	@Override
@@ -115,29 +94,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 				mNotice.showToast("No network");
 			}
 			break;
-			
-		case R.id.btnAccess:
-			//start FileListActivity
-//			Intent intent = new Intent(ClientActivity.this, FileListActivity.class);
-//			startActivity(intent);
-			
-			//use new file share activity
-			Intent intent = new Intent(ClientActivity.this, FileMainUI.class);
-			startActivity(intent);
-			break;
 		}
-	}
-
-	private void configClient() {
-		ClientConfig clientConfig = new ClientConfig(mContext, this);
-		clientConfig.showConfigDialog();
-	}
-
-	@Override
-	public void onClientConfig(String serverIP, String portNumber) {
-		SocketClientTask clientTask = new SocketClientTask(mContext,
-				mCommunicationManager, SocketMessage.MSG_SOCKET_CONNECTED);
-		clientTask.execute(new String[] { serverIP, portNumber });
 	}
 
 	@Override
@@ -149,18 +106,8 @@ public class ClientActivity extends Activity implements OnClickListener,
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.action_client_config:
-			if (mCommunicationManager.getCommunications().size() > 0) {
-				mNotice.showToast("Already connected to server.");
-			} else {
-				configClient();
-			}
-			break;
 		case R.id.menu_network_status:
 			showClientStatus();
-			break;
-		case R.id.menu_search:
-			searchServer();
 			break;
 		default:
 			break;
@@ -177,32 +124,15 @@ public class ClientActivity extends Activity implements OnClickListener,
 	protected void onDestroy() {
 		super.onDestroy();
 		mCommunicationManager.unregistered(this);
-		mCommunicationManager.closeCommunication();
-		if (mSearchServer != null) {
-			mSearchServer.stopSearch();
-		}
-
 	}
 
 	private Handler mHandler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
 			synchronized (msg) {
 				switch (msg.what) {
-				case SocketMessage.MSG_SOCKET_CONNECTED:
-//					Socket socket = (Socket) (msg.obj);
-//					mCommunicationManager.addCommunication(socket, mHandler);
-					break;
-
-				case SocketMessage.MSG_SOCKET_NOTICE:
-					String message = (String) (msg.obj);
-
-					mNotice.showToast(message);
-					break;
-
-				case SocketMessage.MSG_SOCKET_MESSAGE:
-					String messageBT = (String) (msg.obj);
-
-					mHistoricListAdapter.add("Receive" + ": " + messageBT);
+				case MSG_RECEIVED_MESSAGE:
+					String receivedMsg = (String) (msg.obj);
+					mHistoricListAdapter.add("Receive" + ": " + receivedMsg);
 					mHistoricListAdapter.notifyDataSetChanged();
 					break;
 				}
@@ -210,36 +140,12 @@ public class ClientActivity extends Activity implements OnClickListener,
 		};
 	};
 
-	private void searchServer() {
-		Intent intent = new Intent();
-		intent.setClass(this, ServerListActivity.class);
-		startActivityForResult(intent, REQUEST_SERACH_SERVER);
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == RESULT_OK) {
-			switch (requestCode) {
-			case REQUEST_SERACH_SERVER:
-				String serverIP = data.getStringExtra(Search.EXTRA_IP);
-				onClientConfig(serverIP, SocketCommunication.PORT);
-				break;
-
-			default:
-				break;
-			}
-		}
-
-		super.onActivityResult(requestCode, resultCode, data);
-	}
-
 	@Override
 	public void onReceiveMessage(byte[] msg, SocketCommunication id) {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "onReceiveMessage");
 		/** need to parse the msg */
-		String messageBT = new String(msg);
-		mHandler.obtainMessage(SocketMessage.MSG_SOCKET_MESSAGE, messageBT)
+		String receivedMsg = new String(msg);
+		mHandler.obtainMessage(MSG_RECEIVED_MESSAGE, receivedMsg)
 				.sendToTarget();
 	}
 
@@ -252,7 +158,6 @@ public class ClientActivity extends Activity implements OnClickListener,
 	@Override
 	public void notifyConnectChanged() {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
 }

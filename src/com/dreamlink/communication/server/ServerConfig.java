@@ -1,6 +1,7 @@
 package com.dreamlink.communication.server;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.client.SearchSever;
 import com.dreamlink.communication.util.Notice;
 
 import android.app.AlertDialog;
@@ -9,6 +10,11 @@ import android.content.DialogInterface;
 import android.text.InputType;
 import android.widget.EditText;
 
+/**
+ * This class is use for show config server dialog. It can be used in manual
+ * setting server. For now, we use auto search to config client. see
+ * {@link SearchClient}.
+ */
 public class ServerConfig {
 
 	public interface OnServerConfigListener {

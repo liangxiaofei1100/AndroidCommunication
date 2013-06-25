@@ -54,12 +54,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.dreamlink.communication.chat.ClientActivity"
+            android:name=".chat.ChatClientActivity"
             android:label="@string/app_name_client"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="com.dreamlink.communication.chat.ServerActivity"
+            android:name=".chat.ChatServerActivity"
             android:label="@string/app_name_server"
             android:screenOrientation="portrait" >
         </activity>

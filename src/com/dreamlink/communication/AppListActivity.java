@@ -22,6 +22,8 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -159,13 +161,35 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 
 	@Override
 	public void finish() {
-		// TODO Auto-generated method stub
 		super.finish();
 		if (Build.VERSION.SDK_INT >= 14) {
 			WifiDirectManager manager = new WifiDirectManager(this);
 			SocketCommunicationManager.getInstance(this).closeCommunication();
 			manager.stopConnect();
 		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.app_list, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_network_status:
+			showNetworkStatus();
+			break;
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	private void showNetworkStatus() {
+		NetworkStatus status = new NetworkStatus(mContext);
+		status.show();
 	}
 
 }

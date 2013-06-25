@@ -7,12 +7,9 @@ import java.util.Map;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.Search;
-import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.AppListActivity;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
-import com.dreamlink.communication.server.SocketServerTask;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -53,6 +50,12 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+/**
+ * This class is used for search server in the WiFi network.</br>
+ * 
+ * It can search WiFi AP server, WiFi STA server and WiFi direct server. </br>
+ * 
+ */
 @TargetApi(14)
 public class ServerListActivity extends Activity implements OnSearchListener,
 		OnItemClickListener, OnClickListener, ManagerP2pDeivce {
@@ -131,6 +134,28 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		}
 	};
 
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_client_list);
+		mContext = this;
+		mNotice = new Notice(mContext);
+		initView();
+		mSearchServer = SearchSever.getInstance(this);
+		mSearchServer.setOnSearchListener(this);
+		mCommunicationManager = SocketCommunicationManager.getInstance(this);
+		mNotice.showToast("Start Search");
+		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		setWifiEnabled(true);
+		mWiFiFilter = new IntentFilter();
+		mWiFiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+		mWiFiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+		mWiFiFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+		initReceiver();
+
+		mIsAPSelected = false;
+	}
+
 	/**
 	 * add found server to server list. If server type is IP, just add and wait
 	 * user to choose. If server is AP, show the user name.
@@ -173,31 +198,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		}
 	}
 
-	private void clearServer() {
+	private void clearServerList() {
 		mServerData.clear();
 		mServerAdapter.notifyDataSetChanged();
-	}
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_client_list);
-		mContext = this;
-		mNotice = new Notice(mContext);
-		initView();
-		mSearchServer = SearchSever.getInstance(this);
-		mSearchServer.setOnSearchListener(this);
-		mCommunicationManager = SocketCommunicationManager.getInstance(this);
-		mNotice.showToast("Start Search");
-		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		setWifiEnabled(true);
-		mWiFiFilter = new IntentFilter();
-		mWiFiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
-		mWiFiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-		mWiFiFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-		initReceiver();
-
-		mIsAPSelected = false;
 	}
 
 	/**
@@ -409,10 +412,13 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	}
 
+	/**
+	 * {@link #MSG_CONNECT_SERVER}
+	 * 
+	 * @param ip
+	 */
 	private void connectServer(String ip) {
-		SocketClientTask clientTask = new SocketClientTask(mContext,
-				mCommunicationManager, SocketMessage.MSG_SOCKET_CONNECTED);
-		clientTask.execute(new String[] { ip, SocketCommunication.PORT });
+		mCommunicationManager.connectServer(mContext, ip);
 	}
 
 	public void connetAP(String SSID) {
@@ -466,7 +472,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	private void handleScanReuslt() {
 		Log.d(TAG, "handleScanReuslt()");
-		clearServer();
+		clearServerList();
 		final List<ScanResult> results = mWifiManager.getScanResults();
 		if (results != null) {
 			for (ScanResult result : results) {
@@ -565,15 +571,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		Log.e("ArbiterLiu", "" + info.isGroupOwner);
 
 		if (info.isGroupOwner) {
-			SocketServerTask serverTask = new SocketServerTask(mContext,
-					mCommunicationManager);
-			serverTask.execute(new String[] { SocketCommunication.PORT });
+			mCommunicationManager.startServer(mContext);
 		} else {
-			SocketClientTask clientTask = new SocketClientTask(mContext,
-					mCommunicationManager, SocketMessage.MSG_SOCKET_CONNECTED);
-			clientTask.execute(new String[] {
-					info.groupOwnerAddress.getHostAddress(),
-					SocketCommunication.PORT });
+			connectServer(info.groupOwnerAddress.getHostAddress());
 			if (mWifiDirectManager != null) {
 				mWifiDirectManager.stopSearch();
 				mWifiDirectManager.unRegisterObserver(this);
@@ -615,8 +615,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		if (SSID.startsWith(Search.WIFI_AP_NAME)) {
 			return SSID.substring(Search.WIFI_AP_NAME.length());
 		} else {
-			Log.e(TAG, "getAPServerUserName(), SSID is not match. SSID ="
-					+ SSID);
+			Log.e(TAG, "apName2UserName(), SSID is not match. SSID =" + SSID);
 			return "";
 		}
 	}

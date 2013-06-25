@@ -7,6 +7,10 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.util.NetWorkUtil;
 
+/**
+ * Show client status dialog. It is used for debug.
+ * 
+ */
 public class ClientStatus {
 	private Context mContext;
 	private SocketCommunicationManager mCommunicationManager;

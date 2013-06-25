@@ -5,6 +5,7 @@ import com.dreamlink.communication.AppListActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+
 /**
  * Launch chat activity base on server or client mode.
  * 
@@ -25,9 +26,9 @@ public class ChatLauncher extends Activity {
 	private void launchActivity(boolean isServer) {
 		Intent intent = new Intent();
 		if (isServer) {
-			intent.setClass(this, ServerActivity.class);
+			intent.setClass(this, ChatServerActivity.class);
 		} else {
-			intent.setClass(this, ClientActivity.class);
+			intent.setClass(this, ChatClientActivity.class);
 		}
 		startActivity(intent);
 	}

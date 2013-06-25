@@ -4,23 +4,27 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class SocketClient { 
+import com.dreamlink.communication.util.Log;
 
+/**
+ * This class is used for creating client socket to connect server socket.
+ * 
+ */
+public class SocketClient {
+	private static final String TAG = "SocketClient";
 	private Socket socket;
-	
-	public Socket startClient(String host, int port){
-		
+
+	public Socket startClient(String host, int port) {
 		try {
 			socket = new Socket(host, port);
-			
+
 			return socket;
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			Log.e(TAG, "Connect server fail. server: " + host + ", port: " + port + ". " + e);
 		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-		
+			Log.e(TAG, "Connect server fail. server: " + host + ", port: " + port + ". " + e);
+		}
 		return null;
 	}
-	 
-}  
+
+}

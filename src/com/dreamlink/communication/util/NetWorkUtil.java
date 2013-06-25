@@ -5,26 +5,21 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.List;
 
 import com.dreamlink.communication.Search;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.text.TextUtils;
 
 public class NetWorkUtil {
 	private static final String TAG = "NetWorkUtil";
 	private static MulticastLock mMulticastLock;
-	private static String mAPName;
 
 	public static boolean isNetworkConnected(Context context) {
 		ConnectivityManager cm = (ConnectivityManager) context
