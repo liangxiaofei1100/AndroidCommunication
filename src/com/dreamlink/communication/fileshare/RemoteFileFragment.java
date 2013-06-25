@@ -145,6 +145,9 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 	 * @param path file path
 	 */
 	public void sendCommandMsg(String cmdMsg){
+		if ("".equals(cmdMsg)) {
+			return;
+		}
 		mCommunicationManager.sendMessage(cmdMsg.getBytes(), 0);
 	}
 
@@ -194,6 +197,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					if (mFileTransferBarDialog != null) {
 						mFileTransferBarDialog.cancel();
 					}
+					Log.d(TAG, "Transfer Success!");
 					//********clear end***********//
 				}
 				
@@ -310,7 +314,9 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 		if (position == 0) {
 			//click to back to parent path
 //			mNotice.showToast("back to " + parentPath);
-			msg = Command.LS + Command.AITE + parentPath;
+			if (!"".equals(parentPath)) {
+				msg = Command.LS + Command.AITE + parentPath;
+			}
 		} else {
 			//why - 1?beacuse the first position is back button.
 			position = position - 1;
@@ -379,9 +385,6 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 			case R.id.file_paste:
 				mActionMode.finish();
 				
-				//start copy
-				mNotice.showToast("start copy " + currentCopyFile.fileName);
-				
 				try {
 					File file = new File(LocalFileFragment.mCurrentPath + "/" + currentCopyFile.fileName);
 					if (!file.exists()) {
@@ -403,22 +406,28 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 				mFileTransferBarDialog.setCancelable(true);
 				mFileTransferBarDialog.show();
 				
-				start_time = System.currentTimeMillis();
-				Log.d(TAG, "start copy time:"+ start_time);
-				
-				mSpeedTimer = new Timer();
-				mSpeedTimer.schedule(new TimerTask() {
-					@Override
-					public void run() {
-						now_time = System.currentTimeMillis();
-						 long speed = (long) ((double)copyLen / ((now_time - start_time) / 1000));
-						 mFileTransferBarDialog.setSpeed(speed);
-					}
-				}, 1000, 1000);
-				
-				//send msg to server that i want this file
-				String copyCmd = Command.COPY + Command.AITE + currentCopyFile.filePath;
-				mCommunicationManager.sendMessage(copyCmd.getBytes(), 0);
+				if (currentCopyFile.fileSize == 0) {
+					//如果文件的大小为0，则就不用向服务器发送copy指令了，直接在客户端创建一个0bytes的文件号了
+					mFileTransferBarDialog.cancel();
+					mNotice.showToast("Transfer Success!");
+				}else {
+					start_time = System.currentTimeMillis();
+					Log.d(TAG, "start copy time:"+ start_time);
+					
+					mSpeedTimer = new Timer();
+					mSpeedTimer.schedule(new TimerTask() {
+						@Override
+						public void run() {
+							now_time = System.currentTimeMillis();
+							 long speed = (long) ((double)copyLen / ((now_time - start_time) / 1000));
+							 mFileTransferBarDialog.setSpeed(speed);
+						}
+					}, 1000, 1000);
+					
+					//send msg to server that i want this file
+					String copyCmd = Command.COPY + Command.AITE + currentCopyFile.filePath;
+					mCommunicationManager.sendMessage(copyCmd.getBytes(), 0);
+				}
 				break;
 				
 			case R.id.menu_cancel:
