@@ -20,6 +20,7 @@ import com.dreamlink.communication.util.Notice;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -89,7 +90,6 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 	
 	//test var
 	private long start_time = 0;
-	private long end_time = 0;
 	//record time to jisuan transfer speed
 	private long now_time = 0;
 	//start a thread record transfer speed
@@ -120,7 +120,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 				mFileListDialog = new ProgressDialog(mContext);
 				mFileListDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 				mFileListDialog.setIndeterminate(true);
-				mFileListDialog.setCancelable(false);
+				mFileListDialog.setCancelable(true);
 				mFileListDialog.show();
 			}
 			
@@ -156,6 +156,8 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 		if (currentCopyFile != null) {
 			//receive file from server
 			try {
+				///这里也会有很大问题，在复制文件的同时，有其他程序在聊天，这里会把其他人聊天的字节认为是文件的，导致文件传输出现问题
+				///暂时还没好的解决方案，wait
 				copyLen += msg.length;
 				if (mFileTransferBarDialog != null) {
 					mFileTransferBarDialog.setDProgress(copyLen);
@@ -174,15 +176,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 				}
 				
 				//receive over,close fileoutputstream
-				if (copyLen == ((int)currentCopyFile.fileSize)) {
-					///////////for test/////////////
-					end_time = System.currentTimeMillis();
-					Log.d(TAG, "end copy time:"+ end_time);
-					//bytes/second
-					long bytes_per = (long) (currentCopyFile.fileSize /((end_time - start_time) / 1000));
-					Log.d(TAG, "bytes/per:" + bytes_per);
-					///////////for test/////////////
-					
+				if (copyLen >= ((int)currentCopyFile.fileSize)) {
 					//********clear begin***********//
 					fos.close();
 					fos = null;
@@ -191,14 +185,12 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					copyLen = 0;
 					
 					start_time = 0;
-					end_time = 0;
 					now_time = 0;
 					if (mSpeedTimer != null) {
 						mSpeedTimer.cancel();
 						mSpeedTimer = null;
 					}
 					
-					////////////////
 					if (mFileTransferBarDialog != null) {
 						mFileTransferBarDialog.cancel();
 					}
@@ -210,9 +202,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 				e.printStackTrace();
 			}
 		}else {
-			// Clear File array list
-			mList.clear();
-			
+			//receive file list return msg
 			// convert byte[] to String
 			String ret_msg = new String(msg);
 
@@ -260,6 +250,8 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					// sort
 					Collections.sort(folderList);
 					Collections.sort(fileList);
+					// Clear File array list
+					mList.clear();
 					// combine
 					mList.addAll(folderList);
 					mList.addAll(fileList);
@@ -270,6 +262,8 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					uihandler.sendMessage(uihandler.obtainMessage(UPDATE_UI));
 				}
 			} else {
+				///有最大的问题，如果其他程序在聊天，我这里也会接受到，然后就会把他们聊天的内容认为是文件，但其实不是文件，然后就会出现Bug
+				//暂时还没解决方法，wait
 				// not over yet
 				wholeReceiveMsg += ret_msg;
 			}
@@ -406,7 +400,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 				mFileTransferBarDialog = new ProgressBarDialog(mContext);
 				mFileTransferBarDialog.setDMax(currentCopyFile.fileSize);
 				mFileTransferBarDialog.setMessage("copying:" + currentCopyFile.fileName);
-				mFileTransferBarDialog.setCancelable(false);
+				mFileTransferBarDialog.setCancelable(true);
 				mFileTransferBarDialog.show();
 				
 				start_time = System.currentTimeMillis();

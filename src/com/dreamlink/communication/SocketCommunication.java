@@ -298,19 +298,32 @@ public class SocketCommunication extends Thread {
 				int bufferSize = 4 * 1024;
 				byte[] buf = new byte[bufferSize];
 				int read_len = 0;
-				while ((read_len = dis.read(buf)) != -1) {
-					Log.d(TAG, "read_len = " + read_len);
-					if (read_len < bufferSize) {
-						Log.d(TAG, "send file: " + read_len);
-						// read length less than buff.
-						sendMsg(Arrays.copyOfRange(buf, 0, read_len));
-					} else {
-						Log.d(TAG, "send file: " + read_len);
-						// read length less than buff.
-						sendMsg(buf);
+				int total = 0;
+				// if file size is 0bytes,cannot into while xunhuan
+				// and then the client will crash
+				// so we do something error handler
+				if (file.length() == 0) {
+					Log.d(TAG, "the file's size is 0");
+					// 这样做，虽然客户端不会卡住进度条，
+					// 但是不应该write 0 吧，0是1bytes啊 大小变了
+					// 暂时先这样，解决0bytes卡主bug再说
+					dataOutputStream.write(0);
+					dataOutputStream.flush();
+				} else {
+					while ((read_len = dis.read(buf)) != -1) {
+						Log.d(TAG, "read_len = " + read_len);
+						if (read_len < bufferSize) {
+							Log.d(TAG, "send file: " + read_len);
+							// read length less than buff.
+							sendMsg(Arrays.copyOfRange(buf, 0, read_len));
+						} else {
+							Log.d(TAG, "send file: " + read_len);
+							// read length less than buff.
+							sendMsg(buf);
+						}
 					}
+					Log.d(TAG, "read_len11 = " + read_len);
 				}
-				Log.d(TAG, "read_len11 = " + read_len);
 			} else {
 				mListener.OnCommunicationLost(this);
 			}
