@@ -119,6 +119,11 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 				break;
 			case MSG_CONNECT_SERVER:
 				connectServer((String) msg.obj);
+				if (WifiP2pServer) {
+					mSearchServer.stopSearch();
+					mServerData.clear();
+					return;
+				}
 				launchAppList();
 				// TODO finish it to avoid connect repeat.
 				finish();
@@ -409,16 +414,20 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 					mWifiDirectManager.unRegisterObserver(this);
 					mWifiDirectManager = null;
 				}
-				launchAppList();
-				// TODO finish it to avoid connect repeat.
-				finish();
 			}
+			if (WifiP2pServer) {
+				mSearchServer.stopSearch();
+				mServerData.clear();
+				return;
+			}
+			launchAppList();
+			// TODO finish it to avoid connect repeat.
+			finish();
 			break;
 
 		default:
 			break;
 		}
-
 	}
 
 	private void connectServer(String ip) {
@@ -565,11 +574,14 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	@Override
 	public void deviceChange(ArrayList<WifiP2pDevice> serverList) {
 		ArrayList<String> temp = new ArrayList<String>();
+		if (WifiP2pServer) {
+			return;
+		}
 		if (serverList != null) {
 			deviceList = serverList;
 			for (WifiP2pDevice device : serverList) {
 				String name = device.deviceName;
-				temp.add(name.substring(9));
+				temp.add(name.substring("DreamLink".length()));
 			}
 			mHandler.obtainMessage(MSG_SEARCH_WIFI_DIRECT_FOUND, temp)
 					.sendToTarget();
