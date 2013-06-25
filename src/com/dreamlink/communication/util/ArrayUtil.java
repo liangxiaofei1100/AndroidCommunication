@@ -1,6 +1,13 @@
 package com.dreamlink.communication.util;
 
 public class ArrayUtil {
+	/**
+	 * Join two arrays to a new array.
+	 * 
+	 * @param a1
+	 * @param a2
+	 * @return
+	 */
 	public static byte[] join(byte[] a1, byte[] a2) {
 		byte[] result = new byte[a1.length + a2.length];
 		System.arraycopy(a1, 0, result, 0, a1.length);

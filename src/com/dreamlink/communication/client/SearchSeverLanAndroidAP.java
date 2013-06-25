@@ -13,6 +13,18 @@ import com.dreamlink.communication.Search;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
 import com.dreamlink.communication.util.NetWorkUtil;
 
+/**
+ * This class is use for search server in WiFi network in which the AP is
+ * android WiFi hot access point.</br>
+ * 
+ * This class is single instance, So use {@link #getInstance(Context)} to get
+ * object.</br>
+ * 
+ * After started, we send UDP packet to android WiFi hot AP which IP address is
+ * 192.168.43.1 to confirm it is server or not. If the android WiFi hot AP
+ * responds that it is a server, we found a server. </br>
+ * 
+ */
 public class SearchSeverLanAndroidAP implements Runnable {
 
 	private static final String TAG = "SearchSeverLanAndroidAP";

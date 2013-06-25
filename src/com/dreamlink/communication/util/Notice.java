@@ -3,15 +3,19 @@ package com.dreamlink.communication.util;
 import android.content.Context;
 import android.widget.Toast;
 
+/**
+ * Show Android toast.
+ * 
+ */
 public class Notice {
 
 	private Toast toast;
 	private Context context;
 
-	public Notice(Context context){
+	public Notice(Context context) {
 		this.context = context;
 	}
-	
+
 	public void showToast(String mensagem) {
 		if (toast != null) {
 			toast.setText(mensagem);

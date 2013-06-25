@@ -4,22 +4,32 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import android.util.Log;
-
+/**
+ * This class is use for creating server socket, and getting all connected
+ * client sockets
+ * 
+ */
 public class SocketServer {
 
+	/**
+	 * Call back to get client socket.
+	 * 
+	 */
 	public interface OnClientConnectedListener {
+		/**
+		 * A new client socket is connected.
+		 * 
+		 * @param socket
+		 * @return
+		 */
 		public Socket onClientConnected(Socket socket);
 	}
 
+	/** Never time out */
 	private final int TIME_OUT = 0;
-
 	private Socket socket;
-
 	private ServerSocket server;
-
 	private boolean mIsServerStarted = false;
-
 	private static SocketServer mInstance = new SocketServer();
 
 	private SocketServer() {

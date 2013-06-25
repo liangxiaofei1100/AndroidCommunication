@@ -12,6 +12,17 @@ import com.dreamlink.communication.client.SearchSever.OnSearchListener;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
+/**
+ * This class is use for search server in Wifi network in which the AP is not
+ * android WiFi hot access point.</br>
+ * 
+ * This class is single instance, So use {@link #getInstance(Context)} to get
+ * object.</br>
+ * 
+ * After started, we listen the mulitcast message in the network. The message is
+ * the server IP, so when get the message, found a server. </br>
+ * 
+ */
 public class SearchSeverLan implements Runnable {
 
 	private static final String TAG = "SearchSeverLan";

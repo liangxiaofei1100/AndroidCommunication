@@ -7,26 +7,31 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.os.Message;
 
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.server.SocketServer.OnClientConnectedListener;
 import com.dreamlink.communication.util.Notice;
 
+/**
+ * This class is a AsyncTask, used for creating server socket and accept client
+ * socket connection.</br>
+ * 
+ * After connected server, start communication with client socket.</br>
+ * 
+ */
 @SuppressLint("UseValueOf")
 public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 		implements OnClientConnectedListener {
 
-	private Handler handler;
 	private Message message;
 
 	private Context context;
 	private ProgressDialog progressDialog;
 	private Notice notice;
 
-	private SocketServer server;
 	private SocketCommunicationManager manager;
+	private SocketServer server;
 
 	public SocketServerTask(Context context, SocketCommunicationManager manager) {
 		this.context = context;

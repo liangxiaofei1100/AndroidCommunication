@@ -10,8 +10,24 @@ import android.widget.EditText;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.util.Notice;
 
+/**
+ * This class is use for show config client dialog. It can be used in manual
+ * setting client. For now, we use auto search to config client. see
+ * {@link SearchSever}.
+ */
 public class ClientConfig {
+	/**
+	 * Call back interface for config client.
+	 */
 	public interface OnClientConfigListener {
+		/**
+		 * Config client finished.
+		 * 
+		 * @param serverIP
+		 *            server ip address.
+		 * @param portNumber
+		 *            server port.
+		 */
 		public void onClientConfig(String serverIP, String portNumber);
 	}
 
