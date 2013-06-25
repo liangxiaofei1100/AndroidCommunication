@@ -58,9 +58,9 @@ public class ClientActivity extends Activity implements OnClickListener,
 	private SocketCommunicationManager mCommunicationManager;
 
 	private SearchSever mSearchServer;
-	
-	//add by yuri
-	//add a button to access remote server
+
+	// add by yuri
+	// add a button to access remote server
 	private Button mAccessBtn;
 
 	@Override
@@ -79,7 +79,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 		mMessageEidtText = (EditText) findViewById(R.id.edtMsg);
 		mSendButton = (Button) findViewById(R.id.btnSend);
 		mHistoricList = (ListView) findViewById(R.id.lstHistoric);
-		
+
 		mAccessBtn = (Button) findViewById(R.id.btnAccess);
 		mAccessBtn.setVisibility(View.VISIBLE);
 
@@ -115,13 +115,14 @@ public class ClientActivity extends Activity implements OnClickListener,
 				mNotice.showToast("No network");
 			}
 			break;
-			
+
 		case R.id.btnAccess:
-			//start FileListActivity
-//			Intent intent = new Intent(ClientActivity.this, FileListActivity.class);
-//			startActivity(intent);
-			
-			//use new file share activity
+			// start FileListActivity
+			// Intent intent = new Intent(ClientActivity.this,
+			// FileListActivity.class);
+			// startActivity(intent);
+
+			// use new file share activity
 			Intent intent = new Intent(ClientActivity.this, FileMainUI.class);
 			startActivity(intent);
 			break;
@@ -189,8 +190,8 @@ public class ClientActivity extends Activity implements OnClickListener,
 			synchronized (msg) {
 				switch (msg.what) {
 				case SocketMessage.MSG_SOCKET_CONNECTED:
-//					Socket socket = (Socket) (msg.obj);
-//					mCommunicationManager.addCommunication(socket, mHandler);
+					// Socket socket = (Socket) (msg.obj);
+					// mCommunicationManager.addCommunication(socket, mHandler);
 					break;
 
 				case SocketMessage.MSG_SOCKET_NOTICE:
@@ -241,6 +242,18 @@ public class ClientActivity extends Activity implements OnClickListener,
 		String messageBT = new String(msg);
 		mHandler.obtainMessage(SocketMessage.MSG_SOCKET_MESSAGE, messageBT)
 				.sendToTarget();
+		final byte[] message = msg;
+		final SocketCommunication com = id;
+		new Thread() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				super.run();
+				mCommunicationManager.sendMessage(message, (int) com.getId());
+			}
+
+		}.start();
 	}
 
 	@Override
@@ -252,7 +265,7 @@ public class ClientActivity extends Activity implements OnClickListener,
 	@Override
 	public void notifyConnectChanged() {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 }

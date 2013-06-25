@@ -9,6 +9,7 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.Search;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.SocketMessage;
 import com.dreamlink.communication.AppListActivity;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
@@ -55,7 +56,8 @@ import android.widget.Toast;
 
 @TargetApi(14)
 public class ServerListActivity extends Activity implements OnSearchListener,
-		OnItemClickListener, OnClickListener, ManagerP2pDeivce {
+		OnItemClickListener, OnClickListener, ManagerP2pDeivce,
+		OnCommunicationListener {
 	private static final String TAG = "ServerListActivity";
 	private Context mContext;
 
@@ -64,7 +66,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	 * 
 	 * KEY_NAME - server name</br>
 	 * 
-	 * KEY_TYPE - server network type： IP, AP, WiFi Direct</br>
+	 * KEY_TYPE - server network type锛�IP, AP, WiFi Direct</br>
 	 */
 	private ArrayList<Map<String, Object>> mServerData = new ArrayList<Map<String, Object>>();
 	/** Server name */
@@ -102,6 +104,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	/** Connect to the server and launch app list activity. */
 	private static final int MSG_CONNECT_SERVER = 3;
 	private static final int MSG_SEARCH_WIFI_DIRECT_FOUND = 4;
+	private boolean WifiP2pServer = false;
 
 	private Handler mHandler = new Handler() {
 
@@ -124,6 +127,11 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 				directList.clear();
 				directList.addAll((ArrayList<String>) msg.obj);
 				directAdapter.notifyDataSetChanged();
+				if (WifiP2pServer) {
+					directListView.setEnabled(false);
+				} else {
+					directListView.setEnabled(true);
+				}
 				break;
 			default:
 				break;
@@ -188,6 +196,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		mSearchServer = SearchSever.getInstance(this);
 		mSearchServer.setOnSearchListener(this);
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
+		mCommunicationManager.registered(this);
 		mNotice.showToast("Start Search");
 		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		setWifiEnabled(true);
@@ -331,6 +340,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		if (mSearchServer != null) {
 			mSearchServer.stopSearch();
 		}
+		mCommunicationManager.unregistered(this);
 		if (mWifiDirectManager != null) {
 			mWifiDirectManager.unRegisterObserver(this);
 			mWifiDirectManager.stopSearch();
@@ -392,15 +402,17 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		case SERVER_TYPE_IP:
 			String ip = (String) server.get(KEY_NAME);
 			connectServer(ip);
-			if (mWifiDirectManager != null) {
-				mWifiDirectManager.stopSearch();
-				wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
-				mWifiDirectManager.unRegisterObserver(this);
-				mWifiDirectManager = null;
+			if (!WifiP2pServer) {
+				if (mWifiDirectManager != null) {
+					mWifiDirectManager.stopSearch();
+					wifiDirectReciver.unRegisterObserver(mWifiDirectManager);
+					mWifiDirectManager.unRegisterObserver(this);
+					mWifiDirectManager = null;
+				}
+				launchAppList();
+				// TODO finish it to avoid connect repeat.
+				finish();
 			}
-			launchAppList();
-			// TODO finish it to avoid connect repeat.
-			finish();
 			break;
 
 		default:
@@ -503,6 +515,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	private void forWifiP2p(boolean flag) {
 		if (mWifiManager.isWifiEnabled()) {
+			if (WifiP2pServer != flag) {
+				flag = WifiP2pServer;
+			}
 			if (Build.VERSION.SDK_INT >= 14) {
 				if (Build.VERSION.SDK_INT >= 14) {
 					if (mWifiDirectManager != null) {
@@ -536,6 +551,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (mWifiManager.isWifiEnabled()) {
+			WifiP2pServer = true;
 			forWifiP2p(true);
 			// directListView.setVisibility(View.GONE);
 			directList.clear();
@@ -568,6 +584,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			SocketServerTask serverTask = new SocketServerTask(mContext,
 					mCommunicationManager);
 			serverTask.execute(new String[] { SocketCommunication.PORT });
+			if (progressDialog != null && progressDialog.isShowing()) {
+				progressDialog.dismiss();
+			}
 		} else {
 			SocketClientTask clientTask = new SocketClientTask(mContext,
 					mCommunicationManager, SocketMessage.MSG_SOCKET_CONNECTED);
@@ -633,4 +652,31 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	private String userName2ApName(String userName) {
 		return Search.WIFI_AP_NAME + userName;
 	}
+
+	@Override
+	public void onReceiveMessage(byte[] msg, SocketCommunication ip) {
+		// TODO Auto-generated method stub
+		// ignore
+	}
+
+	@Override
+	public void onSendResult(byte[] msg) {
+		// TODO Auto-generated method stub
+		// ignore
+	}
+
+	@Override
+	public void notifyConnectChanged() {
+		// TODO Auto-generated method stub
+		if (WifiP2pServer) {
+			ArrayList<String> temp = new ArrayList<String>();
+			for (SocketCommunication com : mCommunicationManager
+					.getCommunications()) {
+				temp.add(com.getConnectIP().getHostName() + "     已连接");
+			}
+			mHandler.obtainMessage(MSG_SEARCH_WIFI_DIRECT_FOUND, temp)
+					.sendToTarget();
+		}
+	}
+
 }
