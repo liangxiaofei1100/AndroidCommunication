@@ -84,7 +84,6 @@ public class SocketCommunicationManager implements
 		if (mInstance == null) {
 			mInstance = new SocketCommunicationManager(context);
 		}
-		mInstance.clientFlag = false;
 		return mInstance;
 	}
 
@@ -194,7 +193,7 @@ public class SocketCommunicationManager implements
 			}
 		}
 		mCommunications.clear();
-		if (!clientFlag) {
+		if (SocketServer.getInstance() != null) {
 			SocketServer.getInstance().stopServer();
 		}
 		if (mExecutorService != null) {

@@ -147,6 +147,18 @@ public class ChatClientActivity extends Activity implements OnClickListener,
 		String receivedMsg = new String(msg);
 		mHandler.obtainMessage(MSG_RECEIVED_MESSAGE, receivedMsg)
 				.sendToTarget();
+		final byte[] message = msg;
+		final SocketCommunication com = id;
+		new Thread() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				super.run();
+				mCommunicationManager.sendMessage(message, (int) com.getId());
+			}
+
+		}.start();
 	}
 
 	@Override
