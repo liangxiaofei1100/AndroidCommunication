@@ -240,6 +240,9 @@ public class SocketCommunication extends Thread {
 								+ mLastPacketLength);
 				// remain packet + received data is less than one packet.
 				// Save the received data into buff.
+				if (dataReceivedLength < 1) {
+					Log.e(TAG, "data Received Length error.");
+				}
 				mRemainPacket = ArrayUtil.join(mRemainPacket, Arrays
 						.copyOfRange(mReceiveBuffer, 0, dataReceivedLength));
 			} else {
@@ -328,10 +331,10 @@ public class SocketCommunication extends Thread {
 	public void stopComunication() {
 		try {
 			socket.close();
-
 			if (dataInputStream != null && dataOutputStream != null) {
 				dataInputStream.close();
 				dataOutputStream.close();
+				mListener.OnCommunicationLost(this);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

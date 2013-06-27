@@ -54,7 +54,7 @@ public class ChatClientActivity extends Activity implements OnClickListener,
 		mNotice = new Notice(mContext);
 		initView();
 		mCommunicationManager = SocketCommunicationManager.getInstance(
-				mContext, true);
+				mContext);
 		mCommunicationManager.registered(this);
 	}
 

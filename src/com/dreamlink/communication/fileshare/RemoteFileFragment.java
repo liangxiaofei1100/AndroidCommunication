@@ -102,7 +102,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 		
 		mContext = getActivity();
 		mCommunicationManager = SocketCommunicationManager
-				.getInstance(mContext,true);
+				.getInstance(mContext);
 		mCommunicationManager.registered(this);
 		
 		mListView = (ListView) rootView.findViewById(R.id.file_listview);
@@ -159,8 +159,8 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 		if (currentCopyFile != null) {
 			//receive file from server
 			try {
-				///这里也会有很大问题，在复制文件的同时，有其他程序在聊天，这里会把其他人聊天的字节认为是文件的，导致文件传输出现问题
-				///暂时还没好的解决方案，wait
+				///杩欓噷涔熶細鏈夊緢澶ч棶棰橈紝鍦ㄥ鍒舵枃浠剁殑鍚屾椂锛屾湁鍏朵粬绋嬪簭鍦ㄨ亰澶╋紝杩欓噷浼氭妸鍏朵粬浜鸿亰澶╃殑瀛楄妭璁や负鏄枃浠剁殑锛屽鑷存枃浠朵紶杈撳嚭鐜伴棶棰�
+				///鏆傛椂杩樻病濂界殑瑙ｅ喅鏂规锛寃ait
 				copyLen += msg.length;
 				if (mFileTransferBarDialog != null) {
 					mFileTransferBarDialog.setDProgress(copyLen);
@@ -215,7 +215,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 			//the last line is end flag
 			String[] splitMsg = ret_msg.split(Command.ENTER);
 			
-			// 看到结束标志，才真的结束，否则不解析
+			// 鐪嬪埌缁撴潫鏍囧織锛屾墠鐪熺殑缁撴潫锛屽惁鍒欎笉瑙ｆ瀽
 			if (Command.END_FLAG.equals(splitMsg[splitMsg.length - 1])) {
 				wholeReceiveMsg += ret_msg;
 				String[] newSplitMsg = wholeReceiveMsg.split(Command.ENTER);
@@ -266,8 +266,8 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					uihandler.sendMessage(uihandler.obtainMessage(UPDATE_UI));
 				}
 			} else {
-				///有最大的问题，如果其他程序在聊天，我这里也会接受到，然后就会把他们聊天的内容认为是文件，但其实不是文件，然后就会出现Bug
-				//暂时还没解决方法，wait
+				///鏈夋渶澶х殑闂锛屽鏋滃叾浠栫▼搴忓湪鑱婂ぉ锛屾垜杩欓噷涔熶細鎺ュ彈鍒帮紝鐒跺悗灏变細鎶婁粬浠亰澶╃殑鍐呭璁や负鏄枃浠讹紝浣嗗叾瀹炰笉鏄枃浠讹紝鐒跺悗灏变細鍑虹幇Bug
+				//鏆傛椂杩樻病瑙ｅ喅鏂规硶锛寃ait
 				// not over yet
 				wholeReceiveMsg += ret_msg;
 			}
@@ -407,7 +407,7 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 				mFileTransferBarDialog.show();
 				
 				if (currentCopyFile.fileSize == 0) {
-					//如果文件的大小为0，则就不用向服务器发送copy指令了，直接在客户端创建一个0bytes的文件号了
+					//濡傛灉鏂囦欢鐨勫ぇ灏忎负0锛屽垯灏变笉鐢ㄥ悜鏈嶅姟鍣ㄥ彂閫乧opy鎸囦护浜嗭紝鐩存帴鍦ㄥ鎴风鍒涘缓涓�釜0bytes鐨勬枃浠跺彿浜�
 					mFileTransferBarDialog.cancel();
 					mNotice.showToast("Transfer Success!");
 				}else {

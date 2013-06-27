@@ -158,6 +158,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		mSearchServer = SearchSever.getInstance(this);
 		mSearchServer.setOnSearchListener(this);
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
+		mCommunicationManager.registered(this);
 		mNotice.showToast("Start Search");
 		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		setWifiEnabled(true);
@@ -310,6 +311,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		Intent intent = new Intent();
 		intent.putExtra(AppListActivity.EXTRA_IS_SERVER, false);
 		intent.setClass(this, AppListActivity.class);
+		intent.putExtra("isServer", WifiP2pServer);
 		startActivity(intent);
 	}
 

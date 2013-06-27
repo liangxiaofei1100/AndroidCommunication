@@ -62,7 +62,7 @@ public class FileListActivity extends ListActivity implements OnItemClickListene
 		
 		mContext = this;
 		mCommunicationManager = SocketCommunicationManager
-				.getInstance(mContext,true);
+				.getInstance(mContext);
 		mCommunicationManager.registered(this);
 		
 		mTipText = (TextView) findViewById(R.id.tip_text);
@@ -131,7 +131,7 @@ public class FileListActivity extends ListActivity implements OnItemClickListene
 		//split message
 		String[] splitMsg = retMsg.split(Command.ENTER);
 		
-		//看到结束标志，才真的结束，否则继续(这句用英文翻译不来...)
+		//鐪嬪埌缁撴潫鏍囧織锛屾墠鐪熺殑缁撴潫锛屽惁鍒欑户缁�杩欏彞鐢ㄨ嫳鏂囩炕璇戜笉鏉�..)
 		if (Command.END_FLAG.equals(splitMsg[splitMsg.length -1])) {
 			allMsg += retMsg;
 			String[] newSplitMsg = allMsg.split(Command.ENTER);

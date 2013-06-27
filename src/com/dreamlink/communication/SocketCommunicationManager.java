@@ -4,6 +4,8 @@ import java.io.File;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -61,12 +63,11 @@ public class SocketCommunicationManager implements
 	private Context mContext;
 	private Notice mNotice;
 
-	private HashSet<SocketCommunication> mCommunications;
+	// private HashSet<SocketCommunication> mCommunications;
+	private Vector<SocketCommunication> vector;
 	/** Thread pool */
 	private ExecutorService mExecutorService = null;
 	private ArrayList<OnCommunicationListener> mOnCommunicationListeners;
-
-	private boolean clientFlag = false;
 
 	private SocketCommunicationManager() {
 
@@ -76,7 +77,8 @@ public class SocketCommunicationManager implements
 		mContext = context;
 		mOnCommunicationListeners = new ArrayList<OnCommunicationListener>();
 		mNotice = new Notice(context);
-		mCommunications = new HashSet<SocketCommunication>();
+		// mCommunications = new HashSet<SocketCommunication>();
+		vector = new Vector<SocketCommunication>();
 	}
 
 	public static synchronized SocketCommunicationManager getInstance(
@@ -84,15 +86,6 @@ public class SocketCommunicationManager implements
 		if (mInstance == null) {
 			mInstance = new SocketCommunicationManager(context);
 		}
-		return mInstance;
-	}
-
-	public static synchronized SocketCommunicationManager getInstance(
-			Context context, boolean flag) {
-		if (mInstance == null) {
-			mInstance = new SocketCommunicationManager(context);
-		}
-		mInstance.clientFlag = flag;
 		return mInstance;
 	}
 
@@ -111,9 +104,9 @@ public class SocketCommunicationManager implements
 		if (idThread == -1) {
 			return;
 		}
-		if (mCommunications != null) {
-			synchronized (mCommunications) {
-				for (SocketCommunication communication : mCommunications) {
+		if (vector != null) {
+			synchronized (vector) {
+				for (SocketCommunication communication : vector) {
 					if (communication.getId() != idThread) {
 						sendMessage(communication, message);
 					}
@@ -144,9 +137,8 @@ public class SocketCommunicationManager implements
 			return;
 		}
 
-		if (mCommunications != null && mCommunications.size() > 0) {
-			HashSet<SocketCommunication> hash = mCommunications;
-			for (SocketCommunication communication : hash) {
+		if (vector != null && vector.size() > 0) {
+			for (SocketCommunication communication : vector) {
 				if (communication.getId() != idThread) {
 					sendMessage(communication, file);
 				}
@@ -182,8 +174,8 @@ public class SocketCommunicationManager implements
 	 * Notice, this method should not be called by apps.</br>
 	 */
 	void closeCommunication() {
-		if (mCommunications != null) {
-			for (final SocketCommunication communication : mCommunications) {
+		if (vector != null) {
+			for (final SocketCommunication communication : vector) {
 				new Thread() {
 					@Override
 					public void run() {
@@ -192,7 +184,7 @@ public class SocketCommunicationManager implements
 				}.start();
 			}
 		}
-		mCommunications.clear();
+		vector.clear();
 		if (SocketServer.getInstance() != null) {
 			SocketServer.getInstance().stopServer();
 		}
@@ -228,17 +220,16 @@ public class SocketCommunicationManager implements
 	 * 
 	 * @return
 	 */
-	public HashSet<SocketCommunication> getCommunications() {
-		return mCommunications;
+	public Vector<SocketCommunication> getCommunications() {
+		return vector;
 	}
 
 	@Override
 	public void OnCommunicationEstablished(SocketCommunication communication) {
-		synchronized (mCommunications) {
-			mCommunications.add(communication);
-			notifyComunicationChange();
-			if (!mCommunications.isEmpty()) {
-				for (SocketCommunication comm : mCommunications) {
+		synchronized (vector) {
+			vector.add(communication);
+			if (!vector.isEmpty()) {
+				for (SocketCommunication comm : vector) {
 					if ((comm.getConnectIP().equals(communication
 							.getConnectIP()))
 							&& (comm.getId() != communication.getId())) {
@@ -246,18 +237,19 @@ public class SocketCommunicationManager implements
 					}
 				}
 			}
+			notifyComunicationChange();
 		}
 	}
 
 	@Override
 	public void OnCommunicationLost(SocketCommunication communication) {
-		synchronized (communication) {
-			if (mCommunications.contains(communication)) {
-				mCommunications.remove(communication);
+		synchronized (vector) {
+			if (vector.contains(communication)) {
+				vector.remove(communication);
 				notifyComunicationChange();
 			}
 		}
-		if (mCommunications.isEmpty()) {
+		if (vector.isEmpty()) {
 			if (mExecutorService == null) {
 				return;
 			}

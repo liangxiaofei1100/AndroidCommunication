@@ -1,6 +1,7 @@
 package com.dreamlink.communication.server;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.Search;
@@ -75,9 +76,12 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 				break;
 			case MSG_UPDATE_LIST:
 				mClients.clear();
-				for (SocketCommunication com : mCommunicationManager
-						.getCommunications()) {
-					mClients.add(com.getConnectIP().getHostAddress());
+				Vector<SocketCommunication> vector = mCommunicationManager
+						.getCommunications();
+				synchronized (vector) {
+					for (SocketCommunication com : vector) {
+						mClients.add(com.getConnectIP().getHostAddress());
+					}
 				}
 				mAdapter.notifyDataSetChanged();
 				break;
@@ -99,7 +103,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
 		mCommunicationManager.registered(this);
-		mCommunicationManager.startServer(mContext);
+		// mCommunicationManager.startServer(mContext);
 
 		mSearchClient = SearchClient.getInstance(this);
 		mSearchClient.setOnSearchListener(this);
@@ -169,6 +173,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	protected void onResume() {
 		super.onResume();
 		mSearchHandler.sendEmptyMessage(MSG_UPDATE_LIST);
+		mCommunicationManager.startServer(mContext);
 	}
 
 	private void unregisterReceiverSafe(BroadcastReceiver receiver) {
