@@ -40,6 +40,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -109,6 +110,19 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	private static final int MSG_CONNECT_SERVER = 3;
 	private static final int MSG_SEARCH_WIFI_DIRECT_FOUND = 4;
 	private boolean WifiP2pServer = false;
+
+	// 监听返回键，断开一切连接
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (Build.VERSION.SDK_INT >= 14) {
+				mWifiDirectManager.stopConnect();
+			}
+			mCommunicationManager.closeCommunication();
+		}
+		return super.onKeyDown(keyCode, event);
+	}
 
 	private Handler mHandler = new Handler() {
 

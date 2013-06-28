@@ -173,7 +173,7 @@ public class SocketCommunicationManager implements
 	 * 
 	 * Notice, this method should not be called by apps.</br>
 	 */
-	void closeCommunication() {
+	public void closeCommunication() {
 		if (vector != null) {
 			for (final SocketCommunication communication : vector) {
 				new Thread() {
@@ -322,4 +322,5 @@ public class SocketCommunicationManager implements
 		SocketClientTask clientTask = new SocketClientTask(context, this);
 		clientTask.execute(new String[] { serverIp, SocketCommunication.PORT });
 	}
+
 }
