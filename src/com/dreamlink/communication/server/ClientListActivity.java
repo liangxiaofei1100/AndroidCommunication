@@ -14,15 +14,18 @@ import com.dreamlink.communication.server.SearchClient.OnSearchListener;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.wifip2p.WifiDirectManager;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -41,6 +44,16 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 		OnClickListener, OnCommunicationListener {
 	private static final String TAG = "ClientListActivity";
 	private Context mContext;
+
+	//监听返回键。按下时先关闭所有连接
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			mCommunicationManager.closeCommunication();
+		}
+		return super.onKeyDown(keyCode, event);
+	}
 
 	private ArrayAdapter<String> mAdapter;
 	private ArrayList<String> mClients = new ArrayList<String>();
