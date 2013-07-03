@@ -15,20 +15,12 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.util.Log;
 
-public class ComService extends Service implements OnCommunicationListener {
+public class SocketCommunicationService extends Service implements
+		OnCommunicationListener {
 	SocketCommunicationManager socketCommunicationManager;
-	private NotifyListener listener;
+	private NotifyListener callBackListener;
 
-	private class Test extends Communication.Stub {
-		/** just test method ,not use */
-		@Override
-		public String getCommunicationManager() throws RemoteException {
-			// TODO Auto-generated method stub
-			byte[] b = "arbiterliu".getBytes();
-			listener.getMessage(b);
-			return "DreamLink----------------------------------"
-					+ Process.myPid();
-		}
+	private class SocketCommunicationMananerRemote extends Communication.Stub {
 
 		/**
 		 * set the callback method,must use. the NotifyListener implements on
@@ -36,15 +28,12 @@ public class ComService extends Service implements OnCommunicationListener {
 		 * */
 		@Override
 		public void setListenr(NotifyListener lis) throws RemoteException {
-			// TODO Auto-generated method stub
-			listener = lis;
+			callBackListener = lis;
 		}
 
 		/** sent the msg to communication */
 		@Override
-		public void setMessage(byte[] msg) throws RemoteException {
-			// TODO Auto-generated method stub
-
+		public void sendMessage(byte[] msg) throws RemoteException {
 			socketCommunicationManager.sendMessage(msg, 0);
 		}
 
@@ -52,53 +41,47 @@ public class ComService extends Service implements OnCommunicationListener {
 
 	@Override
 	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
 		socketCommunicationManager = SocketCommunicationManager
 				.getInstance(this);
 		socketCommunicationManager.registered(this);
-		return new Test();
+		return new SocketCommunicationMananerRemote();
 	}
 
 	@Override
 	public boolean onUnbind(Intent intent) {
-		// TODO Auto-generated method stub
 		socketCommunicationManager.unregistered(this);
 		return super.onUnbind(intent);
 	}
 
 	@Override
 	public void onReceiveMessage(byte[] msg, SocketCommunication communication) {
-		// TODO Auto-generated method stub
 		try {
-			listener.getMessage(msg);
+			callBackListener.onReceiveMessage(msg);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void onSendResult(byte[] msg) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void notifyConnectChanged() {
 		List<Arg> list = new ArrayList<Arg>();
-		Vector<SocketCommunication> v = socketCommunicationManager
+		Vector<SocketCommunication> vector = socketCommunicationManager
 				.getCommunications();
-		for (SocketCommunication c : v) {
-			Arg a = new Arg();
-			a.userID = (int) c.getId();
-			a.userName = c.getName();
-			a.userIP = c.getConnectIP().getHostAddress();
-			list.add(a);
+		for (SocketCommunication com : vector) {
+			Arg arg = new Arg();
+			arg.userID = (int) com.getId();
+			arg.userName = com.getName();
+			arg.userIP = com.getConnectIP().getHostAddress();
+			list.add(arg);
 		}
 		try {
-			listener.notifyUserChanged(list);
+			callBackListener.notifyConnectChanged(list);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
