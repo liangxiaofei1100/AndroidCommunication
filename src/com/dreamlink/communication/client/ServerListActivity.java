@@ -148,6 +148,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 				break;
 			case MSG_SEARCH_WIFI_DIRECT_FOUND:
 				directList.clear();
+				mServerData.clear();
 				directList.addAll((ArrayList<String>) msg.obj);
 				directAdapter.notifyDataSetChanged();
 				if (WifiP2pServer) {
@@ -434,14 +435,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 					mWifiDirectManager = null;
 				}
 			}
-			if (WifiP2pServer) {
-				mSearchServer.stopSearch();
-				mServerData.clear();
-				return;
-			}
-			launchAppList();
+			// launchAppList();
 			// TODO finish it to avoid connect repeat.
-			finish();
+			// finish();
 			break;
 
 		default:
@@ -696,6 +692,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	public void notifyConnectChanged() {
 		// TODO Auto-generated method stub
 		if (WifiP2pServer) {
+			mSearchServer.stopSearch();
 			ArrayList<String> temp = new ArrayList<String>();
 			for (SocketCommunication com : mCommunicationManager
 					.getCommunications()) {
@@ -703,6 +700,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			}
 			mHandler.obtainMessage(MSG_SEARCH_WIFI_DIRECT_FOUND, temp)
 					.sendToTarget();
+		} else {
+			launchAppList();
+			finish();
 		}
 	}
 

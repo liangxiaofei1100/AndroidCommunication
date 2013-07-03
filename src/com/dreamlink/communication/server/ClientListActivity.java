@@ -15,19 +15,33 @@ import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 import com.dreamlink.communication.wifip2p.WifiDirectManager;
+import com.dreamlink.communication.wifip2p.WifiDirectManager.ManagerP2pDeivce;
+import com.dreamlink.communication.wifip2p.WifiDirectReciver;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -45,7 +59,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	private static final String TAG = "ClientListActivity";
 	private Context mContext;
 
-	//监听返回键。按下时先关闭所有连接
+	// 监听返回键。按下时先关闭所有连接
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// TODO Auto-generated method stub
@@ -120,14 +134,6 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 
 		mSearchClient = SearchClient.getInstance(this);
 		mSearchClient.setOnSearchListener(this);
-		mNotice.showToast("Start Search");
-
-		NetWorkUtil.setWifiAPEnabled(mContext,
-				Search.WIFI_AP_NAME + UserHelper.getUserName(mContext), true);
-
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
-		registerReceiver(mBroadcastReceiver, filter);
 	}
 
 	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -171,11 +177,39 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	};
 
 	private void initView() {
+		mClients.add("Please choose the server type : ");
+		mClients.add("Wifi Server");
+		mClients.add("Wifi-AP Server");
+		mClients.add("Wifi-Direct Server");
 		mListView = (ListView) findViewById(R.id.list_client);
 		mAdapter = new ArrayAdapter<String>(mContext,
 				android.R.layout.simple_list_item_1, mClients);
 		mListView.setAdapter(mAdapter);
+		mListView.setOnItemClickListener(new OnItemClickListener() {
 
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				// TODO Auto-generated method stub
+				switch (arg2) {
+				case 1:
+					startWifiServer();
+					break;
+				case 2:
+					startWifiAPserver();
+					break;
+				case 3:
+					startWifiDirectServer();
+					break;
+				default:
+					/* no possible going here */
+					break;
+				}
+				mClients.clear();
+				mListView.setEnabled(false);
+				mAdapter.notifyDataSetChanged();
+			}
+		});
 		Button startButton = (Button) findViewById(R.id.btn_start);
 		startButton.setOnClickListener(this);
 		Button quitButton = (Button) findViewById(R.id.btn_quit);
@@ -185,7 +219,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	@Override
 	protected void onResume() {
 		super.onResume();
-		mSearchHandler.sendEmptyMessage(MSG_UPDATE_LIST);
+		// mSearchHandler.sendEmptyMessage(MSG_UPDATE_LIST);
 		mCommunicationManager.startServer(mContext);
 	}
 
@@ -252,4 +286,130 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	public void notifyConnectChanged() {
 		mSearchHandler.sendEmptyMessage(MSG_UPDATE_LIST);
 	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		getMenuInflater().inflate(R.menu.server_type, menu);
+		if (Build.VERSION.SDK_INT < 14
+				|| !getPackageManager().hasSystemFeature(
+						PackageManager.FEATURE_WIFI_DIRECT)) {
+			menu.removeItem(R.id.server_type_wifi_direct);
+		}
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		switch (item.getItemId()) {
+		case R.id.server_type_wifi:
+			startWifiServer();
+			break;
+		case R.id.server_type_wifi_AP:
+			startWifiAPserver();
+			break;
+		case R.id.server_type_wifi_direct:
+			startWifiDirectServer();
+			break;
+		default:
+			break;
+		}
+		mNotice.showToast("Start Search");
+		return super.onOptionsItemSelected(item);
+	}
+
+	private void startWifiDirectServer() {
+		if (NetWorkUtil.isWifiApEnabled(this)) {
+			NetWorkUtil.setWifiAPEnabled(this, null, false);
+		}
+		if (mSearchClient != null) {
+			mSearchClient.stopSearch();
+		}
+		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		if (wifiDirectReciver == null) {
+			initReceiver();
+		}
+		if (!wifiManager.isWifiEnabled()) {
+			startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS), 1);
+		} else {
+			mWifiDirectManager = new WifiDirectManager(this, true);
+			mWifiDirectManager.discover();
+		}
+	}
+
+	private void startWifiAPserver() {
+		if (mWifiDirectManager != null) {
+			mWifiDirectManager.stopSearch();
+			mWifiDirectManager.stopConnect();
+			this.unregisterReceiver(wifiDirectReciver);
+			mWifiDirectManager = null;
+		}
+		if (mSearchClient != null) {
+			mSearchClient.stopSearch();
+		}
+		NetWorkUtil.setWifiAPEnabled(mContext,
+				Search.WIFI_AP_NAME + UserHelper.getUserName(mContext), true);
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
+		registerReceiver(mBroadcastReceiver, filter);
+	}
+
+	private void startWifiServer() {
+		if (mWifiDirectManager != null) {
+			mWifiDirectManager.stopSearch();
+			mWifiDirectManager.stopConnect();
+			this.unregisterReceiver(wifiDirectReciver);
+			mWifiDirectManager = null;
+		}
+		if (NetWorkUtil.isWifiApEnabled(this)) {
+			NetWorkUtil.setWifiAPEnabled(this, "", false);
+		}
+		if (mSearchClient != null) {
+			mSearchClient.stopSearch();
+		}
+		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		if (wifiManager.isWifiEnabled() && cm.getActiveNetworkInfo() != null) {
+			mSearchClient.startSearch();
+		} else {
+			startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS), 0);
+		}
+	}
+
+	private WifiDirectManager mWifiDirectManager;
+	private WifiDirectReciver wifiDirectReciver;
+	private IntentFilter mWifiDirectIntentFilter;
+
+	private void initReceiver() {
+		mWifiDirectIntentFilter = new IntentFilter();
+		mWifiDirectIntentFilter
+				.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+		mWifiDirectIntentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+		mWifiDirectIntentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+		mWifiDirectIntentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+		mWifiDirectIntentFilter
+				.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+		wifiDirectReciver = new WifiDirectReciver();
+		this.registerReceiver(wifiDirectReciver, mWifiDirectIntentFilter);
+	}
+
+	/**
+	 * @param requestCode
+	 *            if 0 ,wifi server ; if 1, wifi-direct server
+	 * */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == 0) {
+			startWifiServer();
+		} else if (requestCode == 1) {
+			startWifiDirectServer();
+		}
+	}
+
 }

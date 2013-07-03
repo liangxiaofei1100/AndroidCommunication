@@ -129,6 +129,12 @@
             android:label="SpeedTestServer"
             android:screenOrientation="portrait" >
         </activity>
+
+        <service android:name=".ComService" >
+            <intent-filter>
+                <action android:name="com.dreamlink.communication.ComService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

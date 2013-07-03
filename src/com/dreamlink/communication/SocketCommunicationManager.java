@@ -205,7 +205,6 @@ public class SocketCommunicationManager implements
 		SocketCommunication communication = new SocketCommunication(socket,
 				this);
 		communication.setOnCommunicationChangedListener(this);
-		notifyComunicationChange();
 		try {
 			mExecutorService.execute(communication);
 		} catch (RejectedExecutionException e) {

@@ -9,16 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.dreamlink.communication.wifip2p.WifiDirectManager;
-import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
-
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;

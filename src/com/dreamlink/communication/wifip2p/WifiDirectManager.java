@@ -48,18 +48,32 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 				.getSystemService(Context.WIFI_P2P_SERVICE);
 		mWifiManager = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);
+		setDeviceName(mWifiP2pManager, channel,
+				UserHelper.getUserName(context), null);
 		if (mWifiManager.isWifiEnabled()) {
 			channel = mWifiP2pManager.initialize(context,
 					context.getMainLooper(), null);
 			observerList = new ArrayList<WifiDirectManager.ManagerP2pDeivce>();
 		}
-		setDeviceName(mWifiP2pManager, channel,
-				UserHelper.getUserName(context), null);
 	}
 
 	public WifiDirectManager(Context context, boolean flag) {
-		this(context);
 		this.serverFlag = flag;
+		this.context = context;
+		mWifiP2pManager = (WifiP2pManager) context
+				.getSystemService(Context.WIFI_P2P_SERVICE);
+		mWifiManager = (WifiManager) context
+				.getSystemService(Context.WIFI_SERVICE);
+
+		if (mWifiManager.isWifiEnabled()) {
+			channel = mWifiP2pManager.initialize(context,
+					context.getMainLooper(), null);
+			observerList = new ArrayList<WifiDirectManager.ManagerP2pDeivce>();
+		}
+		if (flag) {
+			setDeviceName(mWifiP2pManager, channel,
+					"DreamLink" + UserHelper.getUserName(context), null);
+		}
 	}
 
 	@SuppressLint({ "NewApi", "NewApi" })
