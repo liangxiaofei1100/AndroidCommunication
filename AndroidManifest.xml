@@ -130,7 +130,7 @@
             android:screenOrientation="portrait" >
         </activity>
 
-        <service android:name=".ComService" >
+        <service android:name=".SocketCommunicationService" >
             <intent-filter>
                 <action android:name="com.dreamlink.communication.ComService" />
             </intent-filter>
