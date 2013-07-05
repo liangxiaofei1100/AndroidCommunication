@@ -1,6 +1,14 @@
 package com.dreamlink.communication.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 public class ArrayUtil {
+	private static final String TAG = "ArrayUtil";
+
 	/**
 	 * Join two arrays to a new array.
 	 * 
@@ -12,6 +20,35 @@ public class ArrayUtil {
 		byte[] result = new byte[a1.length + a2.length];
 		System.arraycopy(a1, 0, result, 0, a1.length);
 		System.arraycopy(a2, 0, result, a1.length, a2.length);
+		return result;
+	}
+
+	/**
+	 * Join two or more arrays a new array.
+	 * 
+	 * @param a
+	 * @return
+	 */
+	public static byte[] join(byte[]... a) {
+		if (a == null) {
+			return null;
+		}
+		int count = a.length;
+		// one array.
+		if (count == 1) {
+			return a[0];
+		}
+		// two or more arrays.
+		int totalLength = 0;
+		for (int i = 0; i < count; i++) {
+			totalLength += a[i].length;
+		}
+		byte[] result = new byte[totalLength];
+		int p = 0;
+		for (int i = 0; i < a.length; i++) {
+			System.arraycopy(a[i], 0, result, p, a[i].length);
+			p += a[i].length;
+		}
 		return result;
 	}
 
@@ -50,4 +87,77 @@ public class ArrayUtil {
 		}
 		return reuslt;
 	}
+
+	/**
+	 * Convert Serializable object to byte array.
+	 * 
+	 * @param o
+	 * @return
+	 */
+	public static byte[] objectToByteArray(Serializable o) {
+		byte[] result = null;
+		try {
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(
+					byteArrayOutputStream);
+			objectOutputStream.writeObject(o);
+
+			result = byteArrayOutputStream.toByteArray();
+
+			byteArrayOutputStream.close();
+			objectOutputStream.close();
+		} catch (Exception e) {
+			Log.e(TAG, "objectToByteArray() error: " + e);
+		}
+		return result;
+	}
+
+	/**
+	 * Convert Serializable object to byte array.
+	 * 
+	 * @param o
+	 * @return
+	 */
+	public static byte[] objectToByteArray(Serializable... o) {
+		byte[] result = null;
+		try {
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(
+					byteArrayOutputStream);
+			for (int i = 0; i < o.length; i++) {
+				objectOutputStream.writeObject(o[i]);
+			}
+			result = byteArrayOutputStream.toByteArray();
+
+			byteArrayOutputStream.close();
+			objectOutputStream.close();
+		} catch (Exception e) {
+			Log.e(TAG, "objectToByteArray() error: " + e);
+		}
+		return result;
+	}
+
+	/**
+	 * Convert byte array to Serializable object.
+	 * 
+	 * @param data
+	 * @return
+	 */
+	public static Object byteArrayToObject(byte[] data) {
+		Object result = null;
+		try {
+			ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
+					data);
+			ObjectInputStream objectInputStream = new ObjectInputStream(
+					byteArrayInputStream);
+			result = objectInputStream.readObject();
+
+			byteArrayInputStream.close();
+			objectInputStream.close();
+		} catch (Exception e) {
+			Log.e(TAG, "byteArrayToObject() error: " + e);
+		}
+		return result;
+	}
+
 }

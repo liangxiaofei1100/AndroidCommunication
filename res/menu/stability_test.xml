@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_send_to_all"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/send_to_all"/>
+    <item
+        android:id="@+id/menu_send_to_single"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/send_to_single">
+        <menu>
+        </menu>
+    </item>
+
+</menu>

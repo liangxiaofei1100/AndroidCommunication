@@ -1,10 +1,13 @@
 package com.dreamlink.communication;
 
+import java.util.Map;
+
 import android.app.AlertDialog;
 import android.content.Context;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 /**
@@ -14,11 +17,13 @@ import com.dreamlink.communication.util.NetWorkUtil;
 public class NetworkStatus {
 	private Context mContext;
 	private SocketCommunicationManager mCommunicationManager;
+	private UserManager mUserManager;
 
 	public NetworkStatus(Context context) {
 		mContext = context;
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(mContext);
+		mUserManager = mUserManager.getInstance();
 	}
 
 	public void show() {
@@ -31,11 +36,54 @@ public class NetworkStatus {
 		alertConfig.create().show();
 	}
 
+	private String getAllUserNames() {
+		StringBuilder stringBuilder = new StringBuilder();
+
+		Map<Integer, User> users = mUserManager.getAllUser();
+		for (Map.Entry<Integer, User> entry : users.entrySet()) {
+			stringBuilder.append("User ID = " + entry.getValue().getUserID()
+					+ ", name = " + entry.getValue().getUserName() + "\n");
+		}
+		return stringBuilder.toString();
+	}
+
+	private String getAllCommunications() {
+		StringBuilder stringBuilder = new StringBuilder();
+
+		stringBuilder.append("Commnunication info: \n");
+		Map<Integer, SocketCommunication> communications = mUserManager
+				.getAllCommmunication();
+		for (Map.Entry<Integer, SocketCommunication> entry : communications
+				.entrySet()) {
+			try {
+				stringBuilder.append("User ID = " + entry.getKey() + ", ip = "
+						+ entry.getValue().getConnectIP().getHostAddress()
+						+ "\n");
+			} catch (Exception e) {
+				// Because Server local communication has no ip. ignore.
+			}
+
+		}
+		return stringBuilder.toString();
+	}
+
+	private String getLocalUserName() {
+		StringBuilder stringBuilder = new StringBuilder();
+
+		User localUser = mUserManager.getLocalUser();
+		stringBuilder.append("User ID = " + localUser.getUserID() + ", name = "
+				+ localUser.getUserName() + "\n");
+		return stringBuilder.toString();
+	}
+
 	private String getStatus() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Total communication number: "
 				+ mCommunicationManager.getCommunications().size() + "\n");
 		builder.append("IP: " + NetWorkUtil.getLocalIpAddress() + "\n");
+		builder.append("Me: " + getLocalUserName());
+		builder.append(getAllUserNames() + "\n");
+		builder.append(getAllCommunications() + "\n");
 		return builder.toString();
 	}
 }

@@ -108,7 +108,6 @@ public class SpeedTestServer extends Activity implements
 
 			mStartTime = System.currentTimeMillis();
 			while (!mStop) {
-				Log.d(TAG, "started at time: " + mStartTime);
 				mCommunicationManager.sendMessage(mData, 0);
 				mTotalSize += mSize;
 			}

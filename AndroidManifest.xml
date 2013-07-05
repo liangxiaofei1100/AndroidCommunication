@@ -52,6 +52,10 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
+            <meta-data
+                android:name="app_id"
+                android:value="100" />
         </activity>
         <activity
             android:name=".chat.ChatClientActivity"
@@ -71,6 +75,10 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
+            <meta-data
+                android:name="app_id"
+                android:value="101" />
         </activity>
         <activity
             android:name="com.dreamlink.communication.fileshare.FileListActivity"
@@ -94,6 +102,10 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
+            <meta-data
+                android:name="app_id"
+                android:value="200" />
         </activity>
         <activity
             android:name="com.dreamlink.communication.StabilityTestClient"
@@ -118,6 +130,10 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
+            <meta-data
+                android:name="app_id"
+                android:value="201" />
         </activity>
         <activity
             android:name="com.dreamlink.communication.SpeedTestClient"

@@ -15,11 +15,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
 import com.dreamlink.communication.client.ClientStatus;
-import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
@@ -29,7 +28,7 @@ import com.dreamlink.communication.util.Notice;
  * 
  */
 public class ChatClientActivity extends Activity implements OnClickListener,
-		OnCommunicationListener {
+		OnCommunicationListenerExternal {
 	@SuppressWarnings("unused")
 	private static final String TAG = "ChatClientActivity";
 
@@ -53,9 +52,9 @@ public class ChatClientActivity extends Activity implements OnClickListener,
 		mContext = this;
 		mNotice = new Notice(mContext);
 		initView();
-		mCommunicationManager = SocketCommunicationManager.getInstance(
-				mContext);
-		mCommunicationManager.registered(this);
+		mCommunicationManager = SocketCommunicationManager
+				.getInstance(mContext);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this);
 	}
 
 	private void initView() {
@@ -85,8 +84,10 @@ public class ChatClientActivity extends Activity implements OnClickListener,
 				if (TextUtils.isEmpty(message)) {
 					mNotice.showToast("Please input message");
 				} else {
-					mCommunicationManager.sendMessage(message.getBytes(), 0);
-					mHistoricListAdapter.add("Send: " + message);
+					// TODO app id need to implement.
+					mCommunicationManager.sendMessageToAll(message.getBytes(),
+							100);
+					mHistoricListAdapter.add("Me: " + message);
 					mHistoricListAdapter.notifyDataSetChanged();
 					mMessageEidtText.setText("");
 				}
@@ -123,7 +124,7 @@ public class ChatClientActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		mCommunicationManager.unregistered(this);
+		mCommunicationManager.unregisterOnCommunicationListenerExternal(this);
 	}
 
 	private Handler mHandler = new Handler() {
@@ -132,7 +133,7 @@ public class ChatClientActivity extends Activity implements OnClickListener,
 				switch (msg.what) {
 				case MSG_RECEIVED_MESSAGE:
 					String receivedMsg = (String) (msg.obj);
-					mHistoricListAdapter.add("Receive" + ": " + receivedMsg);
+					mHistoricListAdapter.add(receivedMsg);
 					mHistoricListAdapter.notifyDataSetChanged();
 					break;
 				}
@@ -141,34 +142,21 @@ public class ChatClientActivity extends Activity implements OnClickListener,
 	};
 
 	@Override
-	public void onReceiveMessage(byte[] msg, SocketCommunication id) {
-		Log.d(TAG, "onReceiveMessage");
+	public void onReceiveMessage(byte[] msg, User sendUser) {
 		/** need to parse the msg */
-		String receivedMsg = new String(msg);
+		String receivedMsg = sendUser.getUserName() + ": " + new String(msg);
 		mHandler.obtainMessage(MSG_RECEIVED_MESSAGE, receivedMsg)
 				.sendToTarget();
-		final byte[] message = msg;
-		final SocketCommunication com = id;
-		new Thread() {
-
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				super.run();
-				mCommunicationManager.sendMessage(message, (int) com.getId());
-			}
-
-		}.start();
 	}
 
 	@Override
-	public void onSendResult(byte[] msg) {
+	public void onUserConnected(User user) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void notifyConnectChanged() {
+	public void onUserDisconnected(User user) {
 		// TODO Auto-generated method stub
 
 	}

@@ -3,9 +3,9 @@ package com.dreamlink.communication;
 import java.io.File;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -14,7 +14,12 @@ import android.content.Context;
 
 import com.dreamlink.communication.SocketCommunication.ICommunicate;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
+import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.client.SocketClientTask;
+import com.dreamlink.communication.data.User;
+import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.protocol.ProtocolDecoder;
+import com.dreamlink.communication.protocol.ProtocolEncoder;
 import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.server.SocketServerTask;
 import com.dreamlink.communication.util.Log;
@@ -28,12 +33,13 @@ import com.dreamlink.communication.util.Notice;
  * 
  */
 public class SocketCommunicationManager implements
-		OnCommunicationChangedListener, ICommunicate {
+		OnCommunicationChangedListener, ICommunicate, OnUserChangedListener {
 	/**
 	 * Interface for Activity.
 	 * 
 	 */
 	public interface OnCommunicationListener {
+		// TODO need to update.
 
 		/**
 		 * Received a message from communication.</br>
@@ -57,17 +63,56 @@ public class SocketCommunicationManager implements
 
 	}
 
+	/**
+	 * Interface for Activity.
+	 * 
+	 */
+	public interface OnCommunicationListenerExternal {
+
+		/**
+		 * Received a message from user.</br>
+		 * 
+		 * Be careful, this method is not run in UI thread. If do UI operation,
+		 * we can use {@link android.os.Handler} to do UI operation.</br>
+		 * 
+		 * @param msg
+		 *            the message.
+		 * @param sendUser
+		 *            the message from.
+		 */
+		void onReceiveMessage(byte[] msg, User sendUser);
+
+		/**
+		 * There is new user connected.
+		 * 
+		 * @param user
+		 */
+		void onUserConnected(User user);
+
+		/**
+		 * There is a user disconnected.
+		 * 
+		 * @param user
+		 */
+		void onUserDisconnected(User user);
+
+	}
+
+	private Vector<OnCommunicationListenerExternal> mOnCommunicationListenerExternals = new Vector<OnCommunicationListenerExternal>();
+
 	private static final String TAG = "SocketCommunicationManager";
 	private static SocketCommunicationManager mInstance;
 
 	private Context mContext;
 	private Notice mNotice;
 
-	// private HashSet<SocketCommunication> mCommunications;
-	private Vector<SocketCommunication> vector;
+	private Vector<SocketCommunication> mCommunications;
 	/** Thread pool */
 	private ExecutorService mExecutorService = null;
 	private ArrayList<OnCommunicationListener> mOnCommunicationListeners;
+
+	private UserManager mUserManager = UserManager.getInstance();
+	private ProtocolDecoder mProtocolDecoder;
 
 	private SocketCommunicationManager() {
 
@@ -78,7 +123,14 @@ public class SocketCommunicationManager implements
 		mOnCommunicationListeners = new ArrayList<OnCommunicationListener>();
 		mNotice = new Notice(context);
 		// mCommunications = new HashSet<SocketCommunication>();
-		vector = new Vector<SocketCommunication>();
+		mCommunications = new Vector<SocketCommunication>();
+
+		UserHelper userHelper = new UserHelper(mContext);
+		User localUser = userHelper.loadUser();
+		mUserManager.setLocalUser(localUser);
+		mUserManager.registerOnUserChangedListener(this);
+
+		mProtocolDecoder = new ProtocolDecoder(this);
 	}
 
 	public static synchronized SocketCommunicationManager getInstance(
@@ -89,6 +141,26 @@ public class SocketCommunicationManager implements
 		return mInstance;
 	}
 
+	public void registerOnCommunicationListenerExternal(
+			OnCommunicationListenerExternal listener) {
+		if (!mOnCommunicationListenerExternals.contains(listener)) {
+			mOnCommunicationListenerExternals.add(listener);
+		}
+	}
+
+	public void unregisterOnCommunicationListenerExternal(
+			OnCommunicationListenerExternal listener) {
+		mOnCommunicationListenerExternals.remove(listener);
+	}
+
+	/**
+	 * Send message to communication.</br>
+	 * 
+	 * for internal use.
+	 * 
+	 * @param communication
+	 * @param message
+	 */
 	public void sendMessage(SocketCommunication communication, byte[] message) {
 		if (message.length == 0) {
 			return;
@@ -100,31 +172,37 @@ public class SocketCommunicationManager implements
 		}
 	}
 
+	/**
+	 * For internal use.
+	 * 
+	 * @param message
+	 * @param idThread
+	 */
 	public void sendMessage(byte[] message, int idThread) {
+		// TODO need to update.
 		if (idThread == -1) {
 			return;
 		}
-		if (vector != null) {
-			synchronized (vector) {
-				for (SocketCommunication communication : vector) {
+		if (mCommunications != null) {
+			synchronized (mCommunications) {
+				for (SocketCommunication communication : mCommunications) {
 					if (communication.getId() != idThread) {
 						sendMessage(communication, message);
 					}
 				}
 			}
-
 		} else {
 			try {
 				mNotice.showToast("No connection.");
 			} catch (Exception e) {
 				// call in thread that has not called Looper.prepare().
 			}
-
 		}
 	}
 
 	/**
-	 * send file to client
+	 * send file to client</br>
+	 * 
 	 * 
 	 * @param file
 	 *            the file that need to send
@@ -133,12 +211,13 @@ public class SocketCommunicationManager implements
 	 * @author yuri
 	 */
 	public void sendMessage(File file, int idThread) {
+		// TODO need to update.
 		if (idThread == -1) {
 			return;
 		}
 
-		if (vector != null && vector.size() > 0) {
-			for (SocketCommunication communication : vector) {
+		if (mCommunications != null && mCommunications.size() > 0) {
+			for (SocketCommunication communication : mCommunications) {
 				if (communication.getId() != idThread) {
 					sendMessage(communication, file);
 				}
@@ -157,6 +236,7 @@ public class SocketCommunicationManager implements
 	 * @author yuri
 	 */
 	public void sendMessage(SocketCommunication communication, File file) {
+		// TODO need to update.
 		if (file == null) {
 			return;
 		}
@@ -174,8 +254,8 @@ public class SocketCommunicationManager implements
 	 * Notice, this method should not be called by apps.</br>
 	 */
 	public void closeCommunication() {
-		if (vector != null) {
-			for (final SocketCommunication communication : vector) {
+		if (mCommunications != null) {
+			for (final SocketCommunication communication : mCommunications) {
 				new Thread() {
 					@Override
 					public void run() {
@@ -184,7 +264,7 @@ public class SocketCommunicationManager implements
 				}.start();
 			}
 		}
-		vector.clear();
+		mCommunications.clear();
 		if (SocketServer.getInstance() != null) {
 			SocketServer.getInstance().stopServer();
 		}
@@ -221,15 +301,15 @@ public class SocketCommunicationManager implements
 	 * @return
 	 */
 	public Vector<SocketCommunication> getCommunications() {
-		return vector;
+		return mCommunications;
 	}
 
 	@Override
 	public void OnCommunicationEstablished(SocketCommunication communication) {
-		synchronized (vector) {
-			vector.add(communication);
-			if (!vector.isEmpty()) {
-				for (SocketCommunication comm : vector) {
+		synchronized (mCommunications) {
+			mCommunications.add(communication);
+			if (!mCommunications.isEmpty()) {
+				for (SocketCommunication comm : mCommunications) {
 					if ((comm.getConnectIP().equals(communication
 							.getConnectIP()))
 							&& (comm.getId() != communication.getId())) {
@@ -243,19 +323,22 @@ public class SocketCommunicationManager implements
 
 	@Override
 	public void OnCommunicationLost(SocketCommunication communication) {
-		synchronized (vector) {
-			if (vector.contains(communication)) {
-				vector.remove(communication);
+		synchronized (mCommunications) {
+			if (mCommunications.contains(communication)) {
+				mCommunications.remove(communication);
 				notifyComunicationChange();
 			}
 		}
-		if (vector.isEmpty()) {
+		if (mCommunications.isEmpty()) {
 			if (mExecutorService == null) {
 				return;
 			}
 			mExecutorService.shutdown();
 			mExecutorService = null;
 		}
+		mUserManager.removeUser(communication);
+		mUserManager.removeLocalCommunication(communication);
+		sendMessageToUpdateAllUser();
 	}
 
 	public void registered(OnCommunicationListener iSubscribe) {
@@ -269,15 +352,89 @@ public class SocketCommunicationManager implements
 	@Override
 	public void receiveMessage(byte[] msg,
 			SocketCommunication socketCommunication) {
-		// Call all listeners to receive the message.
-		for (OnCommunicationListener listener : mOnCommunicationListeners) {
-			listener.onReceiveMessage(msg, socketCommunication);
+		// decode;
+		mProtocolDecoder.decode(msg, socketCommunication);
+	}
+
+	private ConcurrentHashMap<Integer, SocketCommunication> mLocalCommunications = new ConcurrentHashMap<Integer, SocketCommunication>();
+	private int mLastLocalID = 0;
+
+	public int addLocalCommunicaiton(SocketCommunication communication) {
+		if (!mLocalCommunications.contains(communication)) {
+			mLastLocalID++;
+			mLocalCommunications.put(mLastLocalID, communication);
+			return mLastLocalID;
+		} else {
+			int id = 0;
+			for (Map.Entry<Integer, SocketCommunication> entry : mLocalCommunications
+					.entrySet()) {
+				if (communication == entry.getValue()) {
+					id = entry.getKey();
+					break;
+				}
+			}
+			return id;
+		}
+	}
+
+	public void removeLocalCommunicaiton(int id) {
+		mLocalCommunications.remove(id);
+	}
+
+	public SocketCommunication getLocalCommunicaiton(int id) {
+		return mLocalCommunications.get(id);
+	}
+
+	/**
+	 * client login server directly.
+	 */
+	public void sendLoginRequest() {
+		byte[] loginRequest = ProtocolEncoder.encodeLoginRequest(mUserManager
+				.getLocalUser());
+		sendMessageToAllWithoutEncode(loginRequest);
+	}
+
+	/**
+	 * Send message to the receiver.
+	 * 
+	 * @param msg
+	 * @param receiveUser
+	 * @param appID
+	 */
+	public void sendMessageToSingle(byte[] msg, User receiveUser, int appID) {
+		int localUserID = mUserManager.getLocalUser().getUserID();
+		int receiveUserID = receiveUser.getUserID();
+		byte[] data = ProtocolEncoder.encodeSendMessageToSingle(msg,
+				localUserID, receiveUserID, appID);
+		sendMessageToAllWithoutEncode(data);
+	}
+
+	/**
+	 * Send message to all users in the network.
+	 * 
+	 * @param msg
+	 */
+	public void sendMessageToAll(byte[] msg, int appID) {
+		int localUserID = mUserManager.getLocalUser().getUserID();
+		byte[] data = ProtocolEncoder.encodeSendMessageToAll(msg, localUserID,
+				appID);
+		sendMessageToAllWithoutEncode(data);
+	}
+
+	/**
+	 * send the message to all users in the network.
+	 * 
+	 * @param msg
+	 */
+	public void sendMessageToAllWithoutEncode(byte[] msg) {
+		for (SocketCommunication communication : mCommunications) {
+			sendMessage(communication, msg);
 		}
 	}
 
 	@Override
 	public void sendMessage(byte[] msg) {
-		// TODO Auto-generated method stub
+		// TODO need to update.
 	}
 
 	/**
@@ -285,6 +442,7 @@ public class SocketCommunicationManager implements
 	 *            ,if true ,connect add ,else connect remove
 	 * */
 	private void notifyComunicationChange() {
+		// TODO need to update.
 		// if need notify someone ,doing here
 		if (!mOnCommunicationListeners.isEmpty()) {
 			for (OnCommunicationListener listener : mOnCommunicationListeners) {
@@ -312,6 +470,14 @@ public class SocketCommunicationManager implements
 	}
 
 	/**
+	 * Update user when user connect and disconnect.
+	 */
+	private void sendMessageToUpdateAllUser() {
+		byte[] allUserData = ProtocolEncoder.encodeUpdateAllUser(mUserManager);
+		sendMessageToAllWithoutEncode(allUserData);
+	}
+
+	/**
 	 * Connect to server.
 	 * 
 	 * @param context
@@ -321,6 +487,27 @@ public class SocketCommunicationManager implements
 	public void connectServer(Context context, String serverIp) {
 		SocketClientTask clientTask = new SocketClientTask(context, this);
 		clientTask.execute(new String[] { serverIp, SocketCommunication.PORT });
+	}
+
+	public void notifyReceiveListeners(int sendUserID, int appID, byte[] data) {
+		for (OnCommunicationListenerExternal listener : mOnCommunicationListenerExternals) {
+			listener.onReceiveMessage(data,
+					mUserManager.getAllUser().get(sendUserID));
+		}
+	}
+
+	@Override
+	public void onUserConnected(User user) {
+		for (OnCommunicationListenerExternal listener : mOnCommunicationListenerExternals) {
+			listener.onUserConnected(user);
+		}
+	}
+
+	@Override
+	public void onUserDisconnected(User user) {
+		for (OnCommunicationListenerExternal listener : mOnCommunicationListenerExternals) {
+			listener.onUserDisconnected(user);
+		}
 	}
 
 }

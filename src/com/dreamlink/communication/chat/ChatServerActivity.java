@@ -18,6 +18,8 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
+import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.server.ServerStatus;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -32,7 +34,7 @@ import com.dreamlink.communication.util.Notice;
  * 
  */
 public class ChatServerActivity extends Activity implements OnClickListener,
-		OnCommunicationListener {
+		OnCommunicationListenerExternal {
 	@SuppressWarnings("unused")
 	private static final String TAG = "ChatServerActivity";
 
@@ -59,7 +61,7 @@ public class ChatServerActivity extends Activity implements OnClickListener,
 
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(mContext);
-		mCommunicationManager.registered(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this);
 	}
 
 	private void initView() {
@@ -89,8 +91,10 @@ public class ChatServerActivity extends Activity implements OnClickListener,
 				if (TextUtils.isEmpty(message)) {
 					mNotice.showToast("Please input message");
 				} else {
-					mCommunicationManager.sendMessage(message.getBytes(), 0);
-					mHistoricListAdapter.add("Send: " + message);
+					// TODO app id need to implement.
+					mCommunicationManager.sendMessageToAll(message.getBytes(),
+							100);
+					mHistoricListAdapter.add("Me: " + message);
 					mHistoricListAdapter.notifyDataSetChanged();
 					mMessageEditText.setText("");
 				}
@@ -126,7 +130,7 @@ public class ChatServerActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		mCommunicationManager.unregistered(this);
+		mCommunicationManager.unregisterOnCommunicationListenerExternal(this);
 	}
 
 	private Handler mHandler = new Handler() {
@@ -134,8 +138,7 @@ public class ChatServerActivity extends Activity implements OnClickListener,
 			synchronized (msg) {
 				switch (msg.what) {
 				case MSG_RECEIVED_MESSAGE:
-					mHistoricListAdapter.add("Receive" + ": "
-							+ (String) (msg.obj));
+					mHistoricListAdapter.add((String) (msg.obj));
 					mHistoricListAdapter.notifyDataSetChanged();
 					break;
 				}
@@ -144,30 +147,21 @@ public class ChatServerActivity extends Activity implements OnClickListener,
 	};
 
 	@Override
-	public void onReceiveMessage(byte[] msg, SocketCommunication id) {
+	public void onReceiveMessage(byte[] msg, User sendUser) {
 		Log.d(TAG, "onReceiveMessage");
-		final String messageBT = new String(msg);
-		mHandler.obtainMessage(MSG_RECEIVED_MESSAGE, messageBT).sendToTarget();
-		final byte[] message = msg;
-		final SocketCommunication com = id;
-		new Thread() {
-
-			@Override
-			public void run() {
-				super.run();
-				mCommunicationManager.sendMessage(message, (int) com.getId());
-			}
-		}.start();
+		String receivedMsg = sendUser.getUserName() + ": " + new String(msg);
+		mHandler.obtainMessage(MSG_RECEIVED_MESSAGE, receivedMsg)
+				.sendToTarget();
 	}
 
 	@Override
-	public void onSendResult(byte[] msg) {
+	public void onUserConnected(User user) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void notifyConnectChanged() {
+	public void onUserDisconnected(User user) {
 		// TODO Auto-generated method stub
 
 	}

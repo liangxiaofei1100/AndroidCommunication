@@ -3,6 +3,8 @@ package com.dreamlink.communication;
 import java.util.ArrayList;
 
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
+import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.util.LogFile;
 import com.dreamlink.communication.util.TimeUtil;
 
@@ -19,7 +21,7 @@ import android.widget.ListView;
  * 
  */
 public class StabilityTestServer extends Activity implements
-		OnCommunicationListener {
+		OnCommunicationListenerExternal {
 	private static final String TAG = "StabilityTestServer";
 	private ListView mListView;
 	private ArrayAdapter<String> mAdapter;
@@ -35,7 +37,7 @@ public class StabilityTestServer extends Activity implements
 		initView();
 
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
-		mCommunicationManager.registered(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this);
 
 		mDataLogFile = new LogFile(getApplicationContext(),
 				"StabilityTestServer-" + TimeUtil.getCurrentTime() + ".txt");
@@ -71,25 +73,39 @@ public class StabilityTestServer extends Activity implements
 			mDataLogFile.writeLog(TimeUtil.getCurrentTime() + " Received: \n");
 			mDataLogFile.writeLog(messageString);
 
-			mCommunicationManager.sendMessage(messageString.getBytes(), 0);
+			// mCommunicationManager.sendMessage(messageString.getBytes(), 0);
+			mCommunicationManager.sendMessageToAll(messageString.getBytes(),
+					100);
 		};
 	};
 
 	@Override
-	public void onReceiveMessage(byte[] msg, SocketCommunication ip) {
-		Log.d(TAG, "onReceiveMessage:" + String.valueOf(msg));
+	protected void onDestroy() {
+		super.onDestroy();
+		mCommunicationManager.unregisterOnCommunicationListenerExternal(this);
+	}
+
+	@Override
+	public void onReceiveMessage(byte[] msg, User sendUser) {
+		if (sendUser == null) {
+			Log.d(TAG, "User is lost connection.");
+			return;
+		}
 		Message message = mHandler.obtainMessage();
-		message.obj = new String(msg);
+		message.obj = "From " + sendUser.getUserName() + ": " + new String(msg);
 		mHandler.sendMessage(message);
-	}
-
-	@Override
-	public void onSendResult(byte[] msg) {
 
 	}
 
 	@Override
-	public void notifyConnectChanged() {
+	public void onUserConnected(User user) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onUserDisconnected(User user) {
+		// TODO Auto-generated method stub
 
 	}
 }

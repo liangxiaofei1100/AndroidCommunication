@@ -9,6 +9,7 @@ import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.SearchClient.OnSearchListener;
 import com.dreamlink.communication.util.Log;
@@ -45,7 +46,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	private static final String TAG = "ClientListActivity";
 	private Context mContext;
 
-	//¼àÌý·µ»Ø¼ü¡£°´ÏÂÊ±ÏÈ¹Ø±ÕËùÓÐÁ¬½Ó
+	//ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ï¿½ï¿½Ê±ï¿½È¹Ø±ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// TODO Auto-generated method stub
@@ -75,6 +76,8 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	private static final int WIFI_AP_STATE_DISABLING = 10;
 	private static final int WIFI_AP_STATE_DISABLED = 11;
 	private static final int WIFI_AP_STATE_FAILED = 14;
+	
+	private UserManager mUserManager;
 
 	private Handler mSearchHandler = new Handler() {
 
@@ -128,6 +131,9 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
 		registerReceiver(mBroadcastReceiver, filter);
+		
+		mUserManager = UserManager.getInstance();
+		mUserManager.addLocalServerUser();
 	}
 
 	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {

@@ -11,7 +11,9 @@ import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.client.SearchSever.OnSearchListener;
+import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -104,6 +106,8 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	private SearchSever mSearchServer;
 	private SocketCommunicationManager mCommunicationManager;
 
+	private UserManager mUserManager;
+
 	private static final int MSG_SEARCH_SUCCESS = 1;
 	private static final int MSG_SEARCH_FAIL = 2;
 	/** Connect to the server and launch app list activity. */
@@ -117,9 +121,13 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		// TODO Auto-generated method stub
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			if (Build.VERSION.SDK_INT >= 14) {
-				mWifiDirectManager.stopConnect();
+				if (mWifiDirectManager != null) {
+					mWifiDirectManager.stopConnect();
+				}
 			}
-			mCommunicationManager.closeCommunication();
+			if (mCommunicationManager != null) {
+				mCommunicationManager.closeCommunication();
+			}
 		}
 		return super.onKeyDown(keyCode, event);
 	}
@@ -183,6 +191,11 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		initReceiver();
 
 		mIsAPSelected = false;
+
+		mUserManager = UserManager.getInstance();
+		UserHelper userHelper = new UserHelper(mContext);
+		User localUser = userHelper.loadUser();
+		mUserManager.setLocalUser(localUser);
 	}
 
 	/**
@@ -325,7 +338,6 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		Intent intent = new Intent();
 		intent.putExtra(AppListActivity.EXTRA_IS_SERVER, false);
 		intent.setClass(this, AppListActivity.class);
-		intent.putExtra("isServer", WifiP2pServer);
 		startActivity(intent);
 	}
 
@@ -456,6 +468,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	 */
 	private void connectServer(String ip) {
 		mCommunicationManager.connectServer(mContext, ip);
+
 	}
 
 	public void connetAP(String SSID) {
@@ -694,7 +707,6 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	@Override
 	public void notifyConnectChanged() {
-		// TODO Auto-generated method stub
 		if (WifiP2pServer) {
 			ArrayList<String> temp = new ArrayList<String>();
 			for (SocketCommunication com : mCommunicationManager
@@ -704,6 +716,16 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			mHandler.obtainMessage(MSG_SEARCH_WIFI_DIRECT_FOUND, temp)
 					.sendToTarget();
 		}
+		// Not wifi direct.
+		// Send login request.
+		// TODO notifyConnectChanged should notify the connection is establish
+		// or lost.
+		// If connection is established, send login request, if lost, do not
+		// send login request.
+		Log.d(TAG, "Send login request: " + mUserManager.getLocalUser());
+
+		mCommunicationManager.sendLoginRequest();
+		
 	}
 
 }
