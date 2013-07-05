@@ -9,6 +9,7 @@ import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.SearchClient.OnSearchListener;
 import com.dreamlink.communication.util.Log;
@@ -59,10 +60,8 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	private static final String TAG = "ClientListActivity";
 	private Context mContext;
 
-	// 监听返回键。按下时先关闭所有连接
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		// TODO Auto-generated method stub
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			mCommunicationManager.closeCommunication();
 		}
@@ -89,6 +88,8 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	private static final int WIFI_AP_STATE_DISABLING = 10;
 	private static final int WIFI_AP_STATE_DISABLED = 11;
 	private static final int WIFI_AP_STATE_FAILED = 14;
+
+	private UserManager mUserManager;
 
 	private Handler mSearchHandler = new Handler() {
 
@@ -134,6 +135,9 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 
 		mSearchClient = SearchClient.getInstance(this);
 		mSearchClient.setOnSearchListener(this);
+
+		mUserManager = UserManager.getInstance();
+		mUserManager.addLocalServerUser();
 	}
 
 	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {

@@ -1,8 +1,6 @@
 package com.dreamlink.communication.data;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import com.dreamlink.communication.util.ArrayUtil;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -70,33 +68,14 @@ public class UserHelper {
 			Log.d(TAG, "saveUser: user name is empty, abort.");
 		}
 	}
-
-	private static final String SEPERATOR = "|-|";
-
-	public byte[] encodeUser(User user) {
-		if (user == null) {
-			Log.e(TAG, "encodeUser, user is null");
-			return new byte[0];
-		}
-		StringBuffer stringBuffer = new StringBuffer();
-		stringBuffer.append(user.getUserName());
-		stringBuffer.append(SEPERATOR);
-		stringBuffer.append(user.getSystemInfo().mAndroidVersionCode);
-		return stringBuffer.toString().getBytes();
+	
+	public static byte[] encodeUser(User user) {
+		byte[] data = ArrayUtil.objectToByteArray(user);
+		return data;
 	}
 
-	public User parseUser(byte[] data) {
-		String userInfo = new String(data);
-		String[] infos = userInfo.split(SEPERATOR);
-		if (infos.length != 2) {
-			Log.d(TAG, "parseUser fail: " + userInfo);
-			return null;
-		}
-		User user = new User();
-		user.setUserName(infos[0]);
-		SystemInfo systemInfo = new SystemInfo();
-		systemInfo.mAndroidVersionCode = Integer.valueOf(infos[1]);
-		user.setSystemInfo(systemInfo);
+	public static User decodeUser(byte[] data) {
+		User user = (User) ArrayUtil.byteArrayToObject(data);
 		return user;
 	}
 }

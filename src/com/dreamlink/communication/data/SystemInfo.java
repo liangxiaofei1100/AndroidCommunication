@@ -1,8 +1,15 @@
 package com.dreamlink.communication.data;
 
+import java.io.Serializable;
+
 import android.os.Build;
 
-public class SystemInfo {
+public class SystemInfo implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7084876749207553689L;
+
 	public String mAndroidVersion;
 	public int mAndroidVersionCode;
 	public boolean mIsWiFiDirectSupported;
@@ -19,4 +26,10 @@ public class SystemInfo {
 		return this;
 	}
 
+	@Override
+	public String toString() {
+		return "SystemInfo [mAndroidVersion=" + mAndroidVersion
+				+ ", mAndroidVersionCode=" + mAndroidVersionCode
+				+ ", mIsWiFiDirectSupported=" + mIsWiFiDirectSupported + "]";
+	}
 }

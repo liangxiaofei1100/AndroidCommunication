@@ -1,8 +1,10 @@
 package com.dreamlink.communication;
 
 import java.util.ArrayList;
+import java.util.Map;
 
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
+import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.util.LogFile;
 import com.dreamlink.communication.util.Notice;
 import com.dreamlink.communication.util.TimeUtil;
@@ -12,6 +14,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SubMenu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -20,7 +25,7 @@ import android.widget.ListView;
  * 
  */
 public class StabilityTestClient extends Activity implements
-		OnCommunicationListener {
+		OnCommunicationListenerExternal {
 	private ListView mListView;
 	private ArrayAdapter<String> mAdapter;
 	private ArrayList<String> mData;
@@ -32,6 +37,13 @@ public class StabilityTestClient extends Activity implements
 	private LogFile mDataLogFile;
 	private LogFile mErrorLogFile;
 
+	private static final int SEND_MODE_ALL = 1;
+	private static final int SEND_MODE_SINGLE = 2;
+	private int mSendMode = SEND_MODE_ALL;
+	private User mSendModeSigleReceiver;
+
+	private UserManager mUserManager;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -39,7 +51,7 @@ public class StabilityTestClient extends Activity implements
 		initView();
 		mNotice = new Notice(this);
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
-		mCommunicationManager.registered(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this);
 
 		if (mCommunicationManager.getCommunications().size() > 0) {
 			Log.d(TAG, "start Test");
@@ -58,6 +70,8 @@ public class StabilityTestClient extends Activity implements
 				"StabilityTestClient_error-" + TimeUtil.getCurrentTime()
 						+ ".txt");
 		mErrorLogFile.open();
+
+		mUserManager = UserManager.getInstance();
 	}
 
 	private class TestThread extends Thread {
@@ -67,9 +81,24 @@ public class StabilityTestClient extends Activity implements
 			Log.d(TAG, "start Test, run");
 			int count = 0;
 			while (!mStop) {
-				Log.d(TAG, "Send message: " + count);
-				mCommunicationManager.sendMessage((TimeUtil.getCurrentTime()
-						+ "::" + String.valueOf(count) + '\n').getBytes(), 0);
+				Log.d(TAG, "Send message: " + count + ", send mode = "
+						+ mSendMode);
+				byte[] message = (TimeUtil.getCurrentTime() + "::"
+						+ String.valueOf(count) + '\n').getBytes();
+				switch (mSendMode) {
+				case SEND_MODE_ALL:
+					mCommunicationManager.sendMessageToAll(message, 100);
+					break;
+				case SEND_MODE_SINGLE:
+					if (mSendModeSigleReceiver != null) {
+						mCommunicationManager.sendMessageToSingle(message,
+								mSendModeSigleReceiver, 100);
+					}
+					break;
+
+				default:
+					break;
+				}
 				count++;
 				try {
 					Thread.sleep(100);
@@ -107,27 +136,88 @@ public class StabilityTestClient extends Activity implements
 	};
 
 	@Override
-	public void onReceiveMessage(byte[] msg, SocketCommunication ip) {
+	protected void onDestroy() {
+		super.onDestroy();
+		mCommunicationManager.unregisterOnCommunicationListenerExternal(this);
+		mStop = true;
+		mDataLogFile.close();
+		mErrorLogFile.close();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.stability_test, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_send_to_all:
+			mSendMode = SEND_MODE_ALL;
+			mNotice.showToast("Send to all");
+			break;
+		case R.id.menu_send_to_single:
+			mSendMode = SEND_MODE_SINGLE;
+			showReceiverChooserMenu(item);
+
+			break;
+		case MENU_SEND_TO_SINGLE:
+			String receiver = item.getTitle().toString();
+			Map<Integer, User> allUser = mUserManager.getAllUser();
+			for (Map.Entry<Integer, User> entry : allUser.entrySet()) {
+				if (receiver.equals(entry.getValue().getUserName())) {
+					mSendModeSigleReceiver = entry.getValue();
+					// Get the first matched user. If there are users with the
+					// same name, ignore.
+					break;
+				}
+			}
+			mNotice.showToast("Send to ID = "
+					+ mSendModeSigleReceiver.getUserID() + ", name = "
+					+ mSendModeSigleReceiver.getUserName());
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	private static final int MENU_SEND_TO_SINGLE = 1;
+
+	private void showReceiverChooserMenu(MenuItem item) {
+		SubMenu subMenu = item.getSubMenu();
+		subMenu.clear();
+		Map<Integer, User> allUser = mUserManager.getAllUser();
+		User localUser = mUserManager.getLocalUser();
+
+		for (Map.Entry<Integer, User> entry : allUser.entrySet()) {
+			if (localUser.getUserID() != (int) entry.getKey()) {
+				subMenu.add(1, MENU_SEND_TO_SINGLE, 0, entry.getValue()
+						.getUserName());
+			}
+		}
+	}
+
+	@Override
+	public void onReceiveMessage(byte[] msg, User sendUser) {
+		if (sendUser == null) {
+			Log.d(TAG, "User is lost connection.");
+			return;
+		}
 		Message message = mHandler.obtainMessage();
-		message.obj = new String(msg);
+		message.obj = "From " + sendUser.getUserName() + ": " + new String(msg);
 		mHandler.sendMessage(message);
 	}
 
 	@Override
-	public void onSendResult(byte[] msg) {
+	public void onUserConnected(User user) {
+		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void notifyConnectChanged() {
+	public void onUserDisconnected(User user) {
+		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		mStop = true;
-		mDataLogFile.close();
-		mErrorLogFile.close();
 	}
 }

@@ -1,0 +1,257 @@
+package com.dreamlink.communication;
+
+import java.util.Map;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.dreamlink.communication.data.User;
+import com.dreamlink.communication.util.Log;
+
+/**
+ * Management user an user's communication.
+ * 
+ */
+public class UserManager {
+	/**
+	 * Interface for monitor the user changes.
+	 * 
+	 */
+	public interface OnUserChangedListener {
+		/**
+		 * There is new user connected.
+		 */
+		void onUserConnected(User user);
+
+		/**
+		 * There is a user disconnected.
+		 */
+		void onUserDisconnected(User user);
+	}
+
+	private static final String TAG = "UserManager";
+	/** user id : user communication */
+	private ConcurrentHashMap<Integer, SocketCommunication> mCommunications = new ConcurrentHashMap<Integer, SocketCommunication>();
+	/** user id : user communication */
+	private ConcurrentHashMap<Integer, SocketCommunication> mLocalCommunications = new ConcurrentHashMap<Integer, SocketCommunication>();
+	/** user id : user info */
+	private ConcurrentHashMap<Integer, User> mUsers = new ConcurrentHashMap<Integer, User>();
+	private int mLastUserId = 0;
+	private static UserManager mInstance;
+	private Vector<OnUserChangedListener> mOnUserChangedListeners = new Vector<OnUserChangedListener>();
+
+	private User mLocalUser;
+
+	public User getLocalUser() {
+		return mLocalUser;
+	}
+
+	public void setLocalUser(User localUser) {
+		mLocalUser = localUser;
+	}
+
+	private UserManager() {
+
+	}
+
+	public synchronized static UserManager getInstance() {
+		if (mInstance == null) {
+			mInstance = new UserManager();
+		}
+		return mInstance;
+	}
+
+	public void registerOnUserChangedListener(OnUserChangedListener listener) {
+		if (!mOnUserChangedListeners.contains(listener)) {
+			mOnUserChangedListeners.add(listener);
+		}
+	}
+
+	public void unregisterOnUserChangedListener(OnUserChangedListener listener) {
+		mOnUserChangedListeners.remove(listener);
+	}
+
+	/**
+	 * Add a user.
+	 * 
+	 * @param user
+	 * @param communication
+	 * @return
+	 */
+	public synchronized boolean addUser(User user,
+			SocketCommunication communication) {
+		if (isUserExist(user)) {
+			Log.d(TAG, "addUser ignore, user is already exist. " + user);
+			return false;
+		}
+		if (user.getUserID() != 0) {
+			// This is a client, The user is already assigned a id by server.
+		} else {
+			// This is the server, and here a client connected. So assign it a
+			// user id.
+			mLastUserId++;
+			user.setUserID(mLastUserId);
+		}
+
+		mUsers.put(user.getUserID(), user);
+		if (isLocalUser(user.getUserID())) {
+			mCommunications.put(user.getUserID(),
+					mLocalCommunications.get(user.getUserID()));
+		} else {
+			mCommunications.put(user.getUserID(), communication);
+		}
+		for (OnUserChangedListener listener : mOnUserChangedListeners) {
+			listener.onUserConnected(user);
+		}
+		Log.d(TAG, "addUser " + user);
+		return true;
+	}
+
+	/**
+	 * Check the user is exist or not.
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public synchronized boolean isUserExist(User user) {
+		for (Map.Entry<Integer, User> entry : mUsers.entrySet()) {
+			if (user.getUserID() == (int) entry.getKey()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public synchronized boolean addLocalServerUser() {
+		mLocalUser.setUserID(-1);
+		if (isUserExist(mLocalUser)) {
+			return false;
+		}
+		mUsers.put(mLocalUser.getUserID(), mLocalUser);
+		SocketCommunication communication = new SocketCommunication(null, null);
+		mCommunications.put(mLocalUser.getUserID(), communication);
+		return true;
+	}
+
+	public static synchronized boolean isManagerServer(User user) {
+		if (-1 == user.getUserID()) {
+			return true;
+		}
+		return false;
+	}
+
+	public synchronized void removeUser(int id) {
+		for (OnUserChangedListener listener : mOnUserChangedListeners) {
+			listener.onUserDisconnected(mUsers.get(id));
+		}
+		mUsers.remove(id);
+		mCommunications.remove(id);
+		Log.d(TAG, "remove user id = " + id);
+	}
+
+	/**
+	 * Remove the user and user's communication.
+	 * 
+	 * @param user
+	 */
+	public synchronized void removeUser(User user) {
+		for (Map.Entry<Integer, User> entry : mUsers.entrySet()) {
+			if (user.getUserID() == (int) entry.getKey()) {
+				int userId = entry.getKey();
+				removeUser(userId);
+			}
+		}
+	}
+
+	/**
+	 * Remove the user and user's communication.
+	 * 
+	 * @param communication
+	 */
+	public synchronized void removeUser(SocketCommunication communication) {
+		for (Map.Entry<Integer, SocketCommunication> entry : mCommunications
+				.entrySet()) {
+			if (communication == entry.getValue()) {
+				int userId = entry.getKey();
+				removeUser(userId);
+			}
+		}
+	}
+
+	/**
+	 * Get the SocketCommunication for the user.
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public synchronized SocketCommunication getSocketCommunication(User user) {
+		SocketCommunication result = null;
+		for (Map.Entry<Integer, User> entry : mUsers.entrySet()) {
+			if (user.getUserID() == (int) entry.getKey()) {
+				result = mCommunications.get(user.getUserID());
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Get the SocketCommunication for the user.
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public synchronized SocketCommunication getSocketCommunication(int userID) {
+		return mCommunications.get(userID);
+	}
+
+	public Map<Integer, User> getAllUser() {
+		return mUsers;
+	}
+
+	public Map<Integer, SocketCommunication> getAllCommmunication() {
+		return mCommunications;
+	}
+
+	public void clear() {
+		mUsers.clear();
+		mCommunications.clear();
+	}
+
+	@Override
+	public String toString() {
+		return "UserManager [mCommunications=" + mCommunications + ", mUsers="
+				+ mUsers + ", mLastUserId=" + mLastUserId + ", mLocalUser="
+				+ mLocalUser + "]";
+	}
+
+	public void addLocalCommunication(int id, SocketCommunication communication) {
+		mLocalCommunications.put(id, communication);
+	}
+
+	public void removeLocalCommunication(SocketCommunication communication) {
+		if (communication != null) {
+			mLocalCommunications.remove(getLocalCommunication(communication));
+			return;
+		}
+	}
+
+	private int getLocalCommunication(SocketCommunication communication) {
+		for (Map.Entry<Integer, SocketCommunication> entry : mLocalCommunications
+				.entrySet()) {
+			if (entry.getValue() == communication) {
+				return entry.getKey();
+			}
+		}
+		return 0;
+	}
+
+	private boolean isLocalUser(int userID) {
+		for (Map.Entry<Integer, SocketCommunication> entry : mLocalCommunications
+				.entrySet()) {
+			if (entry.getKey() == userID) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+}
