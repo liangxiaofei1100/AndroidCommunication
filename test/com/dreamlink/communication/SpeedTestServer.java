@@ -3,10 +3,12 @@ package com.dreamlink.communication;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
+import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.util.Notice;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -22,7 +24,7 @@ import android.widget.TextView;
  * 
  */
 public class SpeedTestServer extends Activity implements
-		OnCommunicationListener {
+		OnCommunicationListenerExternal {
 	private static final String TAG = "SpeedTestServer";
 	private Notice mNotice;
 	private SocketCommunicationManager mCommunicationManager;
@@ -38,14 +40,22 @@ public class SpeedTestServer extends Activity implements
 	/** Show speed ever 1 second. */
 	private Timer mShowSpeedTimer;
 
+	/** Speed test app id */
+	private int mAppID = 0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		Intent intent = getIntent();
+		mAppID = intent.getIntExtra(SpeedTest.EXTRA_APP_ID, 0);
+
 		setContentView(R.layout.test_speed);
 		initView();
 		mNotice = new Notice(this);
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
-		mCommunicationManager.registered(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this,
+				mAppID);
 		mStop = false;
 		mIsStarted = false;
 	}
@@ -108,7 +118,7 @@ public class SpeedTestServer extends Activity implements
 
 			mStartTime = System.currentTimeMillis();
 			while (!mStop) {
-				mCommunicationManager.sendMessage(mData, 0);
+				mCommunicationManager.sendMessageToAll(mData, mAppID);
 				mTotalSize += mSize;
 			}
 		}
@@ -122,31 +132,34 @@ public class SpeedTestServer extends Activity implements
 	};
 
 	@Override
-	public void onReceiveMessage(byte[] msg, SocketCommunication ip) {
-		Log.d(TAG, "onReceiveMessage:" + String.valueOf(msg));
-		Message message = mHandler.obtainMessage();
-		message.obj = new String(msg);
-		mHandler.sendMessage(message);
-	}
-
-	@Override
-	public void onSendResult(byte[] msg) {
-
-	}
-
-	@Override
-	public void notifyConnectChanged() {
-
-	}
-
-	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		mStop = true;
-		mCommunicationManager.unregistered(this);
+		mCommunicationManager.unregisterOnCommunicationListenerExternal(this);
 		if (mShowSpeedTimer != null) {
 			mShowSpeedTimer.cancel();
 			mShowSpeedTimer = null;
 		}
+	}
+
+	@Override
+	public void onReceiveMessage(byte[] msg, User sendUser) {
+		Log.d(TAG, "onReceiveMessage:" + String.valueOf(msg));
+		Message message = mHandler.obtainMessage();
+		message.obj = new String(msg);
+		mHandler.sendMessage(message);
+
+	}
+
+	@Override
+	public void onUserConnected(User user) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onUserDisconnected(User user) {
+		// TODO Auto-generated method stub
+
 	}
 }

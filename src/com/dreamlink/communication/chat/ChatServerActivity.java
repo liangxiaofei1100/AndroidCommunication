@@ -2,6 +2,7 @@ package com.dreamlink.communication.chat;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -51,17 +52,25 @@ public class ChatServerActivity extends Activity implements OnClickListener,
 	// Handler message
 	private static final int MSG_RECEIVED_MESSAGE = 1;
 
+	/** Chat app id */
+	private int mAppID = 0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_server);
 		mContext = this;
+
+		Intent intent = getIntent();
+		mAppID = intent.getIntExtra(ChatLauncher.EXTRA_APP_ID, 0);
+
 		mNotice = new Notice(mContext);
 		initView();
 
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(mContext);
-		mCommunicationManager.registerOnCommunicationListenerExternal(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this,
+				mAppID);
 	}
 
 	private void initView() {
@@ -91,9 +100,8 @@ public class ChatServerActivity extends Activity implements OnClickListener,
 				if (TextUtils.isEmpty(message)) {
 					mNotice.showToast("Please input message");
 				} else {
-					// TODO app id need to implement.
 					mCommunicationManager.sendMessageToAll(message.getBytes(),
-							100);
+							mAppID);
 					mHistoricListAdapter.add("Me: " + message);
 					mHistoricListAdapter.notifyDataSetChanged();
 					mMessageEditText.setText("");

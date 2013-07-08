@@ -2,13 +2,13 @@ package com.dreamlink.communication;
 
 import java.util.ArrayList;
 
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
 import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.util.LogFile;
 import com.dreamlink.communication.util.TimeUtil;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,14 +30,21 @@ public class StabilityTestServer extends Activity implements
 	private LogFile mDataLogFile;
 	private LogFile mErrorLogFile;
 
+	/** Stability test app id */
+	private int mAppID = 0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.test_stability);
+
+		Intent intent = getIntent();
+		mAppID = intent.getIntExtra(StabilityTest.EXTRA_APP_ID, 0);
+
 		initView();
 
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
-		mCommunicationManager.registerOnCommunicationListenerExternal(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this,
+				mAppID);
 
 		mDataLogFile = new LogFile(getApplicationContext(),
 				"StabilityTestServer-" + TimeUtil.getCurrentTime() + ".txt");
@@ -50,6 +57,7 @@ public class StabilityTestServer extends Activity implements
 	}
 
 	private void initView() {
+		setContentView(R.layout.test_stability);
 		initData();
 		mListView = (ListView) findViewById(R.id.lstStabilityTest);
 		mAdapter = new ArrayAdapter<String>(this,
@@ -75,7 +83,7 @@ public class StabilityTestServer extends Activity implements
 
 			// mCommunicationManager.sendMessage(messageString.getBytes(), 0);
 			mCommunicationManager.sendMessageToAll(messageString.getBytes(),
-					100);
+					mAppID);
 		};
 	};
 

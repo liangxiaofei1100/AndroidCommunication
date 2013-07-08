@@ -10,6 +10,7 @@ import com.dreamlink.communication.util.Notice;
 import com.dreamlink.communication.util.TimeUtil;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -44,14 +45,21 @@ public class StabilityTestClient extends Activity implements
 
 	private UserManager mUserManager;
 
+	/** Stability test app id */
+	private int mAppID = 0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.test_stability);
+
+		Intent intent = getIntent();
+		mAppID = intent.getIntExtra(StabilityTest.EXTRA_APP_ID, 0);
+
 		initView();
 		mNotice = new Notice(this);
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
-		mCommunicationManager.registerOnCommunicationListenerExternal(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this,
+				mAppID);
 
 		if (mCommunicationManager.getCommunications().size() > 0) {
 			Log.d(TAG, "start Test");
@@ -87,7 +95,7 @@ public class StabilityTestClient extends Activity implements
 						+ String.valueOf(count) + '\n').getBytes();
 				switch (mSendMode) {
 				case SEND_MODE_ALL:
-					mCommunicationManager.sendMessageToAll(message, 100);
+					mCommunicationManager.sendMessageToAll(message, mAppID);
 					break;
 				case SEND_MODE_SINGLE:
 					if (mSendModeSigleReceiver != null) {
@@ -110,6 +118,7 @@ public class StabilityTestClient extends Activity implements
 	}
 
 	private void initView() {
+		setContentView(R.layout.test_stability);
 		initData();
 		mListView = (ListView) findViewById(R.id.lstStabilityTest);
 		mAdapter = new ArrayAdapter<String>(this,

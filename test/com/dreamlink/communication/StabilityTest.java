@@ -1,5 +1,8 @@
 package com.dreamlink.communication;
 
+import com.dreamlink.communication.util.AppUtil;
+import com.dreamlink.communication.util.Log;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +19,7 @@ import android.os.Bundle;
  * 
  */
 public class StabilityTest extends Activity {
+	public static final String EXTRA_APP_ID = "app_id";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,10 @@ public class StabilityTest extends Activity {
 
 	private void launchActivity(boolean isServer) {
 		Intent intent = new Intent();
+
+		int appID = AppUtil.getAppID(this);
+		intent.putExtra(EXTRA_APP_ID, appID);
+
 		if (isServer) {
 			intent.setClass(this, StabilityTestServer.class);
 		} else {

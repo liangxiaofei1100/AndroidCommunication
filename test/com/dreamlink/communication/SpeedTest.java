@@ -2,6 +2,8 @@ package com.dreamlink.communication;
 
 import java.text.DecimalFormat;
 
+import com.dreamlink.communication.util.AppUtil;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,6 +19,7 @@ import android.os.Bundle;
  * 
  */
 public class SpeedTest extends Activity {
+	public static final String EXTRA_APP_ID = "app_id";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +34,10 @@ public class SpeedTest extends Activity {
 
 	private void launchActivity(boolean isServer) {
 		Intent intent = new Intent();
+
+		int appID = AppUtil.getAppID(this);
+		intent.putExtra(EXTRA_APP_ID, appID);
+
 		if (isServer) {
 			intent.setClass(this, SpeedTestServer.class);
 		} else {

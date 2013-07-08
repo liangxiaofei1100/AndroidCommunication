@@ -98,7 +98,12 @@ public class SocketCommunicationManager implements
 
 	}
 
-	private Vector<OnCommunicationListenerExternal> mOnCommunicationListenerExternals = new Vector<OnCommunicationListenerExternal>();
+	/**
+	 * Map structure</br>
+	 * 
+	 * key: appID, value: listener.
+	 */
+	private ConcurrentHashMap<OnCommunicationListenerExternal, Integer> mOnCommunicationListenerExternals = new ConcurrentHashMap<OnCommunicationListenerExternal, Integer>();
 
 	private static final String TAG = "SocketCommunicationManager";
 	private static SocketCommunicationManager mInstance;
@@ -142,10 +147,8 @@ public class SocketCommunicationManager implements
 	}
 
 	public void registerOnCommunicationListenerExternal(
-			OnCommunicationListenerExternal listener) {
-		if (!mOnCommunicationListenerExternals.contains(listener)) {
-			mOnCommunicationListenerExternals.add(listener);
-		}
+			OnCommunicationListenerExternal listener, int appID) {
+		mOnCommunicationListenerExternals.put(listener, appID);
 	}
 
 	public void unregisterOnCommunicationListenerExternal(
@@ -489,23 +492,28 @@ public class SocketCommunicationManager implements
 	}
 
 	public void notifyReceiveListeners(int sendUserID, int appID, byte[] data) {
-		for (OnCommunicationListenerExternal listener : mOnCommunicationListenerExternals) {
-			listener.onReceiveMessage(data,
-					mUserManager.getAllUser().get(sendUserID));
+		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
+				.entrySet()) {
+			if (entry.getValue() == appID) {
+				entry.getKey().onReceiveMessage(data,
+						mUserManager.getAllUser().get(sendUserID));
+			}
 		}
 	}
 
 	@Override
 	public void onUserConnected(User user) {
-		for (OnCommunicationListenerExternal listener : mOnCommunicationListenerExternals) {
-			listener.onUserConnected(user);
+		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
+				.entrySet()) {
+			entry.getKey().onUserConnected(user);
 		}
 	}
 
 	@Override
 	public void onUserDisconnected(User user) {
-		for (OnCommunicationListenerExternal listener : mOnCommunicationListenerExternals) {
-			listener.onUserDisconnected(user);
+		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
+				.entrySet()) {
+			entry.getKey().onUserDisconnected(user);
 		}
 	}
 
