@@ -3,6 +3,8 @@ package com.dreamlink.communication.protocol;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
+import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
@@ -19,14 +21,32 @@ import com.dreamlink.communication.util.Log;
  * 
  */
 public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
-		ISendProtocolTypeAllCallBack {
+		ISendProtocolTypeAllCallBack, ILoginRespondCallback {
 	private static final String TAG = "ProtocolDecoder";
+
 	private UserManager mUserManager;
 	private SocketCommunicationManager mCommunicationManager;
+
+	/**
+	 * Call back for SocketCommunicationManager
+	 */
+	private ILoginRequestCallBack mLoginRequestCallBack;
+	/**
+	 * Call back for SocketCommunicationManager
+	 */
+	private ILoginRespondCallback mLoginRespondCallback;
 
 	public ProtocolDecoder(SocketCommunicationManager manager) {
 		mUserManager = UserManager.getInstance();
 		mCommunicationManager = manager;
+	}
+
+	public void setLoginRequestCallBack(ILoginRequestCallBack callback) {
+		mLoginRequestCallBack = callback;
+	}
+
+	public void setLoginRespondCallback(ILoginRespondCallback callback) {
+		mLoginRespondCallback = callback;
 	}
 
 	/**
@@ -188,7 +208,8 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 	 */
 	private void handleLoginRespond(byte[] data,
 			SocketCommunication communication) {
-		LoginProtocol.decodeLoginRespond(data, mUserManager, communication);
+		LoginProtocol.decodeLoginRespond(data, mUserManager, communication,
+				this);
 	}
 
 	/**
@@ -203,16 +224,10 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 		if (UserManager.isManagerServer(localUser)) {
 			Log.d(TAG, "This is manager server, process login request.");
 			User user = LoginProtocol.decodeLoginRequest(data);
-			boolean isAdded = mUserManager.addUser(user, communication);
-			Log.d(TAG, "DATA_TYPE_HEADER_LOGIN_REQUEST longin result = "
-					+ isAdded);
 
-			byte[] respond = LoginProtocol.encodeLoginRespond(isAdded,
-					user.getUserID());
-			mCommunicationManager.sendMessage(communication, respond);
-
-			if (isAdded) {
-				sendMessageToUpdateAllUser();
+			// Let call back to handle the request.
+			if (mLoginRequestCallBack != null) {
+				mLoginRequestCallBack.onLoginRequest(user, communication);
 			}
 		} else {
 			Log.d(TAG, "This is not manager server, need forward.");
@@ -279,6 +294,57 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 				Log.d(TAG,
 						"Ignore, the communication is the message comes from.");
 			}
+		}
+	}
+
+	@Override
+	public void onLoginSuccess(User localUser, SocketCommunication communication) {
+		if (mLoginRespondCallback != null) {
+			mLoginRespondCallback.onLoginSuccess(localUser, communication);
+		} else {
+			Log.d(TAG, "mLoginReusltCallback is null");
+		}
+	}
+
+	@Override
+	public void onLoginFail(int failReason, SocketCommunication communication) {
+		if (mLoginRespondCallback != null) {
+			mLoginRespondCallback.onLoginFail(failReason, communication);
+		} else {
+			Log.d(TAG, "mLoginReusltCallback is null");
+		}
+	}
+
+	/**
+	 * Respond to the login request.
+	 * 
+	 * @param user
+	 * @param communication
+	 * @param isAllow
+	 */
+	public void respondLoginRequest(User user,
+			SocketCommunication communication, boolean isAllow) {
+		// TODO If the server disallow the login request, may be stop the socket
+		// communication. But we should check the login request is from the WiFi
+		// direct server or a client. Let this be done in the future.
+		boolean loginResult = false;
+		if (isAllow) {
+			loginResult = mUserManager.addUser(user, communication);
+
+			byte[] respond = LoginProtocol.encodeLoginRespond(loginResult,
+					user.getUserID());
+			mCommunicationManager.sendMessage(communication, respond);
+		} else {
+			loginResult = false;
+			byte[] respond = LoginProtocol.encodeLoginRespond(loginResult,
+					user.getUserID());
+			mCommunicationManager.sendMessage(communication, respond);
+		}
+		Log.d(TAG,
+				"longin result = " + loginResult + ", user = "
+						+ user.getUserName());
+		if (loginResult) {
+			sendMessageToUpdateAllUser();
 		}
 	}
 }

@@ -12,6 +12,8 @@ import java.util.concurrent.RejectedExecutionException;
 
 import android.content.Context;
 
+import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
+import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.SocketCommunication.ICommunicate;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
@@ -33,7 +35,10 @@ import com.dreamlink.communication.util.Notice;
  * 
  */
 public class SocketCommunicationManager implements
-		OnCommunicationChangedListener, ICommunicate, OnUserChangedListener {
+		OnCommunicationChangedListener, ICommunicate, OnUserChangedListener,
+		ILoginRequestCallBack, ILoginRespondCallback {
+	private static final String TAG = "SocketCommunicationManager";
+
 	/**
 	 * Interface for Activity.
 	 * 
@@ -98,14 +103,6 @@ public class SocketCommunicationManager implements
 
 	}
 
-	/**
-	 * Map structure</br>
-	 * 
-	 * key: appID, value: listener.
-	 */
-	private ConcurrentHashMap<OnCommunicationListenerExternal, Integer> mOnCommunicationListenerExternals = new ConcurrentHashMap<OnCommunicationListenerExternal, Integer>();
-
-	private static final String TAG = "SocketCommunicationManager";
 	private static SocketCommunicationManager mInstance;
 
 	private Context mContext;
@@ -114,10 +111,20 @@ public class SocketCommunicationManager implements
 	private Vector<SocketCommunication> mCommunications;
 	/** Thread pool */
 	private ExecutorService mExecutorService = null;
-	private ArrayList<OnCommunicationListener> mOnCommunicationListeners;
 
+	private Vector<OnCommunicationListener> mOnCommunicationListeners;
+
+	/**
+	 * Map structure</br>
+	 * 
+	 * key: listener, value: app ID.
+	 */
+	private ConcurrentHashMap<OnCommunicationListenerExternal, Integer> mOnCommunicationListenerExternals = new ConcurrentHashMap<OnCommunicationListenerExternal, Integer>();
 	private UserManager mUserManager = UserManager.getInstance();
 	private ProtocolDecoder mProtocolDecoder;
+
+	private ILoginRequestCallBack mLoginRequestCallBack;
+	private ILoginRespondCallback mLoginRespondCallback;
 
 	private SocketCommunicationManager() {
 
@@ -125,7 +132,7 @@ public class SocketCommunicationManager implements
 
 	private SocketCommunicationManager(Context context) {
 		mContext = context;
-		mOnCommunicationListeners = new ArrayList<OnCommunicationListener>();
+		mOnCommunicationListeners = new Vector<OnCommunicationListener>();
 		mNotice = new Notice(context);
 		// mCommunications = new HashSet<SocketCommunication>();
 		mCommunications = new Vector<SocketCommunication>();
@@ -136,6 +143,8 @@ public class SocketCommunicationManager implements
 		mUserManager.registerOnUserChangedListener(this);
 
 		mProtocolDecoder = new ProtocolDecoder(this);
+		mProtocolDecoder.setLoginRequestCallBack(this);
+		mProtocolDecoder.setLoginRespondCallback(this);
 	}
 
 	public static synchronized SocketCommunicationManager getInstance(
@@ -154,6 +163,14 @@ public class SocketCommunicationManager implements
 	public void unregisterOnCommunicationListenerExternal(
 			OnCommunicationListenerExternal listener) {
 		mOnCommunicationListenerExternals.remove(listener);
+	}
+
+	public void setLoginRequestCallBack(ILoginRequestCallBack callback) {
+		mLoginRequestCallBack = callback;
+	}
+
+	public void setLoginRespondCallback(ILoginRespondCallback callback) {
+		mLoginRespondCallback = callback;
 	}
 
 	/**
@@ -515,6 +532,45 @@ public class SocketCommunicationManager implements
 				.entrySet()) {
 			entry.getKey().onUserDisconnected(user);
 		}
+	}
+
+	@Override
+	public void onLoginSuccess(User localUser, SocketCommunication communication) {
+		if (mLoginRespondCallback != null) {
+			mLoginRespondCallback.onLoginSuccess(localUser, communication);
+		} else {
+			Log.d(TAG, "mLoginReusltCallback is null");
+		}
+	}
+
+	@Override
+	public void onLoginFail(int failReason, SocketCommunication communication) {
+		if (mLoginRespondCallback != null) {
+			mLoginRespondCallback.onLoginFail(failReason, communication);
+		} else {
+			Log.d(TAG, "mLoginReusltCallback is null");
+		}
+	}
+
+	@Override
+	public void onLoginRequest(User user, SocketCommunication communication) {
+		Log.d(TAG, "onLoginRequest()");
+		if (mLoginRequestCallBack != null) {
+			mLoginRequestCallBack.onLoginRequest(user, communication);
+		}
+
+	}
+
+	/**
+	 * Respond to the login request.
+	 * 
+	 * @param user
+	 * @param communication
+	 * @param isAllow
+	 */
+	public void respondLoginRequest(User user,
+			SocketCommunication communication, boolean isAllow) {
+		mProtocolDecoder.respondLoginRequest(user, communication, isAllow);
 	}
 
 }

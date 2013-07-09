@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.Search;
 import com.dreamlink.communication.SocketCommunication;
@@ -64,7 +65,7 @@ import android.widget.Toast;
 @TargetApi(14)
 public class ServerListActivity extends Activity implements OnSearchListener,
 		OnItemClickListener, OnClickListener, ManagerP2pDeivce,
-		OnCommunicationListener {
+		OnCommunicationListener, ILoginRespondCallback {
 	private static final String TAG = "ServerListActivity";
 	private Context mContext;
 
@@ -73,7 +74,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	 * 
 	 * KEY_NAME - server name</br>
 	 * 
-	 * KEY_TYPE - server network type锛�IP, AP, WiFi Direct</br>
+	 * KEY_TYPE - server network type: IP, AP, WiFi Direct</br>
 	 */
 	private ArrayList<Map<String, Object>> mServerData = new ArrayList<Map<String, Object>>();
 	/** Server name */
@@ -113,6 +114,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	/** Connect to the server and launch app list activity. */
 	private static final int MSG_CONNECT_SERVER = 3;
 	private static final int MSG_SEARCH_WIFI_DIRECT_FOUND = 4;
+	private static final int MSG_LOGIN_REQEUST = 5;
 	private boolean WifiP2pServer = false;
 
 	// 监听返回键，断开一切连接
@@ -145,14 +147,12 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 				break;
 			case MSG_CONNECT_SERVER:
 				connectServer((String) msg.obj);
+				mIsAPSelected = false;
 				if (WifiP2pServer) {
 					mSearchServer.stopSearch();
 					mServerData.clear();
 					return;
 				}
-				launchAppList();
-				// TODO finish it to avoid connect repeat.
-				finish();
 				break;
 			case MSG_SEARCH_WIFI_DIRECT_FOUND:
 				directList.clear();
@@ -182,6 +182,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		mSearchServer.setOnSearchListener(this);
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
 		mCommunicationManager.registered(this);
+		mCommunicationManager.setLoginRespondCallback(this);
 		mNotice.showToast("Start Search");
 		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		setWifiEnabled(true);
@@ -712,9 +713,6 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			}
 			mHandler.obtainMessage(MSG_SEARCH_WIFI_DIRECT_FOUND, temp)
 					.sendToTarget();
-		} else {
-			launchAppList();
-			finish();
 		}
 		// Not wifi direct.
 		// Send login request.
@@ -725,7 +723,25 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		Log.d(TAG, "Send login request: " + mUserManager.getLocalUser());
 
 		mCommunicationManager.sendLoginRequest();
-		
+		Log.d(TAG, "Connect success, waiting for server's login allowance.");
 	}
 
+	@Override
+	public void onLoginSuccess(User localUser, SocketCommunication communication) {
+		Log.d(TAG, "Login sucess");
+		launchAppList();
+		finish();
+	}
+
+	@Override
+	public void onLoginFail(int failReason, SocketCommunication communication) {
+		Log.d(TAG, "Login fail");
+		runOnUiThread(new Runnable() {
+
+			@Override
+			public void run() {
+				mNotice.showToast("Server disallowed the login request.");
+			}
+		});
+	}
 }

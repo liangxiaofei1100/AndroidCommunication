@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.User;
@@ -70,8 +71,10 @@ public class LoginProtocol {
 		} else {
 			// login result.
 			respondResult = new byte[] { Protocol.LOGIN_RESPOND_RESULT_FAIL };
-			// login fail reason.
-			respondData = new byte[] { Protocol.LOGIN_RESPOND_RESULT_FAIL_UNKOWN };
+			// login fail reason. the server disallow the login request.
+			// TODO Maybe there are other fail reasons.
+			respondData = ArrayUtil
+					.int2ByteArray(Protocol.LOGIN_RESPOND_RESULT_FAIL_SERVER_DISALLOW);
 		}
 		respond = ArrayUtil.join(respondHeader, respondResult, respondData);
 		return respond;
@@ -88,7 +91,8 @@ public class LoginProtocol {
 	 * @return
 	 */
 	public static boolean decodeLoginRespond(byte[] data,
-			UserManager userManager, SocketCommunication communication) {
+			UserManager userManager, SocketCommunication communication,
+			ILoginRespondCallback callback) {
 		boolean loginResult = false;
 		int start = 0;
 		int end = Protocol.LOGIN_RESPOND_RESULT_HEADER_SIZE;
@@ -107,9 +111,17 @@ public class LoginProtocol {
 			User localUser = userManager.getLocalUser();
 			localUser.setUserID(userId);
 			userManager.setLocalUser(localUser);
+
+			callback.onLoginSuccess(localUser, communication);
 			break;
 		case Protocol.LOGIN_RESPOND_RESULT_FAIL:
 			loginResult = false;
+			// fail reason.
+			start = end;
+			end += Protocol.LOGIN_RESPOND_RESULT_FAIL_REASON_HEADER_SIZE;
+			byte[] failReasonData = Arrays.copyOfRange(data, start, end);
+			int failReason = ArrayUtil.byteArray2Int(failReasonData);
+			callback.onLoginFail(failReason, communication);
 			break;
 
 		default:

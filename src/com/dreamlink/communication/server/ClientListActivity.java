@@ -1,25 +1,29 @@
 package com.dreamlink.communication.server;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Vector;
 
+import com.dreamlink.communication.AllowLoginDialog;
+import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.Search;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
 import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.SearchClient.OnSearchListener;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 import com.dreamlink.communication.wifip2p.WifiDirectManager;
-import com.dreamlink.communication.wifip2p.WifiDirectManager.ManagerP2pDeivce;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -56,7 +60,8 @@ import android.widget.ListView;
  * 
  */
 public class ClientListActivity extends Activity implements OnSearchListener,
-		OnClickListener, OnCommunicationListener {
+		OnClickListener, OnCommunicationListener, ILoginRequestCallBack,
+		OnCommunicationListenerExternal {
 	private static final String TAG = "ClientListActivity";
 	private Context mContext;
 
@@ -104,16 +109,13 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 				break;
 			case MSG_UPDATE_LIST:
 				mClients.clear();
-				Vector<SocketCommunication> vector = mCommunicationManager
-						.getCommunications();
-				synchronized (vector) {
-					for (SocketCommunication com : vector) {
-						mClients.add(com.getConnectIP().getHostAddress());
-					}
+
+				Map<Integer, User> allUsers = mUserManager.getAllUser();
+				for (Map.Entry<Integer, User> entry : allUsers.entrySet()) {
+					mClients.add(entry.getValue().getUserName());
 				}
 				mAdapter.notifyDataSetChanged();
 				break;
-
 			default:
 				break;
 			}
@@ -131,6 +133,8 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
 		mCommunicationManager.registered(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this, 0);
+		mCommunicationManager.setLoginRequestCallBack(this);
 		// mCommunicationManager.startServer(mContext);
 
 		mSearchClient = SearchClient.getInstance(this);
@@ -414,6 +418,52 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 		} else if (requestCode == 1) {
 			startWifiDirectServer();
 		}
+	}
+
+	private void showAllowLoginDialog(User user,
+			SocketCommunication communication) {
+		AllowLoginDialog dialog = new AllowLoginDialog(mContext);
+		AllowLoginCallBack callBack = new AllowLoginCallBack() {
+
+			@Override
+			public void onLoginComfirmed(User user,
+					SocketCommunication communication, boolean isAllow) {
+				mCommunicationManager.respondLoginRequest(user, communication,
+						isAllow);
+
+			}
+		};
+		dialog.show(user, communication, callBack);
+	}
+
+	@Override
+	public void onLoginRequest(final User user,
+			final SocketCommunication communication) {
+		Log.d(TAG, "onLoginRequest(), user = " + user + ", communication = "
+				+ communication.getConnectIP().getHostAddress());
+		runOnUiThread(new Runnable() {
+
+			@Override
+			public void run() {
+				showAllowLoginDialog(user, communication);
+			}
+		});
+	}
+
+	@Override
+	public void onReceiveMessage(byte[] msg, User sendUser) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onUserConnected(User user) {
+		mSearchHandler.sendEmptyMessage(MSG_UPDATE_LIST);
+	}
+
+	@Override
+	public void onUserDisconnected(User user) {
+		mSearchHandler.sendEmptyMessage(MSG_UPDATE_LIST);
 	}
 
 }

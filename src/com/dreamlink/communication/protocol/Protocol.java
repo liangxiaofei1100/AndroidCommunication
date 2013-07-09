@@ -13,7 +13,9 @@ public class Protocol {
 	public static final int LOGIN_RESPOND_USERID_HEADER_SIZE = 4;
 	// Login fail
 	public static final byte LOGIN_RESPOND_RESULT_FAIL = 0;
+	public static final int LOGIN_RESPOND_RESULT_FAIL_REASON_HEADER_SIZE = 4;
 	public static final int LOGIN_RESPOND_RESULT_FAIL_UNKOWN = 0;
+	public static final int LOGIN_RESPOND_RESULT_FAIL_SERVER_DISALLOW = 1;
 	// Update all user info when user login or logout.
 	public static final int DATA_TYPE_HEADER_UPDATE_ALL_USER = 102;
 	public static final int UPDATE_ALL_USER_USER_TOTAL_NUMBER_HEADER_SIZE = 4;

@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.util.Notice;
@@ -20,6 +21,7 @@ import com.dreamlink.communication.util.Notice;
  */
 @SuppressLint("UseValueOf")
 public class SocketClientTask extends AsyncTask<String, Void, Socket> {
+	private static final String TAG = "SocketClientTask";
 
 	private SocketCommunicationManager manager;
 	private Context mContext;
@@ -39,7 +41,7 @@ public class SocketClientTask extends AsyncTask<String, Void, Socket> {
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		
+
 		progressDialog = new ProgressDialog(mContext);
 		progressDialog.setTitle("Server");
 		progressDialog.setMessage("Connecting to server...");
@@ -77,7 +79,14 @@ public class SocketClientTask extends AsyncTask<String, Void, Socket> {
 
 	private void closeDialog() {
 		if (progressDialog != null && progressDialog.isShowing()) {
-			progressDialog.dismiss();
+			try {
+				progressDialog.dismiss();
+			} catch (Exception e) {
+				// TODO: handle exception
+				Log.e(TAG, "closeDialog(), " + e);
+				// There is exception sometimes.
+			}
+
 		}
 	}
 
