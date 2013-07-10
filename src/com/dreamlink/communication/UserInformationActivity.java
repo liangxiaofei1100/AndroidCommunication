@@ -1,10 +1,5 @@
 package com.dreamlink.communication;
 
-import com.dreamlink.communication.data.User;
-import com.dreamlink.communication.data.UserHelper;
-import com.dreamlink.communication.util.NetWorkUtil;
-import com.dreamlink.communication.util.Notice;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -12,6 +7,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.dreamlink.aidl.User;
+import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.util.NetWorkUtil;
+import com.dreamlink.communication.util.Notice;
 
 public class UserInformationActivity extends Activity {
 	@SuppressWarnings("unused")

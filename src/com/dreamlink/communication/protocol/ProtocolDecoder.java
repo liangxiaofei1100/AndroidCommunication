@@ -3,12 +3,12 @@ package com.dreamlink.communication.protocol;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.protocol.LoginProtocol.DecodeLoginRequestForwardResult;
 import com.dreamlink.communication.protocol.LoginProtocol.DecodeLoginRespondForwardResult;
 import com.dreamlink.communication.protocol.SendProtocol.ISendProtocolTypeAllCallBack;

@@ -1,11 +1,14 @@
-package com.dreamlink.communication.data;
+package com.dreamlink.aidl;
 
 import java.io.Serializable;
 
-public class User implements Serializable {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class User implements Serializable, Parcelable {
 
 	private static final long serialVersionUID = 1967485881803917696L;
-	
+
 	private String mName = "Unkown";
 	public static final int NETWORK_MODE_UNKOWN = 0;
 	public static final int NETWORK_MODE_AP = 1;
@@ -58,4 +61,44 @@ public class User implements Serializable {
 		return "User [mName=" + mName + ", mNetworkMode=" + mNetworkMode
 				+ ", mUserID=" + mUserID + ", mSystemInfo=" + mSystemInfo + "]";
 	}
+
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		// TODO Auto-generated method stub
+		dest.writeInt(mUserID);
+		dest.writeString(mName);
+		dest.writeSerializable(mSystemInfo);
+	}
+
+	public void readFromParcel(Parcel source) {
+		mUserID=source.readInt();
+		mName=source.readString();
+		mSystemInfo=(SystemInfo) source.readSerializable();
+	}
+
+	public User(Parcel source) {
+
+	}
+
+	public static Creator<User> CREATOR = new Parcelable.Creator<User>() {
+
+		@Override
+		public User createFromParcel(Parcel source) {
+			// TODO Auto-generated method stub
+			return new User(source);
+		}
+
+		@Override
+		public User[] newArray(int size) {
+			// TODO Auto-generated method stub
+			return new User[size];
+		}
+
+	};
 }

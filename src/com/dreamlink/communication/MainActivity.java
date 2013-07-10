@@ -1,20 +1,17 @@
 package com.dreamlink.communication;
 
-import com.dreamlink.communication.client.ServerListActivity;
-import com.dreamlink.communication.data.User;
-import com.dreamlink.communication.data.UserHelper;
-import com.dreamlink.communication.server.ClientListActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+
+import com.dreamlink.aidl.User;
+import com.dreamlink.communication.client.ServerListActivity;
+import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.server.ClientListActivity;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 	@SuppressWarnings("unused")

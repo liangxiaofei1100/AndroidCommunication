@@ -2,7 +2,6 @@ package com.dreamlink.communication;
 
 import java.io.File;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,15 +10,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
 import android.content.Context;
+import android.os.RemoteException;
 
+import com.dreamlink.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.SocketCommunication.ICommunicate;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.client.SocketClientTask;
-import com.dreamlink.communication.data.User;
-import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.protocol.ProtocolDecoder;
 import com.dreamlink.communication.protocol.ProtocolEncoder;
 import com.dreamlink.communication.server.SocketServer;
@@ -72,36 +72,36 @@ public class SocketCommunicationManager implements
 	 * Interface for Activity.
 	 * 
 	 */
-	public interface OnCommunicationListenerExternal {
-
-		/**
-		 * Received a message from user.</br>
-		 * 
-		 * Be careful, this method is not run in UI thread. If do UI operation,
-		 * we can use {@link android.os.Handler} to do UI operation.</br>
-		 * 
-		 * @param msg
-		 *            the message.
-		 * @param sendUser
-		 *            the message from.
-		 */
-		void onReceiveMessage(byte[] msg, User sendUser);
-
-		/**
-		 * There is new user connected.
-		 * 
-		 * @param user
-		 */
-		void onUserConnected(User user);
-
-		/**
-		 * There is a user disconnected.
-		 * 
-		 * @param user
-		 */
-		void onUserDisconnected(User user);
-
-	}
+	// public interface OnCommunicationListenerExternal {
+	//
+	// /**
+	// * Received a message from user.</br>
+	// *
+	// * Be careful, this method is not run in UI thread. If do UI operation,
+	// * we can use {@link android.os.Handler} to do UI operation.</br>
+	// *
+	// * @param msg
+	// * the message.
+	// * @param sendUser
+	// * the message from.
+	// */
+	// void onReceiveMessage(byte[] msg, User sendUser);
+	//
+	// /**
+	// * There is new user connected.
+	// *
+	// * @param user
+	// */
+	// void onUserConnected(User user);
+	//
+	// /**
+	// * There is a user disconnected.
+	// *
+	// * @param user
+	// */
+	// void onUserDisconnected(User user);
+	//
+	// }
 
 	private static SocketCommunicationManager mInstance;
 
@@ -154,6 +154,7 @@ public class SocketCommunicationManager implements
 
 	public void registerOnCommunicationListenerExternal(
 			OnCommunicationListenerExternal listener, int appID) {
+		Log.e("ArbiterLiu", "        " + appID);
 		mOnCommunicationListenerExternals.put(listener, appID);
 	}
 
@@ -509,8 +510,13 @@ public class SocketCommunicationManager implements
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
 			if (entry.getValue() == appID) {
-				entry.getKey().onReceiveMessage(data,
-						mUserManager.getAllUser().get(sendUserID));
+				try {
+					entry.getKey().onReceiveMessage(data,
+							mUserManager.getAllUser().get(sendUserID));
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -519,7 +525,12 @@ public class SocketCommunicationManager implements
 	public void onUserConnected(User user) {
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
-			entry.getKey().onUserConnected(user);
+			try {
+				entry.getKey().onUserConnected(user);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -527,7 +538,12 @@ public class SocketCommunicationManager implements
 	public void onUserDisconnected(User user) {
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
-			entry.getKey().onUserDisconnected(user);
+			try {
+				entry.getKey().onUserDisconnected(user);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

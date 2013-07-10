@@ -1,6 +1,6 @@
 package com.dreamlink.communication;
 
-import com.dreamlink.communication.data.User;
+import com.dreamlink.aidl.User;
 
 public interface CallBacks {
 	/**

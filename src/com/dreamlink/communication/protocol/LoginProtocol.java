@@ -5,10 +5,10 @@ import java.io.ObjectInputStream;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.util.ArrayUtil;
 import com.dreamlink.communication.util.Log;

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,11 +16,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.dreamlink.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
 import com.dreamlink.communication.client.ClientStatus;
-import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
@@ -167,5 +168,11 @@ public class ChatClientActivity extends Activity implements OnClickListener,
 	public void onUserDisconnected(User user) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public IBinder asBinder() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

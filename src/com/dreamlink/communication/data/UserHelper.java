@@ -1,12 +1,14 @@
 package com.dreamlink.communication.data;
 
-import com.dreamlink.communication.util.ArrayUtil;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.dreamlink.aidl.SystemInfo;
+import com.dreamlink.aidl.User;
+import com.dreamlink.communication.util.ArrayUtil;
 
 public class UserHelper {
 	private static final String TAG = "UserHelper";

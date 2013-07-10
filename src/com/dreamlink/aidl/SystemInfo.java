@@ -1,4 +1,4 @@
-package com.dreamlink.communication.data;
+package com.dreamlink.aidl;
 
 import java.io.Serializable;
 

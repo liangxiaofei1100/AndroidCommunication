@@ -15,4 +15,4 @@
 ** limitations under the License. 
 */  
 package com.dreamlink.aidl;
-parcelable Arg;  
+parcelable User;  

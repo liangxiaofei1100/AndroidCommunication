@@ -4,8 +4,9 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.dreamlink.communication.data.User;
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.UserTree;
 
 /**
  * Management user an user's communication.
@@ -91,7 +92,21 @@ public class UserManager {
 			mLastUserId++;
 			user.setUserID(mLastUserId);
 		}
-
+		if (mLocalUser.getUserID() == -1) {
+			if (!mCommunications.contains(communication)) {
+				UserTree.getInstance().addUser(mLocalUser, user);
+			} else {
+				int n = 65535;
+				for (Map.Entry<Integer, SocketCommunication> entry : mCommunications
+						.entrySet()) {
+					if (entry.getValue().equals(communication)
+							&& n > entry.getKey()) {
+						n = entry.getKey();
+					}
+				}
+				UserTree.getInstance().addUser(mUsers.get(n), user);
+			}
+		}
 		mUsers.put(user.getUserID(), user);
 		if (isLocalUser(user.getUserID())) {
 			mCommunications.put(user.getUserID(),
@@ -123,6 +138,7 @@ public class UserManager {
 
 	public synchronized boolean addLocalServerUser() {
 		mLocalUser.setUserID(-1);
+		UserTree.getInstance().setHead(mLocalUser);
 		if (isUserExist(mLocalUser)) {
 			return false;
 		}

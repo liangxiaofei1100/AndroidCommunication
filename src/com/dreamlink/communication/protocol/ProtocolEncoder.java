@@ -1,7 +1,7 @@
 package com.dreamlink.communication.protocol;
 
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.data.User;
 
 /**
  * This class is used for encode the message based on protocol.

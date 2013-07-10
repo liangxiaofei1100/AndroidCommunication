@@ -2,28 +2,6 @@ package com.dreamlink.communication.server;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Vector;
-
-import com.dreamlink.communication.AllowLoginDialog;
-import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
-import com.dreamlink.communication.R;
-import com.dreamlink.communication.SocketCommunication;
-import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
-import com.dreamlink.communication.AppListActivity;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
-import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.data.User;
-import com.dreamlink.communication.data.UserHelper;
-import com.dreamlink.communication.search.Search;
-import com.dreamlink.communication.search.SearchClient;
-import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
-import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.NetWorkUtil;
-import com.dreamlink.communication.util.Notice;
-import com.dreamlink.communication.wifip2p.WifiDirectManager;
-import com.dreamlink.communication.wifip2p.WifiDirectReciver;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -33,12 +11,11 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.provider.Settings;
 import android.view.KeyEvent;
@@ -52,6 +29,26 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.dreamlink.aidl.User;
+import com.dreamlink.communication.AllowLoginDialog;
+import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
+import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
+import com.dreamlink.communication.R;
+import com.dreamlink.communication.SocketCommunication;
+import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.search.Search;
+import com.dreamlink.communication.search.SearchClient;
+import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
+import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.NetWorkUtil;
+import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.wifip2p.WifiDirectManager;
+import com.dreamlink.communication.wifip2p.WifiDirectReciver;
+
 /**
  * This class is used for show clients that connected to this server in the WiFi
  * network.</br>
@@ -62,7 +59,7 @@ import android.widget.ListView;
  */
 public class ClientListActivity extends Activity implements OnSearchListener,
 		OnClickListener, OnCommunicationListener, ILoginRequestCallBack,
-		OnCommunicationListenerExternal {
+		com.dreamlink.aidl.OnCommunicationListenerExternal {
 	private static final String TAG = "ClientListActivity";
 	private Context mContext;
 
@@ -465,6 +462,12 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	@Override
 	public void onUserDisconnected(User user) {
 		mSearchHandler.sendEmptyMessage(MSG_UPDATE_LIST);
+	}
+
+	@Override
+	public IBinder asBinder() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import android.util.Log;
 
-import com.dreamlink.communication.data.User;
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.util.ArrayUtil;
 
 /**

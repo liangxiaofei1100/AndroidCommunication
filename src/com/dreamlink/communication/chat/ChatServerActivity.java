@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,12 +16,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
-import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.server.ServerStatus;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -35,7 +33,7 @@ import com.dreamlink.communication.util.Notice;
  * 
  */
 public class ChatServerActivity extends Activity implements OnClickListener,
-		OnCommunicationListenerExternal {
+		com.dreamlink.aidl.OnCommunicationListenerExternal {
 	@SuppressWarnings("unused")
 	private static final String TAG = "ChatServerActivity";
 
@@ -172,5 +170,11 @@ public class ChatServerActivity extends Activity implements OnClickListener,
 	public void onUserDisconnected(User user) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public IBinder asBinder() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
