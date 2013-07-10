@@ -7,7 +7,6 @@ import java.util.Vector;
 import com.dreamlink.communication.AllowLoginDialog;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.Search;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
@@ -17,7 +16,9 @@ import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationLis
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.data.UserHelper;
-import com.dreamlink.communication.server.SearchClient.OnSearchListener;
+import com.dreamlink.communication.search.Search;
+import com.dreamlink.communication.search.SearchClient;
+import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
@@ -249,14 +250,14 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	}
 
 	@Override
-	public void onSearchSuccess(String serverIP) {
+	public void onSearchSuccess(String serverIP, String serverName) {
 		Message message = mSearchHandler.obtainMessage(MSG_SEARCH_SUCCESS);
 		message.obj = serverIP;
 		mSearchHandler.sendMessage(message);
 	}
 
 	@Override
-	public void onSearchFail() {
+	public void onSearchStop() {
 		Message message = mSearchHandler.obtainMessage(MSG_SEARCH_FAIL);
 		mSearchHandler.sendMessage(message);
 	}

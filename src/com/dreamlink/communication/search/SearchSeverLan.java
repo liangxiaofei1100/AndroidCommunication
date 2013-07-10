@@ -1,14 +1,16 @@
-package com.dreamlink.communication.client;
+package com.dreamlink.communication.search;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 
 import android.content.Context;
 
-import com.dreamlink.communication.Search;
-import com.dreamlink.communication.client.SearchSever.OnSearchListener;
+import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
+import com.dreamlink.communication.util.ArrayUtil;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
@@ -139,22 +141,13 @@ public class SearchSeverLan implements Runnable {
 		public void run() {
 			DatagramPacket inPacket;
 
-			String message;
 			while (!mStopped) {
 				try {
 					inPacket = new DatagramPacket(new byte[1024], 1024);
 					mReceiveSocket.receive(inPacket);
-					message = new String(inPacket.getData(), 0,
-							inPacket.getLength());
-					Log.d(TAG, "Received broadcast, message: " + message);
+					byte[] data = inPacket.getData();
 
-					if (message.equals(NetWorkUtil.getLocalIpAddress())) {
-						// ignore myself.
-					} else {
-						if (mListener != null) {
-							mListener.onSearchSuccess(message);
-						}
-					}
+					SearchProtocol.decodeSearchLan(data,mListener);
 				} catch (Exception e) {
 					if (e instanceof SocketTimeoutException) {
 						// time out, search again.
@@ -169,4 +162,5 @@ public class SearchSeverLan implements Runnable {
 			}
 		}
 	}
+
 }

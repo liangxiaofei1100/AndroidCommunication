@@ -6,7 +6,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-import com.dreamlink.communication.Search;
+import com.dreamlink.communication.search.Search;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -75,11 +75,34 @@ public class NetWorkUtil {
 	}
 
 	/**
+	 * get local ip address bytes.
+	 * 
+	 * @return
+	 */
+	public static byte[] getLocalIpAddressBytes() {
+		InetAddress inetAddress = getLocalInetAddress();
+		if (inetAddress != null) {
+			return inetAddress.getAddress();
+		} else {
+			return new byte[4];
+		}
+	}
+
+	/**
 	 * get local ip address string. like 192.168.1.3
 	 * 
 	 * @return
 	 */
 	public static String getLocalIpAddress() {
+		InetAddress inetAddress = getLocalInetAddress();
+		if (inetAddress != null) {
+			return inetAddress.getHostAddress();
+		} else {
+			return "";
+		}
+	}
+
+	public static InetAddress getLocalInetAddress() {
 		try {
 			for (Enumeration<NetworkInterface> en = NetworkInterface
 					.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -94,14 +117,14 @@ public class NetWorkUtil {
 							&& (intf.getDisplayName().contains("wlan")
 									|| intf.getDisplayName().contains("eth") || intf
 									.getDisplayName().contains("ap"))) {
-						return inetAddress.getHostAddress();
+						return inetAddress;
 					}
 				}
 			}
 		} catch (SocketException ex) {
 			Log.e(TAG, "getLocalIpAddress() fail. " + ex.toString());
 		}
-		return "";
+		return null;
 	}
 
 	public static String getLocalMacAddress(Context context) {

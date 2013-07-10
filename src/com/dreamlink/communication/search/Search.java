@@ -1,4 +1,4 @@
-package com.dreamlink.communication;
+package com.dreamlink.communication.search;
 
 public class Search {
 	public static final String MULTICAST_IP = "239.3.3.3";
@@ -7,6 +7,7 @@ public class Search {
 
 	public static final int MULTICAST_SEND_PORT = 40006;
 	public static final int MULTICAST_RECEIVE_PORT = 40007;
+
 	public static final long MULTICAST_DELAY_TIME = 2000;
 
 	public static final String EXTRA_IP = "ip";

@@ -1,6 +1,7 @@
 package com.dreamlink.communication;
 
 import com.dreamlink.communication.client.ServerListActivity;
+import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.ClientListActivity;
 
@@ -26,12 +27,23 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		initView();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
 		checkUserInfo();
 	}
 
 	private void checkUserInfo() {
 		if (UserHelper.getUserName(getApplicationContext()) == null) {
 			launchUserInfo();
+		} else {
+			// init local user.
+			UserHelper userHelper = new UserHelper(getApplicationContext());
+			User localUser = userHelper.loadUser();
+			UserManager userManager = UserManager.getInstance();
+			userManager.setLocalUser(localUser);
 		}
 	}
 
@@ -81,7 +93,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

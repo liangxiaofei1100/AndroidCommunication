@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.Search;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.AppListActivity;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.client.SearchSever.OnSearchListener;
 import com.dreamlink.communication.data.User;
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.search.Search;
+import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
+import com.dreamlink.communication.search.SearchSever;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
@@ -75,12 +77,16 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	 * KEY_NAME - server name</br>
 	 * 
 	 * KEY_TYPE - server network type: IP, AP, WiFi Direct</br>
+	 * 
+	 * KEY_IP - server IP. This is only used in WiFi network.
 	 */
-	private ArrayList<Map<String, Object>> mServerData = new ArrayList<Map<String, Object>>();
+	private Vector<Map<String, Object>> mServerData = new Vector<Map<String, Object>>();
 	/** Server name */
 	private static final String KEY_NAME = "name";
 	/** Server type */
 	private static final String KEY_TYPE = "type";
+	/** Server ip */
+	private static final String KEY_IP = "ip";
 	/** Server is a WiFi STA */
 	private static final int SERVER_TYPE_IP = 1;
 	/** Server is a WiFi AP */
@@ -140,7 +146,9 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_SEARCH_SUCCESS:
-				addServer((String) msg.obj, SERVER_TYPE_IP);
+				Bundle bundle = msg.getData();
+				addServer(bundle.getString(KEY_NAME), SERVER_TYPE_IP,
+						bundle.getString(KEY_IP));
 				break;
 			case MSG_SEARCH_FAIL:
 
@@ -206,11 +214,12 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 	 * 
 	 * @param name
 	 * @param type
+	 * @param ip
 	 */
-	private void addServer(String name, int type) {
+	private void addServer(String name, int type, String ip) {
 		switch (type) {
 		case SERVER_TYPE_IP:
-			if (isServerAlreadyAdded(name)) {
+			if (isServerAlreadyAdded(name, ip)) {
 				Log.d(TAG, "addServer()	ignore, name = " + name);
 				break;
 			}
@@ -222,6 +231,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			HashMap<String, Object> ipServer = new HashMap<String, Object>();
 			ipServer.put(KEY_NAME, name);
 			ipServer.put(KEY_TYPE, SERVER_TYPE_IP);
+			ipServer.put(KEY_IP, ip);
 			mServerData.add(ipServer);
 			mServerAdapter.notifyDataSetChanged();
 			break;
@@ -240,6 +250,16 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		default:
 			break;
 		}
+	}
+
+	private boolean isServerAlreadyAdded(String name, String ip) {
+		for (Map<String, Object> map : mServerData) {
+			if (name.equals(map.get(KEY_NAME)) && ip.equals(map.get(KEY_IP))) {
+				// The server is already added to list.
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void clearServerList() {
@@ -405,7 +425,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 
 	@SuppressLint("HandlerLeak")
 	@Override
-	public void onSearchSuccess(String serverIP) {
+	public void onSearchSuccess(String serverIP, String serverName) {
 		if (mIsAPSelected && serverIP.equals(Search.ANDROID_AP_ADDRESS)) {
 			// Auto connect to the server.
 			Message message = mHandler.obtainMessage(MSG_CONNECT_SERVER);
@@ -414,7 +434,10 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 		} else {
 			// Add to server list and wait user for choose.
 			Message message = mHandler.obtainMessage(MSG_SEARCH_SUCCESS);
-			message.obj = serverIP;
+			Bundle bundle = new Bundle();
+			bundle.putString(KEY_NAME, serverName);
+			bundle.putString(KEY_IP, serverIP);
+			message.setData(bundle);
 			mHandler.sendMessage(message);
 		}
 	}
@@ -438,7 +461,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			connetAP(userName2ApName(apName));
 			break;
 		case SERVER_TYPE_IP:
-			String ip = (String) server.get(KEY_NAME);
+			String ip = (String) server.get(KEY_IP);
 			connectServer(ip);
 			if (!WifiP2pServer) {
 				if (mWifiDirectManager != null) {
@@ -525,7 +548,8 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			for (ScanResult result : results) {
 				Log.d(TAG, "handleScanReuslt, found wifi: " + result.SSID);
 				if (result.SSID.contains(Search.WIFI_AP_NAME)) {
-					addServer(result.SSID, SERVER_TYPE_AP);
+					addServer(result.SSID, SERVER_TYPE_AP,
+							Search.ANDROID_AP_ADDRESS);
 				}
 			}
 		}

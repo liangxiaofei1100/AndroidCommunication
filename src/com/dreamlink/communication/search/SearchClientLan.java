@@ -1,4 +1,4 @@
-package com.dreamlink.communication.server;
+package com.dreamlink.communication.search;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -8,11 +8,13 @@ import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 import android.content.Context;
 
-import com.dreamlink.communication.Search;
-import com.dreamlink.communication.server.SearchClient.OnSearchListener;
+import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
+import com.dreamlink.communication.util.ArrayUtil;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
@@ -73,16 +75,8 @@ public class SearchClientLan implements Runnable {
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
-		DatagramPacket packet = null;
-		byte[] localIPAddresss = NetWorkUtil.getLocalIpAddress().getBytes();
-		try {
-			packet = new DatagramPacket(localIPAddresss,
-					localIPAddresss.length,
-					InetAddress.getByName(Search.MULTICAST_IP),
-					Search.MULTICAST_RECEIVE_PORT);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
+		DatagramPacket packet = getSearchPacket();
+
 		while (!mStopped) {
 			sendDataToClient(packet);
 			try {
@@ -91,6 +85,27 @@ public class SearchClientLan implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	/**
+	 * Search packet protocol:</br>
+	 * 
+	 * [server ip][server name size][server name]
+	 * 
+	 * @return
+	 */
+	private DatagramPacket getSearchPacket() {
+		byte[] searchMessage = SearchProtocol.encodeSearchLan();
+
+		DatagramPacket packet = null;
+		try {
+			packet = new DatagramPacket(searchMessage, searchMessage.length,
+					InetAddress.getByName(Search.MULTICAST_IP),
+					Search.MULTICAST_RECEIVE_PORT);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		return packet;
 	}
 
 	private void sendDataToClient(DatagramPacket packet) {
@@ -177,24 +192,12 @@ public class SearchClientLan implements Runnable {
 		public void run() {
 			DatagramPacket inPacket;
 
-			String message;
 			while (!mStopped) {
+				inPacket = new DatagramPacket(new byte[1024], 1024);
 				try {
-					inPacket = new DatagramPacket(new byte[1024], 1024);
 					mMulticastReceiveSocket.receive(inPacket);
-					message = new String(inPacket.getData(), 0,
-							inPacket.getLength());
-					Log.d(TAG, "Received broadcast message: " + message);
-
-					if (message.equals(NetWorkUtil.getLocalIpAddress())) {
-						// ignore.
-					} else {
-						// Got another server. because client will not broadcast
-						// message.
-						if (mListener != null) {
-							mListener.onSearchSuccess(message);
-						}
-					}
+					byte[] data = inPacket.getData();
+					SearchProtocol.decodeSearchLan(data, mListener);
 				} catch (Exception e) {
 					if (e instanceof SocketTimeoutException) {
 						// time out, search again.
@@ -202,7 +205,7 @@ public class SearchClientLan implements Runnable {
 					} else {
 						Log.e(TAG, "GetPacket error," + e.toString());
 						if (mListener != null) {
-							mListener.onSearchFail();
+							mListener.onSearchStop();
 						}
 					}
 				}

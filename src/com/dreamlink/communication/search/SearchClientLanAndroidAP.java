@@ -1,4 +1,4 @@
-package com.dreamlink.communication.server;
+package com.dreamlink.communication.search;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -11,8 +11,7 @@ import java.net.UnknownHostException;
 import android.content.Context;
 import android.util.Log;
 
-import com.dreamlink.communication.Search;
-import com.dreamlink.communication.server.SearchClient.OnSearchListener;
+import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 /**
@@ -173,7 +172,7 @@ public class SearchClientLanAndroidAP implements Runnable {
 						Log.d(TAG, "Go another server.");
 						if (mListener != null) {
 							mListener.onSearchSuccess(inPacket.getAddress()
-									.getHostAddress());
+									.getHostAddress(),"");
 						}
 					} else {
 						// ignore
@@ -185,7 +184,7 @@ public class SearchClientLanAndroidAP implements Runnable {
 					} else {
 						Log.e(TAG, "GetPacket error," + e.toString());
 						if (mListener != null) {
-							mListener.onSearchFail();
+							mListener.onSearchStop();
 						}
 					}
 				}

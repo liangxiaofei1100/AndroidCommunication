@@ -137,9 +137,6 @@ public class SocketCommunicationManager implements
 		// mCommunications = new HashSet<SocketCommunication>();
 		mCommunications = new Vector<SocketCommunication>();
 
-		UserHelper userHelper = new UserHelper(mContext);
-		User localUser = userHelper.loadUser();
-		mUserManager.setLocalUser(localUser);
 		mUserManager.registerOnUserChangedListener(this);
 
 		mProtocolDecoder = new ProtocolDecoder(this);

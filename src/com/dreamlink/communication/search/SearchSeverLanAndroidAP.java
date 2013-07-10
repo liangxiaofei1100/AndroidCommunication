@@ -1,4 +1,4 @@
-package com.dreamlink.communication.client;
+package com.dreamlink.communication.search;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -9,8 +9,7 @@ import java.net.SocketTimeoutException;
 import android.content.Context;
 import android.util.Log;
 
-import com.dreamlink.communication.Search;
-import com.dreamlink.communication.client.SearchSever.OnSearchListener;
+import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 /**
@@ -171,14 +170,14 @@ public class SearchSeverLanAndroidAP implements Runnable {
 						Log.d(TAG, "Android AP is server.");
 						if (mListener != null) {
 							mListener.onSearchSuccess(inPacket.getAddress()
-									.getHostAddress());
+									.getHostAddress(), "");
 						}
 					} else if (message
 							.startsWith(Search.ANDROID_AP_SERVER_REQUEST)) {
 						Log.d(TAG, "This client is an AP. Found a server.");
 						if (mListener != null) {
 							mListener.onSearchSuccess(inPacket.getAddress()
-									.getHostAddress());
+									.getHostAddress(), "");
 						}
 					}
 				} catch (Exception e) {

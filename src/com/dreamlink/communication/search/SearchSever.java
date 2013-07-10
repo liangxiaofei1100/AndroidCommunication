@@ -1,7 +1,8 @@
-package com.dreamlink.communication.client;
+package com.dreamlink.communication.search;
 
 import android.content.Context;
 
+import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
@@ -17,29 +18,6 @@ import com.dreamlink.communication.util.NetWorkUtil;
  * 
  */
 public class SearchSever {
-	public interface OnSearchListener {
-		/**
-		 * Search server success and found a server</br>
-		 * 
-		 * Be careful:</br>
-		 * 
-		 * This method is not in activity main thread.</br>
-		 * 
-		 * @param serverIP
-		 *            The server IP address.
-		 */
-		void onSearchSuccess(String serverIP);
-
-		/**
-		 * Search server stop</br>
-		 * 
-		 * Be careful:</br>
-		 * 
-		 * This method is not in activity main thread.</br>
-		 * 
-		 */
-		void onSearchStop();
-	}
 
 	private static final String TAG = "SearchSever";
 

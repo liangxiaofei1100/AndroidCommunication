@@ -1,7 +1,6 @@
 package com.dreamlink.communication.server;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.client.SearchSever;
 import com.dreamlink.communication.util.Notice;
 
 import android.app.AlertDialog;

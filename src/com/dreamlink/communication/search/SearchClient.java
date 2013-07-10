@@ -1,7 +1,9 @@
-package com.dreamlink.communication.server;
+package com.dreamlink.communication.search;
 
 import android.content.Context;
 
+import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
@@ -26,16 +28,6 @@ import com.dreamlink.communication.util.NetWorkUtil;
  * client connect server.</br>
  */
 public class SearchClient {
-	public interface OnSearchListener {
-		/**
-		 * Found other server.
-		 * 
-		 * @param serverIP
-		 */
-		void onSearchSuccess(String serverIP);
-
-		void onSearchFail();
-	}
 
 	private static final String TAG = "SearchClient";
 
