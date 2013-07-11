@@ -7,13 +7,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
-import com.dreamlink.communication.data.User;
+import com.dreamlink.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.util.Notice;
 
 /**
@@ -108,5 +109,11 @@ public class SpeedTestClient extends Activity implements
 	public void onUserDisconnected(User user) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public IBinder asBinder() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

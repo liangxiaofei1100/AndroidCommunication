@@ -3,16 +3,11 @@ package com.dreamlink.communication;
 import java.util.ArrayList;
 import java.util.Map;
 
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListenerExternal;
-import com.dreamlink.communication.data.User;
-import com.dreamlink.communication.util.LogFile;
-import com.dreamlink.communication.util.Notice;
-import com.dreamlink.communication.util.TimeUtil;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
@@ -20,6 +15,12 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.dreamlink.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.aidl.User;
+import com.dreamlink.communication.util.LogFile;
+import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.util.TimeUtil;
 
 /**
  * see {@code StabilityTest}.
@@ -228,5 +229,11 @@ public class StabilityTestClient extends Activity implements
 	public void onUserDisconnected(User user) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public IBinder asBinder() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
