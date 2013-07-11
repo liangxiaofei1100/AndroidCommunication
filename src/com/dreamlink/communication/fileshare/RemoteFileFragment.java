@@ -148,7 +148,8 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 		if ("".equals(cmdMsg)) {
 			return;
 		}
-		mCommunicationManager.sendMessage(cmdMsg.getBytes(), 0);
+		// TODO need to implement appID.
+		mCommunicationManager.sendMessageToAll(cmdMsg.getBytes(), 0);
 	}
 
 	private static String wholeReceiveMsg = "";
@@ -426,7 +427,8 @@ public class RemoteFileFragment extends Fragment implements OnCommunicationListe
 					
 					//send msg to server that i want this file
 					String copyCmd = Command.COPY + Command.AITE + currentCopyFile.filePath;
-					mCommunicationManager.sendMessage(copyCmd.getBytes(), 0);
+					// TODO need to implement appID.
+					mCommunicationManager.sendMessageToAll(copyCmd.getBytes(), 0);
 				}
 				break;
 				

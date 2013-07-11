@@ -269,7 +269,7 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 					.getSocketCommunication(receiveUserID);
 			byte[] originalMsg = SendProtocol.encodeSendMessageToSingle(data,
 					sendUserID, receiveUserID, appID);
-			communication.sendMsg(originalMsg);
+			communication.sendMessage(originalMsg);
 		}
 	}
 
@@ -289,7 +289,7 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 				mCommunicationManager.sendMessage(communication, msg);
 				Log.d(TAG,
 						"Send to communication: "
-								+ communication.getConnectIP());
+								+ communication.getConnectedAddress());
 			} else {
 				Log.d(TAG,
 						"Ignore, the communication is the message comes from.");

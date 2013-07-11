@@ -17,31 +17,53 @@ import com.dreamlink.communication.util.Log;
 /**
  * Thread for send and receive message.</br>
  * 
- * Send or receive has processed the send or receive packet. The process detail
- * see {@link #encode(byte[])} and {@link #decode(DataInputStream)} </br>
+ * Before send packet, add packet size header to ensure the received packet is
+ * the right packet. The packet with size header is like [packet size][packet
+ * data]. After received packet, remove the packet size header to get the
+ * original packet. For Details, see {@link #encode(byte[])} and
+ * {@link #decode(DataInputStream)} </br>
  * 
  */
 public class SocketCommunication extends Thread {
 	private static final String TAG = "SocketCommunication";
+	/** Socket server port */
 	public static final String PORT = "55555";
 
+	/**
+	 * Listen socket connect and disconnect event.
+	 * 
+	 */
 	public interface OnCommunicationChangedListener {
+		/**
+		 * There is a new socket connected, and the communication is ready.
+		 * 
+		 * @param communication
+		 *            The established communication.
+		 */
 		void OnCommunicationEstablished(SocketCommunication communication);
 
+		/**
+		 * There is socket disconnected, and the commnunication is lost.
+		 * 
+		 * @param communication
+		 */
 		void OnCommunicationLost(SocketCommunication communication);
 	}
 
-	public interface ICommunicate {
-		void receiveMessage(byte[] msg, SocketCommunication socketCommunication);
-
-		void sendMessage(byte[] msg);
+	/**
+	 * Call back listener for notify there is a message received.
+	 * 
+	 */
+	public interface OnReceiveMessageListener {
+		void onReceiveMessage(byte[] msg,
+				SocketCommunication socketCommunication);
 	}
 
-	private Socket socket;
-	private ICommunicate iCommunicate;
+	private Socket mSocket;
+	private OnReceiveMessageListener mOnReceiveMessageListener;
 
-	private DataInputStream dataInputStream = null;
-	private DataOutputStream dataOutputStream = null;
+	private DataInputStream mDataInputStream = null;
+	private DataOutputStream mDataOutputStream = null;
 
 	private OnCommunicationChangedListener mListener;
 
@@ -61,13 +83,13 @@ public class SocketCommunication extends Thread {
 	/** The remain packet of last receive. */
 	private byte[] mRemainPacket;
 
-	public SocketCommunication(Socket socket, ICommunicate iCommunicate) {
-		this.socket = socket;
-		this.iCommunicate = iCommunicate;
+	public SocketCommunication(Socket socket, OnReceiveMessageListener listener) {
+		this.mSocket = socket;
+		this.mOnReceiveMessageListener = listener;
 	}
 
-	public InetAddress getConnectIP() {
-		return socket.getInetAddress();
+	public InetAddress getConnectedAddress() {
+		return mSocket.getInetAddress();
 	}
 
 	public void setOnCommunicationChangedListener(
@@ -77,15 +99,14 @@ public class SocketCommunication extends Thread {
 
 	@Override
 	public void run() {
-		super.run();
 
 		try {
-			dataInputStream = new DataInputStream(socket.getInputStream());
-			dataOutputStream = new DataOutputStream(socket.getOutputStream());
+			mDataInputStream = new DataInputStream(mSocket.getInputStream());
+			mDataOutputStream = new DataOutputStream(mSocket.getOutputStream());
 			mListener.OnCommunicationEstablished(this);
 			mReceiveBuffer = new byte[RECEIVE_BUFFER_SIZE];
-			while (true) {
-				boolean isContinue = decode(dataInputStream);
+			while (!mSocket.isClosed()) {
+				boolean isContinue = decode(mDataInputStream);
 				if (!isContinue) {
 					mListener.OnCommunicationLost(this);
 					break;
@@ -93,8 +114,8 @@ public class SocketCommunication extends Thread {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			dataInputStream = null;
-			dataOutputStream = null;
+			mDataInputStream = null;
+			mDataOutputStream = null;
 			mListener.OnCommunicationLost(this);
 		}
 	}
@@ -133,8 +154,6 @@ public class SocketCommunication extends Thread {
 			if (mRemainHeader == null) {
 				// There is no remain head.
 				Log.d(TAG, "There is no remain head");
-				// TODO dataReceivedLength maybe -1. This condition should
-				// process.
 				dataReceivedLength = in.read(mHeadBuffer);
 				if (dataReceivedLength == -1) {
 					Log.d(TAG, "Connection lost. dataReceivedLength = -1");
@@ -195,8 +214,8 @@ public class SocketCommunication extends Thread {
 			if (dataReceivedLength == packetLength) {
 				Log.d(TAG, "received data is on packet");
 				// received data is ok.
-				iCommunicate.receiveMessage(Arrays.copyOfRange(mReceiveBuffer,
-						0, dataReceivedLength), this);
+				mOnReceiveMessageListener.onReceiveMessage(Arrays.copyOfRange(
+						mReceiveBuffer, 0, dataReceivedLength), this);
 				return true;
 			} else if (dataReceivedLength < packetLength) {
 				Log.d(TAG,
@@ -233,7 +252,7 @@ public class SocketCommunication extends Thread {
 						"remain packet + received data is one packet.mLastPacketLength = "
 								+ mLastPacketLength);
 				// remain packet + received data is one packet.
-				iCommunicate.receiveMessage(
+				mOnReceiveMessageListener.onReceiveMessage(
 						ArrayUtil.join(mRemainPacket, Arrays.copyOfRange(
 								mHeadBuffer, 0, dataReceivedLength)), this);
 				mRemainPacket = null;
@@ -273,76 +292,41 @@ public class SocketCommunication extends Thread {
 		return result;
 	}
 
-	public void sendMsg(byte[] msg) {
-
+	/**
+	 * Send message to the connected socket
+	 * 
+	 * @param msg
+	 * @return return true if send success, return false if send fail.
+	 */
+	public boolean sendMessage(byte[] msg) {
 		try {
-			// msg = this.getName() + " : " + msg;
-			if (dataOutputStream != null) {
-				dataOutputStream.write(encode(msg));
-				dataOutputStream.flush();
+			if (mDataOutputStream != null) {
+				mDataOutputStream.write(encode(msg));
+				mDataOutputStream.flush();
 			} else {
 				mListener.OnCommunicationLost(this);
+				return false;
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, "sendMessage fail. msg = " + msg + ", error = " + e);
 			mListener.OnCommunicationLost(this);
 		}
+		return true;
 	}
 
 	/**
-	 * send file
-	 * 
-	 * @param file
+	 * Disconnect from the connected socket and stop communication.
 	 */
-	public void sendMsg(File file) {
-		Log.d(TAG, "sendMsg-->" + file.getName());
-		DataInputStream dis = null;
-		try {
-			dis = new DataInputStream(new BufferedInputStream(
-					new FileInputStream(file)));
-			Log.d(TAG, "open file ok.");
-			if (dataOutputStream != null) {
-				Log.d(TAG, "Connection is ok");
-				int bufferSize = 4 * 1024;
-				byte[] buf = new byte[bufferSize];
-				int read_len = 0;
-				while ((read_len = dis.read(buf)) != -1) {
-					Log.d(TAG, "read_len = " + read_len);
-					if (read_len < bufferSize) {
-						Log.d(TAG, "send file: " + read_len);
-						// read length less than buff.
-						sendMsg(Arrays.copyOfRange(buf, 0, read_len));
-					} else {
-						Log.d(TAG, "send file: " + read_len);
-						// read length less than buff.
-						sendMsg(buf);
-					}
-				}
-				Log.d(TAG, "read_len11 = " + read_len);
-			} else {
-				mListener.OnCommunicationLost(this);
-			}
-		} catch (FileNotFoundException e) {
-			Log.e(TAG, "File not found exception:" + e.toString());
-			e.printStackTrace();
-			mListener.OnCommunicationLost(this);
-		} catch (IOException e) {
-			Log.e(TAG, "IO exception:" + e.toString());
-			e.printStackTrace();
-			mListener.OnCommunicationLost(this);
-		}
-	}
-
 	public void stopComunication() {
 		try {
-			socket.close();
-			if (dataInputStream != null && dataOutputStream != null) {
-				dataInputStream.close();
-				dataOutputStream.close();
+			mSocket.close();
+			if (mDataInputStream != null && mDataOutputStream != null) {
+				mDataInputStream.close();
+				mDataOutputStream.close();
 				mListener.OnCommunicationLost(this);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, "stopComunication fail." + e);
 		}
 	}
 

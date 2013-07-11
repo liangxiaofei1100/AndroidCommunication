@@ -16,14 +16,16 @@ import com.dreamlink.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
-import com.dreamlink.communication.SocketCommunication.ICommunicate;
+import com.dreamlink.communication.SocketCommunication.OnReceiveMessageListener;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.client.SocketClientTask;
+import com.dreamlink.communication.client.SocketClientTask.OnConnectedToServerListener;
 import com.dreamlink.communication.protocol.ProtocolDecoder;
 import com.dreamlink.communication.protocol.ProtocolEncoder;
 import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.server.SocketServerTask;
+import com.dreamlink.communication.server.SocketServerTask.OnClientConnectedListener;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
@@ -34,9 +36,10 @@ import com.dreamlink.communication.util.Notice;
  * object.
  * 
  */
-public class SocketCommunicationManager implements
-		OnCommunicationChangedListener, ICommunicate, OnUserChangedListener,
-		ILoginRequestCallBack, ILoginRespondCallback {
+public class SocketCommunicationManager implements OnClientConnectedListener,
+		OnConnectedToServerListener, OnCommunicationChangedListener,
+		OnReceiveMessageListener, OnUserChangedListener, ILoginRequestCallBack,
+		ILoginRespondCallback {
 	private static final String TAG = "SocketCommunicationManager";
 
 	/**
@@ -68,41 +71,6 @@ public class SocketCommunicationManager implements
 
 	}
 
-	/**
-	 * Interface for Activity.
-	 * 
-	 */
-	// public interface OnCommunicationListenerExternal {
-	//
-	// /**
-	// * Received a message from user.</br>
-	// *
-	// * Be careful, this method is not run in UI thread. If do UI operation,
-	// * we can use {@link android.os.Handler} to do UI operation.</br>
-	// *
-	// * @param msg
-	// * the message.
-	// * @param sendUser
-	// * the message from.
-	// */
-	// void onReceiveMessage(byte[] msg, User sendUser);
-	//
-	// /**
-	// * There is new user connected.
-	// *
-	// * @param user
-	// */
-	// void onUserConnected(User user);
-	//
-	// /**
-	// * There is a user disconnected.
-	// *
-	// * @param user
-	// */
-	// void onUserDisconnected(User user);
-	//
-	// }
-
 	private static SocketCommunicationManager mInstance;
 
 	private Context mContext;
@@ -115,6 +83,11 @@ public class SocketCommunicationManager implements
 	private Vector<OnCommunicationListener> mOnCommunicationListeners;
 
 	/**
+	 * Map for OnCommunicationListenerExternal and appID management. When an
+	 * application register to SocketCommunicationManager, record it in this
+	 * map. When received a message, notify the related applications base on the
+	 * appID.</br>
+	 * 
 	 * Map structure</br>
 	 * 
 	 * key: listener, value: app ID.
@@ -134,7 +107,6 @@ public class SocketCommunicationManager implements
 		mContext = context;
 		mOnCommunicationListeners = new Vector<OnCommunicationListener>();
 		mNotice = new Notice(context);
-		// mCommunications = new HashSet<SocketCommunication>();
 		mCommunications = new Vector<SocketCommunication>();
 
 		mUserManager.registerOnUserChangedListener(this);
@@ -154,13 +126,14 @@ public class SocketCommunicationManager implements
 
 	public void registerOnCommunicationListenerExternal(
 			OnCommunicationListenerExternal listener, int appID) {
-		Log.e("ArbiterLiu", "        " + appID);
+		Log.d(TAG, "registerOnCommunicationListenerExternal() appID = " + appID);
 		mOnCommunicationListenerExternals.put(listener, appID);
 	}
 
 	public void unregisterOnCommunicationListenerExternal(
 			OnCommunicationListenerExternal listener) {
-		mOnCommunicationListenerExternals.remove(listener);
+		int appID = mOnCommunicationListenerExternals.remove(listener);
+		Log.d(TAG, "registerOnCommunicationListenerExternal() appID = " + appID);
 	}
 
 	public void setLoginRequestCallBack(ILoginRequestCallBack callback) {
@@ -184,83 +157,7 @@ public class SocketCommunicationManager implements
 			return;
 		}
 		if (communication != null) {
-			communication.sendMsg(message);
-		} else {
-			mNotice.showToast("Connection lost.");
-		}
-	}
-
-	/**
-	 * For internal use.
-	 * 
-	 * @param message
-	 * @param idThread
-	 */
-	public void sendMessage(byte[] message, int idThread) {
-		// TODO need to update.
-		if (idThread == -1) {
-			return;
-		}
-		if (mCommunications != null) {
-			synchronized (mCommunications) {
-				for (SocketCommunication communication : mCommunications) {
-					if (communication.getId() != idThread) {
-						sendMessage(communication, message);
-					}
-				}
-			}
-		} else {
-			try {
-				mNotice.showToast("No connection.");
-			} catch (Exception e) {
-				// call in thread that has not called Looper.prepare().
-			}
-		}
-	}
-
-	/**
-	 * send file to client</br>
-	 * 
-	 * 
-	 * @param file
-	 *            the file that need to send
-	 * @param idThread
-	 *            i don't know also
-	 * @author yuri
-	 */
-	public void sendMessage(File file, int idThread) {
-		// TODO need to update.
-		if (idThread == -1) {
-			return;
-		}
-
-		if (mCommunications != null && mCommunications.size() > 0) {
-			for (SocketCommunication communication : mCommunications) {
-				if (communication.getId() != idThread) {
-					sendMessage(communication, file);
-				}
-			}
-		} else {
-			mNotice.showToast("No connection.");
-		}
-	}
-
-	/**
-	 * send file
-	 * 
-	 * @param communication
-	 *            don't know also
-	 * @param file
-	 * @author yuri
-	 */
-	public void sendMessage(SocketCommunication communication, File file) {
-		// TODO need to update.
-		if (file == null) {
-			return;
-		}
-
-		if (communication != null) {
-			communication.sendMsg(file);
+			communication.sendMessage(message);
 		} else {
 			mNotice.showToast("Connection lost.");
 		}
@@ -271,7 +168,7 @@ public class SocketCommunicationManager implements
 	 * 
 	 * Notice, this method should not be called by apps.</br>
 	 */
-	public void closeCommunication() {
+	public void closeAllCommunication() {
 		if (mCommunications != null) {
 			for (final SocketCommunication communication : mCommunications) {
 				new Thread() {
@@ -296,7 +193,7 @@ public class SocketCommunicationManager implements
 	 * 
 	 * @param socket
 	 */
-	public void addCommunication(Socket socket) {
+	public void startCommunication(Socket socket) {
 		if (mExecutorService == null) {
 			mExecutorService = Executors.newCachedThreadPool();
 		}
@@ -327,8 +224,8 @@ public class SocketCommunicationManager implements
 			mCommunications.add(communication);
 			if (!mCommunications.isEmpty()) {
 				for (SocketCommunication comm : mCommunications) {
-					if ((comm.getConnectIP().equals(communication
-							.getConnectIP()))
+					if ((comm.getConnectedAddress().equals(communication
+							.getConnectedAddress()))
 							&& (comm.getId() != communication.getId())) {
 						comm.stopComunication();
 					}
@@ -340,18 +237,13 @@ public class SocketCommunicationManager implements
 
 	@Override
 	public void OnCommunicationLost(SocketCommunication communication) {
-		synchronized (mCommunications) {
-			if (mCommunications.contains(communication)) {
-				mCommunications.remove(communication);
-				notifyComunicationChange();
-			}
-		}
+		mCommunications.remove(communication);
+		notifyComunicationChange();
 		if (mCommunications.isEmpty()) {
-			if (mExecutorService == null) {
-				return;
+			if (mExecutorService != null) {
+				mExecutorService.shutdown();
+				mExecutorService = null;
 			}
-			mExecutorService.shutdown();
-			mExecutorService = null;
 		}
 		mUserManager.removeUser(communication);
 		mUserManager.removeLocalCommunication(communication);
@@ -367,7 +259,7 @@ public class SocketCommunicationManager implements
 	}
 
 	@Override
-	public void receiveMessage(byte[] msg,
+	public void onReceiveMessage(byte[] msg,
 			SocketCommunication socketCommunication) {
 		// decode;
 		mProtocolDecoder.decode(msg, socketCommunication);
@@ -449,11 +341,6 @@ public class SocketCommunicationManager implements
 		}
 	}
 
-	@Override
-	public void sendMessage(byte[] msg) {
-		// TODO need to update.
-	}
-
 	/**
 	 * @param addFlag
 	 *            ,if true ,connect add ,else connect remove
@@ -474,7 +361,8 @@ public class SocketCommunicationManager implements
 	 * @param context
 	 */
 	public void startServer(Context context) {
-		SocketServerTask serverTask = new SocketServerTask(context, this);
+		SocketServerTask serverTask = new SocketServerTask(context);
+		serverTask.setOnClientConnectedListener(this);
 		serverTask.execute(new String[] { SocketCommunication.PORT });
 	}
 
@@ -502,7 +390,8 @@ public class SocketCommunicationManager implements
 	 * @param serverIp
 	 */
 	public void connectServer(Context context, String serverIp) {
-		SocketClientTask clientTask = new SocketClientTask(context, this);
+		SocketClientTask clientTask = new SocketClientTask(context);
+		clientTask.setOnConnectedToServerListener(this);
 		clientTask.execute(new String[] { serverIp, SocketCommunication.PORT });
 	}
 
@@ -584,6 +473,16 @@ public class SocketCommunicationManager implements
 	public void respondLoginRequest(User user,
 			SocketCommunication communication, boolean isAllow) {
 		mProtocolDecoder.respondLoginRequest(user, communication, isAllow);
+	}
+
+	@Override
+	public void onClientConnected(Socket clientSocket) {
+		startCommunication(clientSocket);
+	}
+
+	@Override
+	public void onConnectedToServer(Socket socket) {
+		startCommunication(socket);
 	}
 
 }

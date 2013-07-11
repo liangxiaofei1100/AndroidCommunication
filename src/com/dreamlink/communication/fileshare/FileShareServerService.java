@@ -1,16 +1,22 @@
 package com.dreamlink.communication.fileshare;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.File;
-
-import com.dreamlink.communication.SocketCommunication;
-import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
-import com.dreamlink.communication.util.Log;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Arrays;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.Environment;
 import android.os.IBinder;
+
+import com.dreamlink.communication.SocketCommunication;
+import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.util.Log;
 
 public class FileShareServerService extends Service implements OnCommunicationListener{
 	private static final String TAG = "FileShareServerService";
@@ -94,7 +100,8 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 				retMsg += Command.END_FLAG;
 				
 				//Log.d(TAG, "retMsg=" + retMsg);
-				mCommunicationManager.sendMessage(retMsg.getBytes(), 0);
+				// TODO need to implement appID.
+				mCommunicationManager.sendMessageToAll(retMsg.getBytes(), 0);
 			} else {
 				// not folder,can not enter here
 				return;
@@ -104,13 +111,49 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 			Log.d(TAG, "OK,I got copy command");
 			String copypath = splitMsg[1];
 			File file = new File(copypath);
-			mCommunicationManager.sendMessage(file, 0);
 
 		} else {
 			// another
 			return;
 		}
 	}
+	
+	/**
+	 * send file
+	 * 
+	 * @param file
+	 */
+	public void sendFile(File file) {
+		Log.d(TAG, "sendFile-->" + file.getName());
+		DataInputStream dis = null;
+		try {
+			dis = new DataInputStream(new BufferedInputStream(
+					new FileInputStream(file)));
+			Log.d(TAG, "open file ok.");
+				Log.d(TAG, "Connection is ok");
+				int bufferSize = 4 * 1024;
+				byte[] buf = new byte[bufferSize];
+				int read_len = 0;
+				while ((read_len = dis.read(buf)) != -1) {
+					Log.d(TAG, "read_len = " + read_len);
+					if (read_len < bufferSize) {
+						Log.d(TAG, "send file: " + read_len);
+						// read length less than buff.
+						mCommunicationManager.sendMessageToAll(Arrays.copyOfRange(buf, 0, read_len), 0);
+					} else {
+						Log.d(TAG, "send file: " + read_len);
+						// read length less than buff.
+						mCommunicationManager.sendMessageToAll(buf,0);
+					}
+				}
+				Log.d(TAG, "read_len11 = " + read_len);
+		} catch (FileNotFoundException e) {
+			Log.e(TAG, "File not found exception:" + e.toString());
+		} catch (IOException e) {
+			Log.e(TAG, "IO exception:" + e.toString());
+		}
+	}
+
 
 	@Override
 	public void onSendResult(byte[] msg) {

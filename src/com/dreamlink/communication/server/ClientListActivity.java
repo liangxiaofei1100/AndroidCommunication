@@ -67,7 +67,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			mCommunicationManager.closeCommunication();
+			mCommunicationManager.closeAllCommunication();
 		}
 		return super.onKeyDown(keyCode, event);
 	}
@@ -439,7 +439,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	public void onLoginRequest(final User user,
 			final SocketCommunication communication) {
 		Log.d(TAG, "onLoginRequest(), user = " + user + ", communication = "
-				+ communication.getConnectIP().getHostAddress());
+				+ communication.getConnectedAddress().getHostAddress());
 		runOnUiThread(new Runnable() {
 
 			@Override

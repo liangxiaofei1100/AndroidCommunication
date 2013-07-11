@@ -136,7 +136,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 				}
 			}
 			if (mCommunicationManager != null) {
-				mCommunicationManager.closeCommunication();
+				mCommunicationManager.closeAllCommunication();
 			}
 		}
 		return super.onKeyDown(keyCode, event);
@@ -690,7 +690,7 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 			ArrayList<String> temp = new ArrayList<String>();
 			for (SocketCommunication com : mCommunicationManager
 					.getCommunications()) {
-				temp.add(com.getConnectIP().getHostName() + "     已连接");
+				temp.add(com.getConnectedAddress().getHostName() + "     已连接");
 			}
 			mHandler.obtainMessage(MSG_SEARCH_WIFI_DIRECT_FOUND, temp)
 					.sendToTarget();

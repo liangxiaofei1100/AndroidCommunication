@@ -8,6 +8,7 @@ import android.widget.Toast;
  * 
  */
 public class Notice {
+	private static final String TAG = "Notice";
 
 	private Toast toast;
 	private Context context;
@@ -17,12 +18,16 @@ public class Notice {
 	}
 
 	public void showToast(String mensagem) {
-		if (toast != null) {
-			toast.setText(mensagem);
-		} else {
-			toast = Toast.makeText(context, mensagem, Toast.LENGTH_LONG);
+		try {
+			if (toast != null) {
+				toast.setText(mensagem);
+			} else {
+				toast = Toast.makeText(context, mensagem, Toast.LENGTH_LONG);
+			}
+			toast.show();
+		} catch (Exception e) {
+			Log.e(TAG, "showToast error, " + e);
 		}
-		toast.show();
 	}
 
 	public void closeToast() {
