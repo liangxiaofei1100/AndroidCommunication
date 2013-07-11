@@ -7,4 +7,6 @@ interface Communication{
 	void sendMessage(in byte[] msg,int appID,in User user);
 	List<User> getAllUser();
 	void unRegistListenr(OnCommunicationListenerExternal lis);
+	User getLocalUser();
+	User setLocalUser();
 }

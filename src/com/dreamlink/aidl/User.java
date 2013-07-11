@@ -77,13 +77,13 @@ public class User implements Serializable, Parcelable {
 	}
 
 	public void readFromParcel(Parcel source) {
-		mUserID=source.readInt();
-		mName=source.readString();
-		mSystemInfo=(SystemInfo) source.readSerializable();
+		mUserID = source.readInt();
+		mName = source.readString();
+		mSystemInfo = (SystemInfo) source.readSerializable();
 	}
 
 	public User(Parcel source) {
-
+		readFromParcel(source);
 	}
 
 	public static Creator<User> CREATOR = new Parcelable.Creator<User>() {

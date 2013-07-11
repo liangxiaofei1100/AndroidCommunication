@@ -49,6 +49,9 @@ public class SocketCommunicationService extends Service {
 			ArrayList<User> list = new ArrayList<User>();
 			Map<Integer, User> map = userManager.getAllUser();
 			for (Map.Entry<Integer, User> entry : map.entrySet()) {
+				if (entry.getValue().getUserID() == UserManager.getInstance()
+						.getLocalUser().getUserID())
+					continue;
 				list.add(entry.getValue());
 			}
 			return list;
@@ -60,6 +63,18 @@ public class SocketCommunicationService extends Service {
 			// TODO Auto-generated method stub
 			socketCommunicationManager
 					.unregisterOnCommunicationListenerExternal(lis);
+		}
+
+		@Override
+		public User getLocalUser() throws RemoteException {
+			// TODO Auto-generated method stub
+			return UserManager.getInstance().getLocalUser();
+		}
+
+		@Override
+		public User setLocalUser() throws RemoteException {
+			// TODO Auto-generated method stub
+			return null;
 		}
 
 	}
