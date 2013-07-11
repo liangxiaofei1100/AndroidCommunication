@@ -1,7 +1,6 @@
 package com.dreamlink.communication.fileshare;
 
 import com.dreamlink.communication.AppListActivity;
-import com.dreamlink.communication.chat.ChatServerActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
