@@ -19,6 +19,7 @@ import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.util.Log;
 
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
 
 /**
@@ -71,8 +72,11 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 			observerList = new ArrayList<WifiDirectManager.ManagerP2pDeivce>();
 		}
 		if (flag) {
-			setDeviceName(mWifiP2pManager, channel,
-					"DreamLink" + UserHelper.getUserName(context), null);
+			setDeviceName(
+					mWifiP2pManager,
+					channel,
+					WiFiNameEncryption.generateWiFiName("DreamLink"
+							+ UserHelper.getUserName(context)), null);
 		}
 	}
 
@@ -142,7 +146,7 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 			public void onPeersAvailable(WifiP2pDeviceList peers) {
 				if (!flag) {
 					for (WifiP2pDevice device : peers.getDeviceList()) {
-						if (device.deviceName.contains("DreamLink")) {
+						if (WiFiNameEncryption.checkWiFiName(device.deviceName)) {
 							serverList.add(device);
 						}
 					}
@@ -182,7 +186,8 @@ public class WifiDirectManager implements WifiDirectDeviceNotify {
 		this.stopSearch();
 		if (serverFlag) {
 			setDeviceName(mWifiP2pManager, channel,
-					"DreamLink" + UserHelper.getUserName(context), null);
+					WiFiNameEncryption.generateWiFiName(UserHelper
+							.getUserName(context)), null);
 		} else {
 			setDeviceName(mWifiP2pManager, channel,
 					UserHelper.getUserName(context), null);

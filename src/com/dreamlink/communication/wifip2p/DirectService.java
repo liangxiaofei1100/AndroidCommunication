@@ -24,6 +24,7 @@ import android.util.Log;
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
 
 @SuppressLint({ "NewApi", "NewApi" })
@@ -54,15 +55,16 @@ public class DirectService extends Service {
 		// TODO Auto-generated method stub
 		this.flag = intent.getBooleanExtra("flag", false);
 		this.user = (User) intent.getBundleExtra("info").get("user");
-		new Thread(){
+		new Thread() {
 
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
 				super.run();
 				startDirectServer(flag, user);
-			}}.start();
-		
+			}
+		}.start();
+
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -91,12 +93,9 @@ public class DirectService extends Service {
 		initReceiver();
 		this.registerReceiver(wifiDirectReciver, mWifiDirectIntentFilter);
 		if (flag) {
-			setDeviceName(
-					wifiP2pManager,
-					channel,
-					"DreamLink"
-							+ UserHelper.getUserName(getApplicationContext()),
-					null);
+			setDeviceName(wifiP2pManager, channel,
+					WiFiNameEncryption.generateWiFiName(UserHelper
+							.getUserName(getApplicationContext())), null);
 		} else {
 			setDeviceName(wifiP2pManager, channel,
 					UserHelper.getUserName(getApplicationContext()), null);
@@ -122,8 +121,8 @@ public class DirectService extends Service {
 							return;
 						}
 						for (WifiP2pDevice device : peers.getDeviceList()) {
-							if (device.deviceName.contains("DreamLink"
-									+ user.getUserName())) {
+							if (WiFiNameEncryption
+									.checkWiFiName(device.deviceName)) {
 								WifiP2pConfig config = new WifiP2pConfig();
 								config.deviceAddress = device.deviceAddress;
 								config.groupOwnerIntent = 0;
