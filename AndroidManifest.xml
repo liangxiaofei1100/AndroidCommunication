@@ -45,29 +45,6 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".chat.ChatLauncher"
-            android:label="@string/chat" >
-            <intent-filter>
-                <action android:name="com.dreamlink.communication.action.app" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-
-            <meta-data
-                android:name="app_id"
-                android:value="100" />
-        </activity>
-        <activity
-            android:name=".chat.ChatClientActivity"
-            android:label="@string/app_name_client"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name=".chat.ChatServerActivity"
-            android:label="@string/app_name_server"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
             android:name="com.dreamlink.communication.fileshare.FileShareLauncher"
             android:label="@string/fileshare_label" >
             <intent-filter>
