@@ -173,22 +173,30 @@ public class NetWorkUtil {
 		// the name is different from the enabled name.
 		WifiManager wifiManager = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);
+
+		WifiConfiguration configuration = null;
 		if (enabled) {
 			// disable wifi.
 			wifiManager.setWifiEnabled(false);
-		}
-
-		if (apName == null) {
-			apName = Search.WIFI_AP_NAME + (int) Math.random() * 10000;
-			Log.d(TAG, "setWifiAPEnabled, Ap name is null, create temp name: "
-					+ apName);
-		}
-
-		try {
-			WifiConfiguration configuration = new WifiConfiguration();
+			if (apName == null) {
+				Log.e(TAG, "setWifiAPEnabled, Ap name is null");
+				return false;
+			}
+			configuration = new WifiConfiguration();
 			configuration.SSID = apName;
 			configuration.allowedKeyManagement
 					.set(WifiConfiguration.KeyMgmt.NONE);
+		} else {
+			try {
+				Method method = wifiManager.getClass().getMethod(
+						"getWifiApConfiguration");
+				configuration = (WifiConfiguration) method.invoke(wifiManager);
+			} catch (Exception e) {
+				Log.e(TAG, "Can not get WiFi AP configuration, " + e);
+			}
+		}
+
+		try {
 			Method method = wifiManager.getClass().getMethod(
 					"setWifiApEnabled", WifiConfiguration.class, Boolean.TYPE);
 			boolean result = (Boolean) method.invoke(wifiManager,
@@ -199,5 +207,4 @@ public class NetWorkUtil {
 			return false;
 		}
 	}
-
 }

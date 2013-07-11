@@ -43,6 +43,7 @@ import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.Search;
 import com.dreamlink.communication.search.SearchClient;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
+import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
@@ -66,7 +67,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			mCommunicationManager.closeCommunication();
+			mCommunicationManager.closeAllCommunication();
 		}
 		return super.onKeyDown(keyCode, event);
 	}
@@ -354,8 +355,8 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
 		}
-		NetWorkUtil.setWifiAPEnabled(mContext,
-				Search.WIFI_AP_NAME + UserHelper.getUserName(mContext), true);
+		NetWorkUtil.setWifiAPEnabled(mContext, WiFiNameEncryption
+				.generateWiFiName(UserHelper.getUserName(mContext)), true);
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
 		registerReceiver(mBroadcastReceiver, filter);
@@ -438,7 +439,7 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	public void onLoginRequest(final User user,
 			final SocketCommunication communication) {
 		Log.d(TAG, "onLoginRequest(), user = " + user + ", communication = "
-				+ communication.getConnectIP().getHostAddress());
+				+ communication.getConnectedAddress().getHostAddress());
 		runOnUiThread(new Runnable() {
 
 			@Override

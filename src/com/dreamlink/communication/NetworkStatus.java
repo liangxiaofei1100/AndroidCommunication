@@ -55,7 +55,7 @@ public class NetworkStatus {
 				.entrySet()) {
 			try {
 				stringBuilder.append("User ID = " + entry.getKey() + ", ip = "
-						+ entry.getValue().getConnectIP().getHostAddress()
+						+ entry.getValue().getConnectedAddress().getHostAddress()
 						+ "\n");
 			} catch (Exception e) {
 				// Because Server local communication has no ip. ignore.

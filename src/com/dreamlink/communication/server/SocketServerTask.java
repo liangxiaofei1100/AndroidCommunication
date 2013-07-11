@@ -3,14 +3,12 @@ package com.dreamlink.communication.server;
 import java.net.Socket;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Message;
 
-import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.server.SocketServer.OnClientConnectedListener;
+import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
 /**
@@ -23,21 +21,32 @@ import com.dreamlink.communication.util.Notice;
 @SuppressLint("UseValueOf")
 public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 		implements OnClientConnectedListener {
+	private static final String TAG = "SocketServerTask";
+
+	public interface OnClientConnectedListener {
+		/**
+		 * A client connected.
+		 * 
+		 * @param clientSocket
+		 */
+		void onClientConnected(Socket clientSocket);
+	}
+
+	private OnClientConnectedListener mOnClientConnectedListener;
 
 	private Message message;
 
-	private Context context;
-	private ProgressDialog progressDialog;
 	private Notice notice;
 
-	private SocketCommunicationManager manager;
 	private SocketServer server;
 
-	public SocketServerTask(Context context, SocketCommunicationManager manager) {
-		this.context = context;
+	public SocketServerTask(Context context) {
 		server = SocketServer.getInstance();
 		notice = new Notice(context);
-		this.manager = manager;
+	}
+
+	public void setOnClientConnectedListener(OnClientConnectedListener listener) {
+		mOnClientConnectedListener = listener;
 	}
 
 	@Override
@@ -45,48 +54,13 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 		super.onPreExecute();
 		if (server.isServerStarted()) {
 			notice.showToast("Server is already started");
-		} else {
-			// remove dialog.
-			// showProgressDialog();
 		}
-	}
-
-	private void showProgressDialog() {
-		if (progressDialog != null && progressDialog.isShowing()) {
-			// already showing, ignore.
-			return;
-		}
-
-		// show progress dialog.
-		progressDialog = new ProgressDialog(context);
-		progressDialog.setTitle("Server");
-		progressDialog.setMessage("Waiting for client...");
-		progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, "Hide",
-				new DialogInterface.OnClickListener() {
-
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						progressDialog.dismiss();
-					}
-				});
-		progressDialog.setButton(ProgressDialog.BUTTON_NEGATIVE, "Cancel",
-				new DialogInterface.OnClickListener() {
-
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						cancel(true);
-						server.stopServer();
-						progressDialog.dismiss();
-					}
-				});
-		progressDialog.show();
 	}
 
 	@Override
 	protected Socket doInBackground(String... arg) {
 		if (server.isServerStarted()) {
 			notice.showToast("Server is already started");
-			// TODO
 			return null;
 		} else {
 			return server.startServer(new Integer(arg[0]), this);
@@ -99,35 +73,23 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 		if (server.isServerStarted()) {
 			return;
 		}
-
-		closeDialog();
-
-		if (result == null) {
-			notice.showToast("Waiting for client timeout.");
-		} else {
+		if (result != null) {
 			notice.showToast("Client connected.");
 			message.obj = result;
+		} else {
+			Log.d(TAG, "onPostExecute, result is null.");
 		}
 	}
 
 	@Override
 	protected void onProgressUpdate(Socket... values) {
-		super.onProgressUpdate(values);
-		closeDialog();
-
 		if (values == null) {
 			notice.showToast("Waiting for client timeout.");
 		} else if (values.length == 1) {
 			notice.showToast("Client connected.");
-			manager.addCommunication(values[0]);
-		} else {
-			// should not be here.
-		}
-	}
-
-	private void closeDialog() {
-		if (progressDialog != null && progressDialog.isShowing()) {
-			progressDialog.dismiss();
+			if (mOnClientConnectedListener != null) {
+				mOnClientConnectedListener.onClientConnected(values[0]);
+			}
 		}
 	}
 

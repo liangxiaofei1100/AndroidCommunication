@@ -51,11 +51,9 @@ public class SocketServer {
 	 * @return
 	 */
 	public Socket startServer(int port, OnClientConnectedListener listener) {
-
 		if (mIsServerStarted) {
 			return null;
 		}
-
 		if (server == null) {
 			try {
 				server = new ServerSocket(port);
@@ -69,8 +67,10 @@ public class SocketServer {
 				if (server != null) {
 					server.setSoTimeout(TIME_OUT);
 					socket = server.accept();
+					if (socket != null) {
+						listener.onClientConnected(socket);
+					}
 				}
-				listener.onClientConnected(socket);
 			} catch (IOException e) {
 				e.printStackTrace();
 				break;

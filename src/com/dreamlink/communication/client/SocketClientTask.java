@@ -9,7 +9,6 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.util.Notice;
 
 /**
@@ -23,19 +22,33 @@ import com.dreamlink.communication.util.Notice;
 public class SocketClientTask extends AsyncTask<String, Void, Socket> {
 	private static final String TAG = "SocketClientTask";
 
-	private SocketCommunicationManager manager;
+	public interface OnConnectedToServerListener {
+		/**
+		 * Connected to server.
+		 * 
+		 * @param socket
+		 */
+		void onConnectedToServer(Socket socket);
+	}
+
 	private Context mContext;
 	private ProgressDialog progressDialog;
 	private Notice notice;
 
 	private SocketClient client;
 
-	public SocketClientTask(Context context, SocketCommunicationManager manager) {
+	private OnConnectedToServerListener mOnConnectedToServerListener;
+
+	public SocketClientTask(Context context) {
 		this.mContext = context;
-		this.manager = manager;
 
 		client = new SocketClient();
 		notice = new Notice(mContext);
+	}
+
+	public void setOnConnectedToServerListener(
+			OnConnectedToServerListener listener) {
+		mOnConnectedToServerListener = listener;
 	}
 
 	@Override
@@ -73,7 +86,9 @@ public class SocketClientTask extends AsyncTask<String, Void, Socket> {
 			notice.showToast("Connect to server fail.");
 		} else {
 			notice.showToast("Connected to server.");
-			manager.addCommunication(result);
+			if (mOnConnectedToServerListener != null) {
+				mOnConnectedToServerListener.onConnectedToServer(result);
+			}
 		}
 	}
 
