@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+     >
+    
+    <TextView 
+        android:id="@+id/remote_share_tip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="在这里，你可以看到远程服务器的文件目录 \n 不过，尚未实现，尽情期待"
+        />
+    
+    <!-- 路径导航布局 -->
+    <LinearLayout 
+        android:id="@+id/navigation_bar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:visibility="gone"
+        android:orientation="horizontal"
+        android:background="#dddddd"
+        >
+        <!-- 点击该按钮，选择SD卡或手机内部存储 -->
+        <com.dreamlink.communication.ui.SlowHorizontalScrollView
+            android:id="@+id/navigation_bar_view"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="6"
+            android:fillViewport="true" >
+             <LinearLayout
+                android:id="@+id/tabs_holder"
+                android:layout_width="match_parent"
+                android:layout_height="fill_parent"
+                android:orientation="horizontal" />
+            </com.dreamlink.communication.ui.SlowHorizontalScrollView>
+    </LinearLayout>
+    
+    <View 
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/divider_iv"
+        />
+    
+    <!-- 文件列表布局 -->
+    <RelativeLayout 
+        android:id="@+id/filelist_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        >
+        <ListView 
+            android:id="@+id/file_listview"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            ></ListView>
+        
+        <TextView 
+            android:id="@+id/empty_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="empty"
+            />
+    </RelativeLayout>
+</RelativeLayout>

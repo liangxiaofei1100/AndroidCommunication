@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string-array name="file_classify">
+        <item>@string/video_type</item>
+        <item>@string/doc_type</item>
+        <item>@string/ebook_type</item>
+        <item>@string/apk_type</item>
+        <item>@string/zip_type</item>
+        <item>@string/big_file_type</item>
+    </string-array>
+    
+    <string-array name="file_classify_tip">
+        <item>@string/video_type_tip</item>
+        <item>@string/doc_type_tip</item>
+        <item>@string/ebook_type_tip</item>
+        <item>@string/apk_type_tip</item>
+        <item>@string/zip_type_tip</item>
+        <item>@string/big_file_type_tip</item>
+    </string-array>
+    
+</resources>

@@ -10,5 +10,12 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/menu_user_info"/>
+    <!-- main ui start test -->
+    <item 
+        android:id="@+id/menu_start_test"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="Start main ui"
+        />
 
 </menu>

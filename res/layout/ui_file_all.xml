@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+     >
+    
+    <!-- 路径导航布局 -->
+    <LinearLayout 
+        android:id="@+id/navigation_bar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#dddddd"
+        >
+        <!-- 点击该按钮，选择SD卡或手机内部存储 -->
+        <ImageView 
+            android:id="@+id/ram_select_imageview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/switch_bg"
+            />
+        <!-- 该栏固定，为SD卡，或者手机存储 -->
+<!--         <TextView  -->
+<!--             android:id="@+id/root_path_textview" -->
+<!--             android:layout_width="wrap_content" -->
+<!--             android:layout_height="wrap_content" -->
+<!--             android:background="@drawable/custom_home_ninepatch_tab" -->
+<!--             android:gravity="center" -->
+<!--             android:text="SD卡" -->
+<!--             /> -->
+        <com.dreamlink.communication.ui.SlowHorizontalScrollView
+            android:id="@+id/navigation_bar_view"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="6"
+            android:fillViewport="true" >
+             <LinearLayout
+                android:id="@+id/tabs_holder"
+                android:layout_width="match_parent"
+                android:layout_height="fill_parent"
+                android:orientation="horizontal" />
+            </com.dreamlink.communication.ui.SlowHorizontalScrollView>
+    </LinearLayout>
+    
+    <View 
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/divider_iv"
+        />
+    
+    <!-- 文件列表布局 -->
+    <RelativeLayout 
+        android:id="@+id/filelist_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        >
+        <ListView 
+            android:id="@+id/file_listview"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            ></ListView>
+        
+        <TextView 
+            android:id="@+id/empty_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="empty"
+            />
+    </RelativeLayout>
+    
+</LinearLayout>

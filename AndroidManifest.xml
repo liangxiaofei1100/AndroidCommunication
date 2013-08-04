@@ -17,6 +17,7 @@
 
     <application
         android:allowBackup="true"
+        android:name="com.dreamlink.communication.AppApplication"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
@@ -128,6 +129,46 @@
                 <action android:name="com.dreamlink.communication.ComService" />
             </intent-filter>
         </service>
+        
+        <!-- main ui start -->
+        <activity 
+            android:name="com.dreamlink.communication.ui.MainUIFrame"
+            android:screenOrientation="portrait" 
+            >
+        </activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.UserInfoSetting"
+            android:windowSoftInputMode="adjustResize"
+            >
+        </activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.app.AppFragmentActivity"
+            ></activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.image.ImageFragmentActivity"
+            ></activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.media.MediaFragmentActivity"
+            ></activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.file.FileFragmentActivity"
+            ></activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.file.RemoteShareActivity"
+            ></activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.ConnectFriendActivity"
+            android:theme="@android:style/Theme.Dialog"
+            ></activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.image.ImagePagerActivity"
+            />
+        <!-- main ui end -->
+        
+        <provider 
+            android:name="com.dreamlink.communication.ui.db.DreamProvider"
+            android:authorities="com.dreamlink.communication.db.comprovider"
+            />
     </application>
 
 </manifest>

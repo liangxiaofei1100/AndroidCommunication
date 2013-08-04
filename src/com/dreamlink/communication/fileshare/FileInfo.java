@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -21,7 +22,14 @@ public class FileInfo implements Parcelable,Comparable{
 	public long fileDate;
 	//absoulte path
 	public String filePath;
+	//icon
+	public Drawable icon;
+	//default 0:neither image nor apk; 1-->image; 2-->apk;
+	public int type;
 	
+	public Object obj;
+	//media file's play total time
+	public long time;
 	
 	public FileInfo(String filename){
 		this.fileName = filename;
@@ -93,9 +101,9 @@ public class FileInfo implements Parcelable,Comparable{
 	@Override
 	public int compareTo(Object another) {
 		FileInfo tmp = (FileInfo) another;
-		if (fileName.compareTo(tmp.fileName) < 0) {
+		if (fileName.compareToIgnoreCase(tmp.fileName) < 0) {
 			return -1 ;
-		}else if (fileName.compareTo(tmp.fileName) > 0) {
+		}else if (fileName.compareToIgnoreCase(tmp.fileName) > 0) {
 			return 1;
 		}
 		return 0;
