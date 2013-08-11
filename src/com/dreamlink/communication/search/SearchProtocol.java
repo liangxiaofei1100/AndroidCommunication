@@ -4,7 +4,10 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.ArrayUtil;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -24,6 +27,8 @@ public class SearchProtocol {
 		 *            The server IP address.
 		 */
 		void onSearchSuccess(String serverIP, String name);
+		
+		void onSearchSuccess(ServerInfo serverInfo);
 
 		/**
 		 * Search server stop</br>
@@ -66,6 +71,7 @@ public class SearchProtocol {
 	 * @param data
 	 * @throws UnknownHostException
 	 */
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD) 
 	public static void decodeSearchLan(byte[] data, OnSearchListener listener)
 			throws UnknownHostException {
 

@@ -53,6 +53,7 @@ import com.dreamlink.communication.search.Search;
 import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.SearchSever;
+import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
@@ -66,8 +67,7 @@ import com.dreamlink.communication.wifip2p.WifiDirectReciver;
  * It can search WiFi AP server, WiFi STA server and WiFi direct server. </br>
  * 
  */
-@TargetApi(14)
-public class ServerListActivity extends Activity implements OnSearchListener,
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) public class ServerListActivity extends Activity implements OnSearchListener,
 		OnItemClickListener, OnClickListener, ManagerP2pDeivce,
 		OnCommunicationListener, ILoginRespondCallback {
 	private static final String TAG = "ServerListActivity";
@@ -724,5 +724,11 @@ public class ServerListActivity extends Activity implements OnSearchListener,
 				mNotice.showToast("Server disallowed the login request.");
 			}
 		});
+	}
+
+	@Override
+	public void onSearchSuccess(ServerInfo serverInfo) {
+		// TODO Auto-generated method stub
+		
 	}
 }

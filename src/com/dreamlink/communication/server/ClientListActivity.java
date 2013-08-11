@@ -44,6 +44,7 @@ import com.dreamlink.communication.search.Search;
 import com.dreamlink.communication.search.SearchClient;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.WiFiNameEncryption;
+import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
@@ -469,6 +470,12 @@ public class ClientListActivity extends Activity implements OnSearchListener,
 	public IBinder asBinder() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void onSearchSuccess(ServerInfo serverInfo) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

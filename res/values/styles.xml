@@ -16,5 +16,11 @@
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
+    
+    <style name="note_list_style">
+        <item name="android:divider">@drawable/list_divider</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:cacheColorHint">#00000000</item>
+    </style>
 
 </resources>

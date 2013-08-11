@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string-array name="file_classify">
+        <item>@string/video_type</item>
+        <item>@string/doc_type</item>
+        <item>@string/ebook_type</item>
+        <item>@string/apk_type</item>
+        <item>@string/zip_type</item>
+        <item>@string/big_file_type</item>
+    </string-array>
+    
+    <string-array name="file_classify_tip">
+        <item>@string/video_type_tip</item>
+        <item>@string/doc_type_tip</item>
+        <item>@string/ebook_type_tip</item>
+        <item>@string/apk_type_tip</item>
+        <item>@string/zip_type_tip</item>
+        <item>@string/big_file_type_tip</item>
+    </string-array>
+    
+    <string-array name="picture_menu">
+        <item>@string/menu_open</item>
+        <item>@string/menu_send</item>
+        <item>@string/menu_delete</item>
+        <item>@string/menu_info</item>
+    </string-array>
+    
+    <string-array name="app_menu_normal">
+        <item>@string/menu_open</item>
+        <item>@string/menu_send</item>
+        <item>@string/menu_uninstall</item>
+        <item>@string/menu_app_info</item>
+        <item>@string/menu_move_to_game</item>
+    </string-array>
+    
+    <string-array name="app_menu_myself">
+        <item>@string/menu_send</item>
+        <item>@string/menu_app_info</item>
+    </string-array>
+    
+    <string-array name="app_menu_game">
+         <item>@string/menu_open</item>
+        <item>@string/menu_send</item>
+        <item>@string/menu_uninstall</item>
+        <item>@string/menu_app_info</item>
+        <item>@string/menu_move_to_app</item>
+    </string-array>
+    
+</resources>

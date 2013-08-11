@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <!-- main ui title -->
+    <RelativeLayout
+        android:id="@+id/main_tab_banner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" >
+
+<!--         <RelativeLayout android:id="@+id/title_banner_one" > -->
+<!--         </RelativeLayout> -->
+        <!-- 标题 -->
+        <RelativeLayout
+            android:id="@+id/title_banner_two"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" 
+            android:layout_alignParentRight="true"
+            >
+            <TextView 
+                android:id="@+id/show_info"
+                android:layout_width="wrap_content"
+            	android:layout_height="wrap_content" 
+            	android:gravity="center"
+            	android:text="设置头像和名字"
+            	android:textColor="#ffffff"
+            	android:background="@drawable/title_main_bg"
+                />
+            
+            <RelativeLayout 
+                android:id="@+id/title_right_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/title_right_bg"
+                android:layout_alignParentRight="true"
+                >
+                <ImageView
+                    android:id="@+id/complete_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="20dp"
+                    android:src="@drawable/title_complete_normal" />
+                
+                <TextView
+                    android:id="@+id/two_saved_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/complete_view"
+                    android:layout_centerHorizontal="true"
+                    android:text="Save"
+                    android:textColor="#ffffff" />
+
+            </RelativeLayout>
+        </RelativeLayout>
+    </RelativeLayout>
+    
+    <ScrollView 
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scrollbars="vertical"
+        >
+        <!-- 头像设置布局 -->
+        <LinearLayout 
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
+            <LinearLayout 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                >
+                <LinearLayout 
+                    android:layout_width="wrap_content"
+             	   android:layout_height="wrap_content"
+               		 android:orientation="vertical"
+                    >
+                    <FrameLayout 
+                        android:layout_width="wrap_content"
+             	   		android:layout_height="wrap_content"
+                        >
+                        <ImageView 
+                             android:layout_width="wrap_content"
+             	   		android:layout_height="wrap_content"
+             	   		android:src="@drawable/avatar_graybox_normal"
+                            />
+                         <ImageView 
+                             android:layout_width="wrap_content"
+             	   		android:layout_height="wrap_content"
+             	   		android:src="@drawable/friend_avatar_9"
+                            />
+                    </FrameLayout>
+                    <ImageButton 
+                        android:layout_width="80dp"
+             	 		android:layout_height="wrap_content"
+             	  		android:paddingTop="15dp"
+             	  		android:background="@drawable/camera_bg"
+             	  		android:layout_gravity="center"
+             	  		android:src="@drawable/custom_photo"
+                        />
+                </LinearLayout>
+            </LinearLayout>
+            <!-- 分割线 -->
+            <View 
+                android:id="@+id/divider"
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@drawable/divider_iv"
+                />
+            <!-- 修改设置名称布局 -->
+            <RelativeLayout 
+                android:id="@+id/name_edit_layout"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                >
+            	<TextView 
+            	    android:id="@+id/name_textview"
+            	    android:layout_width="wrap_content"
+            	    android:layout_height="wrap_content"
+            	    android:text="名称:"
+            	    android:layout_centerVertical="true"
+            	    />
+            	<EditText 
+            	    android:id="@+id/name_editview"
+            	    android:layout_width="fill_parent"
+            	    android:layout_height="wrap_content"
+            	    android:singleLine="true"
+            	    android:maxLength="8"
+            	    android:hint="点我设置"
+            	    android:layout_toRightOf="@+id/name_textview"
+            	    />
+            	<TextView 
+            	    android:layout_width="wrap_content"
+            	    android:layout_height="wrap_content"
+            	    android:layout_below="@+id/name_editview"
+            	    android:text="名称最大长度为8个字符"
+            	    android:layout_centerHorizontal="true"
+            	    />
+            </RelativeLayout>
+            <!-- 保存按钮 -->
+            <Button 
+                android:id="@+id/save_button"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="保存设置"
+                />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

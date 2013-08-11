@@ -12,6 +12,8 @@ import com.dreamlink.aidl.User;
 import com.dreamlink.communication.client.ServerListActivity;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.ClientListActivity;
+import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.UserInfoSetting;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 	@SuppressWarnings("unused")
@@ -97,6 +99,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		case R.id.menu_user_info:
 			launchUserInfo();
 			return true;
+		case R.id.menu_start_test:
+			Intent intent = new Intent();
+			intent.setClass(MainActivity.this, MainUIFrame.class);
+			startActivity(intent);
+			break;
+		case R.id.action_settings:
+			Intent intent2 = new Intent();
+			intent2.setClass(MainActivity.this, UserInfoSetting.class);
+			startActivityForResult(intent2, 127);
+			break;
 
 		default:
 			break;
