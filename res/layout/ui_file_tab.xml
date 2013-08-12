@@ -10,6 +10,7 @@
         android:orientation="vertical" >
 
         <!-- ID必须是 @android:id/tabs 否则会报错 -->
+
         <TabWidget
             android:id="@android:id/tabs"
             android:layout_width="match_parent"
@@ -17,20 +18,24 @@
             android:layout_weight="0"
             android:orientation="horizontal" />
         <!-- ID 必须是@android:id/tabcontent， 否则会报错 -->
+
         <FrameLayout
             android:id="@android:id/tabcontent"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" >
-             <fragment android:name="com.dreamlink.communication.ui.file.FileClassifyFragment"
-                    android:id="@+id/file_frag1"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-                
-             <fragment android:name="com.dreamlink.communication.ui.file.FileBrowserFragment"
-                    android:id="@+id/file_frag2"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+
+            <fragment
+                android:id="@+id/file_frag1"
+                android:name="com.dreamlink.communication.ui.file.FileClassifyFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <fragment
+                android:id="@+id/file_frag2"
+                android:name="com.dreamlink.communication.ui.file.FileBrowserFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
         </FrameLayout>
     </LinearLayout>
 

@@ -95,7 +95,6 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
-	
 		pm = mContext.getPackageManager();
 		
 		Log.d(TAG, "onCreate end");

@@ -2,6 +2,7 @@ package com.dreamlink.communication.ui;
 
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -132,6 +133,10 @@ public class AsyncImageLoader {
 		
 	}
 	
+	public Bitmap loadImage(final String path, final int type, final ImageView imageView, final ILoadImageCallback callback){
+		return loadImage(path, type, null, imageView, callback);
+	}
+	
 	/**
 	 * 方法三
 	 * 也不是很完美，不过现在将就用这个吧
@@ -141,7 +146,8 @@ public class AsyncImageLoader {
 	 * @param callback
 	 * @return
 	 */
-	public Bitmap loadImage(final String path, final int type, final ImageView imageView, final ILoadImageCallback callback){
+	public Bitmap loadImage(final String path, final int type, final Map<String, Bitmap> caches, 
+			final ImageView imageView, final ILoadImageCallback callback){
 		//we use file path as key
 		if (bitmapCache.containsKey(path)) {
 			// 从缓存中获取
@@ -177,6 +183,16 @@ public class AsyncImageLoader {
 			});
 			break;
 		case FileInfoManager.TYPE_IMAGE:
+			pool.execute(new Runnable() {
+				@Override
+				public void run() {
+					Bitmap bitmap = null;
+					bitmap = getBitmapFromUrl(path, caches);
+					bitmapCache.put(path, new SoftReference<Bitmap>(bitmap));
+					Message msg = handler.obtainMessage(0, bitmap);
+					handler.sendMessage(msg);
+				}
+			});
 			break;
 		case FileInfoManager.TYPE_VIDEO:
 			pool.execute(new Runnable() {
@@ -192,8 +208,25 @@ public class AsyncImageLoader {
 		default:
 			break;
 		}
-		
 		return null;
+	}
+	
+	private int width = 120;//每个Item的宽度,可以根据实际情况修改
+	private int height = 150;//每个Item的高度,可以根据实际情况修改
+	private Bitmap getBitmapFromUrl(String url, Map<String, Bitmap> caches){
+		Bitmap bitmap = null;
+		bitmap = caches.get(url);
+		if(bitmap != null){
+			return bitmap;
+		}
+		
+//		BitmapFactory.Options options = new BitmapFactory.Options();
+//		options.inSampleSize =4;
+//		Bitmap bitmap2 = BitmapFactory.decodeFile(url, options);
+		
+//		bitmap = BitmapUtilities.getBitmapThumbnail(bitmap2,width,height);
+		bitmap = BitmapUtilities.getBitmapThumbnail(url, width, height);
+		return bitmap;
 	}
 
 	/**

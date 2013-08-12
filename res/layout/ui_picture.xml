@@ -16,13 +16,12 @@
     android:verticalSpacing="4dip"
      />
     
-     <TextView 
-            android:id="@+id/picture_empty_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="empty"
-            />
+    <TextView
+        android:id="@+id/picture_empty_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="empty" />
     
 </RelativeLayout>
 

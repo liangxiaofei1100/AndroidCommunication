@@ -55,6 +55,7 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		.build();
 		
 		mListView = (ListView) rootView.findViewById(R.id.audio_listview);
+		mListView.setEmptyView( rootView.findViewById(R.id.audio_list_empty));
 //		mListView.setOnItemClickListener(this);
 		mScanBar = (ProgressBar) rootView.findViewById(R.id.audio_progressbar);
 		

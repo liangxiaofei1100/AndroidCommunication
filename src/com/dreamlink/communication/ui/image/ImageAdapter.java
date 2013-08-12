@@ -7,7 +7,7 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.image.AsyncImageLoader2.ILoadImageCallback;
+import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -27,7 +27,6 @@ public class ImageAdapter extends BaseAdapter{
 	private ImageLoader mImageLoader;
 	private DisplayImageOptions mOptions;
 	private AsyncImageLoader asyncImageLoader;
-	private AsyncImageLoader2 asyncImageLoader2;
 	private boolean flag = true;
 
 	public ImageAdapter(LayoutInflater inflater, List<ImageInfo> list, ImageLoader imageLoader, DisplayImageOptions options) {
@@ -40,8 +39,7 @@ public class ImageAdapter extends BaseAdapter{
 	public ImageAdapter(Context context, List<ImageInfo> list){
 		inflater = LayoutInflater.from(context);
 		mImageLists = list;
-//		asyncImageLoader = new AsyncImageLoader(context);
-		asyncImageLoader2  = new AsyncImageLoader2(context);
+		asyncImageLoader = new AsyncImageLoader(context);
 	}
 	
 	@Override
@@ -87,14 +85,14 @@ public class ImageAdapter extends BaseAdapter{
 		/////////////////
 		String imageUrl = imageInfo.getPath();
 		if (!flag) {
-			if (AsyncImageLoader2.bitmapCache.size() >0 &&
-					AsyncImageLoader2.bitmapCache.get(imageUrl) != null) {
-				holder.imageView.setImageBitmap(AsyncImageLoader2.bitmapCache.get(imageUrl).get());
+			if (AsyncImageLoader.bitmapCache.size() >0 &&
+					AsyncImageLoader.bitmapCache.get(imageUrl) != null) {
+				holder.imageView.setImageBitmap(AsyncImageLoader.bitmapCache.get(imageUrl).get());
 			}else {
 				holder.imageView.setImageResource(R.drawable.zapya_data_photo_l);
 			}
 		}else {
-			Bitmap bitmap = asyncImageLoader2.loadImage(imageUrl, BaseImageFragment.bitmapCaches, 
+			Bitmap bitmap = asyncImageLoader.loadImage(imageUrl, FileInfoManager.TYPE_IMAGE, BaseImageFragment.bitmapCaches, 
 					holder.imageView, 
 					new ILoadImageCallback() {
 						@Override
@@ -102,6 +100,7 @@ public class ImageAdapter extends BaseAdapter{
 							imageView.setImageBitmap(bitmap);
 						}
 					});
+			
 			if (null != bitmap) {
 				holder.imageView.setImageBitmap(bitmap);
 			}else {

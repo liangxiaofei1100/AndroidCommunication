@@ -33,7 +33,8 @@ public class MediaInfoManager {
 	private static final String TAG = "MediaInfoManager";
 
 	// 获取专辑封面的Uri
-	private static final Uri albumArtUri = Uri.parse("content://media/external/audio/albumart");
+	private static final Uri albumArtUri = Uri
+			.parse("content://media/external/audio/albumart");
 
 	private Context context;
 
@@ -51,26 +52,35 @@ public class MediaInfoManager {
 		this.context = context;
 	}
 
-	/** get audios form {@link MediaStore.Audio.Media.EXTERNAL_CONTENT_URI}  */
+	/** get audios form {@link MediaStore.Audio.Media.EXTERNAL_CONTENT_URI} */
 	public List<MediaInfo> getAudioInfo() {
 		List<MediaInfo> list = new ArrayList<MediaInfo>();
-		Cursor cursor = context.getContentResolver().query(audioUri, null, null, null,
-				MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+		Cursor cursor = context.getContentResolver().query(audioUri, null,
+				null, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
 
 		if (cursor.moveToFirst()) {
 			MediaInfo mediaInfo = null;
 			do {
 				mediaInfo = new MediaInfo();
-				long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID)); // 音乐id
-				String title = cursor.getString((cursor.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
+				long id = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Audio.Media._ID)); // 音乐id
+				String title = cursor.getString((cursor
+						.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
 				// Log.d("Yuri", title);
-				String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)); // 艺术家
-				String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)); // 专辑
-				long albumId = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-				long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)); // 时长
-				long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
-				String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
-				int isMusic = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC)); // 是否为音乐
+				String artist = cursor.getString(cursor
+						.getColumnIndex(MediaStore.Audio.Media.ARTIST)); // 艺术家
+				String album = cursor.getString(cursor
+						.getColumnIndex(MediaStore.Audio.Media.ALBUM)); // 专辑
+				long albumId = cursor.getInt(cursor
+						.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+				long duration = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Audio.Media.DURATION)); // 时长
+				long size = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
+				String url = cursor.getString(cursor
+						.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
+				int isMusic = cursor.getInt(cursor
+						.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC)); // 是否为音乐
 				if (isMusic != 0) { // 只把音乐添加到集合当中
 					mediaInfo.setId(id);
 					mediaInfo.setDisplayName(title);
@@ -88,7 +98,7 @@ public class MediaInfoManager {
 		return list;
 	}
 
-	/** get videos form {@link MediaStore.Video.Media.EXTERNAL_CONTENT_URI}  */
+	/** get videos form {@link MediaStore.Video.Media.EXTERNAL_CONTENT_URI} */
 	public List<MediaInfo> getVideoInfo() {
 		List<MediaInfo> list = new ArrayList<MediaInfo>();
 		ContentResolver contentResolver = context.getContentResolver();
@@ -99,28 +109,37 @@ public class MediaInfoManager {
 			MediaInfo mediaInfo = null;
 			do {
 				mediaInfo = new MediaInfo();
-				long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
-				long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.DURATION)); // 时长
-				long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.SIZE)); // 文件大小
-				String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
-				BitmapFactory.Options options = new BitmapFactory.Options();
-				options.inDither = false;
-				options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-				// get video thumbail
-				Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(contentResolver, id, Images.Thumbnails.MICRO_KIND, options);
-				mediaInfo.setId(id);
-				mediaInfo.setDuration(duration);
-				mediaInfo.setSize(size);
-				mediaInfo.setUrl(url);
-				mediaInfo.setIcon(bitmap);
-				list.add(mediaInfo);
+				long id = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Video.Media._ID));
+				long duration = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Video.Media.DURATION)); // 时长
+				long size = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Video.Media.SIZE)); // 文件大小
+				String url = cursor.getString(cursor
+						.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
+				if (new File(url).exists()) {
+					BitmapFactory.Options options = new BitmapFactory.Options();
+					options.inDither = false;
+					options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+					// get video thumbail
+					Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(
+							contentResolver, id, Images.Thumbnails.MICRO_KIND,
+							options);
+					mediaInfo.setId(id);
+					mediaInfo.setDuration(duration);
+					mediaInfo.setSize(size);
+					mediaInfo.setUrl(url);
+					mediaInfo.setIcon(bitmap);
+					list.add(mediaInfo);
+				}
+				
 			} while (cursor.moveToNext());
 		}
 		cursor.close();
 		return list;
 	}
 
-	/** get images form {@link MediaStore.Images.Media.EXTERNAL_CONTENT_URI}  */
+	/** get images form {@link MediaStore.Images.Media.EXTERNAL_CONTENT_URI} */
 	public List<ImageInfo> getImageInfo() {
 		Log.d(TAG, "getImageInfo.start:" + System.currentTimeMillis());
 		List<ImageInfo> imageInfos = new ArrayList<ImageInfo>();
@@ -131,10 +150,14 @@ public class MediaInfoManager {
 		if (cursor.moveToFirst()) {
 			ImageInfo imageInfo = null;
 			do {
-				long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.ImageColumns._ID));
-				String path = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA));
+				long id = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Images.ImageColumns._ID));
+				String path = cursor.getString(cursor
+						.getColumnIndex(MediaStore.MediaColumns.DATA));
 				// 图片所在文件夹名
-				String folder = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME));
+				String folder = cursor
+						.getString(cursor
+								.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME));
 				if (new File(path).exists()) {
 					imageInfo = new ImageInfo(id);
 					imageInfo.setPath(path);
@@ -185,9 +208,11 @@ public class MediaInfoManager {
 		BitmapFactory.Options opts = new BitmapFactory.Options();
 		opts.inPreferredConfig = Bitmap.Config.RGB_565;
 		if (small) { // 返回小图片
-			return BitmapFactory.decodeStream(context.getResources().openRawResource(R.drawable.default_audio_iv), null, opts);
+			return BitmapFactory.decodeStream(context.getResources()
+					.openRawResource(R.drawable.default_audio_iv), null, opts);
 		}
-		return BitmapFactory.decodeStream(context.getResources().openRawResource(R.drawable.default_audio_iv), null, opts);
+		return BitmapFactory.decodeStream(context.getResources()
+				.openRawResource(R.drawable.default_audio_iv), null, opts);
 	}
 
 	/**
@@ -198,23 +223,28 @@ public class MediaInfoManager {
 	 * @param albumid
 	 * @return
 	 */
-	public static Bitmap getArtworkFromFile(Context context, long songid, long albumid) {
+	public static Bitmap getArtworkFromFile(Context context, long songid,
+			long albumid) {
 		Bitmap bm = null;
 		if (albumid < 0 && songid < 0) {
-			throw new IllegalArgumentException("Must specify an album or a song id");
+			throw new IllegalArgumentException(
+					"Must specify an album or a song id");
 		}
 		try {
 			BitmapFactory.Options options = new BitmapFactory.Options();
 			FileDescriptor fd = null;
 			if (albumid < 0) {
-				Uri uri = Uri.parse("content://media/external/audio/media/" + songid + "/albumart");
-				ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
+				Uri uri = Uri.parse("content://media/external/audio/media/"
+						+ songid + "/albumart");
+				ParcelFileDescriptor pfd = context.getContentResolver()
+						.openFileDescriptor(uri, "r");
 				if (pfd != null) {
 					fd = pfd.getFileDescriptor();
 				}
 			} else {
 				Uri uri = ContentUris.withAppendedId(albumArtUri, albumid);
-				ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
+				ParcelFileDescriptor pfd = context.getContentResolver()
+						.openFileDescriptor(uri, "r");
 				if (pfd != null) {
 					fd = pfd.getFileDescriptor();
 				}
@@ -249,7 +279,8 @@ public class MediaInfoManager {
 	 * @param allowdefalut
 	 * @return
 	 */
-	public static Bitmap getArtwork(Context context, long song_id, long album_id, boolean allowdefalut, boolean small) {
+	public static Bitmap getArtwork(Context context, long song_id,
+			long album_id, boolean allowdefalut, boolean small) {
 		if (album_id < 0) {
 			if (song_id < 0) {
 				Bitmap bm = getArtworkFromFile(context, song_id, -1);

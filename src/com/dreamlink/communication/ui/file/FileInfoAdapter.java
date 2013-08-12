@@ -1,67 +1,70 @@
 package com.dreamlink.communication.ui.file;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.ui.AsyncImageLoader;
-import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
-import com.dreamlink.communication.ui.image.AsyncImageLoader2;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 public class FileInfoAdapter extends BaseAdapter {
 	private List<FileInfo> mList;
 	private LayoutInflater mInflater = null;
-	private boolean[] mCheckedArray = null;
 	
 	private Context mContext;
 	
-	private HashMap<Integer, Boolean> isSelected = null;
+	private SparseBooleanArray mIsSelected = null;
 	
-	private GridView mGridView;
 	private ImageLoader imageLoader;
 	private DisplayImageOptions options;
 	
 	private AsyncImageLoader bitmapLoader;
-	private AsyncImageLoader2 bitmapLoader2;
 	
 	private boolean flag = true;
 	
+	/**
+	 * if you do not use universal ImageLoader
+	 * @param context
+	 * @param list
+	 */
 	public FileInfoAdapter(Context context, List<FileInfo> list){
 		new FileInfoAdapter(context, list, null, null);
 	}
 	
+	/**
+	 * use universal ImageLoader
+	 */
 	public FileInfoAdapter(Context context, List<FileInfo> list, ImageLoader loader, DisplayImageOptions options){
 		mInflater = LayoutInflater.from(context);
 		this.mList = list;
 		this.mContext = context;
-		isSelected = new HashMap<Integer, Boolean>();
+		mIsSelected = new SparseBooleanArray();
+		//init checkbox
 		selectAll(false);
+		bitmapLoader = new AsyncImageLoader(context);
 		
 		this.imageLoader = loader;
 		this.options = options;
-		
-		bitmapLoader = new AsyncImageLoader(context);
-		bitmapLoader2 = new AsyncImageLoader2(context);
 	}
 	
+	/**
+	 * Select All or not
+	 * @param isChecked true or false
+	 */
 	public void selectAll(boolean isChecked){
 		int count = this.getCount();
 		for (int i = 0; i < count; i++) {
@@ -69,13 +72,22 @@ public class FileInfoAdapter extends BaseAdapter {
 		}
 	}
 	
+	/**
+	 * set checkbox checked or not
+	 * @param position the position that clicked
+	 * @param isChecked checked or not
+	 */
 	public void setChecked(int position, boolean isChecked){
-		isSelected.put(position, isChecked);
-//		notifyDataSetChanged();
+		mIsSelected.put(position, isChecked);
 	}
 	
+	/**
+	 * return current position checked or not
+	 * @param position current position
+	 * @return checked or not
+	 */
 	public boolean isChecked(int position){
-		return isSelected.get(position);
+		return mIsSelected.get(position);
 	}
 	
 	public void setFlag(boolean flag){
@@ -125,22 +137,19 @@ public class FileInfoAdapter extends BaseAdapter {
 		FileInfo fileInfo = mList.get(position);
 		String size = fileInfo.getFormatFileSize();
 		String date = fileInfo.getFormateDate();
-		//太乱了，需要整理
+		//use async thread loader bitmap
 		if(FileInfoManager.TYPE_IMAGE  == fileInfo.type){
-//			String path = DreamConstant.FILE_EX + fileInfo.filePath;
-//			imageLoader.displayImage(path, holder.iconView, options);
-			
 			if (!flag) {
-				if (AsyncImageLoader2.bitmapCache.size() > 0 &&
-						AsyncImageLoader2.bitmapCache.get(fileInfo.filePath) != null) {
-					holder.iconView.setImageBitmap(AsyncImageLoader2.bitmapCache.get(fileInfo.filePath).get());
+				if (AsyncImageLoader.bitmapCache.size() > 0 &&
+						AsyncImageLoader.bitmapCache.get(fileInfo.filePath) != null) {
+					holder.iconView.setImageBitmap(AsyncImageLoader.bitmapCache.get(fileInfo.filePath).get());
 				}else {
 					holder.iconView.setImageDrawable(fileInfo.icon);
 				}
 			}else {
-				Bitmap bitmap = bitmapLoader2.loadImage(fileInfo.filePath, FileBrowserFragment.bitmapCaches, 
+				Bitmap bitmap = bitmapLoader.loadImage(fileInfo.filePath, fileInfo.type, FileBrowserFragment.bitmapCaches, 
 						holder.iconView, 
-						new com.dreamlink.communication.ui.image.AsyncImageLoader2.ILoadImageCallback() {
+						new ILoadImageCallback() {
 							@Override
 							public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
 								imageView.setImageBitmap(bitmap);
@@ -156,7 +165,6 @@ public class FileInfoAdapter extends BaseAdapter {
 			Bitmap cacheDrawable = bitmapLoader.loadImage(fileInfo.filePath, fileInfo.type, holder.iconView, new ILoadImageCallback() {
 				@Override
 				public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
-					// TODO Auto-generated method stub
 					if (null != bitmap) {
 						imageView.setImageBitmap(bitmap);
 					}
@@ -191,7 +199,7 @@ public class FileInfoAdapter extends BaseAdapter {
 		
 		holder.nameView.setText(fileInfo.fileName);
 		
-		Boolean is = isSelected.get(position);
+		Boolean is = isChecked(position);
 		if (null == is) {
 			is = false;
 		}

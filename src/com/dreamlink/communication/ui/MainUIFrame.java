@@ -7,9 +7,17 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.dreamlink.aidl.User;
+import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
+import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
+import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
+import com.dreamlink.communication.AllowLoginDialog;
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.SocketCommunication;
+import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.ui.app.AppFragmentActivity;
 import com.dreamlink.communication.ui.db.MetaData;
@@ -37,11 +45,14 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.view.Window;
+import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -52,7 +63,7 @@ import android.widget.TextView;
  * 虽然ActivityGroup已经过时了，由于Fragment不太好做嵌套，所以第一层仍然使用ActivityGroup，第二层才使用Fragment
  * 主界面框架 分三部分 最上面是标题栏 中间是MainTabContainer，内容存储器 最下面是导航栏，仿闪存，目前有 应用，图片，影音，文件，四个
  */
-public class MainUIFrame extends ActivityGroup implements OnClickListener {
+public class MainUIFrame extends ActivityGroup implements OnClickListener, ILoginRequestCallBack, ILoginRespondCallback {
 	private static final String TAG = "MainUIFrame";
 
 	// container layout
@@ -93,6 +104,14 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 	private LinearLayout loadView;
 	/**main view*/
 	private RelativeLayout mainView;
+	/**show user info view*/
+	private SlowHorizontalScrollView mUserInfoView;
+	/**show connect info/status view*/
+	private LinearLayout mConnectInfoView;
+	/**connect button view*/
+	private FrameLayout mConnectLayout;
+	
+	private UserTabManager mUserTabManager;
 
 	private Context mContext;
 
@@ -110,13 +129,22 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 
 	// user info
 	private UserHelper mUserHelper = null;
+	private UserManager mUserManager = null;
 	private User mUser = null;
+	private ConcurrentHashMap<Integer, User> mUsers = new ConcurrentHashMap<Integer, User>();
+	private SocketCommunicationManager mSocketComMgr;
 	
 	public static final String EXIT_ACTION = "intent.exit.aciton";
 	
 	private FileManagerService mService = null;
 	private boolean isServiceStarted = false;
 	private boolean isServiceBinded = false;
+	
+	private static final int INIT = 0x00;
+	private static final int CONNECTING = 0x01;
+	private static final int CREATING = 0x02;
+	private static final int CREATE_OK = 0x03;
+	private static final int CONNECT_OK = 0x04;
 	
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 		
@@ -164,7 +192,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 			case LOADING:
 				loadView.setVisibility(View.VISIBLE);
 				mainView.setVisibility(View.INVISIBLE);
-				mTimer.schedule(mTask, 3000);
+				mTimer.schedule(mTask, 1500);
 				break;
 			case LOADED:
 				loadView.setVisibility(View.INVISIBLE);
@@ -176,11 +204,16 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 		};
 	};
 
+	
+	private View rooView = null;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.ui_main2);
+		LayoutInflater inflater = LayoutInflater.from(this);
+		rooView = inflater.inflate(R.layout.ui_main2, null);
+		setContentView(rooView);
+//		setContentView(R.layout.ui_main2);
 
 		mContext = this;
 		mActivityManager = getLocalActivityManager();
@@ -191,6 +224,11 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 
 		mUserHelper = new UserHelper(mContext);
 		mUser = mUserHelper.loadUser();
+		mUserManager = UserManager.getInstance();
+		
+		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
+		mSocketComMgr.setLoginRequestCallBack(this);
+		mSocketComMgr.setLoginRespondCallback(this);
 		
 		IntentFilter filter = new IntentFilter(EXIT_ACTION);
 		registerReceiver(exitReceiver, filter);
@@ -221,6 +259,21 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		/*********TEST************/
+//		mConnectInfoView.setVisibility(View.INVISIBLE);
+//		mConnectLayout.setVisibility(View.INVISIBLE);
+//		mUserInfoView.setVisibility(View.VISIBLE);
+//		
+//		User user = null;
+//		for (int i = 0; i < 10; i++) {
+//			user = new User();
+//			user.setUserID(i);
+//			user.setUserName("测试用户" + i);
+//			mUsers.put(i, user);
+//		}
+//		mUserTabManager.refreshTab(mUsers);
+		/*********TEST************/
+		
 	}
 	//import game key db
 	private void importDb() {
@@ -327,6 +380,20 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 		mTitleLeftLayout.setOnClickListener(this);
 
 		mConnectView.setOnClickListener(this);
+		
+		/////////////
+		mConnectInfoView = (LinearLayout) findViewById(R.id.show_connect_msg_layout);
+		mConnectLayout = (FrameLayout) findViewById(R.id.connect_button_layout);
+		mUserInfoView = (SlowHorizontalScrollView) findViewById(R.id.show_user_scrollview);
+		
+		if (mUserInfoView != null) {
+			mUserInfoView.setVerticalScrollBarEnabled(false);
+			mUserInfoView.setHorizontalScrollBarEnabled(false);
+			mUserTabManager = new UserTabManager(mContext, rooView, mUserInfoView);
+		}
+		
+		updateConnectUI(INIT);
+		////////////////
 	}
 
 	public class MyPageAdapter extends PagerAdapter {
@@ -506,6 +573,34 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 			break;
 		}
 	}
+	
+	private void updateConnectUI(int status){
+		switch (status) {
+		case INIT:
+			mConnectLayout.setVisibility(View.VISIBLE);
+			mConnectInfoView.setVisibility(View.INVISIBLE);
+			mUserIconView.setVisibility(View.INVISIBLE);
+			mRightIconView.setImageResource(R.drawable.btn_title_invite_pressed);
+			break;
+		case CREATING:
+		case CONNECTING:
+		case CREATE_OK:
+			mConnectLayout.setVisibility(View.INVISIBLE);
+			mConnectInfoView.setVisibility(View.VISIBLE);
+			mUserIconView.setVisibility(View.INVISIBLE);
+			mRightIconView.setImageResource(R.drawable.btn_title_help_close);
+			break;
+		case CONNECT_OK:
+			mConnectLayout.setVisibility(View.INVISIBLE);
+			mConnectInfoView.setVisibility(View.INVISIBLE);
+			mUserIconView.setVisibility(View.VISIBLE);
+			mRightIconView.setImageResource(R.drawable.btn_title_help_close);
+			break;
+
+		default:
+			break;
+		}
+	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -536,5 +631,35 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 	protected void onDestroy() {
 		super.onDestroy();
 		unregisterReceiver(exitReceiver);
+	}
+
+	@Override
+	public void onLoginRequest(User user, SocketCommunication communication) {
+			AllowLoginDialog dialog = new AllowLoginDialog(mContext);
+			AllowLoginCallBack callBack = new AllowLoginCallBack() {
+
+				@Override
+				public void onLoginComfirmed(User user,
+						SocketCommunication communication, boolean isAllow) {
+					mSocketComMgr.respondLoginRequest(user, communication,
+							isAllow);
+				}
+			};
+			dialog.show(user, communication, callBack);
+	}
+
+	@Override
+	public void onLoginSuccess(User localUser, SocketCommunication communication) {
+		// TODO Auto-generated method stub
+		String nameString = localUser.getUserName();
+		updateConnectUI(CONNECT_OK);
+		mUsers = (ConcurrentHashMap<Integer, User>) mUserManager.getAllUser();
+		mUserTabManager.refreshTab(mUsers);
+	}
+
+	@Override
+	public void onLoginFail(int failReason, SocketCommunication communication) {
+		// TODO Auto-generated method stub
+		
 	}
 }

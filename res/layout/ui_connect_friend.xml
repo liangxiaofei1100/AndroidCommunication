@@ -6,6 +6,7 @@
     android:orientation="vertical" >
 
     <!-- title -->
+
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
@@ -38,6 +39,7 @@
         android:layout_height="300dp" >
 
         <!-- show server list -->
+
         <ListView
             android:id="@+id/server_listview"
             android:layout_width="fill_parent"

@@ -43,106 +43,112 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
-public class FileBrowserFragment extends BaseFragment implements OnClickListener, OnItemClickListener,
-					ConfirmListener,PopupViewClickListener, OnScrollListener{
+public class FileBrowserFragment extends BaseFragment implements
+		OnClickListener, OnItemClickListener, ConfirmListener,
+		PopupViewClickListener, OnScrollListener {
 	private static final String TAG = "FileBrowserFragment";
-	
-	//文件路径导航栏
+
+	// 文件路径导航栏
 	private SlowHorizontalScrollView mNavigationBar = null;
-	//显示所有文件
+	// 显示所有文件
 	private ListView mFileListView = null;
-	
-	//sdcard & 手机存储 切换按钮
+
+	// sdcard & 手机存储 切换按钮
 	private ImageView mSwitchImageView;
-	//快速回到根目录
+	// 快速回到根目录
 	private TabManager mTabManager;
 	private View rootView = null;
 	private MountManager mountManager;
-	
+
 	private FileInfoAdapter mFileInfoAdapter = null;
 	private FileInfoManager mFileInfoManager = null;
-	
-	//save all files
+
+	// save all files
 	private List<FileInfo> mAllLists = new ArrayList<FileInfo>();
-	//save folders
+	// save folders
 	private List<FileInfo> mFolderLists = new ArrayList<FileInfo>();
-	//save files
+	// save files
 	private List<FileInfo> mFileLists = new ArrayList<FileInfo>();
-	
-	//用来保存ListView中每个Item的图片，以便释放
-	public static Map<String,Bitmap> bitmapCaches = new HashMap<String,Bitmap>();
-	
+
+	// 用来保存ListView中每个Item的图片，以便释放
+	public static Map<String, Bitmap> bitmapCaches = new HashMap<String, Bitmap>();
+
 	private Context mContext;
-	
-	//get sdcard files flag
+
+	// get sdcard files flag
 	private boolean isFirst = true;
-	
+
 	private File mCurrentFile = null;
-	private String mCurrentPath ;
-	
+	private String mCurrentPath;
+
 	private DisplayImageOptions options;
-	
-	//context menu
+
+	// context menu
 	private int mCurrentPosition = -1;
-	////popup view
-	//show select sdcard view
+	// //popup view
+	// show select sdcard view
 	private PopupView mPopupView;
-	//save current sdcard type
+	// save current sdcard type
 	private static int storge_type = -1;
-	//save current sdcard type path
+	// save current sdcard type path
 	private String current_root_path;
-	//////////////
-	
+
+	// ////////////
+
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.ui_file_all, container, false);
 		Log.d(TAG, "onCreate begin");
 		mContext = getActivity();
-		
+
 		options = new DisplayImageOptions.Builder()
-		.showStubImage(R.drawable.icon_image)
-		.showImageForEmptyUri(R.drawable.icon_image)
-		.showImageOnFail(R.drawable.icon_image)
-		.cacheInMemory(DreamConstant.CACHE)
-		.cacheOnDisc(DreamConstant.CACHE)
-		.bitmapConfig(Bitmap.Config.RGB_565)
-		.build();
-		
+				.showStubImage(R.drawable.icon_image)
+				.showImageForEmptyUri(R.drawable.icon_image)
+				.showImageOnFail(R.drawable.icon_image)
+				.cacheInMemory(DreamConstant.CACHE)
+				.cacheOnDisc(DreamConstant.CACHE)
+				.bitmapConfig(Bitmap.Config.RGB_565).build();
+
 		mFileListView = (ListView) rootView.findViewById(R.id.file_listview);
 		if (mFileListView != null) {
-			mFileListView.setEmptyView(rootView.findViewById(R.id.empty_textview));
+			mFileListView.setEmptyView(rootView
+					.findViewById(R.id.empty_textview));
 			mFileListView.setOnItemClickListener(this);
 			mFileListView.setOnScrollListener(this);
-			mFileListView.setOnCreateContextMenuListener(new ListContextMenu(ListContextMenu.MENU_TYPE_FILE));
+			mFileListView.setOnCreateContextMenuListener(new ListContextMenu(
+					ListContextMenu.MENU_TYPE_FILE));
 		}
-		
-		mNavigationBar = (SlowHorizontalScrollView) rootView.findViewById(R.id.navigation_bar_view);
+
+		mNavigationBar = (SlowHorizontalScrollView) rootView
+				.findViewById(R.id.navigation_bar_view);
 		if (mNavigationBar != null) {
 			mNavigationBar.setVerticalScrollBarEnabled(false);
 			mNavigationBar.setHorizontalScrollBarEnabled(false);
 			mTabManager = new TabManager();
 		}
-		mSwitchImageView = (ImageView) rootView.findViewById(R.id.ram_select_imageview);
+		mSwitchImageView = (ImageView) rootView
+				.findViewById(R.id.ram_select_imageview);
 		mSwitchImageView.setOnClickListener(this);
-		
+
 		mFileInfoManager = new FileInfoManager(mContext);
 		mountManager = new MountManager();
-		
-		//init 
+
+		// init
 		if (MountManager.NO_EXTERNAL_SDCARD.equals(MountManager.SDCARD_PATH)) {
 			mSwitchImageView.setVisibility(View.GONE);
 			doInternal();
-		}else {
+		} else {
 			doSdcard();
 		}
-		
+
 		mPopupView = new PopupView(mContext);
 		mPopupView.setOnPopupViewListener(this);
-		
+
 		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
-	
+
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
@@ -156,90 +162,94 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
 		FileInfo fileInfo = mAllLists.get(position);
 		int top = view.getTop();
 		if (fileInfo.isDir) {
 			addToNavigationList(mCurrentPath, top, fileInfo);
 			browserTo(new File(mAllLists.get(position).filePath));
-		}else {
-			//file set file checked
+		} else {
+			// file set file checked
 			boolean checked = mFileInfoAdapter.isChecked(position);
 			mFileInfoAdapter.setChecked(position, !checked);
 			mFileInfoAdapter.notifyDataSetChanged();
 		}
 	}
-	
-	public void browserTo(File file){
+
+	public void browserTo(File file) {
 		if (file.isDirectory()) {
 			mCurrentPath = file.getAbsolutePath();
 			mCurrentFile = file;
-			
+
 			clearList();
-			
+
 			fillList(file.listFiles());
-			
-			//sort
+
+			// sort
 			Collections.sort(mFolderLists);
 			Collections.sort(mFileLists);
-			
+
 			mAllLists.addAll(mFolderLists);
 			mAllLists.addAll(mFileLists);
-			
+
 			if (isFirst) {
 				isFirst = false;
-				
-//				mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
-				mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists, imageLoader, options);
+
+				// mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
+				mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists,
+						imageLoader, options);
 				mFileListView.setAdapter(mFileInfoAdapter);
-			}else {
+			} else {
 				mFileInfoAdapter.notifyDataSetChanged();
 			}
-			
+			mFileInfoAdapter.selectAll(false);
 			mTabManager.refreshTab(mCurrentPath, storge_type);
-		}else {
+		} else {
 			Log.e(TAG, "It is a file");
 		}
 	}
-	
-	private void clearList(){
+
+	private void clearList() {
 		mAllLists.clear();
 		mFolderLists.clear();
 		mFileLists.clear();
 	}
-	
-	//Fill
-	private void fillList(File[] file){
+
+	// Fill
+	private void fillList(File[] file) {
 		for (File currentFile : file) {
 			FileInfo fileInfo = null;
-			
+
 			if (currentFile.isDirectory()) {
 				fileInfo = new FileInfo(currentFile.getName());
 				fileInfo.fileDate = currentFile.lastModified();
 				fileInfo.filePath = currentFile.getAbsolutePath();
 				fileInfo.isDir = true;
 				fileInfo.fileSize = 0;
-				fileInfo.icon = getResources().getDrawable(R.drawable.icon_folder);
+				fileInfo.icon = getResources().getDrawable(
+						R.drawable.icon_folder);
 				fileInfo.type = FileInfoManager.TYPE_DEFAULT;
 				if (currentFile.isHidden()) {
-					//do nothing
-				}else {
+					// do nothing
+				} else {
 					mFolderLists.add(fileInfo);
 				}
-			}else {
+			} else {
 				fileInfo = mFileInfoManager.getFileInfo(currentFile);
 				if (currentFile.isHidden()) {
-					//do nothing
-				}else {
+					// do nothing
+				} else {
 					mFileLists.add(fileInfo);
 				}
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
+		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item
+				.getMenuInfo();
 		mCurrentPosition = menuInfo.position;
 		int position = menuInfo.position;
 		FileInfo fileInfo = mAllLists.get(position);
@@ -254,8 +264,9 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			break;
 		case ListContextMenu.MENU_INFO:
 			mFileInfoManager.showInfoDialog(fileInfo);
-//			FileInfoDialog fragment = FileInfoDialog.newInstance(fileInfo, FileInfoDialog.FILE_INFO);
-//			fragment.show(getFragmentManager(), "Info");
+			// FileInfoDialog fragment = FileInfoDialog.newInstance(fileInfo,
+			// FileInfoDialog.FILE_INFO);
+			// fragment.show(getFragmentManager(), "Info");
 			break;
 		case ListContextMenu.MENU_RENAME:
 			break;
@@ -265,221 +276,240 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		return super.onContextItemSelected(item);
 	}
 
-	
 	/**
-     * show confrim dialog
-     * @param path file path
-     */
-    public void showConfirmDialog(String path) {
-        DeleteDialog fragment = DeleteDialog.newInstance(path);
-//        if (fragment != null) {
-//			fragment.dismissAllowingStateLoss();
-//		}
-        fragment.setConfirmListener(this);
-        fragment.show(getFragmentManager(), "Confirm");
-    }
+	 * show confrim dialog
+	 * 
+	 * @param path
+	 *            file path
+	 */
+	public void showConfirmDialog(String path) {
+		DeleteDialog fragment = DeleteDialog.newInstance(path);
+		// if (fragment != null) {
+		// fragment.dismissAllowingStateLoss();
+		// }
+		fragment.setConfirmListener(this);
+		fragment.show(getFragmentManager(), "Confirm");
+	}
+
 	@Override
 	public void confirm(String path) {
 		File file = new File(path);
 		if (!file.exists()) {
 			Log.e(TAG, path + " is not exist");
-		}else {
+		} else {
 			boolean ret = file.delete();
 			if (!ret) {
 				Log.e(TAG, path + " delete failed");
-			}else {
+			} else {
 				mAllLists.remove(mCurrentPosition);
 				mFileInfoAdapter.notifyDataSetChanged();
 			}
 		}
 	}
-	
-	public void addToNavigationList(String currentPath, int top, FileInfo selectFile){
-		mFileInfoManager.addNavigationList(new NavigationRecord(currentPath, top, selectFile));
+
+	public void addToNavigationList(String currentPath, int top,
+			FileInfo selectFile) {
+		mFileInfoManager.addNavigationList(new NavigationRecord(currentPath,
+				top, selectFile));
 	}
-	
-	//file path tab manager
-	protected class TabManager{
+
+	// file path tab manager
+	protected class TabManager {
 		private List<String> mTabNameList = new ArrayList<String>();
-        protected LinearLayout mTabsHolder = null;
-        private String curFilePath = null;
-        private Button mBlankTab;
-        
-        public TabManager() {
-            mTabsHolder = (LinearLayout) rootView.findViewById(R.id.tabs_holder);
-            //添加一个空的button，为了UI更美观
-            mBlankTab = new Button(mContext);
-            mBlankTab.setBackgroundResource(R.drawable.fm_blank_tab);
-            LinearLayout.LayoutParams mlp = new LinearLayout.LayoutParams(
-                    new ViewGroup.MarginLayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT));
+		protected LinearLayout mTabsHolder = null;
+		private String curFilePath = null;
+		private Button mBlankTab;
 
-            mlp.setMargins((int) getResources().getDimension(R.dimen.tab_margin_left), 0,
-                    (int) getResources().getDimension(R.dimen.tab_margin_right), 0);
-            mBlankTab.setLayoutParams(mlp);
-            mTabsHolder.addView(mBlankTab);
-        }
-        
-        protected void updateHomeButton() {
-            Button homeBtn = (Button) mTabsHolder.getChildAt(0);
-            if (homeBtn == null) {
-                Log.e(TAG, "HomeBtm is null,return.");
-                return;
-            }
-            Resources resources = getResources();
-            homeBtn.setBackgroundResource(R.drawable.custom_home_ninepatch_tab);
-            homeBtn.setPadding((int) resources.getDimension(R.dimen.home_btn_padding), 0,
-                    (int) resources.getDimension(R.dimen.home_btn_padding), 0);
-            if (storge_type == MountManager.INTERNAL) {
-                  homeBtn.setText("手机存储");
-			}else if (storge_type == MountManager.SDCARD) {
-	                homeBtn.setText("SD卡");
+		public TabManager() {
+			mTabsHolder = (LinearLayout) rootView
+					.findViewById(R.id.tabs_holder);
+			// 添加一个空的button，为了UI更美观
+			mBlankTab = new Button(mContext);
+			mBlankTab.setBackgroundResource(R.drawable.fm_blank_tab);
+			LinearLayout.LayoutParams mlp = new LinearLayout.LayoutParams(
+					new ViewGroup.MarginLayoutParams(
+							LinearLayout.LayoutParams.MATCH_PARENT,
+							LinearLayout.LayoutParams.MATCH_PARENT));
+
+			mlp.setMargins(
+					(int) getResources().getDimension(R.dimen.tab_margin_left),
+					0,
+					(int) getResources().getDimension(R.dimen.tab_margin_right),
+					0);
+			mBlankTab.setLayoutParams(mlp);
+			mTabsHolder.addView(mBlankTab);
+		}
+
+		protected void updateHomeButton() {
+			Button homeBtn = (Button) mTabsHolder.getChildAt(0);
+			if (homeBtn == null) {
+				Log.e(TAG, "HomeBtm is null,return.");
+				return;
 			}
-        }
+			Resources resources = getResources();
+			homeBtn.setBackgroundResource(R.drawable.custom_home_ninepatch_tab);
+			homeBtn.setPadding(
+					(int) resources.getDimension(R.dimen.home_btn_padding), 0,
+					(int) resources.getDimension(R.dimen.home_btn_padding), 0);
+			if (storge_type == MountManager.INTERNAL) {
+				homeBtn.setText("手机存储");
+			} else if (storge_type == MountManager.SDCARD) {
+				homeBtn.setText("SD卡");
+			}
+		}
 
-        
-        public void refreshTab(String initFileInfo, int type){
-        	int count = mTabsHolder.getChildCount();
-            mTabsHolder.removeViews(0, count);
-            mTabNameList.clear();
-            
-            curFilePath = initFileInfo;
-            if (curFilePath != null) {
-				String[] result = mountManager.getShowPath(curFilePath, type).split(MountManager.SEPERATOR);
+		public void refreshTab(String initFileInfo, int type) {
+			int count = mTabsHolder.getChildCount();
+			mTabsHolder.removeViews(0, count);
+			mTabNameList.clear();
+
+			curFilePath = initFileInfo;
+			if (curFilePath != null) {
+				String[] result = mountManager.getShowPath(curFilePath, type)
+						.split(MountManager.SEPERATOR);
 				for (String string : result) {
 					// add string to tab
 					addTab(string);
 				}
 				startActionBarScroll();
 			}
-            
-            updateHomeButton();
-        }
-        
-        private void startActionBarScroll() {
-            // scroll to right with slow-slide animation
-            // To pass the Launch performance test, avoid the scroll
-            // animation when launch.
-            int tabHostCount = mTabsHolder.getChildCount();
-            int navigationBarCount = mNavigationBar.getChildCount();
-            if ((tabHostCount > 2) && (navigationBarCount >= 1)) {
-                int width = mNavigationBar.getChildAt(navigationBarCount - 1).getRight();
-                mNavigationBar.startHorizontalScroll(mNavigationBar.getScrollX(), width
-                        - mNavigationBar.getScrollX());
-            }
-        }
-        
-        /**
-         * This method updates the navigation view to the previous view when
-         * back button is pressed
-         * 
-         * @param newPath
-         *            the previous showed directory in the navigation history
-         */
-        private void showPrevNavigationView(String newPath) {
-            refreshTab(newPath, storge_type);
-//            showDirectoryContent(newPath);
-            browserTo(new File(newPath));
-        }
-        
-        /**
-         * This method creates tabs on the navigation bar
-         * 
-         * @param text
-         *            the name of the tab
-         */
-        protected void addTab(String text) {
-            LinearLayout.LayoutParams mlp = null;
 
-            mTabsHolder.removeView(mBlankTab);
-            View btn = null;
-            if (mTabNameList.isEmpty()) {
-                btn = new Button(mContext);
-                mlp = new LinearLayout.LayoutParams(new ViewGroup.MarginLayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT));
-                mlp.setMargins(0, 0, 0, 0);
-                btn.setLayoutParams(mlp);
-            } else {
-                btn = new Button(mContext);
-                
-                ((Button)btn).setTextColor(getResources().getColor(R.drawable.path_selector2));
-                btn.setBackgroundResource(R.drawable.custom_tab);
-                if (text.length() <= 10) {
-                    ((Button) btn).setText(text);
-                } else {
-                    String tabItemText = text.substring(0, 10 - 3) + "...";
-                    Log.d(TAG, "updateNavigationBar,text is: " + tabItemText);
-                    ((Button) btn).setText(tabItemText);
-                    // ((Button) btn).setHorizontalScrollBarEnabled(true);
-                    // ((Button) btn).setHorizontalFadingEdgeEnabled(true);
-                }
-                mlp = new LinearLayout.LayoutParams(new ViewGroup.MarginLayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT));
-                mlp.setMargins((int) getResources().getDimension(R.dimen.tab_margin_left), 0, 0, 0);
-                btn.setLayoutParams(mlp);
-            }
-            btn.setOnClickListener(FileBrowserFragment.this);
-            btn.setId(mTabNameList.size());
-            mTabsHolder.addView(btn);
-            mTabNameList.add(text);
+			updateHomeButton();
+		}
 
-            // add blank tab to the tab holder
-            mTabsHolder.addView(mBlankTab);
-        }
-        
-        /**
-         * The method updates the navigation bar
-         * 
-         * @param id
-         *            the tab id that was clicked
-         */
-        protected void updateNavigationBar(int id, int type) {
-            Log.d(TAG, "updateNavigationBar,id = " + id);
-            // click current button do not response
-            if (id < mTabNameList.size() - 1) {
-                int count = mTabNameList.size() - id;
-                mTabsHolder.removeViews(id , count);
+		private void startActionBarScroll() {
+			// scroll to right with slow-slide animation
+			// To pass the Launch performance test, avoid the scroll
+			// animation when launch.
+			int tabHostCount = mTabsHolder.getChildCount();
+			int navigationBarCount = mNavigationBar.getChildCount();
+			if ((tabHostCount > 2) && (navigationBarCount >= 1)) {
+				int width = mNavigationBar.getChildAt(navigationBarCount - 1)
+						.getRight();
+				mNavigationBar.startHorizontalScroll(
+						mNavigationBar.getScrollX(),
+						width - mNavigationBar.getScrollX());
+			}
+		}
 
-                for (int i = 1; i < count; i++) {
-                    // update mTabNameList
-                    mTabNameList.remove(mTabNameList.size() - 1);
-                }
-//                mTabsHolder.addView(mBlankTab);
+		/**
+		 * This method updates the navigation view to the previous view when
+		 * back button is pressed
+		 * 
+		 * @param newPath
+		 *            the previous showed directory in the navigation history
+		 */
+		private void showPrevNavigationView(String newPath) {
+			refreshTab(newPath, storge_type);
+			// showDirectoryContent(newPath);
+			browserTo(new File(newPath));
+		}
 
-                if (id == 0) {
-						curFilePath = current_root_path;
-                } else {
-                    String[] result = mountManager.getShowPath(curFilePath, type).split(MountManager.SEPERATOR);
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i <= id; i++) {
-                        sb.append(MountManager.SEPERATOR);
-                        sb.append(result[i]);
-                    }
-                    curFilePath = current_root_path + sb.toString();
-                }
+		/**
+		 * This method creates tabs on the navigation bar
+		 * 
+		 * @param text
+		 *            the name of the tab
+		 */
+		protected void addTab(String text) {
+			LinearLayout.LayoutParams mlp = null;
 
-                int top = -1;
-                FileInfo selectedFileInfo = null;
-                if (mFileListView.getCount() > 0) {
-                    View view = mFileListView.getChildAt(0);
-                    selectedFileInfo = mFileInfoAdapter.getItem(mFileListView.getPositionForView(view));
-                    top = view.getTop();
-                }
-                browserTo(new File(curFilePath));
-//                addToNavigationList(mCurrentPath, top, selectedFileInfo);
-                updateHomeButton();
-            }
-        }
-        //end tab manager
+			mTabsHolder.removeView(mBlankTab);
+			View btn = null;
+			if (mTabNameList.isEmpty()) {
+				btn = new Button(mContext);
+				mlp = new LinearLayout.LayoutParams(
+						new ViewGroup.MarginLayoutParams(
+								LinearLayout.LayoutParams.WRAP_CONTENT,
+								LinearLayout.LayoutParams.MATCH_PARENT));
+				mlp.setMargins(0, 0, 0, 0);
+				btn.setLayoutParams(mlp);
+			} else {
+				btn = new Button(mContext);
+
+				((Button) btn).setTextColor(getResources().getColor(
+						R.drawable.path_selector2));
+				btn.setBackgroundResource(R.drawable.custom_tab);
+				if (text.length() <= 10) {
+					((Button) btn).setText(text);
+				} else {
+					String tabItemText = text.substring(0, 10 - 3) + "...";
+					Log.d(TAG, "updateNavigationBar,text is: " + tabItemText);
+					((Button) btn).setText(tabItemText);
+					// ((Button) btn).setHorizontalScrollBarEnabled(true);
+					// ((Button) btn).setHorizontalFadingEdgeEnabled(true);
+				}
+				mlp = new LinearLayout.LayoutParams(
+						new ViewGroup.MarginLayoutParams(
+								LinearLayout.LayoutParams.WRAP_CONTENT,
+								LinearLayout.LayoutParams.MATCH_PARENT));
+				mlp.setMargins(
+						(int) getResources().getDimension(
+								R.dimen.tab_margin_left), 0, 0, 0);
+				btn.setLayoutParams(mlp);
+			}
+			btn.setOnClickListener(FileBrowserFragment.this);
+			btn.setId(mTabNameList.size());
+			mTabsHolder.addView(btn);
+			mTabNameList.add(text);
+
+			// add blank tab to the tab holder
+			mTabsHolder.addView(mBlankTab);
+		}
+
+		/**
+		 * The method updates the navigation bar
+		 * 
+		 * @param id
+		 *            the tab id that was clicked
+		 */
+		protected void updateNavigationBar(int id, int type) {
+			Log.d(TAG, "updateNavigationBar,id = " + id);
+			// click current button do not response
+			if (id < mTabNameList.size() - 1) {
+				int count = mTabNameList.size() - id;
+				mTabsHolder.removeViews(id, count);
+
+				for (int i = 1; i < count; i++) {
+					// update mTabNameList
+					mTabNameList.remove(mTabNameList.size() - 1);
+				}
+				// mTabsHolder.addView(mBlankTab);
+
+				if (id == 0) {
+					curFilePath = current_root_path;
+				} else {
+					String[] result = mountManager.getShowPath(curFilePath,
+							type).split(MountManager.SEPERATOR);
+					StringBuilder sb = new StringBuilder();
+					for (int i = 0; i <= id; i++) {
+						sb.append(MountManager.SEPERATOR);
+						sb.append(result[i]);
+					}
+					curFilePath = current_root_path + sb.toString();
+				}
+
+				int top = -1;
+				FileInfo selectedFileInfo = null;
+				if (mFileListView.getCount() > 0) {
+					View view = mFileListView.getChildAt(0);
+					selectedFileInfo = mFileInfoAdapter.getItem(mFileListView
+							.getPositionForView(view));
+					top = view.getTop();
+				}
+				browserTo(new File(curFilePath));
+				// addToNavigationList(mCurrentPath, top, selectedFileInfo);
+				updateHomeButton();
+			}
+		}
+		// end tab manager
 	}
 
 	@Override
 	public void doInternal() {
 		storge_type = MountManager.INTERNAL;
 		if (MountManager.NO_INTERNAL_SDCARD.equals(MountManager.INTERNAL_PATH)) {
-			//没有外部&内部sdcard
+			// 没有外部&内部sdcard
 			return;
 		}
 		current_root_path = MountManager.INTERNAL_PATH;
@@ -513,7 +543,8 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	}
 
 	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
 		// TODO Auto-generated method stub
 		// 注释：firstVisibleItem为第一个可见的Item的position，从0开始，随着拖动会改变
 		// visibleItemCount为当前页面总共可见的Item的项数
@@ -521,21 +552,21 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		recycleBitmapCaches(0, firstVisibleItem);
 		recycleBitmapCaches(firstVisibleItem + visibleItemCount, totalItemCount);
 	}
-	
-	 //释放图片
-  	private void recycleBitmapCaches(int fromPosition,int toPosition){		
-  		Bitmap delBitmap = null;
-  		for(int del=fromPosition;del<toPosition;del++){
-  			delBitmap = bitmapCaches.get(mAllLists.get(del));	
-  			if(delBitmap != null){	
-  				//如果非空则表示有缓存的bitmap，需要清理	
-  				Log.d(TAG, "release position:"+ del);		
-  				//从缓存中移除该del->bitmap的映射		
-  				bitmapCaches.remove(mAllLists.get(del));		
-  				delBitmap.recycle();	
-  				delBitmap = null;
-  			}
-  		}		
-  	}
+
+	// 释放图片
+	private void recycleBitmapCaches(int fromPosition, int toPosition) {
+		Bitmap delBitmap = null;
+		for (int del = fromPosition; del < toPosition; del++) {
+			delBitmap = bitmapCaches.get(mAllLists.get(del));
+			if (delBitmap != null) {
+				// 如果非空则表示有缓存的bitmap，需要清理
+				Log.d(TAG, "release position:" + del);
+				// 从缓存中移除该del->bitmap的映射
+				bitmapCaches.remove(mAllLists.get(del));
+				delBitmap.recycle();
+				delBitmap = null;
+			}
+		}
+	}
 
 }

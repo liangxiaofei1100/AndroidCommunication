@@ -163,7 +163,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener, 
 		UserHelper userHelper = new UserHelper(mContext);
 		User localUser = userHelper.loadUser();
 		mUserManager.setLocalUser(localUser);
-		
 	}
 	
 	private void initViews() {
@@ -212,6 +211,10 @@ public class ConnectFriendActivity extends Activity implements OnClickListener, 
 	
 	/**
 	 * catch broadcast not register exception.
+<<<<<<< HEAD
+=======
+	 * 
+>>>>>>> 35a589fa38c575069fd510e9f35f9256b4b336d7
 	 * @param receiver
 	 */
 	private void unregisterReceiverSafe(BroadcastReceiver receiver) {

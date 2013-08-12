@@ -58,10 +58,12 @@ public class FileInfoManager {
 	public FileInfoManager(Context context) {
 		this.context = context;
 	}
-	
+
 	/**
 	 * android获取一个用于打开Audio文件的Intent
-	 * @param param file path
+	 * 
+	 * @param param
+	 *            file path
 	 * @return
 	 */
 	public static Intent getAudioFileIntent(String param) {
@@ -74,10 +76,12 @@ public class FileInfoManager {
 		intent.setDataAndType(uri, "audio/*");
 		return intent;
 	}
-	
+
 	/**
 	 * 获取一个打开文本文件的Intent
-	 * @param param file path
+	 * 
+	 * @param param
+	 *            file path
 	 * */
 	public static Intent getTextFileIntent(String param) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -88,10 +92,12 @@ public class FileInfoManager {
 		intent.setDataAndType(uri, "text/plain");
 		return intent;
 	}
-	
+
 	/**
 	 * android获取一个用于打开PPT文件的intent
-	 * @param param file path
+	 * 
+	 * @param param
+	 *            file path
 	 * @return
 	 */
 	public static Intent getPptFileIntent(String param) {
@@ -102,10 +108,12 @@ public class FileInfoManager {
 		intent.setDataAndType(uri, "application/vnd.ms-powerpoint");
 		return intent;
 	}
-	
+
 	/**
 	 * android获取一个用于打开Excel文件的intent
-	 * @param param file path
+	 * 
+	 * @param param
+	 *            file path
 	 * @return
 	 */
 	public static Intent getExcelFileIntent(String param) {
@@ -116,10 +124,12 @@ public class FileInfoManager {
 		intent.setDataAndType(uri, "application/vnd.ms-excel");
 		return intent;
 	}
-	
+
 	/**
 	 * android获取一个用于打开Word文件的intent
-	 * @param param file path
+	 * 
+	 * @param param
+	 *            file path
 	 * @return
 	 */
 	public static Intent getWordFileIntent(String param) {
@@ -130,10 +140,12 @@ public class FileInfoManager {
 		intent.setDataAndType(uri, "application/msword");
 		return intent;
 	}
-	
+
 	/**
 	 * android获取一个用于打开PDF文件的intent
-	 * @param param file path
+	 * 
+	 * @param param
+	 *            file path
 	 * @return
 	 */
 	public static Intent getPdfFileIntent(String param) {
@@ -144,10 +156,12 @@ public class FileInfoManager {
 		intent.setDataAndType(uri, "application/pdf");
 		return intent;
 	}
-	
+
 	/**
 	 * android获取一个用于打开Image文件的Intent
-	 * @param param file path
+	 * 
+	 * @param param
+	 *            file path
 	 * @return
 	 */
 	public static Intent getImageFileIntent(String param) {
@@ -161,7 +175,9 @@ public class FileInfoManager {
 
 	/**
 	 * android获取一个用于打开VIDEO文件的Intent
-	 * @param param file path
+	 * 
+	 * @param param
+	 *            file path
 	 * @return
 	 */
 	public static Intent getVIDEOFileIntent(String param) {
@@ -177,7 +193,9 @@ public class FileInfoManager {
 
 	/**
 	 * android获取一个用于打开apk文件的intent
-	 * @param param file path
+	 * 
+	 * @param param
+	 *            file path
 	 * @return
 	 */
 	public static Intent getApkFileIntent(String param) {
@@ -200,51 +218,62 @@ public class FileInfoManager {
 		int result = fileFilter(filePath);
 		switch (result) {
 		case TEXT:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_txt);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_txt);
 			fileType = FileInfoManager.TYPE_EBOOK;
 			break;
 		// case HTML:
 		// currentIcon = context.getResources().getDrawable(R.drawable.webtext);
 		// break;
 		case IMAGE:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_image);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_image);
 			fileType = FileInfoManager.TYPE_IMAGE;
 			break;
 		case AUDIO:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_audio);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_audio);
 			fileType = FileInfoManager.TYPE_AUDIO;
 			break;
 		case VIDEO:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_video);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_video);
 			fileType = FileInfoManager.TYPE_VIDEO;
 			break;
 		case WORD:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_doc);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_doc);
 			fileType = FileInfoManager.TYPE_DOC;
 			break;
 		case PPT:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_ppt);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_ppt);
 			fileType = FileInfoManager.TYPE_DOC;
 			break;
 		case EXCEL:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_xls);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_xls);
 			fileType = FileInfoManager.TYPE_DOC;
 			break;
 		case PDF:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_pdf);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_pdf);
 			fileType = FileInfoManager.TYPE_DOC;
 			break;
 		case ZIP:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_rar);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_rar);
 			fileType = FileInfoManager.TYPE_ZIP;
 			break;
 		case APK:
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_apk);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_apk);
 			fileType = FileInfoManager.TYPE_APK;
 			break;
 		default:
 			// 默认
-			currentIcon = context.getResources().getDrawable(R.drawable.icon_file);
+			currentIcon = context.getResources().getDrawable(
+					R.drawable.icon_file);
 			break;
 		}
 		FileInfo fileInfo = new FileInfo(currentFile.getName());
@@ -278,23 +307,29 @@ public class FileInfoManager {
 			DisplayMetrics metrics = new DisplayMetrics();
 			metrics.setToDefaults();
 
-			typeArgs = new Class<?>[] { File.class, String.class, DisplayMetrics.class, int.class };
+			typeArgs = new Class<?>[] { File.class, String.class,
+					DisplayMetrics.class, int.class };
 
-			Method pkgParser_parsePackageMtd = pkgParserCls.getDeclaredMethod("parsePackage", typeArgs);
+			Method pkgParser_parsePackageMtd = pkgParserCls.getDeclaredMethod(
+					"parsePackage", typeArgs);
 
 			valueArgs = new Object[] { new File(apkPath), apkPath, metrics, 0 };
-			Object pkgParserPkg = pkgParser_parsePackageMtd.invoke(pkgParser, valueArgs);
+			Object pkgParserPkg = pkgParser_parsePackageMtd.invoke(pkgParser,
+					valueArgs);
 
-			Field appInfoFld = pkgParserPkg.getClass().getDeclaredField("applicationInfo");
+			Field appInfoFld = pkgParserPkg.getClass().getDeclaredField(
+					"applicationInfo");
 
-			ApplicationInfo info = (ApplicationInfo) appInfoFld.get(pkgParserPkg);
+			ApplicationInfo info = (ApplicationInfo) appInfoFld
+					.get(pkgParserPkg);
 
 			Class<?> assetMagCls = Class.forName(PATH_AssetManager);
 			Object assetMag = assetMagCls.newInstance();
 			typeArgs = new Class[1];
 			typeArgs[0] = String.class;
 
-			Method assetMag_addAssetPathMtd = assetMagCls.getDeclaredMethod("addAssetPath", typeArgs);
+			Method assetMag_addAssetPathMtd = assetMagCls.getDeclaredMethod(
+					"addAssetPath", typeArgs);
 			valueArgs = new Object[1];
 			valueArgs[0] = apkPath;
 
@@ -307,7 +342,8 @@ public class FileInfoManager {
 			typeArgs[1] = res.getDisplayMetrics().getClass();
 			typeArgs[2] = res.getConfiguration().getClass();
 
-			Constructor<Resources> resCt = Resources.class.getConstructor(typeArgs);
+			Constructor<Resources> resCt = Resources.class
+					.getConstructor(typeArgs);
 
 			valueArgs = new Object[3];
 
@@ -333,7 +369,8 @@ public class FileInfoManager {
 		String fileName = new File(filepath).getName();
 		int ret;
 
-		if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingTxt))) {
+		if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingTxt))) {
 			// text
 			ret = TEXT;
 		}
@@ -342,31 +379,40 @@ public class FileInfoManager {
 		// //html ...
 		// ret = HTML;
 		// }
-		else if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingImage))) {
+		else if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingImage))) {
 			// Images
 			ret = IMAGE;
-		} else if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingAudio))) {
+		} else if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingAudio))) {
 			// audios
 			ret = AUDIO;
-		} else if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingVideo))) {
+		} else if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingVideo))) {
 			// videos
 			ret = VIDEO;
-		} else if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingApk))) {
+		} else if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingApk))) {
 			// apk
 			ret = APK;
-		} else if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingDoc))) {
+		} else if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingDoc))) {
 			// word
 			ret = WORD;
-		} else if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingPpt))) {
+		} else if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingPpt))) {
 			// ppt
 			ret = PPT;
-		} else if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingExcel))) {
+		} else if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingExcel))) {
 			// excel
 			ret = EXCEL;
-		} else if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingPackage))) {
+		} else if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingPackage))) {
 			// packages
 			ret = ZIP;
-		} else if (checkEndsWithInStringArray(fileName, context.getResources().getStringArray(R.array.fileEndingPdf))) {
+		} else if (checkEndsWithInStringArray(fileName, context.getResources()
+				.getStringArray(R.array.fileEndingPdf))) {
 			// pdf
 			ret = PDF;
 		} else {
@@ -377,7 +423,8 @@ public class FileInfoManager {
 	}
 
 	// 通过文件名判断是什么类型的文件
-	private boolean checkEndsWithInStringArray(String checkItsEnd, String[] fileEndings) {
+	private boolean checkEndsWithInStringArray(String checkItsEnd,
+			String[] fileEndings) {
 		String str = checkItsEnd.toLowerCase();
 		for (String aEnd : fileEndings) {
 			if (str.endsWith(aEnd))
@@ -385,10 +432,12 @@ public class FileInfoManager {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * open file
-	 * @param filePath file path
+	 * 
+	 * @param filePath
+	 *            file path
 	 */
 	public void openFile(String filePath) {
 		Intent intent = null;
@@ -435,21 +484,20 @@ public class FileInfoManager {
 		if (intent != null) {
 			context.startActivity(intent);
 		} else {
-			Toast.makeText(context, "Can not find app to open this file", Toast.LENGTH_SHORT).show();
+			Toast.makeText(context, "Can not find app to open this file",
+					Toast.LENGTH_SHORT).show();
 		}
 	}
-	
-	public void deleteFile(String filePath){
+
+	public void deleteFile(String filePath) {
 		File file = new File(filePath);
 		deleteFile(file);
 	}
-	
+
 	/**
-	 * API11 以后多了一个MediaStore.Files这个类，
-	 * 应该是Google为了方便管理，将系统中的所有文件都保存到了一个表files中
-	 * 这样的话，删除也方便
-	 * 而2.3的话，如果要删除你得去不同的表中删除，比如Audio，Images，Video
-	 * 3.0以下系统可以使用该方法
+	 * API11 以后多了一个MediaStore.Files这个类， 应该是Google为了方便管理，将系统中的所有文件都保存到了一个表files中
+	 * 这样的话，删除也方便 而2.3的话，如果要删除你得去不同的表中删除，比如Audio，Images，Video 3.0以下系统可以使用该方法
+	 * 
 	 * @param path
 	 */
 	public void deleteFileInMediaStore(Uri uri, String path) {
@@ -468,19 +516,19 @@ public class FileInfoManager {
 			Log.e(TAG, "Error in delete file in media store:" + e.toString());
 		}
 	}
-	
+
 	/**
 	 * 3.0以上系统，才可以使用该方法，删除多媒体文件
 	 */
-	public void deleteFIleInMediaStore(String path){
+	public void deleteFIleInMediaStore(String path) {
 
 		if (TextUtils.isEmpty(path)) {
 			return;
 		}
 		deleteFile(path);
 		Uri uri = null;
-		//不能用Files这个类，这个类API11 以后才支持
-		//Uri uri = MediaStore.Files.getContentUri("external");
+		// 不能用Files这个类，这个类API11 以后才支持
+		// Uri uri = MediaStore.Files.getContentUri("external");
 		String where = MediaStore.Files.FileColumns.DATA + "=?";
 		String[] whereArgs = new String[] { path };
 		ContentResolver cr = context.getContentResolver();
@@ -490,49 +538,50 @@ public class FileInfoManager {
 			// TODO: handle exception
 			Log.e(TAG, "Error in delete file in media store:" + e.toString());
 		}
-	
+
 	}
-	
-	public boolean deleteFile(File file){
+
+	public boolean deleteFile(File file) {
 		if (!file.exists()) {
 			return false;
 		}
-		
+
 		return file.delete();
 	}
-	
-	public void showInfoDialog(FileInfo fileInfo){
-		String info  = getFileInfo(fileInfo);
+
+	public void showInfoDialog(FileInfo fileInfo) {
+		String info = getFileInfo(fileInfo);
 		DreamUtil.showInfoDialog(context, info);
 	}
-	
-	private String getFileInfo(FileInfo fileInfo){
+
+	private String getFileInfo(FileInfo fileInfo) {
 		String result = "";
-		result = "名称:" + fileInfo.fileName + DreamConstant.ENTER
-				+ "类型:" + (fileInfo.isDir ? "文件夹" : "文件") + DreamConstant.ENTER
-				+ "位置:" + fileInfo.filePath + DreamConstant.ENTER
-				+ "大小:" + fileInfo.getFormatFileSize()+ DreamConstant.ENTER
-				+ "修改日期:" + fileInfo.getFormateDate();
+		result = "名称:" + fileInfo.fileName + DreamConstant.ENTER + "类型:"
+				+ (fileInfo.isDir ? "文件夹" : "文件") + DreamConstant.ENTER + "位置:"
+				+ fileInfo.filePath + DreamConstant.ENTER + "大小:"
+				+ fileInfo.getFormatFileSize() + DreamConstant.ENTER + "修改日期:"
+				+ fileInfo.getFormateDate();
 		return result;
 	}
-	
+
 	private List<NavigationRecord> mNavigationLists = new LinkedList<FileInfoManager.NavigationRecord>();
-	public void addNavigationList(NavigationRecord navigationRecord){
+
+	public void addNavigationList(NavigationRecord navigationRecord) {
 		if (mNavigationLists.size() <= 20) {
 			mNavigationLists.add(navigationRecord);
-		}else {
+		} else {
 			mNavigationLists.remove(0);
 			mNavigationLists.add(navigationRecord);
 		}
 	}
-	
-	/**record current path navigation*/
-	public static class NavigationRecord{
+
+	/** record current path navigation */
+	public static class NavigationRecord {
 		private String path;
 		private int top;
 		private FileInfo selectFile;
-		
-		public NavigationRecord(String path, int top, FileInfo fileInfo){
+
+		public NavigationRecord(String path, int top, FileInfo fileInfo) {
 			this.path = path;
 			this.top = top;
 			this.selectFile = fileInfo;

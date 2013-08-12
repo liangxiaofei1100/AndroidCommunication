@@ -1,7 +1,5 @@
 package com.dreamlink.communication.ui.image;
 
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,23 +7,15 @@ import java.util.Map;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
-import com.dreamlink.communication.ui.DeleteDialog;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.FileInfoDialog;
-import com.dreamlink.communication.ui.DeleteDialog.ConfirmListener;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.media.MediaInfo;
 import com.dreamlink.communication.util.Log;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
-import android.R.integer;
-import android.R.string;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -35,26 +25,22 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AbsListView.OnScrollListener;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AbsListView;
 import android.widget.GridView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-public class BaseImageFragment extends BaseFragment implements OnItemClickListener, ConfirmListener, OnItemLongClickListener, OnScrollListener {
+public class BaseImageFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnScrollListener {
 	private static final String TAG = "BaseImageFragment";
 	private DisplayImageOptions options;
 	protected GridView mGridview;
-	private TextView mTextView;
+	private TextView mEmptyView;
 	
 	private GalleryReceiver mGalleryReceiver;
 	private ImageAdapter mAdapter;
@@ -81,7 +67,7 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 		Log.d(TAG, "onCreateView begin");
 		mContext = getActivity();
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
-		mTextView = (TextView) rootView.findViewById(R.id.picture_empty_textview);
+		mEmptyView = (TextView) rootView.findViewById(R.id.picture_empty_textview);
 		
 		options = new DisplayImageOptions.Builder()
 				.showStubImage(R.drawable.zapya_data_photo_l)
@@ -93,7 +79,7 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 				.build();
 		
 		mGridview = (GridView) rootView.findViewById(R.id.picture_gridview);
-		mGridview.setEmptyView(rootView.findViewById(R.id.picture_empty_textview));
+		mGridview.setEmptyView(mEmptyView);
 
 		mGalleryReceiver = new GalleryReceiver();
 		IntentFilter filter = new IntentFilter();
@@ -117,6 +103,10 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 	
 	protected void setImageList(List<ImageInfo> list){
 		mList = list;
+	}
+	
+	protected void setEmptyViewText(int emptyTip){
+		mEmptyView.setText(emptyTip);
 	}
 	
 	protected void setContextMenu() {
@@ -197,34 +187,6 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 		mContext.unregisterReceiver(mGalleryReceiver);
 	}
 	
-//	@Override
-//	public boolean onContextItemSelected(MenuItem item) {
-////		for (int i = 0; i < mList.size(); i++) {
-////			System.out.println(mList.get(i).getPath());
-////		}
-//		System.out.println("onContextItemSelected:" + mList.size());
-//		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
-//		int position = menuInfo.position;
-//		ImageInfo imageInfo = mList.get(position);
-//		switch (item.getItemId()) {
-//		case ListContextMenu.MENU_OPEN:
-//			startPagerActivityByPosition(position, mList);
-//			break;
-//		case ListContextMenu.MENU_SEND:
-//			break;
-//		case ListContextMenu.MENU_DELETE:
-//			showDeleteDialog(imageInfo.getPath());
-//			break;
-//		case ListContextMenu.MENU_INFO:
-//			FileInfoDialog fragment = FileInfoDialog.newInstance(imageInfo, FileInfoDialog.IMAGE_INFO);
-//			fragment.show(getFragmentManager(), "Info");
-//			break;
-//		default:
-//			break;
-//		}
-//		return true;
-//	}
-	
 	/**
      * show confrim dialog
      * @param path file path
@@ -255,11 +217,6 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 		
 		Intent intent = new Intent(ImageFragmentActivity.PICTURE_ACTION);
 		mContext.sendBroadcast(intent);
-	}
-
-	@Override
-	public void confirm(String path) {
-		//TODO donothing
 	}
 
 	@Override
