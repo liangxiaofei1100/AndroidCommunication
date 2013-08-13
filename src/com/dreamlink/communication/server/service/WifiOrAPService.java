@@ -31,7 +31,7 @@ import android.os.IBinder;
  * server,please remember unbind another one
  */
 public class WifiOrAPService extends Service {
-	private final String WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED";
+	private static final String WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED";
 	private static final String EXTRA_WIFI_AP_STATE = "wifi_state";
 	private static final int WIFI_AP_STATE_ENABLING = 12;
 	private static final int WIFI_AP_STATE_ENABLED = 13;
@@ -101,6 +101,10 @@ public class WifiOrAPService extends Service {
 			mSearchClient.stopSearch();
 			mSearchClient = null;
 		}
+		if (mSearchServer != null) {
+			mSearchServer.stopSearch();
+			mSearchServer = null;
+		}
 		if (server_register) {
 			unregisterReceiver(mBroadcastReceiver);
 			server_register = false;
@@ -153,7 +157,7 @@ public class WifiOrAPService extends Service {
 			if (WIFI_AP_STATE_CHANGED_ACTION.equals(action)) {
 				handleWifiApchanged(intent.getIntExtra(EXTRA_WIFI_AP_STATE,
 						WIFI_AP_STATE_FAILED));
-			} else if (WIFI_AP_STATE_CHANGED_ACTION.equals(action)) {
+			} else if (WifiManager.WIFI_STATE_CHANGED_ACTION.equals(action)) {
 				if (intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,
 						WifiManager.WIFI_STATE_UNKNOWN) == WifiManager.WIFI_STATE_ENABLED)
 					mSearchClient.startSearch();
@@ -171,6 +175,7 @@ public class WifiOrAPService extends Service {
 					mSearchClient = SearchClient
 							.getInstance(getApplicationContext());
 				}
+				mSearchClient.setOnSearchListener(onSearchListener);
 				mSearchClient.startSearch();
 				break;
 			case WIFI_AP_STATE_DISABLING:
@@ -198,19 +203,28 @@ public class WifiOrAPService extends Service {
 	 *            {@link OnSearchListener} the result notify interface
 	 * */
 	public void startSearch(OnSearchListener searchListener) {
-		setWifiEnabled(true);
+		if (mWifiManager.isWifiEnabled()) {
+			mWifiManager.startScan();
+		} else {
+			setWifiEnabled(true);
+		}
 		this.onSearchListener = searchListener;
 		if (mSearchServer != null) {
 			mSearchServer.stopSearch();
+		}
+		if (mSearchClient != null) {
+			mSearchClient.stopSearch();
+			mSearchClient = null;
 		}
 		if (client_register) {
 			unregisterReceiver(mWifiBroadcastReceiver);
 			client_register = false;
 		}
-		if (searchListener != null) {
-			mSearchServer = SearchSever.getInstance(this);
+		mSearchServer = SearchSever.getInstance(this);
+		mSearchServer.setOnSearchListener(onSearchListener);
+		if (mWifiManager.isWifiEnabled()) {
+			mSearchServer.startSearch();
 		}
-		mSearchServer.setOnSearchListener(searchListener);
 		mWiFiFilter = new IntentFilter();
 		mWiFiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		mWiFiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -266,6 +280,7 @@ public class WifiOrAPService extends Service {
 			Log.d(TAG, "WIFI_STATE_ENABLED");
 			Log.d(TAG, "Start WiFi scan.");
 			mWifiManager.startScan();
+			mSearchServer.startSearch();
 			break;
 		case WifiManager.WIFI_STATE_DISABLING:
 			Log.d(TAG, "WIFI_STATE_DISABLING");
@@ -286,8 +301,18 @@ public class WifiOrAPService extends Service {
 			for (ScanResult result : results) {
 				Log.d(TAG, "handleScanReuslt, found wifi: " + result.SSID);
 				if (WiFiNameEncryption.checkWiFiName(result.SSID)) {
-					// addServer(WiFiNameEncryption.getUserName(result.SSID),
-					// SERVER_TYPE_AP, result.SSID);
+					WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
+					if (wifiInfo != null) {
+						String connectedSSID = wifiInfo.getSSID();
+						Log.d(TAG, connectedSSID + "-------------- "
+								+ result.SSID);
+						if (connectedSSID.equals("\"" + result.SSID + "\"")) {
+							// Already connected to the ssid ignore.
+							Log.d(TAG, "Already connected to the ssid ignore. "
+									+ result.SSID);
+							continue;
+						}
+					}
 					ServerInfo info = new ServerInfo();
 					info.setServer_name(WiFiNameEncryption
 							.getUserName(result.SSID));
@@ -301,11 +326,6 @@ public class WifiOrAPService extends Service {
 
 	private void handleNetworkSate(NetworkInfo networkInfo) {
 		if (networkInfo.isConnected()) {
-			if (mSearchServer != null) {
-				mSearchServer.stopSearch();
-				mSearchServer = SearchSever
-						.getInstance(getApplicationContext());
-			}
 			mSearchServer.startSearch();
 		} else {
 			mSearchServer.stopSearch();
@@ -317,7 +337,8 @@ public class WifiOrAPService extends Service {
 			return false;
 		} else if (info.getServer_type().equals("wifi")) {
 			SocketCommunicationManager.getInstance(getApplicationContext())
-					.connectServer(this, info.getServer_ip());
+					.connectServer(this.getApplicationContext(),
+							info.getServer_ip());
 			return true;
 		} else if (info.getServer_type().equals("wifi-ap")) {
 			connetAP(info.getServer_ssid());
@@ -340,7 +361,7 @@ public class WifiOrAPService extends Service {
 		WifiInfo info = mWifiManager.getConnectionInfo();
 		if (info != null) {
 			String connectedSSID = info.getSSID();
-			if (connectedSSID.equals(SSID)) {
+			if (connectedSSID.equals("\"" + SSID + "\"")) {
 				// Already connected to the ssid ignore.
 				Log.d(TAG, "Already connected to the ssid ignore. " + SSID);
 				return;
@@ -354,5 +375,10 @@ public class WifiOrAPService extends Service {
 		mWifiManager.saveConfiguration();
 		boolean result = mWifiManager.enableNetwork(netId, true);
 		Log.d(TAG, "enable network result: " + result);
+	}
+
+	public void notifyServerCreated() {
+		this.sendBroadcast(new Intent(
+				"com.dreamlink.communication.server.created"));
 	}
 }

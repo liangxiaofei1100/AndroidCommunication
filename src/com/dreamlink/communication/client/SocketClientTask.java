@@ -68,7 +68,7 @@ public class SocketClientTask extends AsyncTask<String, Void, Socket> {
 					}
 				});
 		progressDialog.setCancelable(false);
-		progressDialog.show();
+//		progressDialog.show();
 	}
 
 	@Override

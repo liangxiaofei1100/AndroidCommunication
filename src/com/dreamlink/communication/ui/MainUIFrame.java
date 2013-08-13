@@ -9,7 +9,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.dreamlink.aidl.User;
+import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
+import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
+import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
+import com.dreamlink.communication.AllowLoginDialog;
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.SocketCommunication;
+import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.ui.app.AppFragmentActivity;
 import com.dreamlink.communication.ui.db.MetaData;
@@ -52,7 +59,8 @@ import android.widget.TextView;
  * 虽然ActivityGroup已经过时了，由于Fragment不太好做嵌套，所以第一层仍然使用ActivityGroup，第二层才使用Fragment
  * 主界面框架 分三部分 最上面是标题栏 中间是MainTabContainer，内容存储器 最下面是导航栏，仿闪存，目前有 应用，图片，影音，文件，四个
  */
-public class MainUIFrame extends ActivityGroup implements OnClickListener {
+public class MainUIFrame extends ActivityGroup implements OnClickListener,
+		ILoginRequestCallBack, ILoginRespondCallback {
 	private static final String TAG = "MainUIFrame";
 
 	// container layout
@@ -60,9 +68,11 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 	private LocalActivityManager mActivityManager = null;
 	private Intent mTabIntent = null;
 
-	private ImageView mAppBtn, mPicBtn, mMediaBtn, mFileBtn, mShareBtn, mAnimImg;
-	/**navgation linearlayout*/
-	private LinearLayout mAppLayout,mPictureLayout,mMediaLayout,mFileLayout,mShareLayout;
+	private ImageView mAppBtn, mPicBtn, mMediaBtn, mFileBtn, mShareBtn,
+			mAnimImg;
+	/** navgation linearlayout */
+	private LinearLayout mAppLayout, mPictureLayout, mMediaLayout, mFileLayout,
+			mShareLayout;
 
 	private int zero = 0;// 动画图片偏移量
 	private int currIndex = 0;// 当前页卡编号
@@ -89,9 +99,9 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 	private TextView mConnectView;
 	private ProgressBar mProgressBar;
 	private TextView mProgressTipView;
-	/**load bg view*/
+	/** load bg view */
 	private LinearLayout loadView;
-	/**main view*/
+	/** main view */
 	private RelativeLayout mainView;
 
 	private Context mContext;
@@ -105,52 +115,55 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 	private static final int REQUEST_FOR_MODIFY_NAME = 0x128;
 	private static final int REQUEST_FOR_CONNECT = 0x129;
 
-	public static final String DB_PATH = "/data" + Environment.getDataDirectory().getAbsolutePath() + "/com.dreamlink.communication"
-			+ "/databases";
+	public static final String DB_PATH = "/data"
+			+ Environment.getDataDirectory().getAbsolutePath()
+			+ "/com.dreamlink.communication" + "/databases";
 
 	// user info
 	private UserHelper mUserHelper = null;
 	private User mUser = null;
-	
+
 	public static final String EXIT_ACTION = "intent.exit.aciton";
-	
+
 	private FileManagerService mService = null;
 	private boolean isServiceStarted = false;
 	private boolean isServiceBinded = false;
-	
+	private SocketCommunicationManager mCommunicationManager;
+
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
-		
+
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			// TODO Auto-generated method stub
 			mService.disconnected(this.getClass().getName());
 			Log.w(TAG, "onServiceDisconnected");
 		}
-		
+
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			// TODO Auto-generated method stub
 			Log.d(TAG, "onServiceConnected");
-			mService = ((ServiceBinder)service).getServiceInstance();
+			mService = ((ServiceBinder) service).getServiceInstance();
 			serviceConnected();
 		}
 	};
-	
-	protected void serviceConnected(){
+
+	protected void serviceConnected() {
 		Log.i(TAG, "serviceConnected");
 	}
-	
+
 	private ExitReceiver exitReceiver = new ExitReceiver();
-	private class ExitReceiver extends BroadcastReceiver{
+
+	private class ExitReceiver extends BroadcastReceiver {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			MainUIFrame.this.finish();
 		}
 	}
-	
+
 	private static final int LOADING = 0x111;
-	private static final int LOADED  = 0x112;
-	private Handler mHandler = new Handler(){
+	private static final int LOADED = 0x112;
+	private Handler mHandler = new Handler() {
 		Timer mTimer = new Timer();
 		TimerTask mTask = new TimerTask() {
 			@Override
@@ -158,7 +171,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 				sendEmptyMessageDelayed(LOADED, 1000);
 			}
 		};
-		
+
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case LOADING:
@@ -184,14 +197,15 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 
 		mContext = this;
 		mActivityManager = getLocalActivityManager();
-		
+
 		loadView = (LinearLayout) findViewById(R.id.load_view);
 		mainView = (RelativeLayout) findViewById(R.id.main_view);
 		mHandler.sendEmptyMessage(LOADING);
 
 		mUserHelper = new UserHelper(mContext);
 		mUser = mUserHelper.loadUser();
-		
+		mCommunicationManager = SocketCommunicationManager
+				.getInstance(getApplicationContext());
 		IntentFilter filter = new IntentFilter(EXIT_ACTION);
 		registerReceiver(exitReceiver, filter);
 
@@ -199,30 +213,32 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 		initTab();
 		initView();
 	}
-	
+
 	@Override
 	protected void onStart() {
 		super.onStart();
 		Log.d(TAG, "MainUiFrame.onStart");
-//		Intent intent = new Intent(mContext, FileManagerService.class);
-//		if (null == startService(intent)) {
-//			Log.e(TAG, "Error:can not start FileManagerService");
-//			return;
-//		}
-//		
-//		isServiceStarted = true;
-//		isServiceBinded = bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
-//		if (!isServiceBinded) {
-//			Log.e(TAG, "cannot bind FileManagerService");
-//			return;
-//		}
+		// Intent intent = new Intent(mContext, FileManagerService.class);
+		// if (null == startService(intent)) {
+		// Log.e(TAG, "Error:can not start FileManagerService");
+		// return;
+		// }
+		//
+		// isServiceStarted = true;
+		// isServiceBinded = bindService(intent, mServiceConnection,
+		// BIND_AUTO_CREATE);
+		// if (!isServiceBinded) {
+		// Log.e(TAG, "cannot bind FileManagerService");
+		// return;
+		// }
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
 	}
-	//import game key db
+
+	// import game key db
 	private void importDb() {
 		// copy game_app.db to database
 		if (!new File(DB_PATH).exists()) {
@@ -253,9 +269,9 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 			is.close();// 关闭输入流
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 
+		}
 	}
-	
+
 	// init tab item
 	private void initTab() {
 		// four modules,and a animation image
@@ -265,13 +281,13 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 		mFileBtn = (ImageView) findViewById(R.id.img_file);
 		mShareBtn = (ImageView) findViewById(R.id.img_share);
 		mAnimImg = (ImageView) findViewById(R.id.img_tab_now);
-		
+
 		mAppLayout = (LinearLayout) findViewById(R.id.app_layout);
 		mPictureLayout = (LinearLayout) findViewById(R.id.picture_layout);
 		mMediaLayout = (LinearLayout) findViewById(R.id.media_layout);
 		mFileLayout = (LinearLayout) findViewById(R.id.file_layout);
 		mShareLayout = (LinearLayout) findViewById(R.id.share_layout);
-		
+
 		mAppLayout.setOnClickListener(new MyOnClickListener(0));
 		mPictureLayout.setOnClickListener(new MyOnClickListener(1));
 		mMediaLayout.setOnClickListener(new MyOnClickListener(2));
@@ -287,7 +303,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 		two = one * 2;
 		three = one * 3;
 		four = one * 4;
-		Log.d("info", "获取的屏幕分辨率为：" + "\n" + displayWidth + one + "\n" + two + "\n" + three + "\n" + four + "\n" + "X" + displayHeight);
+		Log.d("info", "获取的屏幕分辨率为：" + "\n" + displayWidth + one + "\n" + two
+				+ "\n" + three + "\n" + four + "\n" + "X" + displayHeight);
 
 		// 每个页面的view数据
 		final ArrayList<View> views = new ArrayList<View>();
@@ -366,84 +383,109 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 			Animation animation = null;
 			switch (arg0) {
 			case 0:
-				mAppBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_app_selected));
+				mAppBtn.setImageDrawable(getResources().getDrawable(
+						R.drawable.main_tab_app_selected));
 				if (currIndex == 1) {
 					animation = new TranslateAnimation(one, 0, 0, 0);
-					mPicBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_pic_normal));
+					mPicBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_pic_normal));
 				} else if (currIndex == 2) {
 					animation = new TranslateAnimation(two, 0, 0, 0);
-					mMediaBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_media_normal));
+					mMediaBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_media_normal));
 				} else if (currIndex == 3) {
 					animation = new TranslateAnimation(three, 0, 0, 0);
-					mFileBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_file_normal));
+					mFileBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_file_normal));
 				} else if (currIndex == 4) {
 					animation = new TranslateAnimation(four, 0, 0, 0);
-					mShareBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_share_normal));
+					mShareBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_share_normal));
 				}
 				break;
 			case 1:
-				mPicBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_pic_selected));
+				mPicBtn.setImageDrawable(getResources().getDrawable(
+						R.drawable.main_tab_pic_selected));
 				if (currIndex == 0) {
 					animation = new TranslateAnimation(zero, one, 0, 0);
-					mAppBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_app_normal));
+					mAppBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_app_normal));
 				} else if (currIndex == 2) {
 					animation = new TranslateAnimation(two, one, 0, 0);
-					mMediaBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_media_normal));
+					mMediaBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_media_normal));
 				} else if (currIndex == 3) {
 					animation = new TranslateAnimation(three, one, 0, 0);
-					mFileBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_file_normal));
+					mFileBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_file_normal));
 				} else if (currIndex == 4) {
 					animation = new TranslateAnimation(four, one, 0, 0);
-					mShareBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_share_normal));
+					mShareBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_share_normal));
 				}
 				break;
 			case 2:
-				mMediaBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_media_selected));
+				mMediaBtn.setImageDrawable(getResources().getDrawable(
+						R.drawable.main_tab_media_selected));
 				if (currIndex == 0) {
 					animation = new TranslateAnimation(zero, two, 0, 0);
-					mAppBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_app_normal));
+					mAppBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_app_normal));
 				} else if (currIndex == 1) {
 					animation = new TranslateAnimation(one, two, 0, 0);
-					mPicBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_pic_normal));
+					mPicBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_pic_normal));
 				} else if (currIndex == 3) {
 					animation = new TranslateAnimation(three, two, 0, 0);
-					mFileBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_file_normal));
+					mFileBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_file_normal));
 				} else if (currIndex == 4) {
 					animation = new TranslateAnimation(four, two, 0, 0);
-					mShareBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_share_normal));
+					mShareBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_share_normal));
 				}
 				break;
 			case 3:
-				mFileBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_file_selected));
+				mFileBtn.setImageDrawable(getResources().getDrawable(
+						R.drawable.main_tab_file_selected));
 				if (currIndex == 0) {
 					animation = new TranslateAnimation(zero, three, 0, 0);
-					mAppBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_app_normal));
+					mAppBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_app_normal));
 				} else if (currIndex == 1) {
 					animation = new TranslateAnimation(one, three, 0, 0);
-					mPicBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_pic_normal));
+					mPicBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_pic_normal));
 				} else if (currIndex == 2) {
 					animation = new TranslateAnimation(two, three, 0, 0);
-					mMediaBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_media_normal));
+					mMediaBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_media_normal));
 				} else if (currIndex == 4) {
 					animation = new TranslateAnimation(four, three, 0, 0);
-					mShareBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_share_normal));
+					mShareBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_share_normal));
 				}
 				break;
 
 			case 4:
-				mShareBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_share_selected));
+				mShareBtn.setImageDrawable(getResources().getDrawable(
+						R.drawable.main_tab_share_selected));
 				if (currIndex == 0) {
 					animation = new TranslateAnimation(zero, four, 0, 0);
-					mAppBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_app_normal));
+					mAppBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_app_normal));
 				} else if (currIndex == 1) {
 					animation = new TranslateAnimation(one, four, 0, 0);
-					mPicBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_pic_normal));
+					mPicBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_pic_normal));
 				} else if (currIndex == 2) {
 					animation = new TranslateAnimation(two, four, 0, 0);
-					mMediaBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_media_normal));
+					mMediaBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_media_normal));
 				} else if (currIndex == 3) {
 					animation = new TranslateAnimation(three, four, 0, 0);
-					mFileBtn.setImageDrawable(getResources().getDrawable(R.drawable.main_tab_file_normal));
+					mFileBtn.setImageDrawable(getResources().getDrawable(
+							R.drawable.main_tab_file_normal));
 				}
 				break;
 			}
@@ -510,19 +552,23 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCode == RESULT_OK) {
+		if (resultCode == RESULT_OK) {// when create server ,set result ok
+			mCommunicationManager.setLoginRequestCallBack(this);
+			mCommunicationManager.setLoginRespondCallback(this);
+			mCommunicationManager.startServer(getApplicationContext());
 			if (requestCode == REQUEST_FOR_MODIFY_NAME) {
 				String name = data.getStringExtra("user");
 				mUserNameView.setText(name);
-			}else if (REQUEST_FOR_CONNECT == requestCode) {
-				//connect to friend
-				//判断server创建的状态，并显示在UI上
-				//更新UI
-				//mProgressBar，mProgressBarTip
+
+			} else if (REQUEST_FOR_CONNECT == requestCode) {
+				// connect to friend
+				// 判断server创建的状态，并显示在UI上
+				// 更新UI
+				// mProgressBar，mProgressBarTip
 			}
 		}
 	}
-	
+
 	@Override
 	protected void onStop() {
 		super.onStop();
@@ -531,10 +577,57 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener {
 			isServiceBinded = false;
 		}
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		unregisterReceiver(exitReceiver);
+	}
+
+	@Override
+	public void onLoginSuccess(User localUser, SocketCommunication communication) {
+		// TODO Auto-generated method stub
+		// get all user to show ,when the user change ,need to update
+		// ,implements the usermanager interface
+		UserManager userManager = UserManager.getInstance();
+		userManager.getAllUser();
+	}
+
+	@Override
+	public void onLoginFail(int failReason, SocketCommunication communication) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onLoginRequest(final User user,
+			final SocketCommunication communication) {
+		// TODO Auto-generated method stub
+		Log.d("ArbiterLiu", "onLoginRequest(), user = " + user
+				+ ", communication = "
+				+ communication.getConnectedAddress().getHostAddress());
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				showAllowLoginDialog(user, communication);
+			}
+		});
+
+	}
+
+	private void showAllowLoginDialog(User user,
+			SocketCommunication communication) {
+		AllowLoginDialog dialog = new AllowLoginDialog(mContext);
+		AllowLoginCallBack callBack = new AllowLoginCallBack() {
+
+			@Override
+			public void onLoginComfirmed(User user,
+					SocketCommunication communication, boolean isAllow) {
+				mCommunicationManager.respondLoginRequest(user, communication,
+						isAllow);
+
+			}
+		};
+		dialog.show(user, communication, callBack);
 	}
 }

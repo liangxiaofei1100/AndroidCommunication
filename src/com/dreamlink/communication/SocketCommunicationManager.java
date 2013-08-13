@@ -119,7 +119,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	public static synchronized SocketCommunicationManager getInstance(
 			Context context) {
 		if (mInstance == null) {
-			mInstance = new SocketCommunicationManager(context);
+			mInstance = new SocketCommunicationManager(context.getApplicationContext());
 		}
 		return mInstance;
 	}

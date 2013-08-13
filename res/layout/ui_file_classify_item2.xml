@@ -16,8 +16,7 @@
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_gravity="center"
-            android:layout_margin="10dp"
-            />
+            android:layout_margin="10dp" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -54,10 +53,10 @@
             android:layout_height="fill_parent"
             android:layout_weight="1"
             android:background="@drawable/list_selector1"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
             android:clickable="false"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -82,10 +81,10 @@
             android:layout_height="fill_parent"
             android:layout_weight="1"
             android:background="@drawable/list_selector1"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
             android:clickable="false"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -110,10 +109,10 @@
             android:layout_height="fill_parent"
             android:layout_weight="1"
             android:background="@drawable/list_selector1"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
             android:clickable="false"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp" >
 
             <ImageView
                 android:layout_width="wrap_content"

@@ -31,6 +31,7 @@ public class ConnectHelper {
 	private boolean flag;
 	private String type;
 	private OnSearchListener listener;
+	private OnSearchListener direcrListener;
 	private boolean is_wifi_on_before = false;
 	private boolean is_ap_on_before = false;
 	public static ConnectHelper mConnectHelper;
@@ -50,7 +51,8 @@ public class ConnectHelper {
 	public static ConnectHelper getInstance(Context context) {
 		if (mConnectHelper == null) {
 			synchronized (context) {
-				mConnectHelper = new ConnectHelper(context);
+				mConnectHelper = new ConnectHelper(
+						context.getApplicationContext());
 			}
 		}
 		return mConnectHelper;
@@ -75,6 +77,7 @@ public class ConnectHelper {
 		}
 		this.type = type.toLowerCase();
 		this.listener = searchListener;
+		this.direcrListener = searchListener;
 		if (type.equals(SERVER_TYPE[0])) {
 			startWifiServer();
 		} else if (type.equals(SERVER_TYPE[1])) {
@@ -96,18 +99,16 @@ public class ConnectHelper {
 			NetWorkUtil.setWifiAPEnabled(mContext, "", false);
 		}// close wifi-ap server
 		this.listener = searchListener;
-		if (directService != null) {
-			mContext.unbindService(directConnection);
-		}
 		if (wifiOrAPService != null) {
-			mContext.unbindService(wifiConnection);
+			unbindServer(wifiConnection);
 		}
+		this.flag = false;
 		Intent intent = new Intent();
 		intent.setClass(mContext, WifiOrAPService.class);
 		bindServer(intent, wifiConnection);
 	}
 
-	public void searchDirectServer(User user) {
+	public void searchDirectServer(OnSearchListener searchListener, User user) {
 		if (!mContext.getPackageManager().hasSystemFeature(
 				PackageManager.FEATURE_WIFI_DIRECT)) {
 			/*
@@ -118,6 +119,7 @@ public class ConnectHelper {
 					Toast.LENGTH_SHORT).show();
 			return;
 		}
+		this.direcrListener = searchListener;
 		this.flag = false;
 		this.user = user;
 		if (NetWorkUtil.isWifiApEnabled(mContext)) {
@@ -141,17 +143,16 @@ public class ConnectHelper {
 			return;
 		}
 		this.user = user;
-		this.flag = true;
 		if (NetWorkUtil.isWifiApEnabled(mContext)) {
 			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
 		}
 		if (directService != null) {
-			mContext.unbindService(directConnection);
+			unbindServer(directConnection);
 		}
 		if (NetWorkUtil.isAndroidAPNetwork(mContext)) {
 			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
 			if (wifiOrAPService != null)
-				mContext.unbindService(wifiConnection);
+				unbindServer(wifiConnection);
 		}
 		Intent intent = new Intent();
 		intent.setClass(mContext, DirectService.class);
@@ -162,10 +163,10 @@ public class ConnectHelper {
 		NetWorkUtil.setWifiAPEnabled(mContext, WiFiNameEncryption
 				.generateWiFiName(UserHelper.getUserName(mContext)), true);
 		if (directService != null) {
-			mContext.unbindService(directConnection);
+			unbindServer(directConnection);
 		}
 		if (wifiOrAPService != null) {
-			mContext.unbindService(wifiConnection);
+			unbindServer(wifiConnection);
 		}
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
@@ -179,7 +180,7 @@ public class ConnectHelper {
 			NetWorkUtil.setWifiAPEnabled(mContext, "", false);
 		}// close wifi-ap server
 		if (wifiOrAPService != null) {
-			mContext.unbindService(wifiConnection);
+			unbindServer(wifiConnection);
 		}
 		Intent intent = new Intent();
 		intent.setClass(mContext, WifiOrAPService.class);
@@ -188,9 +189,9 @@ public class ConnectHelper {
 
 	public void stopSearch() {
 		if (wifiOrAPService != null)
-			mContext.unbindService(wifiConnection);
+			unbindServer(wifiConnection);
 		if (directService != null)
-			mContext.unbindService(directConnection);
+			unbindServer(directConnection);
 	}
 
 	public void connenctToServer(ServerInfo info) {
@@ -216,7 +217,7 @@ public class ConnectHelper {
 			if (service instanceof DirectBinder) {
 				DirectBinder binder = (DirectBinder) service;
 				directService = binder.getService();
-				directService.startDirect(flag, user, listener);
+				directService.startDirect(flag, user, direcrListener);
 			} else if (service instanceof WifiOrAPBinder) {
 				WifiOrAPBinder binder = (WifiOrAPBinder) service;
 				wifiOrAPService = binder.getService();
@@ -241,7 +242,7 @@ public class ConnectHelper {
 			if (service instanceof DirectBinder) {
 				DirectBinder binder = (DirectBinder) service;
 				directService = binder.getService();
-				directService.startDirect(flag, user, listener);
+				directService.startDirect(flag, user, direcrListener);
 			} else if (service instanceof WifiOrAPBinder) {
 				WifiOrAPBinder binder = (WifiOrAPBinder) service;
 				wifiOrAPService = binder.getService();
@@ -258,6 +259,14 @@ public class ConnectHelper {
 		mContext.bindService(intent, connection, Context.BIND_AUTO_CREATE);
 	}
 
+	private void unbindServer(ServiceConnection connection) {
+		try {
+			mContext.unbindService(connection);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	/** when exit program ,use this disconnect and close wifi or wifi-ap */
 	public void exitConnect() {
 		stopSearch();
@@ -272,5 +281,6 @@ public class ConnectHelper {
 			wifiManager.setWifiEnabled(false);
 		}
 	}
+
 
 }

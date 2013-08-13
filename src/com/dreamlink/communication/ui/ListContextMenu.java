@@ -80,5 +80,4 @@ public class ListContextMenu implements OnCreateContextMenuListener{
 		}
 		
 	}
-	
 }

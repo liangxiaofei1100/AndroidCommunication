@@ -192,7 +192,6 @@ public class AsyncImageLoader {
 		default:
 			break;
 		}
-		
 		return null;
 	}
 

@@ -66,5 +66,4 @@
     <string name="big_file_type_tip">支持50M以上任意格式文件</string>
     
     <string name="item_msg">第<xliff:g id="item">%1$d</xliff:g>项</string>
-    
 </resources>
