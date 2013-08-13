@@ -197,9 +197,12 @@ public class MediaAudioAdapter extends BaseAdapter {
 
 		@Override
 		public void onClick(View v) {
+			current_position = -1;
+			
 			Intent intent = FileInfoManager.getAudioFileIntent(mList.get(
 					position).getUrl());
 			mContext.startActivity(intent);
+			notifyDataSetChanged();
 		}
 	}
 
@@ -212,6 +215,8 @@ public class MediaAudioAdapter extends BaseAdapter {
 
 		@Override
 		public void onClick(View v) {
+			current_position = -1;
+			notifyDataSetChanged();
 		}
 
 	}

@@ -66,7 +66,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="empty"
+            android:text="@string/folder_content_null"
             />
     </RelativeLayout>
     

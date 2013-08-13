@@ -226,9 +226,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 	/**
 	 * catch broadcast not register exception. <<<<<<< HEAD =======
-	 * 
-	 * >>>>>>> 35a589fa38c575069fd510e9f35f9256b4b336d7
-	 * 
 	 * @param receiver
 	 */
 	@SuppressWarnings("unused")
@@ -269,9 +266,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			ipServer.put(KEY_TYPE, SERVER_TYPE_IP);
 			ipServer.put(KEY_VALUE, value);
 			mServerData.add(ipServer);
-			Log.i(TAG,
-					"type:" + type + "    mServerData.size:"
-							+ mServerData.size());
+			Log.i(TAG, "type:" + type + "    mServerData.size:" + mServerData.size());
 			mServerAdapter.notifyDataSetChanged();
 			break;
 		case SERVER_TYPE_AP:
@@ -286,9 +281,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			apServer.put(KEY_TYPE, SERVER_TYPE_AP);
 			apServer.put(KEY_VALUE, value);
 			mServerData.add(apServer);
-			Log.i(TAG,
-					"type:" + type + "    mServerData.size:"
-							+ mServerData.size());
+			Log.i(TAG, "type:" + type + "    mServerData.size:" + mServerData.size());
 			mServerAdapter.notifyDataSetChanged();
 		default:
 			break;

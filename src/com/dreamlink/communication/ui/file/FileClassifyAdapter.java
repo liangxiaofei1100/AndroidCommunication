@@ -29,8 +29,7 @@ import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 
-public class FileClassifyAdapter extends BaseAdapter implements
-		ILoadImageCallback {
+public class FileClassifyAdapter extends BaseAdapter{
 	private LayoutInflater inflater;
 	private List<FileInfo> mItemList = new ArrayList<FileInfo>();
 	private List<List<FileInfo>> mAllList = new ArrayList<List<FileInfo>>();
@@ -61,7 +60,6 @@ public class FileClassifyAdapter extends BaseAdapter implements
 		isMain = false;
 		file_type = type;
 		bitmapLoader = new AsyncImageLoader(context);
-		bitmapLoader.setCallBack(this);
 		fileInfoManager = new FileInfoManager(context);
 	}
 
@@ -121,12 +119,9 @@ public class FileClassifyAdapter extends BaseAdapter implements
 			if (null == convertView || null == convertView.getTag()) {
 				holder = new ViewHolder();
 				view = inflater.inflate(R.layout.ui_file_classify_item, null);
-				holder.iconView = (ImageView) view
-						.findViewById(R.id.classify_icon);
-				holder.titleView = (TextView) view
-						.findViewById(R.id.classify_name);
-				holder.tipView = (TextView) view
-						.findViewById(R.id.classify_tip);
+				holder.iconView = (ImageView) view.findViewById(R.id.classify_icon);
+				holder.titleView = (TextView) view.findViewById(R.id.classify_name);
+				holder.tipView = (TextView) view.findViewById(R.id.classify_tip);
 
 				view.setTag(holder);
 			} else {
@@ -139,10 +134,8 @@ public class FileClassifyAdapter extends BaseAdapter implements
 			if (mAllList.size() > 0) {
 				size = mAllList.get(position).size();
 			}
-			holder.titleView.setText(FileClassifyFragment.file_types[position]
-					+ "(" + size + ")");
-			holder.tipView
-					.setText(FileClassifyFragment.file_types_tips[position]);
+			holder.titleView.setText(FileClassifyFragment.file_types[position] + "(" + size + ")");
+			holder.tipView.setText(FileClassifyFragment.file_types_tips[position]);
 		} else {
 			// item view
 			ViewHolderItem holderItem = null;
@@ -150,25 +143,16 @@ public class FileClassifyAdapter extends BaseAdapter implements
 				holderItem = new ViewHolderItem();
 				view = inflater.inflate(R.layout.ui_file_classify_item2, null);
 
-				holderItem.iconView = (ImageView) view
-						.findViewById(R.id.file_icon);
-				holderItem.nameView = (TextView) view
-						.findViewById(R.id.file_name_textview);
-				holderItem.infoView = (TextView) view
-						.findViewById(R.id.file_info_textview);
-				holderItem.menuNameView = (TextView) view
-						.findViewById(R.id.file_item_open_textview);
+				holderItem.iconView = (ImageView) view.findViewById(R.id.file_icon);
+				holderItem.nameView = (TextView) view.findViewById(R.id.file_name_textview);
+				holderItem.infoView = (TextView) view.findViewById(R.id.file_info_textview);
+				holderItem.menuNameView = (TextView) view.findViewById(R.id.file_item_open_textview);
 
-				holderItem.mainLayout = (LinearLayout) view
-						.findViewById(R.id.file_layout_main);
-				holderItem.expandLayout = (LinearLayout) view
-						.findViewById(R.id.file_layout_expand);
-				holderItem.openLayout = (LinearLayout) view
-						.findViewById(R.id.file_item_open);
-				holderItem.sendLayout = (LinearLayout) view
-						.findViewById(R.id.file_item_send);
-				holderItem.deleteLayout = (LinearLayout) view
-						.findViewById(R.id.file_item_delete);
+				holderItem.mainLayout = (LinearLayout) view.findViewById(R.id.file_layout_main);
+				holderItem.expandLayout = (LinearLayout) view.findViewById(R.id.file_layout_expand);
+				holderItem.openLayout = (LinearLayout) view.findViewById(R.id.file_item_open);
+				holderItem.sendLayout = (LinearLayout) view.findViewById(R.id.file_item_send);
+				holderItem.deleteLayout = (LinearLayout) view.findViewById(R.id.file_item_delete);
 
 				view.setTag(holderItem);
 			} else {
@@ -274,8 +258,10 @@ public class FileClassifyAdapter extends BaseAdapter implements
 
 		@Override
 		public void onClick(View v) {
+			current_position = -1;
 			String filePath = mItemList.get(position).filePath;
 			fileInfoManager.openFile(filePath);
+			notifyDataSetChanged();
 		}
 	}
 
@@ -289,6 +275,8 @@ public class FileClassifyAdapter extends BaseAdapter implements
 		@Override
 		public void onClick(View v) {
 			// send share transfer
+			current_position = -1;
+			notifyDataSetChanged();
 		}
 
 	}
@@ -376,13 +364,6 @@ public class FileClassifyAdapter extends BaseAdapter implements
 			notifyDataSetChanged();
 		}
 
-	}
-
-	@Override
-	public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
-		if (null != bitmap) {
-			imageView.setImageBitmap(bitmap);
-		}
 	}
 
 }

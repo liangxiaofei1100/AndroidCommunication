@@ -29,6 +29,11 @@ public class Notice {
 			Log.e(TAG, "showToast error, " + e);
 		}
 	}
+	
+	public void showToast(int  msgResId) {
+		String msg = context.getResources().getString(msgResId);
+		showToast(msg);
+	}
 
 	public void closeToast() {
 		if (toast != null)

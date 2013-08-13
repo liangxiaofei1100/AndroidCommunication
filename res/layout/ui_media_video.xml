@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/video_gridview"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:gravity="center"
-    android:horizontalSpacing="4dip"
-    android:numColumns="3"
-    android:padding="4dip"
-    android:stretchMode="columnWidth"
-    android:verticalSpacing="4dip" />
+    android:layout_height="fill_parent" >
+
+    <GridView
+        android:id="@+id/video_gridview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:horizontalSpacing="4dip"
+        android:numColumns="3"
+        android:padding="4dip"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="4dip" />
+
+    <TextView
+        android:id="@+id/video_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="@string/video_content_null" />
+
+</RelativeLayout>

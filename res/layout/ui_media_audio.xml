@@ -11,6 +11,14 @@
        android:layout_height="fill_parent"
       />
    
+   <TextView 
+       android:id="@+id/audio_list_empty"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_centerInParent="true"
+       android:text="@string/audio_content_null"
+       />
+   
    <ProgressBar 
        android:id="@+id/audio_progressbar"
        android:layout_width="wrap_content"

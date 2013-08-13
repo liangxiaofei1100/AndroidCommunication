@@ -7,11 +7,13 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.FileInfoDialog;
 import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.Notice;
 
 import android.app.AlertDialog;
 import android.app.FragmentManager;
@@ -66,7 +68,7 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 	private Context mContext;
 	
 	private AppReceiver mAppReceiver;
-	private static final String MY_PACKAGENAME = "com.dreamlink.communication";
+	private Notice mNotice = null;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,6 +76,8 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 		View rootView = inflater.inflate(R.layout.ui_app_normal, container, false);
 
 		mContext = getActivity();
+		
+		mNotice = new Notice(mContext);
 		
 		mGridView = (GridView) rootView.findViewById(R.id.app_normal_gridview);
 		mProgressBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
@@ -105,34 +109,25 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		final ApplicationInfo applicationInfo = (ApplicationInfo) mNormalAppLists.get(position).getApplicationInfo();
 		String packageName = applicationInfo.packageName;
-		PackageInfo packageInfo = null;
-		try {
-			packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
-			// start app
-			ActivityInfo activityInfo = null;
-			activityInfo = packageInfo.activities[0];
-			if (activityInfo == null) {
-				Toast.makeText(mContext, "can not start this app!", Toast.LENGTH_SHORT).show();
-				return;
-			} else {
-				String packagename = packageInfo.packageName;
-				String activityName = activityInfo.name;
-				Intent intent = new Intent();
-				// start app by package name
-				intent.setComponent(new ComponentName(packagename, activityName));
-				startActivity(intent);
-			}
-		} catch (NameNotFoundException e) {
-			e.printStackTrace();
+		if (DreamConstant.PACKAGE_NAME.equals(packageName)) {
+			mNotice.showToast(R.string.app_has_started);
+			return;
+		}
+		
+		Intent intent = pm.getLaunchIntentForPackage(packageName);
+		if (null != intent) {
+			startActivity(intent);
+		}else {
+			mNotice.showToast(R.string.cannot_start_app);
+			return;
 		}
 	}
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-		// TODO Auto-generated method stub
 		final AppEntry appEntry = mNormalAppLists.get(position);
 		int resId = R.array.app_menu_normal;
-		if (MY_PACKAGENAME.equals(appEntry.getPackageName())) {
+		if (DreamConstant.PACKAGE_NAME.equals(appEntry.getPackageName())) {
 			//本身这个程序不允许卸载，不允许移动到游戏，已经打开了，所以没有打开选项
 			//总之，菜单要不一样
 			resId = R.array.app_menu_myself;
@@ -272,6 +267,11 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
                     	mGameAppList.add(entry);
 					}else {
 						mNormalAppLists.add(entry);
+					}
+                    
+                    //
+                    if (DreamConstant.PACKAGE_NAME.equals(appInfo.packageName)) {
+						DreamUtil.package_source_dir = appInfo.sourceDir;
 					}
 				}
             }

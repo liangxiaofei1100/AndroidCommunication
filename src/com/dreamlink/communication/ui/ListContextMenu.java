@@ -17,6 +17,7 @@ public class ListContextMenu implements OnCreateContextMenuListener{
 	public static final int MENU_TYPE_IMAGE = 0x02;
 	public static final int MENU_TYPE_AUDIO = 0x03;
 	public static final int MENU_TYPE_FILE = 0x04;
+	public static final int MENU_TYPE_VIDEO = 0x05;
 	
 	//menu
 	public static final int MENU_OPEN = 0x10;
@@ -69,6 +70,12 @@ public class ListContextMenu implements OnCreateContextMenuListener{
 			menu.add(0, MENU_RENAME, 0, R.string.menu_rename);
 			break;
 		case MENU_TYPE_IMAGE:
+			menu.add(0, MENU_OPEN, 0, R.string.menu_open);
+			menu.add(0, MENU_SEND, 0, R.string.menu_send);
+			menu.add(0, MENU_DELETE, 0, R.string.menu_delete);
+			menu.add(0, MENU_INFO, 0, R.string.menu_info);
+			break;
+		case MENU_TYPE_VIDEO:
 			menu.add(0, MENU_OPEN, 0, R.string.menu_open);
 			menu.add(0, MENU_SEND, 0, R.string.menu_send);
 			menu.add(0, MENU_DELETE, 0, R.string.menu_delete);

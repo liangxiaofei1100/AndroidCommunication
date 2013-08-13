@@ -11,8 +11,6 @@
         android:layout_height="wrap_content"
         android:gravity="center" >
 
-<!--         <RelativeLayout android:id="@+id/title_banner_one" > -->
-<!--         </RelativeLayout> -->
         <!-- 标题 -->
         <RelativeLayout
             android:id="@+id/title_banner_two"

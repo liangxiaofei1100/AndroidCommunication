@@ -33,7 +33,7 @@
             android:id="@+id/game_empty_textview_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Empty"
+            android:text="@string/dream_app_content_null"
             android:layout_centerInParent="true"
             />
     </RelativeLayout>
@@ -66,7 +66,7 @@
             android:id="@+id/game_empty_textview_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Empty"
+            android:text="@string/game_app_content_null"
             android:layout_centerInParent="true"
             />
     </RelativeLayout>

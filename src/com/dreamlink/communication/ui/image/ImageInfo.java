@@ -15,6 +15,10 @@ public class ImageInfo implements Parcelable{
 	private String path;
 	/**bucket dispaly name*/
 	private String bucketDisplayName;
+	/**width*/
+	private long width;
+	/**height*/
+	private long height;
 	
 	public static final Parcelable.Creator<ImageInfo> CREATOR = new Parcelable.Creator<ImageInfo>() {
 
@@ -58,6 +62,22 @@ public class ImageInfo implements Parcelable{
 		this.bucketDisplayName = bucketDisplayName;
 	}
 	
+	public long getWidth(){
+		return width;
+	}
+	
+	public void setWidth(long width){
+		this.width = width;
+	}
+	
+	public long getHeight(){
+		return height;
+	}
+	
+	public void setHeight(long height){
+		this.height = height;
+	}
+	
 	public String getName(){
 		File file = new File(path);
 		return file.getName();
@@ -89,12 +109,16 @@ public class ImageInfo implements Parcelable{
 		dest.writeLong(image_id);
 		dest.writeString(path);
 		dest.writeString(bucketDisplayName);
+		dest.writeLong(width);
+		dest.writeLong(height);
 	}
 	
 	public void readFromParcel(Parcel in){
 		image_id = in.readLong();
 		path = in.readString();
 		bucketDisplayName = in.readString();
+		width = in.readLong();
+		height = in.readLong();
 	}
 	
 }

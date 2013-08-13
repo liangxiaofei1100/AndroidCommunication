@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.FileInfoDialog;
 import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.Notice;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -52,6 +54,7 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 	private int mCurrentPosition = -1;
 	
 	private Context mContext;
+	private Notice mNotice = null;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.d(TAG, "onCreate begin");
@@ -64,6 +67,8 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 		gridView2.setEmptyView(rootView.findViewById(R.id.game_empty_textview_2));
 		gridView2.setOnItemClickListener(this);
 		gridView2.setOnItemLongClickListener(this);
+		
+		mNotice = new Notice(mContext);
 		
 		pm = mContext.getPackageManager();
 		mAppManager = new AppManager(mContext);
@@ -83,25 +88,17 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		final ApplicationInfo applicationInfo = (ApplicationInfo) AppNormalFragment.mGameAppList.get(position).getApplicationInfo();
 		String packageName = applicationInfo.packageName;
-		PackageInfo packageInfo = null;
-		try {
-			packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
-			// start app
-			ActivityInfo activityInfo = null;
-			activityInfo = packageInfo.activities[0];
-			if (activityInfo == null) {
-				Toast.makeText(mContext, "can not start this app!", Toast.LENGTH_SHORT).show();
-				return;
-			} else {
-				String packagename = packageInfo.packageName;
-				String activityName = activityInfo.name;
-				Intent intent = new Intent();
-				// start app by package name
-				intent.setComponent(new ComponentName(packagename, activityName));
-				startActivity(intent);
-			}
-		} catch (NameNotFoundException e) {
-			e.printStackTrace();
+		if (DreamConstant.PACKAGE_NAME.equals(packageName)) {
+			mNotice.showToast(R.string.app_has_started);
+			return;
+		}
+		
+		Intent intent = pm.getLaunchIntentForPackage(packageName);
+		if (null != intent) {
+			startActivity(intent);
+		}else {
+			mNotice.showToast(R.string.cannot_start_app);
+			return;
 		}
 	}
 	

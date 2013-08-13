@@ -117,19 +117,24 @@ public class MediaInfoManager {
 						.getColumnIndex(MediaStore.Video.Media.SIZE)); // 文件大小
 				String url = cursor.getString(cursor
 						.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
-				BitmapFactory.Options options = new BitmapFactory.Options();
-				options.inDither = false;
-				options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-				// get video thumbail
-				Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(
-						contentResolver, id, Images.Thumbnails.MICRO_KIND,
-						options);
-				mediaInfo.setId(id);
-				mediaInfo.setDuration(duration);
-				mediaInfo.setSize(size);
-				mediaInfo.setUrl(url);
-				mediaInfo.setIcon(bitmap);
-				list.add(mediaInfo);
+				String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
+				if (new File(url).exists()) {
+					BitmapFactory.Options options = new BitmapFactory.Options();
+					options.inDither = false;
+					options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+					// get video thumbail
+					Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(
+							contentResolver, id, Images.Thumbnails.MICRO_KIND,
+							options);
+					mediaInfo.setId(id);
+					mediaInfo.setDuration(duration);
+					mediaInfo.setSize(size);
+					mediaInfo.setUrl(url);
+					mediaInfo.setDisplayName(displayName);
+					mediaInfo.setIcon(bitmap);
+					list.add(mediaInfo);
+				}
+				
 			} while (cursor.moveToNext());
 		}
 		cursor.close();
@@ -152,14 +157,17 @@ public class MediaInfoManager {
 				String path = cursor.getString(cursor
 						.getColumnIndex(MediaStore.MediaColumns.DATA));
 				// 图片所在文件夹名
-				String folder = cursor
-						.getString(cursor
+				String folder = cursor.getString(cursor
 								.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME));
+				long width = cursor.getLong(cursor.getColumnIndex("width"));
+				long height = cursor.getLong(cursor.getColumnIndex("height"));
 				if (new File(path).exists()) {
 					imageInfo = new ImageInfo(id);
 					imageInfo.setPath(path);
 					imageInfo.setBucketDisplayName(folder);
-
+					imageInfo.setWidth(width);
+					imageInfo.setHeight(height);
+					
 					imageInfos.add(imageInfo);
 				}
 

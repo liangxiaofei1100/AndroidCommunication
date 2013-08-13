@@ -203,7 +203,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			} else {
 				mFileInfoAdapter.notifyDataSetChanged();
 			}
-
+			mFileInfoAdapter.selectAll(false);
 			mTabManager.refreshTab(mCurrentPath, storge_type);
 		} else {
 			Log.e(TAG, "It is a file");

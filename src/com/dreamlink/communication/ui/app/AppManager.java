@@ -122,7 +122,7 @@ public class AppManager {
 		intent.putExtra(GAME_APP_SIZE, AppNormalFragment.mGameAppList.size());
 		mContext.sendBroadcast(intent);
     }
-
+    
 	public void installApk(String apkFilePath) {
 		if (apkFilePath.endsWith(".apk")) {
 			installApk(new File(apkFilePath));

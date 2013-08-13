@@ -71,17 +71,27 @@
                 android:layout_toLeftOf="@+id/title_right_layout"
                 android:layout_toRightOf="@+id/title_left_layout"
                 android:background="@drawable/title_center_bg" >
-
-                <HorizontalScrollView
+                
+                <com.dreamlink.communication.ui.SlowHorizontalScrollView
                     android:id="@+id/show_user_scrollview"
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content" >
-                </HorizontalScrollView>
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:fillViewport="true" >
+                    <LinearLayout
+                        android:id="@+id/tabs_holder"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="5dp"
+                    	android:paddingRight="5dp"
+                        android:orientation="horizontal" />
+                </com.dreamlink.communication.ui.SlowHorizontalScrollView>
 
                 <LinearLayout
+                    android:id="@+id/show_connect_msg_layout"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
+                    android:layout_centerVertical="true"
                     android:orientation="horizontal"
                     android:visibility="gone" >
 
@@ -89,17 +99,23 @@
                         android:id="@+id/connect_progress"
                         style="@android:style/Widget.ProgressBar.Inverse"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="10dp"
+                         />
 
                     <TextView
                         android:id="@+id/connect_progress_tip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/connecting"
-                        android:textColor="@color/white" />
+                        android:textColor="@color/white"
+                        android:paddingLeft="10dp"
+                        android:layout_gravity="center_vertical"
+                         />
                 </LinearLayout>
 
                 <FrameLayout
+                    android:id="@+id/connect_button_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true" >
