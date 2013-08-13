@@ -24,6 +24,7 @@ import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileFragmentActivity;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.ui.image.ImageFragmentActivity;
+import com.dreamlink.communication.ui.invite.InviteMainActivity;
 import com.dreamlink.communication.ui.media.MediaFragmentActivity;
 import com.dreamlink.communication.ui.service.FileManagerService;
 import com.dreamlink.communication.ui.service.FileManagerService.ServiceBinder;
@@ -114,6 +115,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	private UserTabManager mUserTabManager;
 
 	private Context mContext;
+	public static MainUIFrame instance;
 
 	private static final String APP = "APP";
 	private static final String PICTURE = "PICTURE";
@@ -146,6 +148,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	private static final int CREATE_OK = 0x03;
 	private static final int CONNECT_OK = 0x04;
 	
+	private int mCurrentStatus = -1;
+	
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 		
 		@Override
@@ -172,7 +176,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	private class ExitReceiver extends BroadcastReceiver{
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			MainUIFrame.this.finish();
+			showExitDialog();
 		}
 	}
 	
@@ -216,6 +220,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 //		setContentView(R.layout.ui_main2);
 
 		mContext = this;
+		instance = this;
 		mActivityManager = getLocalActivityManager();
 		
 		loadView = (LinearLayout) findViewById(R.id.load_view);
@@ -260,10 +265,6 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	protected void onResume() {
 		super.onResume();
 		/*********TEST************/
-//		mConnectInfoView.setVisibility(View.INVISIBLE);
-//		mConnectLayout.setVisibility(View.INVISIBLE);
-//		mUserInfoView.setVisibility(View.VISIBLE);
-//		
 //		User user = null;
 //		for (int i = 0; i < 10; i++) {
 //			user = new User();
@@ -392,7 +393,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 			mUserTabManager = new UserTabManager(mContext, rooView, mUserInfoView);
 		}
 		
-		updateConnectUI(INIT);
+		mCurrentStatus = INIT;
+		updateConnectUI(mCurrentStatus);
 		////////////////
 	}
 
@@ -552,21 +554,31 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 
 	@Override
 	public void onClick(View v) {
+		Intent intent = null;
 		switch (v.getId()) {
 		case R.id.connect_button:
-			Intent intent = new Intent();
+			intent = new Intent();
 			intent.setClass(MainUIFrame.this, ConnectFriendActivity.class);
 			startActivityForResult(intent, REQUEST_FOR_CONNECT);
 			break;
 
 		case R.id.title_left_layout:
-			Intent intent2 = new Intent();
-			intent2.setClass(MainUIFrame.this, UserInfoSetting.class);
-			startActivityForResult(intent2, REQUEST_FOR_MODIFY_NAME);
+			intent = new Intent();
+			intent.setClass(MainUIFrame.this, UserInfoSetting.class);
+			startActivityForResult(intent, REQUEST_FOR_MODIFY_NAME);
 			break;
 
 		case R.id.title_right_layout:
+			switch (mCurrentStatus) {
+			case INIT:
+				//invite
+				intent = new Intent(mContext, InviteMainActivity.class);
+				startActivity(intent);
+				break;
 
+			default:
+				break;
+			}
 			break;
 
 		default:
@@ -579,22 +591,25 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		case INIT:
 			mConnectLayout.setVisibility(View.VISIBLE);
 			mConnectInfoView.setVisibility(View.INVISIBLE);
-			mUserIconView.setVisibility(View.INVISIBLE);
+			mUserInfoView.setVisibility(View.INVISIBLE);
 			mRightIconView.setImageResource(R.drawable.btn_title_invite_pressed);
+			mRightTextView.setText(R.string.invite);
 			break;
 		case CREATING:
 		case CONNECTING:
 		case CREATE_OK:
 			mConnectLayout.setVisibility(View.INVISIBLE);
 			mConnectInfoView.setVisibility(View.VISIBLE);
-			mUserIconView.setVisibility(View.INVISIBLE);
+			mUserInfoView.setVisibility(View.INVISIBLE);
 			mRightIconView.setImageResource(R.drawable.btn_title_help_close);
+			mRightTextView.setText(R.string.close);
 			break;
 		case CONNECT_OK:
 			mConnectLayout.setVisibility(View.INVISIBLE);
 			mConnectInfoView.setVisibility(View.INVISIBLE);
-			mUserIconView.setVisibility(View.VISIBLE);
+			mUserInfoView.setVisibility(View.VISIBLE);
 			mRightIconView.setImageResource(R.drawable.btn_title_help_close);
+			mRightTextView.setText(R.string.close);
 			break;
 
 		default:
@@ -618,6 +633,11 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		}
 	}
 	
+	public void showExitDialog(){
+		Intent intent = new Intent(mContext, ExitActivity.class);
+		startActivity(intent);
+	}
+	
 	@Override
 	protected void onStop() {
 		super.onStop();
@@ -632,7 +652,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		super.onDestroy();
 		unregisterReceiver(exitReceiver);
 	}
-
+	
 	@Override
 	public void onLoginRequest(User user, SocketCommunication communication) {
 			AllowLoginDialog dialog = new AllowLoginDialog(mContext);

@@ -30,6 +30,7 @@
     <string name="connect">连接</string>
     <string name="connecting">"正在连接..."</string>
     <string name="invite">邀请</string>
+    <string name="close">关闭</string>
     
     <string name="file_classify">文件分类</string>
     <string name="all_file">全部文件</string>
@@ -45,8 +46,8 @@
     <string name="menu_info">属性</string>
     <string name="menu_play">播放</string>
     <string name="menu_more">更多</string>
-    <string name="menu_app_info">应用信息</string>
-    <string name="menu_uninstall">卸载</string>
+    <string name="menu_app_info">应用程序信息</string>
+    <string name="menu_uninstall">卸载程序</string>
     <string name="menu_move_to_game">移至游戏</string>
     <string name="menu_move_to_app">移至应用</string>
     <string name="menu_install">安装</string>
@@ -75,4 +76,16 @@
     <string name="apk_content_null">"&#060;没有发现用户应用程序&#062;"</string>
     <string name="game_app_content_null">"&#060;我还没安装游戏&#062;"</string>
     <string name="dream_app_content_null">"&#060;还没游戏,去下载一个&#062;"</string>
+    
+    <string name="cannot_start_app">无法从这里启动该程序</string>
+    <string name="app_has_started">该程序已经启动</string>
+    
+    <string name="invite_install">邀请好友安装</string>
+    <string name="invite_bluetooth">蓝牙邀请</string>
+    <string name="invite_bluetooth_first_step">第一步:</string>
+    <string name="invite_bluetooth_second_step">第二步:</string>
+    <string name="invite_bluetooth_send">搜索-发送</string>
+    <string name="invite_bluetooth_first_step_tip">请身边好友打开蓝牙,保持对附近的蓝牙设备可见（如图所示）</string>
+    <string name="invite_bluetooth_second_step_tip">好友完成第一步后,请点击搜索-发送按钮，就可以搜索TA的手机并把XX发送过去</string>
+    <string name="back">返回</string>
 </resources>

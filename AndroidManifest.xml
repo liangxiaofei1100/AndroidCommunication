@@ -14,6 +14,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <application
         android:allowBackup="true"
@@ -166,6 +168,20 @@
         <service
             android:name="com.dreamlink.communication.ui.service.FileManagerService"
             />
+        <activity 
+            android:name="com.dreamlink.communication.ui.invite.InviteMainActivity"
+            android:screenOrientation="portrait"
+            ></activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.invite.InviteBluetoothActivity"
+            android:screenOrientation="portrait"
+            ></activity>
+        
+        <activity 
+            android:name="com.dreamlink.communication.ui.ExitActivity"
+			android:theme="@style/MyDialogStyle"            
+            android:screenOrientation="portrait"
+            ></activity>
         <!-- main ui end -->
         
         <provider 

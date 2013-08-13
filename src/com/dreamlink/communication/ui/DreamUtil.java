@@ -1,5 +1,6 @@
 package com.dreamlink.communication.ui;
 
+import java.io.File;
 import java.text.Collator;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -8,11 +9,16 @@ import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.app.AppEntry;
 
 public class DreamUtil {
+	
+	/**my app 's install path*/
+	public static String package_source_dir;
 	/**
 	 * 插入一个数据到已经排好序的list中
 	 * @param list 已经排好序的list

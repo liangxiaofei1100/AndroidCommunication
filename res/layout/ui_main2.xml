@@ -91,7 +91,7 @@
                     android:id="@+id/show_connect_msg_layout"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
+                    android:layout_centerVertical="true"
                     android:orientation="horizontal"
                     android:visibility="gone" >
 
@@ -99,14 +99,19 @@
                         android:id="@+id/connect_progress"
                         style="@android:style/Widget.ProgressBar.Inverse"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="10dp"
+                         />
 
                     <TextView
                         android:id="@+id/connect_progress_tip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/connecting"
-                        android:textColor="@color/white" />
+                        android:textColor="@color/white"
+                        android:paddingLeft="10dp"
+                        android:layout_gravity="center_vertical"
+                         />
                 </LinearLayout>
 
                 <FrameLayout

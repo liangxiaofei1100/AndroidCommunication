@@ -177,6 +177,8 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 				+ "类型:" + "图片" + DreamConstant.ENTER
 				+ "位置:" + imageInfo.getPath() + DreamConstant.ENTER
 				+ "大小:" + imageInfo.getFormatSize()+ DreamConstant.ENTER
+				+ "宽度:" +  imageInfo.getWidth() + DreamConstant.ENTER
+				+ "高度:" + imageInfo.getHeight() + DreamConstant.ENTER
 				+ "修改日期:" + imageInfo.getFormatDate();
 		return result;
 	}

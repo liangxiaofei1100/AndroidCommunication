@@ -38,4 +38,7 @@ public class DreamConstant {
 	public static final Uri VIDEO_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 	public static final Uri IMAGE_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 	
+	/**package name for this app*/
+	public static final String PACKAGE_NAME = "com.dreamlink.communication";
+	
 }

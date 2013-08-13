@@ -29,8 +29,7 @@ import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 
-public class FileClassifyAdapter extends BaseAdapter implements
-		ILoadImageCallback {
+public class FileClassifyAdapter extends BaseAdapter{
 	private LayoutInflater inflater;
 	private List<FileInfo> mItemList = new ArrayList<FileInfo>();
 	private List<List<FileInfo>> mAllList = new ArrayList<List<FileInfo>>();
@@ -61,7 +60,6 @@ public class FileClassifyAdapter extends BaseAdapter implements
 		isMain = false;
 		file_type = type;
 		bitmapLoader = new AsyncImageLoader(context);
-		bitmapLoader.setCallBack(this);
 		fileInfoManager = new FileInfoManager(context);
 	}
 
@@ -366,13 +364,6 @@ public class FileClassifyAdapter extends BaseAdapter implements
 			notifyDataSetChanged();
 		}
 
-	}
-
-	@Override
-	public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
-		if (null != bitmap) {
-			imageView.setImageBitmap(bitmap);
-		}
 	}
 
 }
