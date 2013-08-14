@@ -89,7 +89,7 @@
                          <ImageView 
                              android:layout_width="wrap_content"
              	   		android:layout_height="wrap_content"
-             	   		android:src="@drawable/friend_avatar_9"
+             	   		android:src="@drawable/dm_icon_default_user"
                             />
                     </FrameLayout>
                     <ImageButton 

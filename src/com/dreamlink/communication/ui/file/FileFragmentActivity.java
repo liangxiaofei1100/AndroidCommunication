@@ -2,6 +2,7 @@ package com.dreamlink.communication.ui.file;
 
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.util.Log;
 
@@ -65,7 +66,7 @@ public class FileFragmentActivity extends FragmentActivity implements TabContent
 	@Override
 	public void onBackPressed() {
 		Log.d(TAG, "onBackPressed");
-		Intent intent = new Intent(MainUIFrame.EXIT_ACTION);
+		Intent intent = new Intent(DreamConstant.EXIT_ACTION);
 		sendBroadcast(intent);
 	}
 	

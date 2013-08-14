@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.media.MediaInfo;
@@ -187,7 +188,7 @@ public class ImageFragmentActivity extends FragmentActivity implements
 	@Override
 	public void onBackPressed() {
 		Log.d(TAG, "onBackPressed");
-		Intent intent = new Intent(MainUIFrame.EXIT_ACTION);
+		Intent intent = new Intent(DreamConstant.EXIT_ACTION);
 		sendBroadcast(intent);
 	}
 

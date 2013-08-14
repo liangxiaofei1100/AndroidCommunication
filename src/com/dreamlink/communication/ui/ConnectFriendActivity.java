@@ -1,48 +1,30 @@
 package com.dreamlink.communication.ui;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import com.dreamlink.aidl.User;
-import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.SocketCommunication;
-import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.Search;
-import com.dreamlink.communication.search.SearchSever;
-import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.server.service.ConnectHelper;
 import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
-import com.dreamlink.communication.wifip2p.WifiDirectManager;
-import com.dreamlink.communication.wifip2p.WifiDirectManager.ManagerP2pDeivce;
-import com.dreamlink.communication.wifip2p.WifiDirectReciver;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.NetworkInfo;
-import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -52,14 +34,13 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
-import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /***
@@ -70,8 +51,8 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		OnSearchListener {
 	private static final String TAG = ConnectFriendActivity.class.getName();
 	private ImageView mCloseBtn;
-	private RelativeLayout mSearchingLayout;
-	private RelativeLayout mNotFoundLayout;
+	private ProgressBar mSearchBar;
+	private TextView mSearchView;
 	private Button createConnectBtn;
 
 	private ListView mServerListView;// show server list
@@ -84,11 +65,8 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 	/**
 	 * save server data Map structure: </br>
-	 * 
 	 * KEY_NAME - server name</br>
-	 * 
 	 * KEY_TYPE - server network type: IP, AP, WiFi Direct</br>
-	 * 
 	 * KEY_IP - server IP. This is only used in WiFi network.
 	 */
 	private Vector<Map<String, Object>> mServerData = new Vector<Map<String, Object>>();
@@ -117,10 +95,13 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	private static final int MSG_CONNECT_SERVER = 3;
 	private static final int MSG_SEARCH_WIFI_DIRECT_FOUND = 4;
 	private static final int MSG_LOGIN_REQEUST = 5;
+	private static final int MSG_SEARCH_STOP = 6;
+	private static final int MSG_SEARCHING = 7;
 
 	private static final int SEARCHING = 0;
 	private static final int SEARCHED = 1;
-	private static final int NOT_SEARCHED = 2;
+	private static final int SEARCH_FAILED = 2;
+	private static final int SEARCH_OVER = 3;
 
 	private ConnectHelper connectHelper;
 
@@ -135,6 +116,14 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 				break;
 			case MSG_SEARCH_FAIL:
 				mNotice.showToast("Search failed");
+				updateUI(SEARCH_FAILED);
+				break;
+			case MSG_SEARCH_STOP:
+				mNotice.showToast("Search Stop");
+				updateUI(SEARCH_OVER);
+				break;
+			case MSG_SEARCHING:
+				updateUI(SEARCHING);
 				break;
 			case MSG_CONNECT_SERVER:
 				ServerInfo info = (ServerInfo) msg.obj;
@@ -165,19 +154,22 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		UserHelper userHelper = new UserHelper(mContext);
 		User localUser = userHelper.loadUser();
 		mUserManager.setLocalUser(localUser);
+		
+		startSearch();
 	}
 
 	private void initViews() {
 		mCloseBtn = (ImageView) findViewById(R.id.close_imageview);
-		mSearchingLayout = (RelativeLayout) findViewById(R.id.search_layout);
-		mNotFoundLayout = (RelativeLayout) findViewById(R.id.not_found_layout);
 		createConnectBtn = (Button) findViewById(R.id.create_connect_btn);
+		mSearchBar = (ProgressBar) findViewById(R.id.searching_bar);
+		mSearchView = (TextView) findViewById(R.id.search_view);
 
 		mServerListView = (ListView) findViewById(R.id.server_listview);
+		mServerListView.setEmptyView(findViewById(R.id.no_server_view));
 		mCloseBtn.setOnClickListener(this);
 		createConnectBtn.setOnClickListener(this);
+		mSearchView.setOnClickListener(this);
 		mServerListView.setOnItemClickListener(new OnItemClickListener() {
-
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
@@ -191,31 +183,48 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		});
 		mServerAdapter = new ServerAdapter(mContext, mServerData);
 		mServerListView.setAdapter(mServerAdapter);
-		updateUI(SEARCHING);
 	}
 
-	private void updateUI(int type) {
-		if (SEARCHING == type) {// searching
-			mSearchingLayout.setVisibility(View.VISIBLE);
-			mServerListView.setVisibility(View.GONE);
-			mNotFoundLayout.setVisibility(View.GONE);
-		} else if (SEARCHED == type) {// found
-			mSearchingLayout.setVisibility(View.GONE);
-			mServerListView.setVisibility(View.VISIBLE);
-			mNotFoundLayout.setVisibility(View.GONE);
-		} else if (NOT_SEARCHED == type) {// not found
-			mSearchingLayout.setVisibility(View.GONE);
-			mServerListView.setVisibility(View.GONE);
-			mNotFoundLayout.setVisibility(View.VISIBLE);
+	/**
+	 * according to search server status to update ui</br>
+	 * 1.when is searching, show progress  bar to tell user that is searching,please wait</br>
+	 * 2.when is search success,show the server list to user to choose connect</br>
+	 * 3.when is search failed,show the re-search ui allow user re-search
+	 * @param status search status
+	 */
+	private void updateUI(int status) {
+		if (SEARCHING == status) {// searching
+			mSearchBar.setVisibility(View.VISIBLE);
+			mSearchView.setText("正在搜索...");
+			mSearchView.setClickable(false);
+		} else if (SEARCH_OVER == status) {// found
+			mSearchBar.setVisibility(View.INVISIBLE);
+			mSearchView.setText("搜索连接");
+			mSearchView.setClickable(true);
+		} else if (SEARCH_FAILED == status) {// not found
 		}
+	}
+	
+	private void startSearch(){
+		clearServerList();
+		connectHelper.searchServer(this);
+		Message message = mHandler.obtainMessage(MSG_SEARCHING);
+		mHandler.sendMessage(message);
+		
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				connectHelper.stopSearch();
+				Message message = mHandler.obtainMessage(MSG_SEARCH_STOP);
+				mHandler.sendMessage(message);
+			}
+		}, 15 * 1000);
 	}
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
-		connectHelper.searchServer(ConnectFriendActivity.this);
-		// connectHelper.searchDirectServer(ConnectFriendActivity.this, null);
 	}
 
 	@Override
@@ -225,7 +234,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	}
 
 	/**
-	 * catch broadcast not register exception. <<<<<<< HEAD =======
+	 * catch broadcast not register exception.
 	 * @param receiver
 	 */
 	@SuppressWarnings("unused")
@@ -367,17 +376,12 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			ConnectFriendActivity.this.finish();
 			break;
 		case R.id.create_connect_btn:
-			LayoutInflater inflater = LayoutInflater
-					.from(ConnectFriendActivity.this);
+			LayoutInflater inflater = LayoutInflater.from(mContext);
 			View view = inflater.inflate(R.layout.ui_create_server, null);
-			final RadioButton wifiButton = (RadioButton) view
-					.findViewById(R.id.radio_wifi);
-			final RadioButton wifiApButton = (RadioButton) view
-					.findViewById(R.id.radio_wifi_ap);
-			final RadioButton wifiDirectButton = (RadioButton) view
-					.findViewById(R.id.radio_wifi_direct);
+			final RadioButton wifiButton = (RadioButton) view.findViewById(R.id.radio_wifi);
+			final RadioButton wifiApButton = (RadioButton) view.findViewById(R.id.radio_wifi_ap);
 
-			new AlertDialog.Builder(ConnectFriendActivity.this)
+			new AlertDialog.Builder(mContext)
 					.setTitle("Please choose the server type")
 					.setView(view)
 					.setPositiveButton(android.R.string.ok,
@@ -418,6 +422,14 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 								}
 							}).create().show();
 			break;
+			
+		case R.id.search_view:
+			startSearch();
+			break;
+//		case R.id.search_failed_layout:
+//			updateUI(SEARCHING);
+//			connectHelper.searchServer(ConnectFriendActivity.this);
+//			break;
 		default:
 			break;
 		}
@@ -461,7 +473,8 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void onSearchStop() {
-		Message message = mHandler.obtainMessage(MSG_SEARCH_FAIL);
+		//stop by user or force stop last search
+		Message message = mHandler.obtainMessage(MSG_SEARCH_STOP);
 		mHandler.sendMessage(message);
 	}
 

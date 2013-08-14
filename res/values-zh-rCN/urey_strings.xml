@@ -39,6 +39,7 @@
     
     <!-- menu start -->
     <string name="menu">菜单</string>
+    <string name="menu_start">启动</string>
     <string name="menu_open">打开</string>
     <string name="menu_send">发送</string>
     <string name="menu_delete">删除</string>
@@ -88,4 +89,10 @@
     <string name="invite_bluetooth_first_step_tip">请身边好友打开蓝牙,保持对附近的蓝牙设备可见（如图所示）</string>
     <string name="invite_bluetooth_second_step_tip">好友完成第一步后,请点击搜索-发送按钮，就可以搜索TA的手机并把XX发送过去</string>
     <string name="back">返回</string>
+    
+    <string name="connect_tip_msg">选择与朋友互连</string>
+    <string name="searching_sever">正在搜索附近连接</string>
+    <string name="server_not_found">未找到连接\n\n点击重新搜索</string>
+    <string name="create_server">创建连接</string>
+    <string name="connect_access">已连接,开始远程访问</string>
 </resources>

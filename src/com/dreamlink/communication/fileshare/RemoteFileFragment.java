@@ -18,9 +18,11 @@ import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationLis
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -45,7 +47,7 @@ import android.widget.TextView;
  * list remote server /sdcard files to client
  * @author yuri
  */
-public class RemoteFileFragment extends Fragment implements OnCommunicationListener, 
+@TargetApi(Build.VERSION_CODES.HONEYCOMB) public class RemoteFileFragment extends Fragment implements OnCommunicationListener, 
 							OnItemClickListener{
 	private static final String TAG = "RemoteFileFragment";
 	

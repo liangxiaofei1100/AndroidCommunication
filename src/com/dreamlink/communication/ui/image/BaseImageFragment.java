@@ -7,10 +7,6 @@ import java.util.Map;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
-import com.dreamlink.communication.ui.DeleteDialog;
-import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.FileInfoDialog;
-import com.dreamlink.communication.ui.DeleteDialog.ConfirmListener;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamConstant;
@@ -20,8 +16,6 @@ import com.dreamlink.communication.util.Log;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 
-import android.R.integer;
-import android.R.string;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -231,13 +225,13 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		switch (scrollState) {
 		case OnScrollListener.SCROLL_STATE_FLING:
-			mAdapter.setFlag(false);
+			mAdapter.setIdleFlag(false);
 			break;
 		case OnScrollListener.SCROLL_STATE_IDLE:
-			mAdapter.setFlag(true);
+			mAdapter.setIdleFlag(true);
 			break;
 		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
-			mAdapter.setFlag(false);
+			mAdapter.setIdleFlag(false);
 			break;
 
 		default:

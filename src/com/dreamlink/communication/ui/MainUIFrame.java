@@ -29,6 +29,7 @@ import com.dreamlink.communication.ui.media.MediaFragmentActivity;
 import com.dreamlink.communication.ui.service.FileManagerService;
 import com.dreamlink.communication.ui.service.FileManagerService.ServiceBinder;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.Notice;
 
 import android.app.ActivityGroup;
 import android.app.LocalActivityManager;
@@ -137,7 +138,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	private ConcurrentHashMap<Integer, User> mUsers = new ConcurrentHashMap<Integer, User>();
 	private SocketCommunicationManager mSocketComMgr;
 	
-	public static final String EXIT_ACTION = "intent.exit.aciton";
+	private Notice mNotice = null;
 	
 	private FileManagerService mService = null;
 	private boolean isServiceStarted = false;
@@ -233,11 +234,13 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		mUser = mUserHelper.loadUser();
 		mUserManager = UserManager.getInstance();
 		
+		mNotice = new Notice(mContext);
+		
 		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
 		mSocketComMgr.setLoginRequestCallBack(this);
 		mSocketComMgr.setLoginRespondCallback(this);
 		
-		IntentFilter filter = new IntentFilter(EXIT_ACTION);
+		IntentFilter filter = new IntentFilter(DreamConstant.EXIT_ACTION);
 		registerReceiver(exitReceiver, filter);
 
 		importDb();
@@ -651,16 +654,14 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCode == RESULT_OK) {// when create server ,set result ok
-			mSocketComMgr.startServer(getApplicationContext());
-			if (requestCode == REQUEST_FOR_MODIFY_NAME) {
+//			mSocketComMgr.startServer(getApplicationContext());
+			if (REQUEST_FOR_MODIFY_NAME == requestCode) {
 				String name = data.getStringExtra("user");
 				mUserNameView.setText(name);
-
 			} else if (REQUEST_FOR_CONNECT == requestCode) {
-				// connect to friend
 				// 判断server创建的状态，并显示在UI上
 				// 更新UI
-				// mProgressBar，mProgressBarTip
+				updateConnectUI(CREATING);
 			}
 		}
 	}
@@ -689,6 +690,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	public void onLoginSuccess(User localUser, SocketCommunication communication) {
 		// TODO Auto-generated method stub
 		String nameString = localUser.getUserName();
+		Log.d(TAG, "onLoginSuccess");
+		mNotice.showToast("User Login Success!");
 		updateConnectUI(CONNECT_OK);
 		mUsers = (ConcurrentHashMap<Integer, User>) mUserManager.getAllUser();
 		mUserTabManager.refreshTab(mUsers);
@@ -697,7 +700,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	@Override
 	public void onLoginFail(int failReason, SocketCommunication communication) {
 		// TODO Auto-generated method stub
-		
+		Log.d(TAG, "onLoginFail");
+		mNotice.showToast("User Login Fail.Reason:" + failReason);
 	}
 
 	@Override

@@ -100,7 +100,7 @@ public class MediaFragmentActivity extends FragmentActivity implements
 	@Override
 	public void onBackPressed() {
 		Log.d(TAG, "onBackPressed");
-		Intent intent = new Intent(MainUIFrame.EXIT_ACTION);
+		Intent intent = new Intent(DreamConstant.EXIT_ACTION);
 		sendBroadcast(intent);
 	}
 

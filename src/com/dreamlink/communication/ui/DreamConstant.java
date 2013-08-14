@@ -41,4 +41,6 @@ public class DreamConstant {
 	/**package name for this app*/
 	public static final String PACKAGE_NAME = "com.dreamlink.communication";
 	
+	public static final String EXIT_ACTION = "intent.exit.aciton";
+	
 }

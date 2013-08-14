@@ -27,7 +27,7 @@ public class ImageAdapter extends BaseAdapter{
 	private ImageLoader mImageLoader;
 	private DisplayImageOptions mOptions;
 	private AsyncImageLoader asyncImageLoader;
-	private boolean flag = true;
+	private boolean mIdleFlag = true;
 
 	public ImageAdapter(LayoutInflater inflater, List<ImageInfo> list, ImageLoader imageLoader, DisplayImageOptions options) {
 		this.inflater = inflater;
@@ -57,8 +57,8 @@ public class ImageAdapter extends BaseAdapter{
 		return position;
 	}
 	
-	public void setFlag(boolean flag){
-		this.flag = flag;
+	public void setIdleFlag(boolean flag){
+		this.mIdleFlag = flag;
 	}
 	
 	private class ViewHolder{
@@ -84,7 +84,7 @@ public class ImageAdapter extends BaseAdapter{
 		
 		/////////////////
 		String imageUrl = imageInfo.getPath();
-		if (!flag) {
+		if (!mIdleFlag) {
 			if (AsyncImageLoader.bitmapCache.size() >0 &&
 					AsyncImageLoader.bitmapCache.get(imageUrl) != null) {
 				holder.imageView.setImageBitmap(AsyncImageLoader.bitmapCache.get(imageUrl).get());

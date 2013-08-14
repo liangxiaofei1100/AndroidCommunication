@@ -27,7 +27,7 @@
     </string-array>
     
     <string-array name="app_menu_normal">
-        <item>@string/menu_open</item>
+        <item>@string/menu_start</item>
         <item>@string/menu_send</item>
         <item>@string/menu_uninstall</item>
         <item>@string/menu_app_info</item>
@@ -40,7 +40,7 @@
     </string-array>
     
     <string-array name="app_menu_game">
-         <item>@string/menu_open</item>
+         <item>@string/menu_start</item>
         <item>@string/menu_send</item>
         <item>@string/menu_uninstall</item>
         <item>@string/menu_app_info</item>
