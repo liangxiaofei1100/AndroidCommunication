@@ -165,19 +165,23 @@ public class SearchSeverLanAndroidAP implements Runnable {
 							inPacket.getLength());
 					Log.d(TAG, "Received broadcast, message: " + message);
 
-					if (message.equals(Search.ANDROID_AP_SERVER_RESPOND)) {
+					if (message.startsWith(Search.ANDROID_AP_SERVER_RESPOND)) {
 						// Android AP is server.
 						Log.d(TAG, "Android AP is server.");
 						if (mListener != null) {
 							mListener.onSearchSuccess(inPacket.getAddress()
-									.getHostAddress(), "");
+									.getHostAddress(), message
+									.substring(Search.ANDROID_AP_SERVER_RESPOND
+											.length()));
 						}
 					} else if (message
 							.startsWith(Search.ANDROID_AP_SERVER_REQUEST)) {
 						Log.d(TAG, "This client is an AP. Found a server.");
 						if (mListener != null) {
 							mListener.onSearchSuccess(inPacket.getAddress()
-									.getHostAddress(), "");
+									.getHostAddress(), message
+									.substring(Search.ANDROID_AP_SERVER_REQUEST
+											.length()));
 						}
 					}
 				} catch (Exception e) {

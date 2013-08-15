@@ -28,6 +28,7 @@ import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.WiFiNameEncryption;
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver.WifiDirectDeviceNotify;
 
@@ -158,6 +159,7 @@ public class DirectService extends Service {
 		}
 		wifiP2pManager.discoverPeers(channel, null);
 		wifiDirectReceiver.registerObserver(new WifiDeviceNotify());
+		notifyServerCreated();
 	}
 
 	private class WifiDeviceNotify implements WifiDirectDeviceNotify {
@@ -312,5 +314,9 @@ public class DirectService extends Service {
 		wifiP2pManager.connect(channel, config, null);
 		return true;
 
+	}
+
+	public void notifyServerCreated() {
+		this.sendBroadcast(new Intent(DreamConstant.SERVER_CREATED_ACTION));
 	}
 }

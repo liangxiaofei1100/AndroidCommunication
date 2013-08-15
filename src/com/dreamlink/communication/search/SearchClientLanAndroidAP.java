@@ -11,6 +11,8 @@ import java.net.UnknownHostException;
 import android.content.Context;
 import android.util.Log;
 
+import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.util.NetWorkUtil;
 
@@ -132,7 +134,8 @@ public class SearchClientLanAndroidAP implements Runnable {
 			Log.d(TAG, "sendRespond to " + clientAddress.getHostAddress());
 			try {
 				DatagramSocket socket = new DatagramSocket();
-				byte[] respond = Search.ANDROID_AP_SERVER_RESPOND.getBytes();
+				byte[] respond = (Search.ANDROID_AP_SERVER_RESPOND + UserManager
+						.getInstance().getLocalUser().getUserName()).getBytes();
 				DatagramPacket inPacket = new DatagramPacket(respond,
 						respond.length, clientAddress,
 						Search.ANDROID_AP_RECEIVE_PORT);
@@ -172,7 +175,7 @@ public class SearchClientLanAndroidAP implements Runnable {
 						Log.d(TAG, "Go another server.");
 						if (mListener != null) {
 							mListener.onSearchSuccess(inPacket.getAddress()
-									.getHostAddress(),"");
+									.getHostAddress(), "");
 						}
 					} else {
 						// ignore
@@ -205,8 +208,8 @@ public class SearchClientLanAndroidAP implements Runnable {
 				InetAddress androidAPAddress = InetAddress
 						.getByName(Search.ANDROID_AP_ADDRESS);
 				// search data like: "I am server. IP: 192.168.43.169"
-				byte[] searchData = (Search.ANDROID_AP_SERVER_REQUEST + NetWorkUtil
-						.getLocalIpAddress()).getBytes();
+				byte[] searchData = (Search.ANDROID_AP_SERVER_REQUEST + UserManager
+						.getInstance().getLocalUser().getUserName()).getBytes();
 
 				mSearchPacket = new DatagramPacket(searchData,
 						searchData.length, androidAPAddress,

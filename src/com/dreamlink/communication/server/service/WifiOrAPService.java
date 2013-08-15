@@ -3,11 +3,13 @@ package com.dreamlink.communication.server.service;
 import java.util.List;
 
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchClient;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.SearchSever;
 import com.dreamlink.communication.search.WiFiNameEncryption;
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
@@ -121,6 +123,7 @@ public class WifiOrAPService extends Service {
 			if (mWifiManager.isWifiEnabled()
 					&& cm.getActiveNetworkInfo() != null) {
 				mSearchClient.startSearch();
+				notifyServerCreated();
 			} else {
 				setWifiEnabled(true);
 				/**
@@ -161,6 +164,7 @@ public class WifiOrAPService extends Service {
 				if (intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,
 						WifiManager.WIFI_STATE_UNKNOWN) == WifiManager.WIFI_STATE_ENABLED)
 					mSearchClient.startSearch();
+				notifyServerCreated();
 			}
 		}
 
@@ -177,6 +181,7 @@ public class WifiOrAPService extends Service {
 				}
 				mSearchClient.setOnSearchListener(onSearchListener);
 				mSearchClient.startSearch();
+				notifyServerCreated();
 				break;
 			case WIFI_AP_STATE_DISABLING:
 				Log.d(TAG, "WIFI_AP_STATE_DISABLING");
@@ -306,7 +311,7 @@ public class WifiOrAPService extends Service {
 						String connectedSSID = wifiInfo.getSSID();
 						Log.d(TAG, connectedSSID + "-------------- "
 								+ result.SSID);
-						if (connectedSSID.equals("\"" + result.SSID + "\"")) {
+						if (connectedSSID.equals("\"" + result.SSID + "\"")||connectedSSID.equals(result.SSID)) {
 							// Already connected to the ssid ignore.
 							Log.d(TAG, "Already connected to the ssid ignore. "
 									+ result.SSID);
@@ -377,8 +382,10 @@ public class WifiOrAPService extends Service {
 		Log.d(TAG, "enable network result: " + result);
 	}
 
-	public void notifyServerCreated() {
-		this.sendBroadcast(new Intent(
-				"com.dreamlink.communication.server.created"));
+	private void notifyServerCreated() {
+		SocketCommunicationManager.getInstance(getApplicationContext())
+				.startServer(getApplicationContext());
+		UserManager.getInstance().addLocalServerUser();
+		this.sendBroadcast(new Intent(DreamConstant.SERVER_CREATED_ACTION));
 	}
 }

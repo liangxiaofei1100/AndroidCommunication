@@ -651,7 +651,6 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCode == RESULT_OK) {// when create server ,set result ok
-			mSocketComMgr.startServer(getApplicationContext());
 			if (requestCode == REQUEST_FOR_MODIFY_NAME) {
 				String name = data.getStringExtra("user");
 				mUserNameView.setText(name);
@@ -704,9 +703,6 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	public void onLoginRequest(final User user,
 			final SocketCommunication communication) {
 		// TODO Auto-generated method stub
-		Log.d("ArbiterLiu", "onLoginRequest(), user = " + user
-				+ ", communication = "
-				+ communication.getConnectedAddress().getHostAddress());
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {

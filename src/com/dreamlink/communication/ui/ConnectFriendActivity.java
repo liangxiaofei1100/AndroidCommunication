@@ -18,6 +18,7 @@ import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.Search;
 import com.dreamlink.communication.search.SearchSever;
 import com.dreamlink.communication.search.WiFiNameEncryption;
+import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.server.service.ConnectHelper;
 import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.Log;
@@ -120,7 +121,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 	private static final int SEARCHING = 0;
 	private static final int SEARCHED = 1;
-	private static final int NOT_SEARCHED = 2;
+	private static final int SEARCH_FAILED = 2;
 
 	private ConnectHelper connectHelper;
 
@@ -128,12 +129,13 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 		@SuppressWarnings("unchecked")
 		public void handleMessage(android.os.Message msg) {
-			updateUI(SEARCHED);
 			switch (msg.what) {
 			case MSG_SEARCH_SUCCESS:
+				updateUI(SEARCHED);
 				addServer((ServerInfo) msg.obj);
 				break;
 			case MSG_SEARCH_FAIL:
+				updateUI(SEARCH_FAILED);
 				mNotice.showToast("Search failed");
 				break;
 			case MSG_CONNECT_SERVER:
@@ -191,7 +193,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		});
 		mServerAdapter = new ServerAdapter(mContext, mServerData);
 		mServerListView.setAdapter(mServerAdapter);
-		updateUI(SEARCHING);
 	}
 
 	private void updateUI(int type) {
@@ -203,7 +204,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			mSearchingLayout.setVisibility(View.GONE);
 			mServerListView.setVisibility(View.VISIBLE);
 			mNotFoundLayout.setVisibility(View.GONE);
-		} else if (NOT_SEARCHED == type) {// not found
+		} else if (SEARCH_FAILED == type) {// not found
 			mSearchingLayout.setVisibility(View.GONE);
 			mServerListView.setVisibility(View.GONE);
 			mNotFoundLayout.setVisibility(View.VISIBLE);
@@ -214,6 +215,10 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		if (SocketServer.getInstance().isServerStarted()) {
+			SocketServer.getInstance().stopServer();
+		}
+		updateUI(SEARCHING);
 		connectHelper.searchServer(ConnectFriendActivity.this);
 		// connectHelper.searchDirectServer(ConnectFriendActivity.this, null);
 	}
@@ -226,6 +231,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 	/**
 	 * catch broadcast not register exception. <<<<<<< HEAD =======
+	 * 
 	 * @param receiver
 	 */
 	@SuppressWarnings("unused")
@@ -266,7 +272,9 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			ipServer.put(KEY_TYPE, SERVER_TYPE_IP);
 			ipServer.put(KEY_VALUE, value);
 			mServerData.add(ipServer);
-			Log.i(TAG, "type:" + type + "    mServerData.size:" + mServerData.size());
+			Log.i(TAG,
+					"type:" + type + "    mServerData.size:"
+							+ mServerData.size());
 			mServerAdapter.notifyDataSetChanged();
 			break;
 		case SERVER_TYPE_AP:
@@ -281,7 +289,9 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			apServer.put(KEY_TYPE, SERVER_TYPE_AP);
 			apServer.put(KEY_VALUE, value);
 			mServerData.add(apServer);
-			Log.i(TAG, "type:" + type + "    mServerData.size:" + mServerData.size());
+			Log.i(TAG,
+					"type:" + type + "    mServerData.size:"
+							+ mServerData.size());
 			mServerAdapter.notifyDataSetChanged();
 		default:
 			break;
@@ -443,7 +453,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			info.setServer_type("wifi");
 			info.setServer_ip(serverIP);
 			info.setServer_name(serverName);
-			Log.e("ArbiterLiu", serverName + "        " + info.getServer_name());
 			message.obj = info;
 			mHandler.sendMessage(message);
 		}
@@ -451,9 +460,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void onSearchSuccess(ServerInfo serverInfo) {
-		Log.e("ArbiterLiu",
-				serverInfo.getServer_type() + "  "
-						+ serverInfo.getServer_name());
 		Message message = mHandler.obtainMessage(MSG_SEARCH_SUCCESS);
 		message.obj = serverInfo;
 		message.sendToTarget();
@@ -468,7 +474,8 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	@Override
 	public void finish() {
 		super.finish();
-		if (!sever_flag)
+		if (!sever_flag) {
 			connectHelper.stopSearch();
+		}
 	}
 }
