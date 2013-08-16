@@ -118,6 +118,8 @@ public class NetWorkUtil {
 									|| intf.getDisplayName().contains("eth") || intf
 									.getDisplayName().contains("ap"))) {
 						return inetAddress;
+					}else if(inetAddress.getHostAddress().equals("192.168.43.1")){
+						return inetAddress;
 					}
 				}
 			}

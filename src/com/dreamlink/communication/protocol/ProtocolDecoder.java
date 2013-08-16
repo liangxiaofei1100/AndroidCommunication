@@ -3,6 +3,7 @@ package com.dreamlink.communication.protocol;
 import java.util.Arrays;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;

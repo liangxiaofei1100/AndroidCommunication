@@ -119,7 +119,8 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	public static synchronized SocketCommunicationManager getInstance(
 			Context context) {
 		if (mInstance == null) {
-			mInstance = new SocketCommunicationManager(context.getApplicationContext());
+			mInstance = new SocketCommunicationManager(
+					context.getApplicationContext());
 		}
 		return mInstance;
 	}
@@ -222,6 +223,9 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	public void OnCommunicationEstablished(SocketCommunication communication) {
 		synchronized (mCommunications) {
 			mCommunications.add(communication);
+			if (!SocketServer.getInstance().isServerStarted()) {
+				sendLoginRequest();
+			}
 			if (!mCommunications.isEmpty()) {
 				for (SocketCommunication comm : mCommunications) {
 					if ((comm.getConnectedAddress().equals(communication

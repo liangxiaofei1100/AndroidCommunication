@@ -738,9 +738,6 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	public void onLoginRequest(final User user,
 			final SocketCommunication communication) {
 		// TODO Auto-generated method stub
-		Log.d("ArbiterLiu", "onLoginRequest(), user = " + user
-				+ ", communication = "
-				+ communication.getConnectedAddress().getHostAddress());
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
