@@ -13,6 +13,7 @@ import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationLis
 import com.dreamlink.communication.fileshare.Command;
 import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.fileshare.FileListAdapter;
+import com.dreamlink.communication.fileshare.FileShareServerService;
 import com.dreamlink.communication.fileshare.ProgressBarDialog;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
@@ -21,9 +22,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.ActionMode;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -31,23 +32,25 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
 /**
  * access remote server
  */
-public class RemoteShareActivity extends Activity implements OnCommunicationListener, OnItemClickListener{
+public class RemoteShareActivity extends Activity implements OnCommunicationListener, OnItemClickListener, OnClickListener{
 	private static final String TAG = "RemoteShareActivity";
 	
 	//show file list
 	private ListView mListView = null;
 	//show tip msg
-	private TextView mTipView = null;
 	private LinearLayout mUnconnectLayout = null;
+	private LinearLayout mServerOrClientLayout = null;
 	private Button mAccessBtn;
+	private Button mServerBtn;
+	private Button mClientBtn;
+	private Button mStopServerBtn;
 	
 	private Context mContext = null;
-	private SocketCommunicationManager mCommunicationManager = null;
+	private SocketCommunicationManager mSocketMgr = null;
 	
 	//File Array
 	private ArrayList<FileInfo> mList = new ArrayList<FileInfo>();
@@ -62,9 +65,6 @@ public class RemoteShareActivity extends Activity implements OnCommunicationList
 	private  String parentPath = "";
 	
 	private static final int UPDATE_UI = 0x00;
-	
-//	private ActionMode mActionMode = null;
-//	private RemoteActionModeCallBack mActionModeCallBack = new RemoteActionModeCallBack();
 	
 	/**record the file that need copy*/
 	public FileInfo currentCopyFile = null;
@@ -111,46 +111,36 @@ public class RemoteShareActivity extends Activity implements OnCommunicationList
 		// TODO Auto-generated method stub
 		super.onCreate(arg0);
 		Log.d(TAG, "onCreate begin");
-		setContentView(R.layout.filelist_2);
+		setContentView(R.layout.ui_remote_share);
 		
 		mContext = this;
-		mCommunicationManager = SocketCommunicationManager
+		mSocketMgr = SocketCommunicationManager
 				.getInstance(mContext);
-		mCommunicationManager.registered(this);
+		mSocketMgr.registered(this);
 		
 		mListView = (ListView) findViewById(R.id.file_listview);
-//		mTipView = (TextView) findViewById(R.id.tip_text);
 		mUnconnectLayout = (LinearLayout) findViewById(R.id.unconnect_layout);
+		mServerOrClientLayout = (LinearLayout) findViewById(R.id.server_or_client);
 		mAccessBtn = (Button) findViewById(R.id.access_button);
-		mAccessBtn.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				// tell server that i want look u sdcard files
-				if (mCommunicationManager.getCommunications().isEmpty()) {
-					new AlertDialog.Builder(mContext)
-						.setMessage("请先连接")
-						.setPositiveButton(android.R.string.ok, null)
-						.create().show();
-				}else {
-					String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
-					sendCommandMsg(cmdMsg);
-					
-					mUnconnectLayout.setVisibility(View.INVISIBLE);
-					mListView.setVisibility(View.VISIBLE);
-				}
-			}
-		});
+		mServerBtn = (Button) findViewById(R.id.server_button);
+		mClientBtn = (Button) findViewById(R.id.client_button);
+		mStopServerBtn = (Button) findViewById(R.id.stop_server_button);
+		mServerBtn.setOnClickListener(this);
+		mClientBtn.setOnClickListener(this);
+		mAccessBtn.setOnClickListener(this);
+		mStopServerBtn.setOnClickListener(this);
 		
 		// is connected to server
-		if (mCommunicationManager.getCommunications().isEmpty()) {
-//			mTipView.setVisibility(View.VISIBLE);
+		if (mSocketMgr.getCommunications().isEmpty()) {
 			mUnconnectLayout.setVisibility(View.VISIBLE);
-			mListView.setVisibility(View.GONE);
+			mListView.setVisibility(View.INVISIBLE);
+			mServerOrClientLayout.setVisibility(View.INVISIBLE);
+			mStopServerBtn.setVisibility(View.INVISIBLE);
 		} else {
-//			mTipView.setVisibility(View.GONE);
 			mUnconnectLayout.setVisibility(View.INVISIBLE);
-			mListView.setVisibility(View.VISIBLE);
+			mListView.setVisibility(View.INVISIBLE);
+			mServerOrClientLayout.setVisibility(View.VISIBLE);
+			mStopServerBtn.setVisibility(View.INVISIBLE);
 
 			if (mFileListDialog == null) {
 				mFileListDialog = new ProgressDialog(mContext);
@@ -184,7 +174,7 @@ public class RemoteShareActivity extends Activity implements OnCommunicationList
 			return;
 		}
 		// TODO need to implement appID.
-		mCommunicationManager.sendMessageToAll(cmdMsg.getBytes(), 0);
+		mSocketMgr.sendMessageToAll(cmdMsg.getBytes(), 0);
 	}
 	
 	private static String wholeReceiveMsg = "";
@@ -348,6 +338,58 @@ public class RemoteShareActivity extends Activity implements OnCommunicationList
 		}
 		Log.d(TAG, "send cmd=>" + msg);
 		sendCommandMsg(msg);
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.access_button:
+			// tell server that i want look u sdcard files
+			if (mSocketMgr.getCommunications().isEmpty()) {
+				new AlertDialog.Builder(mContext)
+					.setMessage("请先连接")
+					.setPositiveButton(android.R.string.ok, null)
+					.create().show();
+			}else {
+				mUnconnectLayout.setVisibility(View.INVISIBLE);
+				mServerOrClientLayout.setVisibility(View.VISIBLE);
+				mListView.setVisibility(View.INVISIBLE);
+				mStopServerBtn.setVisibility(View.INVISIBLE);
+			}
+			break;
+			
+		case R.id.server_button:
+			Intent intent = new Intent(mContext, FileShareServerService.class);
+			startService(intent);
+			
+			mUnconnectLayout.setVisibility(View.INVISIBLE);
+			mServerOrClientLayout.setVisibility(View.INVISIBLE);
+			mListView.setVisibility(View.INVISIBLE);
+			mStopServerBtn.setVisibility(View.VISIBLE);
+			break;
+		case R.id.client_button:
+			String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
+			sendCommandMsg(cmdMsg);
+			
+			mUnconnectLayout.setVisibility(View.INVISIBLE);
+			mServerOrClientLayout.setVisibility(View.INVISIBLE);
+			mListView.setVisibility(View.VISIBLE);
+			mStopServerBtn.setVisibility(View.INVISIBLE);
+			break;
+		case R.id.stop_server_button:
+			Intent stopIntent = new Intent(mContext, FileShareServerService.class);
+			stopService(stopIntent);
+			
+			mUnconnectLayout.setVisibility(View.INVISIBLE);
+			mServerOrClientLayout.setVisibility(View.VISIBLE);
+			mListView.setVisibility(View.INVISIBLE);
+			mStopServerBtn.setVisibility(View.INVISIBLE);
+			break;
+
+		default:
+			break;
+		}
 	}
 	
 }

@@ -182,6 +182,12 @@
 			android:theme="@style/MyDialogStyle"            
             android:screenOrientation="portrait"
             ></activity>
+        
+        <activity 
+            android:name="com.dreamlink.communication.ui.StartLoader"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+          	/>
         <!-- main ui end -->
         
         <provider 

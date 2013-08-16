@@ -30,7 +30,7 @@
     
     <RelativeLayout
         android:layout_width="fill_parent"
-        android:layout_height="400dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp" >
 
         <!-- 1 -->
@@ -44,7 +44,7 @@
                 android:id="@+id/keyonglianjie"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="可用连接" />
+                android:text="@string/connectable" />
 
             <View
                 android:layout_width="fill_parent"
@@ -72,7 +72,7 @@
             android:paddingBottom="10dp"
             android:clickable="true"
             android:gravity="center"
-            android:text="搜索连接"
+            android:text="@string/searching_sever"
             android:textSize="20sp" />
          <!-- 3 -->
          
@@ -100,7 +100,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="15dp"
-                android:text="未发现周围连接" />
+                android:text="@string/server_not_found" />
         </RelativeLayout>
         <!-- 2 -->
     </RelativeLayout>
@@ -115,7 +115,7 @@
         android:id="@+id/create_connect_btn"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
+        android:layout_margin="15dp"
         android:background="@drawable/button_ok"
         android:text="@string/create_server" />
 

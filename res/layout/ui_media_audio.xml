@@ -9,6 +9,9 @@
        android:id="@+id/audio_listview"
        android:layout_width="fill_parent"
        android:layout_height="fill_parent"
+       android:fastScrollEnabled="true"
+       android:fastScrollAlwaysVisible="false"
+       android:focusable="true"
       />
    
    <TextView 

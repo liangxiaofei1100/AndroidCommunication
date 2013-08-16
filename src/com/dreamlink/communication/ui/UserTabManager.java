@@ -67,8 +67,6 @@ public class UserTabManager {
 	 */
 	protected void addTab(User user) {
 		Log.d(TAG, "addTab:" + user.getUserName());
-		/*******TEST1******/
-		LinearLayout.LayoutParams mlp = null;
 		
 		View view = null;
 		view = inflater.inflate(R.layout.ui_user_item, null);
@@ -76,7 +74,6 @@ public class UserTabManager {
 		nameView.setText(user.getUserName());
 		view.setId(mUserList.size());
 		mTabsHolder.addView(view);
-		/*******TEST1******/
 		mUserList.add(user);
 	}
 	

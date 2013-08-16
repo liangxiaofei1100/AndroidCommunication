@@ -1,67 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-     >
-    
-    <TextView 
-        android:id="@+id/remote_share_tip"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+    <LinearLayout
+        android:id="@+id/unconnect_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="在这里，你可以看到远程服务器的文件目录 \n 不过，尚未实现，尽情期待"
-        />
-    
-    <!-- 路径导航布局 -->
-    <LinearLayout 
-        android:id="@+id/navigation_bar"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:gravity="center"
+        android:orientation="vertical" 
         android:visibility="gone"
-        android:orientation="horizontal"
-        android:background="#dddddd"
         >
-        <!-- 点击该按钮，选择SD卡或手机内部存储 -->
-        <com.dreamlink.communication.ui.SlowHorizontalScrollView
-            android:id="@+id/navigation_bar_view"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="6"
-            android:fillViewport="true" >
-             <LinearLayout
-                android:id="@+id/tabs_holder"
-                android:layout_width="match_parent"
-                android:layout_height="fill_parent"
-                android:orientation="horizontal" />
-            </com.dreamlink.communication.ui.SlowHorizontalScrollView>
-    </LinearLayout>
-    
-    <View 
-        android:layout_width="fill_parent"
-        android:layout_height="2dp"
-        android:background="@drawable/divider_iv"
-        />
-    
-    <!-- 文件列表布局 -->
-    <RelativeLayout 
-        android:id="@+id/filelist_layout"
-        android:layout_width="fill_parent"
-        android:layout_height="match_parent"
-        >
-        <ListView 
-            android:id="@+id/file_listview"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            ></ListView>
-        
-        <TextView 
-            android:id="@+id/empty_textview"
+
+        <TextView
+            android:id="@+id/tip_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="empty"
+            android:text="@string/no_connect"
             />
-    </RelativeLayout>
+        
+        <Button 
+            android:id="@+id/access_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_ok"
+            android:text="@string/connect_access"
+            />
+    </LinearLayout>
+
+    <!-- show remote file list -->
+    <ListView
+        android:id="@+id/file_listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+    </ListView>
+    
+    <!-- init ui -->
+    <LinearLayout
+        android:id="@+id/server_or_client"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical" 
+        android:visibility="gone"
+        >
+
+        <Button 
+            android:id="@+id/server_button"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Server"
+            />
+        
+        <Button 
+            android:id="@+id/client_button"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Client"
+            />
+    </LinearLayout>
+    
+    <!-- server ui -->
+    <Button 
+        android:id="@+id/stop_server_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Server starting...,Click to stop it."
+        />
+
 </RelativeLayout>

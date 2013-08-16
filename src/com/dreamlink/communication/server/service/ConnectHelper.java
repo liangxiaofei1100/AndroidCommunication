@@ -195,6 +195,7 @@ public class ConnectHelper {
 	}
 
 	public void connenctToServer(ServerInfo info) {
+		Log.d(TAG, "connenctToServer");
 		if (info.getServer_type().equals("wifi-direct")) {
 			if (directService != null)
 				directService.connectToServer(info);

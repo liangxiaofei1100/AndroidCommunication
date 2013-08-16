@@ -3,6 +3,7 @@ package com.dreamlink.communication.ui;
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 import android.app.Activity;
@@ -15,6 +16,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 /**
  * set user infos
@@ -26,6 +28,7 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 	//name edit text
 	private EditText mUserName_Edit;
 	private Button mSaveButton;
+	private TextView mIpVersionView;
 	//title save layout
 	private RelativeLayout mRightLayout;
 	private String mUserName;
@@ -43,6 +46,7 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 		
 		mUserName_Edit = (EditText) findViewById(R.id.name_editview);
 		mSaveButton = (Button) findViewById(R.id.save_button);
+		mIpVersionView = (TextView) findViewById(R.id.ip_version_view);
 		
 		mUserName = android.os.Build.MANUFACTURER;
 		
@@ -63,6 +67,10 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 		
 		mNotice = new Notice(this);
 
+		mIpVersionView.setText(getString(R.string.userinfo_ip,
+				NetWorkUtil.getLocalIpAddress()) + "\n"
+				+ getString(R.string.userinfo_android_version,
+						mUser.getSystemInfo().mAndroidVersionCode));
 	}
 
 	@Override

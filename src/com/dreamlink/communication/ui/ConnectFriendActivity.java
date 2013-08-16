@@ -102,6 +102,9 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	private static final int SEARCHED = 1;
 	private static final int SEARCH_FAILED = 2;
 	private static final int SEARCH_OVER = 3;
+	
+	/**set search time out 15s*/
+	private static final int TIME_OUT = 15 * 1000;
 
 	private ConnectHelper connectHelper;
 
@@ -109,7 +112,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 		@SuppressWarnings("unchecked")
 		public void handleMessage(android.os.Message msg) {
-			updateUI(SEARCHED);
 			switch (msg.what) {
 			case MSG_SEARCH_SUCCESS:
 				addServer((ServerInfo) msg.obj);
@@ -119,7 +121,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 				updateUI(SEARCH_FAILED);
 				break;
 			case MSG_SEARCH_STOP:
-				mNotice.showToast("Search Stop");
+//				mNotice.showToast("Search Stop");
 				updateUI(SEARCH_OVER);
 				break;
 			case MSG_SEARCHING:
@@ -195,16 +197,17 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	private void updateUI(int status) {
 		if (SEARCHING == status) {// searching
 			mSearchBar.setVisibility(View.VISIBLE);
-			mSearchView.setText("正在搜索...");
+			mSearchView.setText(R.string.searching_sever);
 			mSearchView.setClickable(false);
 		} else if (SEARCH_OVER == status) {// found
 			mSearchBar.setVisibility(View.INVISIBLE);
-			mSearchView.setText("搜索连接");
+			mSearchView.setText(R.string.search_sever);
 			mSearchView.setClickable(true);
 		} else if (SEARCH_FAILED == status) {// not found
 		}
 	}
 	
+	/**start search server*/
 	private void startSearch(){
 		clearServerList();
 		connectHelper.searchServer(this);
@@ -219,7 +222,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 				Message message = mHandler.obtainMessage(MSG_SEARCH_STOP);
 				mHandler.sendMessage(message);
 			}
-		}, 15 * 1000);
+		}, TIME_OUT);
 	}
 
 	@Override
@@ -363,7 +366,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		return false;
 	}
 
-	@SuppressWarnings("unused")
 	private void clearServerList() {
 		mServerData.clear();
 		mServerAdapter.notifyDataSetChanged();
@@ -437,6 +439,9 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void onSearchSuccess(String serverIP, String serverName) {
+		Log.d(TAG, "mIsApSelected:" + mIsAPSelected + "\n"
+				+ "serverIP:" + serverIP+ "\n"
+				+ "serverName:" + serverName);
 		if (mIsAPSelected && serverIP.equals(Search.ANDROID_AP_ADDRESS)) {
 			// Auto connect to the server.
 			Message message = mHandler.obtainMessage(MSG_CONNECT_SERVER);

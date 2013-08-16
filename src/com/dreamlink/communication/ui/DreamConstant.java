@@ -24,6 +24,8 @@ public class DreamConstant {
 		
 		public static final String CAMERA_SIZE = "camera_size";
 		public static final String GALLERY_SIZE = "gallery_size";
+		
+		public static final String IS_SERVER = "is_server";
 	}
 	
 	public static final String MEDIA_AUDIO_ACTION = "intent.media.audio.action";

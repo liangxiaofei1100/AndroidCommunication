@@ -28,7 +28,7 @@
     <string name="remote_share">远程访问</string>
     
     <string name="connect">连接</string>
-    <string name="connecting">"正在连接..."</string>
+    <string name="connecting">"正在连接&#8230;"</string>
     <string name="invite">邀请</string>
     <string name="close">关闭</string>
     
@@ -91,8 +91,17 @@
     <string name="back">返回</string>
     
     <string name="connect_tip_msg">选择与朋友互连</string>
-    <string name="searching_sever">正在搜索附近连接</string>
-    <string name="server_not_found">未找到连接\n\n点击重新搜索</string>
+    <string name="search_sever">搜索连接</string>
+    <string name="searching_sever">正在搜索&#8230;</string><!-- &#8230; ... -->
+    <string name="server_not_found">未发现周围可用连接</string>
     <string name="create_server">创建连接</string>
+    <string name="connectable">可用连接</string>
     <string name="connect_access">已连接,开始远程访问</string>
+    
+    <string name="name_setting">设置名称</string>
+    <string name="save">保存</string>
+    <string name="user_name">名称:</string>
+    <string name="click_to_set">点我设置名称</string>
+    <string name="name_set_tip">名称最大长度为8个字符</string>
+    <string name="save_setting">保存设置</string>
 </resources>

@@ -13,6 +13,7 @@ import com.dreamlink.communication.client.ServerListActivity;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.ClientListActivity;
 import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.StartLoader;
 import com.dreamlink.communication.ui.UserInfoSetting;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -101,7 +102,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			return true;
 		case R.id.menu_start_test:
 			Intent intent = new Intent();
-			intent.setClass(MainActivity.this, MainUIFrame.class);
+			intent.setClass(MainActivity.this, StartLoader.class);
 			startActivity(intent);
 			break;
 		case R.id.action_settings:

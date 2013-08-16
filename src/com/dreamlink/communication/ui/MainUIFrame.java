@@ -14,6 +14,7 @@ import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.AllowLoginDialog;
+import com.dreamlink.communication.NetworkStatus;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
@@ -32,10 +33,12 @@ import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
 import android.app.ActivityGroup;
+import android.app.AlertDialog;
 import android.app.LocalActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -50,6 +53,7 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.view.Window;
@@ -218,7 +222,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		LayoutInflater inflater = LayoutInflater.from(this);
-		rooView = inflater.inflate(R.layout.ui_main2, null);
+		rooView = inflater.inflate(R.layout.ui_main, null);
 		setContentView(rooView);
 //		setContentView(R.layout.ui_main2);
 
@@ -226,9 +230,9 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		instance = this;
 		mActivityManager = getLocalActivityManager();
 
-		loadView = (LinearLayout) findViewById(R.id.load_view);
-		mainView = (RelativeLayout) findViewById(R.id.main_view);
-		mHandler.sendEmptyMessage(LOADING);
+//		loadView = (LinearLayout) findViewById(R.id.load_view);
+//		mainView = (RelativeLayout) findViewById(R.id.main_view);
+//		mHandler.sendEmptyMessage(LOADING);
 
 		mUserHelper = new UserHelper(mContext);
 		mUser = mUserHelper.loadUser();
@@ -387,6 +391,14 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 
 		mTitleLeftLayout = (RelativeLayout) findViewById(R.id.title_left_layout);
 		mTitleLeftLayout.setOnClickListener(this);
+		mTitleLeftLayout.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				NetworkStatus status = new NetworkStatus(mContext);
+				status.show();
+				return true;
+			}
+		});
 
 		mConnectView.setOnClickListener(this);
 		
@@ -608,7 +620,23 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 				intent = new Intent(mContext, InviteMainActivity.class);
 				startActivity(intent);
 				break;
-
+			case CREATING:
+			case CREATE_OK:
+			case CONNECTING:
+			case CONNECT_OK:
+				new AlertDialog.Builder(mContext)
+					.setMessage("确定关闭连接?")
+					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							mSocketComMgr.closeAllCommunication();
+							mCurrentStatus = INIT;
+							updateConnectUI(mCurrentStatus);
+						}
+					})
+					.setNegativeButton(android.R.string.cancel, null)
+					.create().show();
+				break;
 			default:
 				break;
 			}
@@ -661,7 +689,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 			} else if (REQUEST_FOR_CONNECT == requestCode) {
 				// 判断server创建的状态，并显示在UI上
 				// 更新UI
-				updateConnectUI(CREATING);
+				mCurrentStatus = CREATING;
+				updateConnectUI(mCurrentStatus);
 			}
 		}
 	}
@@ -692,7 +721,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		String nameString = localUser.getUserName();
 		Log.d(TAG, "onLoginSuccess");
 		mNotice.showToast("User Login Success!");
-		updateConnectUI(CONNECT_OK);
+		mCurrentStatus = CONNECT_OK;
+		updateConnectUI(mCurrentStatus);
 		mUsers = (ConcurrentHashMap<Integer, User>) mUserManager.getAllUser();
 		mUserTabManager.refreshTab(mUsers);
 	}

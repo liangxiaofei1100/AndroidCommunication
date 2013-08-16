@@ -21,7 +21,7 @@ public class NetworkStatus {
 		mContext = context;
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(mContext);
-		mUserManager = mUserManager.getInstance();
+		mUserManager = UserManager.getInstance();
 	}
 
 	public void show() {
