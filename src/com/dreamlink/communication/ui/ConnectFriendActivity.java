@@ -1,49 +1,29 @@
 package com.dreamlink.communication.ui;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
 import com.dreamlink.aidl.User;
-import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.SocketCommunication;
-import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.Search;
-import com.dreamlink.communication.search.SearchSever;
-import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.server.service.ConnectHelper;
 import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
-import com.dreamlink.communication.wifip2p.WifiDirectManager;
-import com.dreamlink.communication.wifip2p.WifiDirectManager.ManagerP2pDeivce;
-import com.dreamlink.communication.wifip2p.WifiDirectReciver;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.NetworkInfo;
-import android.net.wifi.ScanResult;
+import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -53,14 +33,11 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 /***
@@ -127,7 +104,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 	private Handler mHandler = new Handler() {
 
-		@SuppressWarnings("unchecked")
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_SEARCH_SUCCESS:
@@ -386,7 +362,10 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 					.findViewById(R.id.radio_wifi_ap);
 			final RadioButton wifiDirectButton = (RadioButton) view
 					.findViewById(R.id.radio_wifi_direct);
-
+			if (!mContext.getPackageManager().hasSystemFeature(
+					PackageManager.FEATURE_WIFI_DIRECT)) {
+				wifiDirectButton.setVisibility(View.GONE);
+			}
 			new AlertDialog.Builder(ConnectFriendActivity.this)
 					.setTitle("Please choose the server type")
 					.setView(view)

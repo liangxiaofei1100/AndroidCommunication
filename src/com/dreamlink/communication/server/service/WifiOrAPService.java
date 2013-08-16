@@ -49,6 +49,7 @@ public class WifiOrAPService extends Service {
 	private OnSearchListener onSearchListener;
 	private boolean server_register = false;
 	private boolean client_register = false;
+	private boolean flag = false;
 
 	@Override
 	public void onCreate() {
@@ -65,6 +66,7 @@ public class WifiOrAPService extends Service {
 	public boolean onUnbind(Intent intent) {
 		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
+			flag=false;
 			mSearchClient = null;
 		}
 		if (mSearchServer != null) {
@@ -101,6 +103,7 @@ public class WifiOrAPService extends Service {
 	public void startServer(String serverType, OnSearchListener searchListener) {
 		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
+			flag=false;
 			mSearchClient = null;
 		}
 		if (mSearchServer != null) {
@@ -181,6 +184,7 @@ public class WifiOrAPService extends Service {
 				}
 				mSearchClient.setOnSearchListener(onSearchListener);
 				mSearchClient.startSearch();
+				flag = true;
 				notifyServerCreated();
 				break;
 			case WIFI_AP_STATE_DISABLING:
@@ -188,14 +192,36 @@ public class WifiOrAPService extends Service {
 				break;
 			case WIFI_AP_STATE_DISABLED:
 				Log.d(TAG, "WIFI_AP_STATE_DISABLED");
-				mSearchClient.stopSearch();
-				mSearchClient = null;
+				if (mSearchClient != null) {
+					mSearchClient.stopSearch();
+					mSearchClient = null;
+					flag = false;
+				}
 				break;
 			case WIFI_AP_STATE_FAILED:
 				Log.d(TAG, "WIFI_AP_STATE_FAILED");
 				break;
 			default:
 				Log.d(TAG, "handleWifiApchanged, unkown state: " + wifiApState);
+				if (NetWorkUtil.isWifiApEnabled(getApplicationContext())) {
+					if (flag) {
+						break;
+					} else {
+						if (mSearchClient == null) {
+							mSearchClient = SearchClient
+									.getInstance(getApplicationContext());
+						}
+						mSearchClient.setOnSearchListener(onSearchListener);
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						mSearchClient.startSearch();
+						notifyServerCreated();
+					}
+				}
 				break;
 			}
 		}
@@ -219,6 +245,7 @@ public class WifiOrAPService extends Service {
 		}
 		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
+			flag=false;
 			mSearchClient = null;
 		}
 		if (client_register) {
@@ -285,7 +312,8 @@ public class WifiOrAPService extends Service {
 			Log.d(TAG, "WIFI_STATE_ENABLED");
 			Log.d(TAG, "Start WiFi scan.");
 			mWifiManager.startScan();
-			mSearchServer.startSearch();
+			if (mSearchServer != null)
+				mSearchServer.startSearch();
 			break;
 		case WifiManager.WIFI_STATE_DISABLING:
 			Log.d(TAG, "WIFI_STATE_DISABLING");
@@ -309,13 +337,17 @@ public class WifiOrAPService extends Service {
 					WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
 					if (wifiInfo != null) {
 						String connectedSSID = wifiInfo.getSSID();
-						Log.d(TAG, connectedSSID + "-------------- "
-								+ result.SSID);
-						if (connectedSSID.equals("\"" + result.SSID + "\"")||connectedSSID.equals(result.SSID)) {
-							// Already connected to the ssid ignore.
-							Log.d(TAG, "Already connected to the ssid ignore. "
+						if (connectedSSID != null) {
+							Log.d(TAG, connectedSSID + "-------------- "
 									+ result.SSID);
-							continue;
+							if (connectedSSID.equals("\"" + result.SSID + "\"")
+									|| connectedSSID.equals(result.SSID)) {
+								// Already connected to the ssid ignore.
+								Log.d(TAG,
+										"Already connected to the ssid ignore. "
+												+ result.SSID);
+								continue;
+							}
 						}
 					}
 					ServerInfo info = new ServerInfo();
@@ -332,8 +364,6 @@ public class WifiOrAPService extends Service {
 	private void handleNetworkSate(NetworkInfo networkInfo) {
 		if (networkInfo.isConnected()) {
 			mSearchServer.startSearch();
-		} else {
-			mSearchServer.stopSearch();
 		}
 	}
 
@@ -366,10 +396,12 @@ public class WifiOrAPService extends Service {
 		WifiInfo info = mWifiManager.getConnectionInfo();
 		if (info != null) {
 			String connectedSSID = info.getSSID();
-			if (connectedSSID.equals("\"" + SSID + "\"")) {
-				// Already connected to the ssid ignore.
-				Log.d(TAG, "Already connected to the ssid ignore. " + SSID);
-				return;
+			if (connectedSSID != null) {
+				if (connectedSSID.equals("\"" + SSID + "\"")) {
+					// Already connected to the ssid ignore.
+					Log.d(TAG, "Already connected to the ssid ignore. " + SSID);
+					return;
+				}
 			}
 		}
 

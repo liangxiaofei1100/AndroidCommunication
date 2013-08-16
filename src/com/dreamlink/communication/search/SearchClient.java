@@ -92,6 +92,7 @@ public class SearchClient {
 			mSearchClientLan.startSearch();
 		} else {
 			Log.d(TAG, "This is AP");
+			
 			// Android AP is enabled
 			// Because Android AP can not send or receive Lan
 			// multicast/broadcast,So it does not need to listen multicast.

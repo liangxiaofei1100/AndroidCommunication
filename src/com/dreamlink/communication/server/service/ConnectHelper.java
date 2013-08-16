@@ -98,14 +98,15 @@ public class ConnectHelper {
 		if (NetWorkUtil.isWifiApEnabled(mContext)) {
 			NetWorkUtil.setWifiAPEnabled(mContext, "", false);
 		}// close wifi-ap server
+		this.flag = false;
 		this.listener = searchListener;
 		if (wifiOrAPService != null) {
-			unbindServer(wifiConnection);
+			wifiOrAPService.startSearch(searchListener);
+		} else {
+			Intent intent = new Intent();
+			intent.setClass(mContext, WifiOrAPService.class);
+			bindServer(intent, wifiConnection);
 		}
-		this.flag = false;
-		Intent intent = new Intent();
-		intent.setClass(mContext, WifiOrAPService.class);
-		bindServer(intent, wifiConnection);
 	}
 
 	public void searchDirectServer(OnSearchListener searchListener, User user) {
@@ -166,13 +167,14 @@ public class ConnectHelper {
 			unbindServer(directConnection);
 		}
 		if (wifiOrAPService != null) {
-			unbindServer(wifiConnection);
+			wifiOrAPService.startServer("wifi-ap", listener);
+		} else {
+			IntentFilter filter = new IntentFilter();
+			filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
+			Intent intent = new Intent();
+			intent.setClass(mContext, WifiOrAPService.class);
+			bindServer(intent, wifiConnection);
 		}
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
-		Intent intent = new Intent();
-		intent.setClass(mContext, WifiOrAPService.class);
-		bindServer(intent, wifiConnection);
 	}
 
 	private void startWifiServer() {
@@ -180,12 +182,12 @@ public class ConnectHelper {
 			NetWorkUtil.setWifiAPEnabled(mContext, "", false);
 		}// close wifi-ap server
 		if (wifiOrAPService != null) {
-			unbindServer(wifiConnection);
-		}
+			wifiOrAPService.startServer("wifi", listener);
+		}else{
 		Intent intent = new Intent();
 		intent.setClass(mContext, WifiOrAPService.class);
 		bindServer(intent, wifiConnection);
-	}
+	}}
 
 	public void stopSearch() {
 		if (wifiOrAPService != null)
@@ -281,6 +283,5 @@ public class ConnectHelper {
 			wifiManager.setWifiEnabled(false);
 		}
 	}
-
 
 }
