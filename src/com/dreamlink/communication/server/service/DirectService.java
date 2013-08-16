@@ -98,6 +98,11 @@ public class DirectService extends Service {
 		}
 	}
 
+	public void stopSearch(){
+		if(wifiP2pManager!=null){
+			wifiP2pManager.stopPeerDiscovery(channel, null);
+		}
+	}
 	private DirectBinder myBinder = new DirectBinder();
 
 	public void regitserListener(DeviceNotify deviceNotify) {

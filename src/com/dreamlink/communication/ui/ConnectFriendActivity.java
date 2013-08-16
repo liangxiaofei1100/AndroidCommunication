@@ -103,6 +103,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	private static final int SEARCH_FAILED = 2;
 	private static final int SEARCH_OVER = 3;
 	
+	private Timer mTimeoutTimer = null;
 	/**set search time out 15s*/
 	private static final int TIME_OUT = 15 * 1000;
 
@@ -157,7 +158,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		UserHelper userHelper = new UserHelper(mContext);
 		User localUser = userHelper.loadUser();
 		mUserManager.setLocalUser(localUser);
-		
 		startSearch();
 	}
 
@@ -215,11 +215,11 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		Message message = mHandler.obtainMessage(MSG_SEARCHING);
 		mHandler.sendMessage(message);
 		
-		Timer timer = new Timer();
-		timer.schedule(new TimerTask() {
+		mTimeoutTimer = new Timer();
+		mTimeoutTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				connectHelper.stopSearch();
+				connectHelper.stopSearch(false);
 				Message message = mHandler.obtainMessage(MSG_SEARCH_STOP);
 				mHandler.sendMessage(message);
 			}
@@ -430,6 +430,9 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 									// data
 									setResult(RESULT_OK, intent);
 									sever_flag = true;
+									if(null != mTimeoutTimer){
+										mTimeoutTimer.cancel();
+									}
 									finish();
 								}
 							})
@@ -500,6 +503,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	@Override
 	public void finish() {
 		super.finish();
+		mIsAPSelected=false;
 		if (!sever_flag) {
 			connectHelper.stopSearch();
 		}
