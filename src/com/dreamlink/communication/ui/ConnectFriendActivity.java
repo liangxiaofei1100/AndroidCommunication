@@ -12,6 +12,7 @@ import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.Search;
+import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.server.service.ConnectHelper;
 import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.Log;
@@ -103,6 +104,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	private static final int SEARCH_FAILED = 2;
 	private static final int SEARCH_OVER = 3;
 	
+	private Timer mTimeoutTimer = null;
 	/**set search time out 15s*/
 	private static final int TIME_OUT = 15 * 1000;
 
@@ -211,15 +213,19 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	/**start search server*/
 	private void startSearch(){
 		clearServerList();
+		if (SocketServer.getInstance().isServerStarted()) {
+			SocketServer.getInstance().stopServer();
+		}	
+		
 		connectHelper.searchServer(this);
 		Message message = mHandler.obtainMessage(MSG_SEARCHING);
 		mHandler.sendMessage(message);
 		
-		Timer timer = new Timer();
-		timer.schedule(new TimerTask() {
+		mTimeoutTimer = new Timer();
+		mTimeoutTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				connectHelper.stopSearch();
+//				connectHelper.stopSearch();
 				Message message = mHandler.obtainMessage(MSG_SEARCH_STOP);
 				mHandler.sendMessage(message);
 			}
@@ -430,7 +436,11 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 									// data
 									setResult(RESULT_OK, intent);
 									sever_flag = true;
+									if(null != mTimeoutTimer){
+										mTimeoutTimer.cancel();
+									}
 									finish();
+									
 								}
 							})
 					.setNegativeButton(android.R.string.cancel,

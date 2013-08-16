@@ -19,6 +19,7 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.ui.app.AppFragmentActivity;
 import com.dreamlink.communication.ui.db.MetaData;
@@ -69,7 +70,7 @@ import android.widget.TextView;
  * 虽然ActivityGroup已经过时了，由于Fragment不太好做嵌套，所以第一层仍然使用ActivityGroup，第二层才使用Fragment
  * 主界面框架 分三部分 最上面是标题栏 中间是MainTabContainer，内容存储器 最下面是导航栏，仿闪存，目前有 应用，图片，影音，文件，四个
  */
-public class MainUIFrame extends ActivityGroup implements OnClickListener, ILoginRequestCallBack, ILoginRespondCallback {
+public class MainUIFrame extends ActivityGroup implements OnClickListener, ILoginRequestCallBack, ILoginRespondCallback, OnUserChangedListener {
 	private static final String TAG = "MainUIFrame";
 
 	// container layout
@@ -178,38 +179,35 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		Log.i(TAG, "serviceConnected");
 	}
 
-	private ExitReceiver exitReceiver = new ExitReceiver();
-
-	private class ExitReceiver extends BroadcastReceiver {
+	
+	private BroadcastReceiver mainReceiver = new BroadcastReceiver() {
+		
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			showExitDialog();
-		}
-	}
-
-	private static final int LOADING = 0x111;
-	private static final int LOADED = 0x112;
-	private Handler mHandler = new Handler() {
-		Timer mTimer = new Timer();
-		TimerTask mTask = new TimerTask() {
-			@Override
-			public void run() {
-				sendEmptyMessageDelayed(LOADED, 1000);
+			String action = intent.getAction();
+			if (DreamConstant.EXIT_ACTION.equals(action)) {
+				showExitDialog();
+			}else if (DreamConstant.SERVER_CREATED_ACTION.equals(action)) {
+				mCurrentStatus = CREATE_OK;
+				mHandler.sendMessage(mHandler.obtainMessage(CREATE_OK));
 			}
-		};
+		}
+	};
 
+	private Handler mHandler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
-			case LOADING:
-				loadView.setVisibility(View.VISIBLE);
-				mainView.setVisibility(View.INVISIBLE);
-				mTimer.schedule(mTask, 1500);
+			case CONNECTING:
+				updateConnectUI(CONNECTING);
 				break;
-			case LOADED:
-				loadView.setVisibility(View.INVISIBLE);
-				mainView.setVisibility(View.VISIBLE);
+			case CONNECT_OK:
+				updateConnectUI(CONNECT_OK);
+				mUsers = (ConcurrentHashMap<Integer, User>) mUserManager.getAllUser();
+				Log.d(TAG, "mUsers.size:" + mUsers.size());
+				mUserTabManager.refreshTab(mUsers);
 				break;
 			default:
+				updateConnectUI(mCurrentStatus);
 				break;
 			}
 		};
@@ -224,19 +222,15 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		LayoutInflater inflater = LayoutInflater.from(this);
 		rooView = inflater.inflate(R.layout.ui_main, null);
 		setContentView(rooView);
-//		setContentView(R.layout.ui_main2);
 
 		mContext = this;
 		instance = this;
 		mActivityManager = getLocalActivityManager();
 
-//		loadView = (LinearLayout) findViewById(R.id.load_view);
-//		mainView = (RelativeLayout) findViewById(R.id.main_view);
-//		mHandler.sendEmptyMessage(LOADING);
-
 		mUserHelper = new UserHelper(mContext);
 		mUser = mUserHelper.loadUser();
 		mUserManager = UserManager.getInstance();
+		mUserManager.registerOnUserChangedListener(this);
 		
 		mNotice = new Notice(mContext);
 		
@@ -245,7 +239,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		mSocketComMgr.setLoginRespondCallback(this);
 		
 		IntentFilter filter = new IntentFilter(DreamConstant.EXIT_ACTION);
-		registerReceiver(exitReceiver, filter);
+		filter.addAction(DreamConstant.SERVER_CREATED_ACTION);
+		registerReceiver(mainReceiver, filter);
 
 		importDb();
 		initTab();
@@ -274,17 +269,6 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	@Override
 	protected void onResume() {
 		super.onResume();
-		/*********TEST************/
-//		User user = null;
-//		for (int i = 0; i < 10; i++) {
-//			user = new User();
-//			user.setUserID(i);
-//			user.setUserName("测试用户" + i);
-//			mUsers.put(i, user);
-//		}
-//		mUserTabManager.refreshTab(mUsers);
-		/*********TEST************/
-		
 	}
 	
 	//import game key db
@@ -414,7 +398,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		}
 		
 		mCurrentStatus = INIT;
-		updateConnectUI(mCurrentStatus);
+//		updateConnectUI(mCurrentStatus);
+		mHandler.sendMessage(mHandler.obtainMessage(0));
 		////////////////
 	}
 
@@ -631,7 +616,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 						public void onClick(DialogInterface dialog, int which) {
 							mSocketComMgr.closeAllCommunication();
 							mCurrentStatus = INIT;
-							updateConnectUI(mCurrentStatus);
+//							updateConnectUI(mCurrentStatus);
+							mHandler.sendMessage(mHandler.obtainMessage(0));
 						}
 					})
 					.setNegativeButton(android.R.string.cancel, null)
@@ -650,6 +636,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	private void updateConnectUI(int status){
 		switch (status) {
 		case INIT:
+			Log.i(TAG, "updateConnectUI.INIT");
 			mConnectLayout.setVisibility(View.VISIBLE);
 			mConnectInfoView.setVisibility(View.INVISIBLE);
 			mUserInfoView.setVisibility(View.INVISIBLE);
@@ -657,13 +644,30 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 			mRightTextView.setText(R.string.invite);
 			break;
 		case CREATING:
-		case CONNECTING:
-		case CREATE_OK:
+			Log.i(TAG, "updateConnectUI.CREATING");
 			mConnectLayout.setVisibility(View.INVISIBLE);
 			mConnectInfoView.setVisibility(View.VISIBLE);
 			mUserInfoView.setVisibility(View.INVISIBLE);
 			mRightIconView.setImageResource(R.drawable.btn_title_help_close);
 			mRightTextView.setText(R.string.close);
+			mProgressTipView.setText(R.string.creating);
+			break;
+		case CREATE_OK:
+			Log.i(TAG, "updateConnectUI.CREATE_OK");
+			mConnectLayout.setVisibility(View.INVISIBLE);
+			mConnectInfoView.setVisibility(View.VISIBLE);
+			mUserInfoView.setVisibility(View.INVISIBLE);
+			mRightIconView.setImageResource(R.drawable.btn_title_help_close);
+			mRightTextView.setText(R.string.close);
+			mProgressTipView.setText(R.string.create_ok);
+			break;
+		case CONNECTING:
+			mConnectLayout.setVisibility(View.INVISIBLE);
+			mConnectInfoView.setVisibility(View.VISIBLE);
+			mUserInfoView.setVisibility(View.INVISIBLE);
+			mRightIconView.setImageResource(R.drawable.btn_title_help_close);
+			mRightTextView.setText(R.string.close);
+			mProgressTipView.setText(R.string.connecting);
 			break;
 		case CONNECT_OK:
 			mConnectLayout.setVisibility(View.INVISIBLE);
@@ -690,7 +694,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 				// 判断server创建的状态，并显示在UI上
 				// 更新UI
 				mCurrentStatus = CREATING;
-				updateConnectUI(mCurrentStatus);
+//				updateConnectUI(mCurrentStatus);
+				mHandler.sendMessage(mHandler.obtainMessage(0));
 			}
 		}
 	}
@@ -712,7 +717,9 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		unregisterReceiver(exitReceiver);
+		unregisterReceiver(mainReceiver);
+		//when finish，cloase all connect
+		mSocketComMgr.closeAllCommunication();
 	}
 	
 	@Override
@@ -721,10 +728,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		String nameString = localUser.getUserName();
 		Log.d(TAG, "onLoginSuccess");
 		mNotice.showToast("User Login Success!");
-		mCurrentStatus = CONNECT_OK;
-		updateConnectUI(mCurrentStatus);
-		mUsers = (ConcurrentHashMap<Integer, User>) mUserManager.getAllUser();
-		mUserTabManager.refreshTab(mUsers);
+		mCurrentStatus = CONNECTING;
+		mHandler.sendMessage(mHandler.obtainMessage(CONNECTING));
 	}
 
 	@Override
@@ -761,5 +766,20 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 			}
 		};
 		dialog.show(user, communication, callBack);
+	}
+
+	@Override
+	public void onUserConnected(User user) {
+		// TODO Auto-generated method stub.
+		mCurrentStatus = CONNECT_OK;
+		Log.d(TAG, "onUserConnected:" + user.getUserName());
+		Log.i(TAG, "onUserConnected.users.size:" + mUserManager.getAllUser().size());
+		mHandler.sendMessage(mHandler.obtainMessage(CONNECT_OK));
+	}
+
+	@Override
+	public void onUserDisconnected(User user) {
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onUserDisconnected:" + user.getUserName());
 	}
 }
