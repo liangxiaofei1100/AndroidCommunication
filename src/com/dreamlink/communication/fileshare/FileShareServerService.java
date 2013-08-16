@@ -8,17 +8,23 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.RemoteException;
 
+import com.dreamlink.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.util.AppUtil;
 import com.dreamlink.communication.util.Log;
 
-public class FileShareServerService extends Service implements OnCommunicationListener{
+@SuppressLint("NewApi")
+public class FileShareServerService extends Service implements OnCommunicationListener, OnCommunicationListenerExternal{
 	private static final String TAG = "FileShareServerService";
 	private SocketCommunicationManager mCommunicationManager;
 	public static boolean serviceIsStart = false;
@@ -30,9 +36,11 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.d(TAG, "onStartCommand");
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(this);
 		mCommunicationManager.registered(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this, AppUtil.getAppID(getApplication()));
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -172,6 +180,32 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 		serviceIsStart = false;
 		
 		mCommunicationManager.unregistered(this);
+	}
+
+	@Override
+	public IBinder asBinder() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+	@Override
+	public void onReceiveMessage(byte[] msg, User sendUser)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+		System.out.println("=============================");
+	}
+
+	@Override
+	public void onUserConnected(User user) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onUserDisconnected(User user) throws RemoteException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

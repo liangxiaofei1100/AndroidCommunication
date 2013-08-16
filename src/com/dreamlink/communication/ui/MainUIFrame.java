@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,6 +16,7 @@ import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.AllowLoginDialog;
+import com.dreamlink.communication.MainActivity;
 import com.dreamlink.communication.NetworkStatus;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
@@ -43,18 +46,23 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.view.Window;
@@ -150,12 +158,21 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	private boolean isServiceBinded = false;
 	
 	private static final int INIT = 0x00;
-	private static final int CONNECTING = 0x01;
-	private static final int CREATING = 0x02;
+	public static final int CONNECTING = 0x01;
+	public static final int CREATING = 0x02;
 	private static final int CREATE_OK = 0x03;
 	private static final int CONNECT_OK = 0x04;
 	
+	private static final int MSG_REFRESH_USER_LIST = 0x05;
+	
 	private int mCurrentStatus = -1;
+	
+	private SharedPreferences sp = null;
+	/**am i is server?*/
+	private boolean mIsServer = false;
+	
+	/**save users*/
+	private List<User> mUserLists = new ArrayList<User>();
 	
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -188,26 +205,52 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 			if (DreamConstant.EXIT_ACTION.equals(action)) {
 				showExitDialog();
 			}else if (DreamConstant.SERVER_CREATED_ACTION.equals(action)) {
+				mIsServer = true;
 				mCurrentStatus = CREATE_OK;
-				mHandler.sendMessage(mHandler.obtainMessage(CREATE_OK));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_REFRESH_USER_LIST));
 			}
 		}
 	};
 
+	/**update ui handler*/
 	private Handler mHandler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
-			switch (msg.what) {
+			/***/
+			switch (mCurrentStatus) {
 			case CONNECTING:
-				updateConnectUI(CONNECTING);
+			case CREATING:
+			case CREATE_OK:
+			case INIT:
+				updateUserListUI();
 				break;
 			case CONNECT_OK:
-				updateConnectUI(CONNECT_OK);
 				mUsers = (ConcurrentHashMap<Integer, User>) mUserManager.getAllUser();
-				Log.d(TAG, "mUsers.size:" + mUsers.size());
-				mUserTabManager.refreshTab(mUsers);
+				Log.d(TAG, "is server = " + mIsServer + "  mUsers.size:" + mUsers.size());
+				if (mIsServer && mUsers.size() <= 1) {
+					mCurrentStatus = CREATE_OK;
+				}else if (!mIsServer && mUsers.size() <= 0) {
+					mCurrentStatus = INIT;
+				}else {
+					mCurrentStatus = CONNECT_OK;
+					mUserLists.clear();
+					//we do not add locat user into map
+					User locaUser = mUserManager.getLocalUser();
+					for (Map.Entry<Integer, User> entry : mUsers.entrySet()) {
+						User user = entry.getValue();
+						Log.i(TAG, "user.id=" + user.getUserID());
+						Log.i(TAG, "user.name=" + user.getUserName());
+						if (locaUser.getUserID() != user.getUserID()) {
+							mUserLists.add(user);
+						}
+					}
+					Log.d(TAG, "mUsers.size:" + mUsers.size());
+					mUserTabManager.refreshTab(mUserLists);
+				}
+				Log.i(TAG, "mCurrentStatus=" + mCurrentStatus);
+				updateUserListUI();
 				break;
 			default:
-				updateConnectUI(mCurrentStatus);
+				updateUserListUI(mCurrentStatus);
 				break;
 			}
 		};
@@ -222,6 +265,20 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		LayoutInflater inflater = LayoutInflater.from(this);
 		rooView = inflater.inflate(R.layout.ui_main, null);
 		setContentView(rooView);
+		
+		//make the vertiual menu key visible
+		try {
+			getWindow().addFlags(WindowManager.LayoutParams.class.getField("FLAG_NEEDS_MENU_KEY").getInt(null));
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		mContext = this;
 		instance = this;
@@ -269,6 +326,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	@Override
 	protected void onResume() {
 		super.onResume();
+		Log.d(TAG, "onResume()");
+		mHandler.sendMessage(mHandler.obtainMessage(MSG_REFRESH_USER_LIST));
 	}
 	
 	//import game key db
@@ -399,7 +458,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		
 		mCurrentStatus = INIT;
 //		updateConnectUI(mCurrentStatus);
-		mHandler.sendMessage(mHandler.obtainMessage(0));
+		mHandler.sendMessage(mHandler.obtainMessage(MSG_REFRESH_USER_LIST));
 		////////////////
 	}
 
@@ -614,10 +673,13 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
+							if (mIsServer) {
+								mIsServer = false;
+							}
 							mSocketComMgr.closeAllCommunication();
 							mCurrentStatus = INIT;
 //							updateConnectUI(mCurrentStatus);
-							mHandler.sendMessage(mHandler.obtainMessage(0));
+							mHandler.sendMessage(mHandler.obtainMessage(MSG_REFRESH_USER_LIST));
 						}
 					})
 					.setNegativeButton(android.R.string.cancel, null)
@@ -633,7 +695,15 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		}
 	}
 	
-	private void updateConnectUI(int status){
+	private void updateUserListUI(){
+		updateUserListUI(mCurrentStatus);
+	}
+	
+	/**
+	 * according to status to update user list ui
+	 * @param status
+	 */
+	private void updateUserListUI(int status){
 		switch (status) {
 		case INIT:
 			Log.i(TAG, "updateConnectUI.INIT");
@@ -662,6 +732,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 			mProgressTipView.setText(R.string.create_ok);
 			break;
 		case CONNECTING:
+			Log.i(TAG, "updateConnectUI.CONNECTING");
 			mConnectLayout.setVisibility(View.INVISIBLE);
 			mConnectInfoView.setVisibility(View.VISIBLE);
 			mUserInfoView.setVisibility(View.INVISIBLE);
@@ -670,6 +741,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 			mProgressTipView.setText(R.string.connecting);
 			break;
 		case CONNECT_OK:
+			Log.i(TAG, "updateConnectUI.CONNECT_OK");
 			mConnectLayout.setVisibility(View.INVISIBLE);
 			mConnectInfoView.setVisibility(View.INVISIBLE);
 			mUserInfoView.setVisibility(View.VISIBLE);
@@ -684,6 +756,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.d(TAG, "onActivityResult");
 		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCode == RESULT_OK) {// when create server ,set result ok
 //			mSocketComMgr.startServer(getApplicationContext());
@@ -691,11 +764,15 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 				String name = data.getStringExtra("user");
 				mUserNameView.setText(name);
 			} else if (REQUEST_FOR_CONNECT == requestCode) {
-				// 判断server创建的状态，并显示在UI上
+				int status = -1;
+				if (null != data) {
+					status = data.getIntExtra("status", -1);
+				}
 				// 更新UI
-				mCurrentStatus = CREATING;
+				mCurrentStatus = status;
+				Log.i(TAG, "onActivityResult.currentstatus=" + mCurrentStatus);
 //				updateConnectUI(mCurrentStatus);
-				mHandler.sendMessage(mHandler.obtainMessage(0));
+//				mHandler.sendMessage(mHandler.obtainMessage(0));
 			}
 		}
 	}
@@ -720,6 +797,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		unregisterReceiver(mainReceiver);
 		//when finish，cloase all connect
 		mSocketComMgr.closeAllCommunication();
+		
+		System.exit(0);
 	}
 	
 	@Override
@@ -729,7 +808,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		Log.d(TAG, "onLoginSuccess");
 		mNotice.showToast("User Login Success!");
 		mCurrentStatus = CONNECTING;
-		mHandler.sendMessage(mHandler.obtainMessage(CONNECTING));
+		mIsServer = false;
+		mHandler.sendMessage(mHandler.obtainMessage(MSG_REFRESH_USER_LIST));
 	}
 
 	@Override
@@ -774,12 +854,38 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		mCurrentStatus = CONNECT_OK;
 		Log.d(TAG, "onUserConnected:" + user.getUserName());
 		Log.i(TAG, "onUserConnected.users.size:" + mUserManager.getAllUser().size());
-		mHandler.sendMessage(mHandler.obtainMessage(CONNECT_OK));
+		Message msg = mHandler.obtainMessage(MSG_REFRESH_USER_LIST);
+		msg.obj = user;
+		msg.sendToTarget();
 	}
 
 	@Override
 	public void onUserDisconnected(User user) {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "onUserDisconnected:" + user.getUserName());
+//		Log.d(TAG, "onUserDisconnected:" + user.getUserName());
+		mHandler.sendMessage(mHandler.obtainMessage(MSG_REFRESH_USER_LIST));
+	}
+	
+	
+	/**options menu*/
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		menu.add(0, 0, 0, "旧入口");
+		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		switch (item.getItemId()) {
+		case 0:
+			Intent intent = new Intent(mContext, MainActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 }

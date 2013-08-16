@@ -47,16 +47,20 @@ public class UserTabManager {
 //		mTabsHolder.addView(view);
 	}
 	
-	public void refreshTab(ConcurrentHashMap<Integer, User> users) {
+	public void refreshTab(List<User> users) {
 		Log.d(TAG, "refreshTab:" + users.size());
 		int count = mTabsHolder.getChildCount();
 		mTabsHolder.removeViews(0, count);
-		mUserList.clear();
+//		mUserList.clear();
 
-		for (Map.Entry<Integer, User> entry : users.entrySet()) {
-			User user = entry.getValue();
+//		for (Map.Entry<Integer, User> entry : users.entrySet()) {
+//			User user = entry.getValue();
+//			addTab(user);
+//		}
+		for(User user: users){
 			addTab(user);
 		}
+		
 		startActionBarScroll();
 	}
 	
@@ -65,7 +69,7 @@ public class UserTabManager {
 	 * @param text
 	 *            the name of the tab
 	 */
-	protected void addTab(User user) {
+	public void addTab(User user) {
 		Log.d(TAG, "addTab:" + user.getUserName());
 		
 		View view = null;

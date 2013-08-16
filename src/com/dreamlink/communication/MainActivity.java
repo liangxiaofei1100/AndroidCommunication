@@ -101,9 +101,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			launchUserInfo();
 			return true;
 		case R.id.menu_start_test:
-			Intent intent = new Intent();
-			intent.setClass(MainActivity.this, StartLoader.class);
-			startActivity(intent);
+//			Intent intent = new Intent();
+//			intent.setClass(MainActivity.this, StartLoader.class);
+//			startActivity(intent);
 			break;
 		case R.id.action_settings:
 			Intent intent2 = new Intent();
@@ -121,6 +121,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
 		super.onBackPressed();
-		System.exit(0);
+//		System.exit(0);
 	}
 }

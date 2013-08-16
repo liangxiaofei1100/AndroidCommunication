@@ -171,13 +171,15 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 */
 	public void closeAllCommunication() {
 		if (mCommunications != null) {
-			for (final SocketCommunication communication : mCommunications) {
-				new Thread() {
-					@Override
-					public void run() {
-						communication.stopComunication();
-					}
-				}.start();
+			synchronized (mCommunications) {
+				for (final SocketCommunication communication : mCommunications) {
+					new Thread() {
+						@Override
+						public void run() {
+							communication.stopComunication();
+						}
+					}.start();
+				}
 			}
 		}
 		mCommunications.clear();
@@ -331,6 +333,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		int localUserID = mUserManager.getLocalUser().getUserID();
 		byte[] data = ProtocolEncoder.encodeSendMessageToAll(msg, localUserID,
 				appID);
+		System.out.println("sendMessageTOAll:" + new String(data));
 		sendMessageToAllWithoutEncode(data);
 	}
 

@@ -299,6 +299,7 @@ public class SocketCommunication extends Thread {
 	 * @return return true if send success, return false if send fail.
 	 */
 	public boolean sendMessage(byte[] msg) {
+		Log.i(TAG, "========sendMessage:" + new String(msg));
 		try {
 			if (mDataOutputStream != null) {
 				mDataOutputStream.write(encode(msg));

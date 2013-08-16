@@ -50,7 +50,7 @@ import android.widget.Toast;
 @TargetApi(14)
 public class ConnectFriendActivity extends Activity implements OnClickListener,
 		OnSearchListener {
-	private static final String TAG = ConnectFriendActivity.class.getName();
+	private static final String TAG = "ConnectFriendActivity";
 	private ImageView mCloseBtn;
 	private ProgressBar mSearchBar;
 	private TextView mSearchView;
@@ -134,6 +134,10 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 				ServerInfo info = (ServerInfo) msg.obj;
 				connectHelper.connenctToServer(info);
 				if (!info.getServer_type().equals("wifi-ap")) {
+					//connecting
+					Intent intent = new Intent();
+					intent.putExtra("status", MainUIFrame.CONNECTING);
+					setResult(RESULT_OK, intent);
 					finish();
 				}
 				break;
@@ -392,6 +396,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.close_imageview:
+			setResult(RESULT_CANCELED);
 			ConnectFriendActivity.this.finish();
 			break;
 		case R.id.create_connect_btn:
@@ -434,6 +439,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 											msg, Toast.LENGTH_SHORT).show();
 									Intent intent = new Intent();
 									// data
+									intent.putExtra("status", MainUIFrame.CREATING);
 									setResult(RESULT_OK, intent);
 									sever_flag = true;
 									if(null != mTimeoutTimer){

@@ -84,11 +84,6 @@ public class UserManager {
 			Log.d(TAG, "addUser ignore, user is already exist. " + user);
 			return false;
 		}
-		//add by yuri,do not put local user into map
-		if (mLocalUser.getUserID() == user.getUserID()) {
-			Log.d(TAG, "addUser ignore, is local user");
-			return false;
-		}
 		
 		if (user.getUserID() != 0) {
 			// This is a client, The user is already assigned a id by server.
