@@ -363,6 +363,11 @@ public class WifiOrAPService extends Service {
 
 	private void handleNetworkSate(NetworkInfo networkInfo) {
 		if (networkInfo.isConnected()) {
+			if(mSearchServer!=null){
+				mSearchServer.stopSearch();
+			}
+			mSearchServer=SearchSever.getInstance(getApplicationContext());
+			mSearchServer.setOnSearchListener(onSearchListener);
 			mSearchServer.startSearch();
 		}
 	}
@@ -419,5 +424,13 @@ public class WifiOrAPService extends Service {
 				.startServer(getApplicationContext());
 		UserManager.getInstance().addLocalServerUser();
 		this.sendBroadcast(new Intent(DreamConstant.SERVER_CREATED_ACTION));
+	}
+	public void stopSearch(){
+		if(mSearchClient!=null){
+			mSearchClient.stopSearch();
+		}
+		if(mSearchServer!=null){
+			mSearchServer.stopSearch();
+		}
 	}
 }

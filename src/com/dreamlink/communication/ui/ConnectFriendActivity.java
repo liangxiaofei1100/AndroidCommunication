@@ -159,7 +159,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		UserHelper userHelper = new UserHelper(mContext);
 		User localUser = userHelper.loadUser();
 		mUserManager.setLocalUser(localUser);
-		
 		startSearch();
 	}
 
@@ -226,6 +225,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			@Override
 			public void run() {
 //				connectHelper.stopSearch();
+				connectHelper.stopSearch(false);
 				Message message = mHandler.obtainMessage(MSG_SEARCH_STOP);
 				mHandler.sendMessage(message);
 			}
@@ -510,6 +510,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	@Override
 	public void finish() {
 		super.finish();
+		mIsAPSelected=false;
 		if (!sever_flag) {
 			connectHelper.stopSearch();
 		}
