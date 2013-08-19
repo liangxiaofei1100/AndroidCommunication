@@ -1,6 +1,7 @@
 package com.dreamlink.communication.fileshare;
 
 import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.util.AppUtil;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -14,7 +15,7 @@ import android.os.Bundle;
  * 
  */
 public class FileShareLauncher extends Activity {
-
+	public static final String EXTRA_APP_ID = "app_id";
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -27,6 +28,8 @@ public class FileShareLauncher extends Activity {
 
 	private void launchActivity(boolean isServer) {
 		Intent intent = new Intent();
+		int appId = AppUtil.getAppID(this);
+		intent.putExtra(EXTRA_APP_ID, appId);
 		if (isServer) {
 //			intent.setClass(this, ServerActivity.class);
 			//start service 

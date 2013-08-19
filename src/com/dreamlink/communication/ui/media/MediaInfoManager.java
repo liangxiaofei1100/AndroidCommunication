@@ -17,6 +17,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
@@ -159,8 +160,12 @@ public class MediaInfoManager {
 				// 图片所在文件夹名
 				String folder = cursor.getString(cursor
 								.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME));
-				long width = cursor.getLong(cursor.getColumnIndex("width"));
-				long height = cursor.getLong(cursor.getColumnIndex("height"));
+				long width = 0;
+				long height = 0;
+				if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+					width = cursor.getLong(cursor.getColumnIndex("width"));
+					height = cursor.getLong(cursor.getColumnIndex("height"));
+				}
 				if (new File(path).exists()) {
 					imageInfo = new ImageInfo(id);
 					imageInfo.setPath(path);

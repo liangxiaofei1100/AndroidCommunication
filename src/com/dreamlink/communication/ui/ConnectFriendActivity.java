@@ -103,6 +103,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	private static final int SEARCHED = 1;
 	private static final int SEARCH_FAILED = 2;
 	private static final int SEARCH_OVER = 3;
+	private static final int CONNECTING = 4;
 	
 	private Timer mTimeoutTimer = null;
 	/**set search time out 15s*/
@@ -131,6 +132,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 				updateUI(SEARCHING);
 				break;
 			case MSG_CONNECT_SERVER:
+				updateUI(CONNECTING);
 				ServerInfo info = (ServerInfo) msg.obj;
 				connectHelper.connenctToServer(info);
 				if (!info.getServer_type().equals("wifi-ap")) {
@@ -210,6 +212,11 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			mSearchView.setText(R.string.search_sever);
 			mSearchView.setClickable(true);
 		} else if (SEARCH_FAILED == status) {// not found
+		}else if (CONNECTING == status) {
+			mSearchBar.setVisibility(View.INVISIBLE);
+			mSearchView.setText(R.string.connecting);
+			mSearchView.setClickable(false);
+			mServerListView.setClickable(false);
 		}
 	}
 	

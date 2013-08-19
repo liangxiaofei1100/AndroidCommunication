@@ -23,6 +23,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -173,13 +174,21 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 	
 	private String getImageInfo(ImageInfo imageInfo){
 		String result = "";
-		result = "名称:" + imageInfo.getName() + DreamConstant.ENTER
-				+ "类型:" + "图片" + DreamConstant.ENTER
-				+ "位置:" + imageInfo.getPath() + DreamConstant.ENTER
-				+ "大小:" + imageInfo.getFormatSize()+ DreamConstant.ENTER
-				+ "宽度:" +  imageInfo.getWidth() + DreamConstant.ENTER
-				+ "高度:" + imageInfo.getHeight() + DreamConstant.ENTER
-				+ "修改日期:" + imageInfo.getFormatDate();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			result = "名称:" + imageInfo.getName() + DreamConstant.ENTER
+					+ "类型:" + "图片" + DreamConstant.ENTER
+					+ "位置:" + imageInfo.getPath() + DreamConstant.ENTER
+					+ "大小:" + imageInfo.getFormatSize()+ DreamConstant.ENTER
+					+ "宽度:" +  imageInfo.getWidth() + DreamConstant.ENTER
+					+ "高度:" + imageInfo.getHeight() + DreamConstant.ENTER
+					+ "修改日期:" + imageInfo.getFormatDate();
+		}else {
+			result = "名称:" + imageInfo.getName() + DreamConstant.ENTER
+					+ "类型:" + "图片" + DreamConstant.ENTER
+					+ "位置:" + imageInfo.getPath() + DreamConstant.ENTER
+					+ "大小:" + imageInfo.getFormatSize()+ DreamConstant.ENTER
+					+ "修改日期:" + imageInfo.getFormatDate();
+		}
 		return result;
 	}
 	

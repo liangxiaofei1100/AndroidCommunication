@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.dreamlink.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
@@ -25,6 +27,8 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.view.ActionMode;
 import android.view.ActionMode.Callback;
@@ -47,8 +51,9 @@ import android.widget.TextView;
  * list remote server /sdcard files to client
  * @author yuri
  */
-@TargetApi(Build.VERSION_CODES.HONEYCOMB) public class RemoteFileFragment extends Fragment implements OnCommunicationListener, 
-							OnItemClickListener{
+@TargetApi(Build.VERSION_CODES.HONEYCOMB) 
+public class RemoteFileFragment extends Fragment implements 
+							OnItemClickListener, OnCommunicationListenerExternal{
 	private static final String TAG = "RemoteFileFragment";
 	
 	//show file list
@@ -97,6 +102,7 @@ import android.widget.TextView;
 	//start a thread record transfer speed
 	private Timer mSpeedTimer;
 	
+	private int mAppId = 0;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -105,7 +111,11 @@ import android.widget.TextView;
 		mContext = getActivity();
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(mContext);
-		mCommunicationManager.registered(this);
+//		mCommunicationManager.registered(this);
+		mAppId = getActivity().getIntent().getIntExtra(FileShareLauncher.EXTRA_APP_ID, 0);
+		Log.d(TAG, "onCreageView:" + mAppId);
+		
+		mCommunicationManager.registerOnCommunicationListenerExternal(this, mAppId);
 		
 		mListView = (ListView) rootView.findViewById(R.id.file_listview);
 		mTipView = (TextView) rootView.findViewById(R.id.tip_text);
@@ -155,138 +165,126 @@ import android.widget.TextView;
 	}
 
 	private static String wholeReceiveMsg = "";
-	@Override
-	public void onReceiveMessage(byte[] msg, SocketCommunication ip) {
-		Log.d(TAG, "onReceiveMessage:" + msg.length);
-		
-		if (currentCopyFile != null) {
-			//receive file from server
-			try {
-				///杩欓噷涔熶細鏈夊緢澶ч棶棰橈紝鍦ㄥ鍒舵枃浠剁殑鍚屾椂锛屾湁鍏朵粬绋嬪簭鍦ㄨ亰澶╋紝杩欓噷浼氭妸鍏朵粬浜鸿亰澶╃殑瀛楄妭璁や负鏄枃浠剁殑锛屽鑷存枃浠朵紶杈撳嚭鐜伴棶棰�
-				///鏆傛椂杩樻病濂界殑瑙ｅ喅鏂规锛寃ait
-				copyLen += msg.length;
-				if (mFileTransferBarDialog != null) {
-					mFileTransferBarDialog.setDProgress(copyLen);
-				}else {
-					Log.e(TAG, "mProgressDialog is null");
-				}
-
-				Log.d(TAG, "copyLen=" + copyLen);
-				Log.d(TAG, "totalSize=" + (int)currentCopyFile.fileSize);
-				//use FileOutPutStream do not use DataOutPutStrem
-				if (fos != null) {
-					fos.write(msg);
-					fos.flush();
-				} else {
-					Log.e(TAG, "fos is null");
-				}
-				
-				//receive over,close fileoutputstream
-				if (copyLen >= ((int)currentCopyFile.fileSize)) {
-					//********clear begin***********//
-					fos.close();
-					fos = null;
-					
-					currentCopyFile = null;
-					copyLen = 0;
-					
-					start_time = 0;
-					now_time = 0;
-					if (mSpeedTimer != null) {
-						mSpeedTimer.cancel();
-						mSpeedTimer = null;
-					}
-					
-					if (mFileTransferBarDialog != null) {
-						mFileTransferBarDialog.cancel();
-					}
-					Log.d(TAG, "Transfer Success!");
-					//********clear end***********//
-				}
-				
-			} catch (Exception e) {
-				Log.e(TAG, "Receive error:" + e.toString());
-				e.printStackTrace();
-			}
-		}else {
-			//receive file list return msg
-			// convert byte[] to String
-			String ret_msg = new String(msg);
-
-			// split msg
-			//the first line is command flag
-			//the last line is end flag
-			String[] splitMsg = ret_msg.split(Command.ENTER);
-			
-			// 鐪嬪埌缁撴潫鏍囧織锛屾墠鐪熺殑缁撴潫锛屽惁鍒欎笉瑙ｆ瀽
-			if (Command.END_FLAG.equals(splitMsg[splitMsg.length - 1])) {
-				wholeReceiveMsg += ret_msg;
-				String[] newSplitMsg = wholeReceiveMsg.split(Command.ENTER);
-				if (Command.LSRETN.equals(newSplitMsg[0])) {
-					//LSRETN, is ls command return msg
-					//every line is a folder or file
-					//command format:[LSRTN][...]
-					currentPath = newSplitMsg[1];
-					parentPath = newSplitMsg[2];
-
-					//folder list
-					ArrayList<FileInfo> folderList = new ArrayList<FileInfo>();
-					//file list
-					ArrayList<FileInfo> fileList = new ArrayList<FileInfo>();
-
-					FileInfo fileInfo = null;
-					for (int i = 3; i < newSplitMsg.length - 1; i++) {
-						// split again
-						String[] fileStr = newSplitMsg[i].split(Command.SEPARTOR);
-						if (fileStr.length != 5) {
-							// do nothing
-						} else {
-							fileInfo = new FileInfo(fileStr[4]);
-							fileInfo.fileDate = Long.parseLong(fileStr[0]);
-							fileInfo.isDir = Command.DIR_FLAG.equals(fileStr[1]);
-							fileInfo.fileSize = Double.parseDouble(fileStr[2]);
-							fileInfo.filePath = fileStr[3];
-//							Log.d(TAG, "filePath=" + fileInfo.filePath);
-							if (fileInfo.isDir) {
-								folderList.add(fileInfo);
-							} else {
-								fileList.add(fileInfo);
-							}
-						}
-					}
-					// sort
-					Collections.sort(folderList);
-					Collections.sort(fileList);
-					// Clear File array list
-					mList.clear();
-					// combine
-					mList.addAll(folderList);
-					mList.addAll(fileList);
-					Log.d(TAG, "files list nums:" + mList.size());
-					// clear 0
-					wholeReceiveMsg = "";
-
-					uihandler.sendMessage(uihandler.obtainMessage(UPDATE_UI));
-				}
-			} else {
-				///鏈夋渶澶х殑闂锛屽鏋滃叾浠栫▼搴忓湪鑱婂ぉ锛屾垜杩欓噷涔熶細鎺ュ彈鍒帮紝鐒跺悗灏变細鎶婁粬浠亰澶╃殑鍐呭璁や负鏄枃浠讹紝浣嗗叾瀹炰笉鏄枃浠讹紝鐒跺悗灏变細鍑虹幇Bug
-				//鏆傛椂杩樻病瑙ｅ喅鏂规硶锛寃ait
-				// not over yet
-				wholeReceiveMsg += ret_msg;
-			}
-		}
-		
-	}
-
-	@Override
-	public void onSendResult(byte[] msg) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void notifyConnectChanged() {
-		// TODO Auto-generated method stub
-	}
+//	@Override
+//	public void onReceiveMessage(byte[] msg, SocketCommunication ip) {
+//		Log.d(TAG, "onReceiveMessage:" + msg.length);
+//		
+//		if (currentCopyFile != null) {
+//			//receive file from server
+//			try {
+//				copyLen += msg.length;
+//				if (mFileTransferBarDialog != null) {
+//					mFileTransferBarDialog.setDProgress(copyLen);
+//				}else {
+//					Log.e(TAG, "mProgressDialog is null");
+//				}
+//
+//				Log.d(TAG, "copyLen=" + copyLen);
+//				Log.d(TAG, "totalSize=" + (int)currentCopyFile.fileSize);
+//				//use FileOutPutStream do not use DataOutPutStrem
+//				if (fos != null) {
+//					fos.write(msg);
+//					fos.flush();
+//				} else {
+//					Log.e(TAG, "fos is null");
+//				}
+//				
+//				//receive over,close fileoutputstream
+//				if (copyLen >= ((int)currentCopyFile.fileSize)) {
+//					//********clear begin***********//
+//					fos.close();
+//					fos = null;
+//					
+//					currentCopyFile = null;
+//					copyLen = 0;
+//					
+//					start_time = 0;
+//					now_time = 0;
+//					if (mSpeedTimer != null) {
+//						mSpeedTimer.cancel();
+//						mSpeedTimer = null;
+//					}
+//					
+//					if (mFileTransferBarDialog != null) {
+//						mFileTransferBarDialog.cancel();
+//					}
+//					Log.d(TAG, "Transfer Success!");
+//					//********clear end***********//
+//				}
+//				
+//			} catch (Exception e) {
+//				Log.e(TAG, "Receive error:" + e.toString());
+//				e.printStackTrace();
+//			}
+//		}else {
+//			//receive file list return msg
+//			// convert byte[] to String
+//			String ret_msg = new String(msg);
+//
+//			// split msg
+//			//the first line is command flag
+//			//the last line is end flag
+//			String[] splitMsg = ret_msg.split(Command.ENTER);
+//			
+//			// 鐪嬪埌缁撴潫鏍囧織锛屾墠鐪熺殑缁撴潫锛屽惁鍒欎笉瑙ｆ瀽
+//			if (Command.END_FLAG.equals(splitMsg[splitMsg.length - 1])) {
+//				wholeReceiveMsg += ret_msg;
+//				String[] newSplitMsg = wholeReceiveMsg.split(Command.ENTER);
+//				if (Command.LSRETN.equals(newSplitMsg[0])) {
+//					//LSRETN, is ls command return msg
+//					//every line is a folder or file
+//					//command format:[LSRTN][...]
+//					currentPath = newSplitMsg[1];
+//					parentPath = newSplitMsg[2];
+//
+//					//folder list
+//					ArrayList<FileInfo> folderList = new ArrayList<FileInfo>();
+//					//file list
+//					ArrayList<FileInfo> fileList = new ArrayList<FileInfo>();
+//
+//					FileInfo fileInfo = null;
+//					for (int i = 3; i < newSplitMsg.length - 1; i++) {
+//						// split again
+//						String[] fileStr = newSplitMsg[i].split(Command.SEPARTOR);
+//						if (fileStr.length != 5) {
+//							// do nothing
+//						} else {
+//							fileInfo = new FileInfo(fileStr[4]);
+//							fileInfo.fileDate = Long.parseLong(fileStr[0]);
+//							fileInfo.isDir = Command.DIR_FLAG.equals(fileStr[1]);
+//							fileInfo.fileSize = Double.parseDouble(fileStr[2]);
+//							fileInfo.filePath = fileStr[3];
+////							Log.d(TAG, "filePath=" + fileInfo.filePath);
+//							if (fileInfo.isDir) {
+//								folderList.add(fileInfo);
+//							} else {
+//								fileList.add(fileInfo);
+//							}
+//						}
+//					}
+//					// sort
+//					Collections.sort(folderList);
+//					Collections.sort(fileList);
+//					// Clear File array list
+//					mList.clear();
+//					// combine
+//					mList.addAll(folderList);
+//					mList.addAll(fileList);
+//					Log.d(TAG, "files list nums:" + mList.size());
+//					// clear 0
+//					wholeReceiveMsg = "";
+//
+//					uihandler.sendMessage(uihandler.obtainMessage(UPDATE_UI));
+//				}
+//			} else {
+//				///鏈夋渶澶х殑闂锛屽鏋滃叾浠栫▼搴忓湪鑱婂ぉ锛屾垜杩欓噷涔熶細鎺ュ彈鍒帮紝鐒跺悗灏变細鎶婁粬浠亰澶╃殑鍐呭璁や负鏄枃浠讹紝浣嗗叾瀹炰笉鏄枃浠讹紝鐒跺悗灏变細鍑虹幇Bug
+//				//鏆傛椂杩樻病瑙ｅ喅鏂规硶锛寃ait
+//				// not over yet
+//				wholeReceiveMsg += ret_msg;
+//			}
+//		}
+//		
+//	}
 	
 	private Handler uihandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
@@ -461,5 +459,29 @@ import android.widget.TextView;
 			// TODO Auto-generated method stub
 			return true;
 		}
+	}
+
+	@Override
+	public IBinder asBinder() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void onReceiveMessage(byte[] msg, User sendUser) throws RemoteException {
+		// TODO Auto-generated method stub
+		Log.i(TAG, "onReceiveMessage:" + new String(msg));
+	}
+
+	@Override
+	public void onUserConnected(User user) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onUserDisconnected(User user) throws RemoteException {
+		// TODO Auto-generated method stub
+		
 	}
 }
