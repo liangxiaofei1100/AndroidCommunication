@@ -73,7 +73,7 @@ public class SearchClient {
 		}
 		mStarted = true;
 		NetWorkUtil.acquireWifiMultiCastLock(mContext);
-
+		Log.d(TAG, "The ip is "+NetWorkUtil.getLocalIpAddress());
 		if (NetWorkUtil.isAndroidAPNetwork(mContext)) {
 			// Android AP network.
 			Log.d(TAG, "Android AP network.");
@@ -112,6 +112,10 @@ public class SearchClient {
 
 	public void stopSearch() {
 		Log.d(TAG, "Stop search.");
+		StackTraceElement st[] = Thread.currentThread().getStackTrace();
+		for (int i = 0; i < st.length; i++) {
+		Log.d(TAG, "trace: " + st[i].toString());
+		}
 		mStarted = false;
 		NetWorkUtil.releaseWifiMultiCastLock();
 
