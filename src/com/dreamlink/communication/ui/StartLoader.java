@@ -4,6 +4,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -37,9 +39,11 @@ public class StartLoader extends Activity{
 				mTimer.schedule(mTask, 1500);
 				break;
 			case LOADED:
-				Intent intent = new Intent();
-				intent.setClass(StartLoader.this, MainUIFrame.class);
-				startActivity(intent);
+				if (UserHelper.getUserName(getApplicationContext()) == null) {
+					launchInfo();
+				}else {
+					launchMain();
+				}
 				finish();
 				overridePendingTransition(R.anim.push_right_in, R.anim.push_left_out);
 				break;
@@ -48,4 +52,17 @@ public class StartLoader extends Activity{
 			}
 		};
 	};
+	
+	public void launchInfo(){
+		Intent intent = new Intent();
+		intent.putExtra(Extra.IS_FIRST_START, true);
+		intent.setClass(this, UserInfoSetting.class);
+		startActivity(intent);
+	}
+	
+	public void launchMain(){
+		Intent intent = new Intent();
+		intent.setClass(StartLoader.this, MainUIFrame.class);
+		startActivity(intent);
+	}
 }

@@ -17,17 +17,16 @@ import android.os.RemoteException;
 
 import com.dreamlink.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.aidl.User;
-import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.util.AppUtil;
 import com.dreamlink.communication.util.Log;
 
 @SuppressLint("NewApi")
-public class FileShareServerService extends Service implements OnCommunicationListener, OnCommunicationListenerExternal{
+public class FileShareServerService extends Service implements OnCommunicationListenerExternal{
 	private static final String TAG = "FileShareServerService";
 	private SocketCommunicationManager mCommunicationManager;
 	public static boolean serviceIsStart = false;
+	private int mAppId = 0;
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
@@ -36,95 +35,18 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.d(TAG, "onStartCommand");
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(this);
-		mCommunicationManager.registered(this);
-		mCommunicationManager.registerOnCommunicationListenerExternal(this, AppUtil.getAppID(getApplication()));
+//		mAppId = intent.getIntExtra(FileShareLauncher.EXTRA_APP_ID, 0);
+		if (null != intent) {
+			mAppId = intent.getIntExtra("app_id", 0);
+		}
+		Log.d(TAG, "onStartCommand.appid:" + mAppId);
+//		mCommunicationManager.registered(this);
+		mCommunicationManager.registerOnCommunicationListenerExternal(this, mAppId);
 		return super.onStartCommand(intent, flags, startId);
 	}
 
-	@Override
-	public void onReceiveMessage(byte[] msg, SocketCommunication ip) {
-		Log.d(TAG, "onReceiveMessage");
-		serviceIsStart = true;
-		
-		String cmdMsg = new String(msg);
-
-		// split msg
-		String[] splitMsg = cmdMsg.split(Command.AITE);
-
-		// command analyse
-		if (Command.LS.equals(splitMsg[0])) {
-			//ls command
-			String path = "";
-			if (Command.ROOT_PATH.equals(splitMsg[1])) {
-				if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-					path = Environment.getExternalStorageDirectory().getAbsolutePath();
-				} else {
-					//sdcard is not mount,do nothing
-					return;
-				}
-			} else {
-				//get the ls path
-				path = splitMsg[1];
-			}
-
-			File file = new File(path);
-
-			if (!file.exists()) {
-				return;
-			} else if (file.isDirectory()) {
-				// send return msg
-				String retMsg = "";
-				
-				// add head flag
-				retMsg = Command.LSRETN + Command.ENTER;
-				//add current path 
-				retMsg += file.getPath() + Command.ENTER;
-				//add parent path
-				retMsg += file.getParentFile().getPath() + Command.ENTER;
-
-				File[] files = file.listFiles();
-				Log.e(TAG, "files.length=" + files.length);
-				for (int i = 0; i < files.length; i++) {
-					if (files[i].isHidden()) {
-						//hidden file do not show
-					} else {
-						if (files[i].isDirectory()) {
-							//directory
-							// [最后修改时间],[目录标识],[目录大小],[路径][目录名称]
-							retMsg += files[i].lastModified() + Command.SEPARTOR + Command.DIR_FLAG + Command.SEPARTOR + Command.DIR_SIZE
-									+ Command.SEPARTOR + files[i].getAbsolutePath() + Command.SEPARTOR + files[i].getName() + Command.ENTER;
-						} else {
-							//file
-							// [最后修改时间],[文件标识],[文件大小],[路径],[文件名称]
-							retMsg += files[i].lastModified() + Command.SEPARTOR + Command.FILE_FLGA + Command.SEPARTOR + files[i].length()
-									+ Command.SEPARTOR + files[i].getAbsolutePath() + Command.SEPARTOR + files[i].getName() + Command.ENTER;
-						}
-					}
-				}
-				//add end flag
-				retMsg += Command.END_FLAG;
-				
-				//Log.d(TAG, "retMsg=" + retMsg);
-				// TODO need to implement appID.
-				mCommunicationManager.sendMessageToAll(retMsg.getBytes(), 0);
-			} else {
-				// not folder,can not enter here
-				return;
-			}
-		} else if (Command.COPY.equals(splitMsg[0])) {
-			// copy file command
-			Log.d(TAG, "OK,I got copy command");
-			String copypath = splitMsg[1];
-			File file = new File(copypath);
-
-		} else {
-			// another
-			return;
-		}
-	}
 	
 	/**
 	 * send file
@@ -161,25 +83,14 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 			Log.e(TAG, "IO exception:" + e.toString());
 		}
 	}
-
-
-	@Override
-	public void onSendResult(byte[] msg) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void notifyConnectChanged() {
-		// TODO Auto-generated method stub
-	}
-	
 	
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		serviceIsStart = false;
 		
-		mCommunicationManager.unregistered(this);
+//		mCommunicationManager.unregistered(this);
+		mCommunicationManager.unregisterOnCommunicationListenerExternal(this);
 	}
 
 	@Override
@@ -190,10 +101,90 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 
 	
 	@Override
-	public void onReceiveMessage(byte[] msg, User sendUser)
-			throws RemoteException {
-		// TODO Auto-generated method stub
-		System.out.println("=============================");
+	public void onReceiveMessage(byte[] msg, User sendUser) {
+		Log.d(TAG, "onReceiveMessage");
+		serviceIsStart = true;
+
+		String cmdMsg = new String(msg);
+
+		// split msg
+		String[] splitMsg = cmdMsg.split(Command.AITE);
+
+		// command analyse
+		if (Command.LS.equals(splitMsg[0])) {
+			// ls command
+			String path = "";
+			if (Command.ROOT_PATH.equals(splitMsg[1])) {
+				if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+					path = Environment.getExternalStorageDirectory().getAbsolutePath();
+				} else {
+					// sdcard is not mount,do nothing
+					return;
+				}
+			} else {
+				// get the ls path
+				path = splitMsg[1];
+			}
+
+			File file = new File(path);
+
+			if (!file.exists()) {
+				return;
+			} else if (file.isDirectory()) {
+				// send return msg
+				String retMsg = "";
+
+				// add head flag
+				retMsg = Command.LSRETN + Command.ENTER;
+				// add current path
+				retMsg += file.getPath() + Command.ENTER;
+				// add parent path
+				File parentFile = file.getParentFile();
+				if (null == parentFile) {
+					retMsg += "" + Command.ENTER;
+				}else {
+					retMsg += file.getParentFile().getPath() + Command.ENTER;
+				}
+
+				File[] files = file.listFiles();
+				Log.e(TAG, "files.length=" + files.length);
+				for (int i = 0; i < files.length; i++) {
+					if (files[i].isHidden()) {
+						// hidden file do not show
+					} else {
+						if (files[i].isDirectory()) {
+							// directory
+							// [最后修改时间],[目录标识],[目录大小],[路径][目录名称]
+							retMsg += files[i].lastModified() + Command.SEPARTOR + Command.DIR_FLAG + Command.SEPARTOR + Command.DIR_SIZE
+									+ Command.SEPARTOR + files[i].getAbsolutePath() + Command.SEPARTOR + files[i].getName() + Command.ENTER;
+						} else {
+							// file
+							// [最后修改时间],[文件标识],[文件大小],[路径],[文件名称]
+							retMsg += files[i].lastModified() + Command.SEPARTOR + Command.FILE_FLGA + Command.SEPARTOR + files[i].length()
+									+ Command.SEPARTOR + files[i].getAbsolutePath() + Command.SEPARTOR + files[i].getName() + Command.ENTER;
+						}
+					}
+				}
+				// add end flag
+				retMsg += Command.END_FLAG;
+
+				// Log.d(TAG, "retMsg=" + retMsg);
+				// TODO need to implement appID.
+				mCommunicationManager.sendMessageToAll(retMsg.getBytes(), mAppId);
+			} else {
+				// not folder,can not enter here
+				return;
+			}
+		} else if (Command.COPY.equals(splitMsg[0])) {
+			// copy file command
+			Log.d(TAG, "OK,I got copy command");
+			String copypath = splitMsg[1];
+			File file = new File(copypath);
+
+		} else {
+			// another
+			return;
+		}
 	}
 
 	@Override

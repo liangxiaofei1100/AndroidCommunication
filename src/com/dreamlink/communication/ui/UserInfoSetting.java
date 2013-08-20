@@ -3,6 +3,7 @@ package com.dreamlink.communication.ui;
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
@@ -38,6 +39,8 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 	
 	private Notice mNotice;
 	
+	private boolean mIsFirstStart = false;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,6 +74,8 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 				NetWorkUtil.getLocalIpAddress()) + "\n"
 				+ getString(R.string.userinfo_android_version,
 						mUser.getSystemInfo().mAndroidVersionCode));
+		
+		mIsFirstStart = getIntent().getBooleanExtra(Extra.IS_FIRST_START, false);
 	}
 
 	@Override
@@ -87,8 +92,13 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 			mUserHelper.saveUser(mUser);
 			mNotice.showToast("Name saved");
 			Intent intent = new Intent();
-			intent.putExtra("user", name);
-			setResult(RESULT_OK,intent);
+			if (mIsFirstStart) {
+				intent.setClass(this, MainUIFrame.class);
+				startActivity(intent);
+			}else {
+				intent.putExtra("user", name);
+				setResult(RESULT_OK,intent);
+			}
 			UserInfoSetting.this.finish();
 			
 			break;

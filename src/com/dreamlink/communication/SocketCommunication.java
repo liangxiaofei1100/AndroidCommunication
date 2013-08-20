@@ -289,6 +289,7 @@ public class SocketCommunication extends Thread {
 	private byte[] encode(byte[] msg) {
 		byte[] result = ArrayUtil
 				.join(ArrayUtil.int2ByteArray(msg.length), msg);
+		Log.d(TAG, "encode() msg.length = " + msg.length);
 		return result;
 	}
 
@@ -299,7 +300,6 @@ public class SocketCommunication extends Thread {
 	 * @return return true if send success, return false if send fail.
 	 */
 	public boolean sendMessage(byte[] msg) {
-		Log.i(TAG, "========sendMessage:" + new String(msg));
 		try {
 			if (mDataOutputStream != null) {
 				mDataOutputStream.write(encode(msg));

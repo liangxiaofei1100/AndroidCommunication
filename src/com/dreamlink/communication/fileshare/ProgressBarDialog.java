@@ -43,7 +43,7 @@ public class ProgressBarDialog extends AlertDialog {
 	private int prev = 0;
 	
 	private Context mContext;
-	protected ProgressBarDialog(Context context) {
+	public ProgressBarDialog(Context context) {
 		super(context);
 		
 		mContext = context;
