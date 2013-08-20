@@ -7,7 +7,10 @@ import java.util.Map;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.util.Log;
+
 import com.dreamlink.aidl.Communication;
 import com.dreamlink.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.aidl.User;
@@ -15,6 +18,7 @@ import com.dreamlink.aidl.User;
 public class SocketCommunicationService extends Service {
 	SocketCommunicationManager socketCommunicationManager;
 	SocketCommunicationMananerRemote remote = new SocketCommunicationMananerRemote();
+	public static RemoteCallbackList<OnCommunicationListenerExternal> callBackList = new RemoteCallbackList<OnCommunicationListenerExternal>();
 
 	private class SocketCommunicationMananerRemote extends Communication.Stub {
 
@@ -25,8 +29,10 @@ public class SocketCommunicationService extends Service {
 		@Override
 		public void registListenr(OnCommunicationListenerExternal lis, int appid)
 				throws RemoteException {
-			socketCommunicationManager.registerOnCommunicationListenerExternal(
-					lis, appid);
+			if (lis != null)
+				callBackList.register(lis, appid);
+			// socketCommunicationManager.registerOnCommunicationListenerExternal(
+			// lis, appid);
 		}
 
 		/** if user is null ,mean send all */
@@ -61,8 +67,10 @@ public class SocketCommunicationService extends Service {
 		public void unRegistListenr(OnCommunicationListenerExternal lis)
 				throws RemoteException {
 			// TODO Auto-generated method stub
-			socketCommunicationManager
-					.unregisterOnCommunicationListenerExternal(lis);
+			if (lis != null)
+				callBackList.unregister(lis);
+			// socketCommunicationManager
+			// .unregisterOnCommunicationListenerExternal(lis);
 		}
 
 		@Override
@@ -91,5 +99,4 @@ public class SocketCommunicationService extends Service {
 
 		return super.onUnbind(intent);
 	}
-
 }

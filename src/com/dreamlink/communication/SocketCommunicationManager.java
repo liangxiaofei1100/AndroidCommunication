@@ -133,8 +133,17 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 
 	public void unregisterOnCommunicationListenerExternal(
 			OnCommunicationListenerExternal listener) {
-		int appID = mOnCommunicationListenerExternals.remove(listener);
-		Log.d(TAG, "registerOnCommunicationListenerExternal() appID = " + appID);
+		if (listener == null) {
+			Log.e(TAG, "the params listener is null");
+		} else {
+			if (mOnCommunicationListenerExternals.containsKey(listener)) {
+				int appID = mOnCommunicationListenerExternals.remove(listener);
+				Log.d(TAG, "registerOnCommunicationListenerExternal() appID = "
+						+ appID);
+			} else {
+				Log.e(TAG, "there is no this listener in the map");
+			}
+		}
 	}
 
 	public void setLoginRequestCallBack(ILoginRequestCallBack callback) {
@@ -403,6 +412,23 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	}
 
 	public void notifyReceiveListeners(int sendUserID, int appID, byte[] data) {
+		int index = SocketCommunicationService.callBackList.beginBroadcast();
+		for (int i = 0; i < index; i++) {
+			int app_ip = (Integer) SocketCommunicationService.callBackList
+					.getBroadcastCookie(i);
+			if (app_ip == appID) {
+				OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.callBackList
+						.getBroadcastItem(i);
+				try {
+					l.onReceiveMessage(data,
+							mUserManager.getAllUser().get(sendUserID));
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		SocketCommunicationService.callBackList.finishBroadcast();
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
 			if (entry.getValue() == appID) {
@@ -419,6 +445,20 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 
 	@Override
 	public void onUserConnected(User user) {
+
+		int index = SocketCommunicationService.callBackList.beginBroadcast();
+		for (int i = 0; i < index; i++) {
+			OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.callBackList
+					.getBroadcastItem(i);
+			try {
+				l.onUserConnected(user);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		SocketCommunicationService.callBackList.finishBroadcast();
+
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
 			try {
@@ -432,6 +472,20 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 
 	@Override
 	public void onUserDisconnected(User user) {
+
+		int index = SocketCommunicationService.callBackList.beginBroadcast();
+		for (int i = 0; i < index; i++) {
+			OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.callBackList
+					.getBroadcastItem(i);
+			try {
+				l.onUserDisconnected(user);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		SocketCommunicationService.callBackList.finishBroadcast();
+
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
 			try {
