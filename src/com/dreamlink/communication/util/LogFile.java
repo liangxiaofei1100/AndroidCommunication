@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.dreamlink.communication.fileshare.FileUtil;
+
 import android.content.Context;
+import android.os.Environment;
 
 /**
  * This class is used for write log to file. It is useful for debug. Log file is
@@ -33,8 +36,10 @@ public class LogFile {
 	 *            file name.
 	 */
 	public LogFile(Context context, String fileName) {
-		String filePath = context.getFilesDir().getAbsolutePath() + "/"
-				+ fileName;
+		String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+		String filePath = path + "/" + fileName;
+//		String filePath = context.getFilesDir().getAbsolutePath() + "/"
+//				+ fileName;
 		mFile = new File(filePath);
 		if (!mFile.exists()) {
 			try {
@@ -65,6 +70,16 @@ public class LogFile {
 	 * @param log
 	 */
 	public void writeLog(String log) {
+		try {
+			mWriter.write(log);
+			mWriter.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void writeLog(byte[] logs){
+		char[] log = FileUtil.getChars(logs);
 		try {
 			mWriter.write(log);
 			mWriter.flush();

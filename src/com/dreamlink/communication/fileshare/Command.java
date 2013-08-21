@@ -21,7 +21,9 @@ public class Command {
 	/** Upload file */
 	public static final String PUT = "PUT";
 	/**copy command*/
-	public static final String COPY = "copy";
+	public static final String COPY = "COPY";
+	/**stop send file command*/
+	public static final String STOP_SEND_FILE = "STOP#&SEND*&FILE%";
 	
 	/////////////////////////////////
 	/**command split*/

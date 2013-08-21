@@ -23,15 +23,29 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <activity 
-            android:name="com.dreamlink.communication.ui.MainUIFrame"
-            android:screenOrientation="portrait" 
-            >
+         <meta-data
+                android:name="app_id"
+                android:value="111" />
+         
+         <activity
+            android:name="com.dreamlink.communication.ui.StartLoader"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+           
+        <activity 
+            android:name="com.dreamlink.communication.ui.MainUIFrame"
+            android:screenOrientation="portrait" 
+            >
+                <meta-data
+                android:name="app_id"
+                android:value="112"
+                />
         </activity>
         <activity
             android:name="com.dreamlink.communication.MainActivity"
@@ -162,7 +176,8 @@
             ></activity>
         <activity 
             android:name="com.dreamlink.communication.ui.file.RemoteShareActivity"
-            ></activity>
+            >
+        </activity>
         <activity 
             android:name="com.dreamlink.communication.ui.ConnectFriendActivity"
             android:theme="@android:style/Theme.Dialog"
@@ -183,16 +198,24 @@
             ></activity>
         
         <activity 
-            android:name="com.dreamlink.communication.ui.ExitActivity"
+            android:name="com.dreamlink.communication.ui.dialog.ExitActivity"
 			android:theme="@style/MyDialogStyle"            
             android:screenOrientation="portrait"
             ></activity>
-        
         <activity 
-            android:name="com.dreamlink.communication.ui.StartLoader"
+            android:name="com.dreamlink.communication.ui.dialog.FileTransferActivity"
+			android:theme="@style/MyDialogStyle"            
             android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-          	/>
+            ></activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.file.FileShareServer"
+            android:screenOrientation="portrait"
+            >
+        </activity>
+         <activity 
+            android:name="com.dreamlink.communication.ui.file.LocalFolderDialog"
+            android:screenOrientation="portrait"
+            ></activity>
         <!-- main ui end -->
         
         <provider 

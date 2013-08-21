@@ -27,6 +27,10 @@ public class DreamConstant {
 		public static final String GALLERY_SIZE = "gallery_size";
 		
 		public static final String IS_SERVER = "is_server";
+		
+		public static final String IS_FIRST_START = "is_first_start";
+		
+		public static final String COPY_PATH = "copy_path";
 	}
 
 	public static final String MEDIA_AUDIO_ACTION = "intent.media.audio.action";

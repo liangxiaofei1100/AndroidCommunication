@@ -3,7 +3,6 @@ package com.dreamlink.communication.fileshare;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.util.Log;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -36,7 +35,7 @@ public class FileListAdapter extends BaseAdapter {
 	
 	@Override
 	public int getCount() {
-		return mData.size() + 1;
+		return mData.size();
 	}
 
 	@Override
@@ -51,14 +50,8 @@ public class FileListAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		System.out.println("mData.size=" + mData.size());
 		View view = null;
 		ViewHolder holder = null;
-		
-		if (position == 0) {
-			view = mInflater.inflate(R.layout.filelist_top, parent, false);
-			return view;
-		}
 		if (null == convertView || null == convertView.getTag()) {
 			holder = new ViewHolder();
 			view = mInflater.inflate(R.layout.filelist_item, parent, false);
@@ -73,10 +66,10 @@ public class FileListAdapter extends BaseAdapter {
 			holder = (ViewHolder) view.getTag();
 		}
 		
-		String size = mData.get(position -1).getFormatFileSize();
-		String date = mData.get(position -1).getFormateDate();
+		String size = mData.get(position).getFormatFileSize();
+		String date = mData.get(position).getFormateDate();
 		
-		if (mData.get(position - 1).isDir) {
+		if (mData.get(position).isDir) {
 			holder.iconView.setImageResource(R.drawable.folder);
 			holder.fileInfoText.setText(date);
 		}else {
@@ -84,7 +77,7 @@ public class FileListAdapter extends BaseAdapter {
 			holder.fileInfoText.setText(size + " | " + date);
 		}
 		
-		holder.filenameText.setText(mData.get(position -1).fileName);
+		holder.filenameText.setText(mData.get(position).fileName);
 		
 		return view;
 	}

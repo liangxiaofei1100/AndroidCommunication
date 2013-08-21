@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
@@ -7,8 +7,10 @@
 
     <!-- title -->
     <RelativeLayout
+        android:id="@+id/title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" 
+        android:layout_alignParentTop="true"
         android:background="#eee"
         >
 
@@ -31,7 +33,10 @@
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp" >
+        android:layout_marginTop="10dp" 
+        android:layout_above="@+id/divider"
+        android:layout_below="@+id/title"
+        >
 
         <!-- 1 -->
         <RelativeLayout
@@ -81,7 +86,7 @@
         <RelativeLayout
             android:id="@+id/two"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:layout_below="@+id/search_view" >
 
@@ -109,14 +114,16 @@
         android:id="@+id/divider"
         android:layout_width="fill_parent"
         android:layout_height="2dp"
-        android:background="@drawable/divider_iv" />
+        android:background="@drawable/divider_iv" 
+        android:layout_above="@+id/create_connect_btn"
+        />
 
     <Button
         android:id="@+id/create_connect_btn"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="15dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
         android:background="@drawable/button_ok"
         android:text="@string/create_server" />
 
-</LinearLayout>
+</RelativeLayout>

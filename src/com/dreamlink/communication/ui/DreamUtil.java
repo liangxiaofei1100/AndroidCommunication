@@ -1,6 +1,7 @@
 package com.dreamlink.communication.ui;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.text.Collator;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 
@@ -103,6 +105,18 @@ public class DreamUtil {
 		.setMessage(info)
 		.setPositiveButton(android.R.string.ok, null)
 		.create().show();
+	}
+	
+	/**set dialog dismiss or not*/
+	public static void setDialogDismiss(DialogInterface dialog, boolean dismiss){
+		try {
+			Field field = dialog.getClass().getSuperclass().getDeclaredField("mShowing");
+			field.setAccessible(true);
+			field.set(dialog, dismiss);
+			dialog.dismiss();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

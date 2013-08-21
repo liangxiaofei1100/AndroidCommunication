@@ -134,7 +134,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	public void unregisterOnCommunicationListenerExternal(
 			OnCommunicationListenerExternal listener) {
 		int appID = mOnCommunicationListenerExternals.remove(listener);
-		Log.d(TAG, "registerOnCommunicationListenerExternal() appID = " + appID);
+		Log.d(TAG, "unregisterOnCommunicationListenerExternal() appID = " + appID);
 	}
 
 	public void setLoginRequestCallBack(ILoginRequestCallBack callback) {
@@ -330,10 +330,10 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * @param msg
 	 */
 	public void sendMessageToAll(byte[] msg, int appID) {
+		Log.d(TAG, "sendMessageToAll.msg.=" + new String(msg));
 		int localUserID = mUserManager.getLocalUser().getUserID();
 		byte[] data = ProtocolEncoder.encodeSendMessageToAll(msg, localUserID,
 				appID);
-		System.out.println("sendMessageTOAll:" + new String(data));
 		sendMessageToAllWithoutEncode(data);
 	}
 

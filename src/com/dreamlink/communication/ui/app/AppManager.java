@@ -11,8 +11,8 @@ import java.util.List;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.FileInfoDialog;
 import com.dreamlink.communication.ui.db.MetaData;
+import com.dreamlink.communication.ui.dialog.FileInfoDialog;
 import com.dreamlink.communication.util.Log;
 
 import android.R.anim;

@@ -33,5 +33,27 @@
         <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
         <item name="android:backgroundDimEnabled">true</item>
     </style>
+    
+    <style name="progressBarHorizontal_color" parent="android:Widget.ProgressBar.Horizontal">  
+    	<item name="android:indeterminateOnly">false</item>  
+    	<item name="android:progressDrawable">@drawable/my_progressbar</item>  
+    	<item name="android:minHeight">5dip</item>  
+    	<item name="android:maxHeight">5dip</item>  
+	</style>  
+    
+<!--        <style name="ButtonContainer" parent="@android:style/DeviceDefault.SegmentedButton"> -->
+<!--         <item name="android:layout_width">fill_parent</item> -->
+<!--         <item name="android:layout_height">wrap_content</item> -->
+<!--         <item name="android:weightSum">3</item> -->
+<!--         <item name="android:dividerPadding">8dip</item> -->
+<!--     </style> -->
+    
+<!--     <style name="Button" parent="@android:style/Widget.Holo.Light.Button.Borderless.Small"> -->
+<!--         <item name="android:layout_width">0dip</item> -->
+<!--         <item name="android:layout_weight">1</item> -->
+<!--         <item name="android:layout_height">wrap_content</item> -->
+<!--         <item name="android:ellipsize">marquee</item> -->
+<!--         <item name="android:singleLine">true</item> -->
+<!--     </style> -->
 
 </resources>
