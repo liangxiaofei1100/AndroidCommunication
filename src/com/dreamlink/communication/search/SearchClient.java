@@ -73,7 +73,7 @@ public class SearchClient {
 		}
 		mStarted = true;
 		NetWorkUtil.acquireWifiMultiCastLock(mContext);
-
+		Log.d(TAG, "The ip is "+NetWorkUtil.getLocalIpAddress());
 		if (NetWorkUtil.isAndroidAPNetwork(mContext)) {
 			// Android AP network.
 			Log.d(TAG, "Android AP network.");
@@ -82,7 +82,7 @@ public class SearchClient {
 			mSearchClientLanAndroidAP.setOnSearchListener(mListener);
 			mSearchClientLanAndroidAP.startSearch();
 		} else {
-			Log.d(TAG, "not Android AP network.");
+			Log.d(TAG, "not Android AP network."+"the ip is "+NetWorkUtil.getLocalIpAddress());
 		}
 
 		if (!NetWorkUtil.isWifiApEnabled(mContext)) {
@@ -93,6 +93,17 @@ public class SearchClient {
 		} else {
 			Log.d(TAG, "This is AP");
 			
+			if (NetWorkUtil.isAndroidAPNetwork(mContext)) {
+				// Android AP network.
+				Log.d(TAG, "Android AP network.");
+				mSearchClientLanAndroidAP = SearchClientLanAndroidAP
+						.getInstance(mContext);
+				mSearchClientLanAndroidAP.setOnSearchListener(mListener);
+				mSearchClientLanAndroidAP.startSearch();
+			}else{
+				Log.e(TAG,
+						"This ip is  " + NetWorkUtil.getLocalIpAddress());
+			}
 			// Android AP is enabled
 			// Because Android AP can not send or receive Lan
 			// multicast/broadcast,So it does not need to listen multicast.
@@ -101,6 +112,10 @@ public class SearchClient {
 
 	public void stopSearch() {
 		Log.d(TAG, "Stop search.");
+		StackTraceElement st[] = Thread.currentThread().getStackTrace();
+		for (int i = 0; i < st.length; i++) {
+		Log.d(TAG, "trace: " + st[i].toString());
+		}
 		mStarted = false;
 		NetWorkUtil.releaseWifiMultiCastLock();
 

@@ -19,6 +19,7 @@ import com.dreamlink.communication.fileshare.Command;
 import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.fileshare.FileListAdapter;
 import com.dreamlink.communication.fileshare.FileShareServerService;
+import com.dreamlink.communication.fileshare.LocalFileFragment;
 import com.dreamlink.communication.fileshare.ProgressBarDialog;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
@@ -587,6 +588,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			sendCommandMsg(copyCmd);
 		}
 	}
+
 	
 	@Override
 	public void onBackPressed() {
