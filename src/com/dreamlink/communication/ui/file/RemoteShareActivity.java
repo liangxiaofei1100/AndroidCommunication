@@ -23,6 +23,9 @@ import com.dreamlink.communication.fileshare.LocalFileFragment;
 import com.dreamlink.communication.fileshare.ProgressBarDialog;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.dialog.FileTransferActivity;
+import com.dreamlink.communication.ui.dialog.FileTransferDialog;
+import com.dreamlink.communication.ui.dialog.FileTransferDialog.FileTransferOnClickListener;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.util.AppUtil;
 import com.dreamlink.communication.util.Log;
@@ -38,7 +41,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -98,7 +103,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	
 	/**file transfer progress dialog*/
 	//use custom progressbar dialog
-	private ProgressBarDialog mFileTransferBarDialog = null;
+//	private ProgressBarDialog mFileTransferBarDialog = null;
+	private FileTransferDialog mFileTransferDialog = null;
 	
 	//test var
 	private long start_time = 0;
@@ -108,6 +114,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	private Timer mSpeedTimer;
 	
 	private static final int LOCAL_REQUEST_CODE = 0x001;
+	private static final int FILE_TRANSFER_REQUEST_CODE = 0x002;
 	
 	private Handler uihandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
@@ -353,8 +360,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			//receive file from server
 			try {
 				copyLen += msg.length;
-				if (mFileTransferBarDialog != null) {
-					mFileTransferBarDialog.setDProgress(copyLen);
+				if (mFileTransferDialog != null) {
+					mFileTransferDialog.setDProgress(copyLen);
 				}else {
 					Log.e(TAG, "mProgressDialog is null");
 				}
@@ -369,32 +376,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 				} else {
 					Log.e(TAG, "fos is null");
 				}
-				
-				//receive over,close fileoutputstream
-				if (copyLen >= ((int)currentCopyFile.fileSize)) {
-					//********clear begin***********//
-					if (fos != null) {
-						fos.close();
-						fos = null;
-					}
-					
-					currentCopyFile = null;
-					copyLen = 0;
-					
-					start_time = 0;
-					now_time = 0;
-					if (mSpeedTimer != null) {
-						mSpeedTimer.cancel();
-						mSpeedTimer = null;
-					}
-					
-					if (mFileTransferBarDialog != null) {
-						mFileTransferBarDialog.cancel();
-					}
-					Log.d(TAG, "Transfer Success!");
-					//********clear end***********//
-				}
-				
+				now_time = System.currentTimeMillis();
+				Log.d(TAG, "out copy time:"+ now_time);
 			} catch (Exception e) {
 				Log.e(TAG, "Receive error:" + e.toString());
 				e.printStackTrace();
@@ -491,8 +474,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	@Override
 	public void onUserDisconnected(User user) throws RemoteException {
 		Log.d(TAG, "onUserDisconnected");
-		if (null != mFileTransferBarDialog) {
-			mFileTransferBarDialog.cancel();
+		if (null != mFileTransferDialog) {
+			mFileTransferDialog.cancel();
 		}
 		
 		currentCopyFile = null;
@@ -505,10 +488,14 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		Log.d(TAG, "onActivityResult");
 		super.onActivityResult(requestCode, resultCode, data);
 		if (RESULT_OK == resultCode) {
-			String copyPath = "";
-			if (null != data) {
-				copyPath = data.getStringExtra(Extra.COPY_PATH);
-				doCopy(copyPath);
+			if (LOCAL_REQUEST_CODE == requestCode) {
+				String copyPath = "";
+				if (null != data) {
+					copyPath = data.getStringExtra(Extra.COPY_PATH);
+					doCopy(copyPath);
+				}
+			}else if (FILE_TRANSFER_REQUEST_CODE == requestCode) {
+				System.out.println("******************88");
 			}
 		}else if (RESULT_CANCELED == resultCode) {
 			currentCopyFile = null;
@@ -531,42 +518,32 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			e.printStackTrace();
 		}
 		
-		mFileTransferBarDialog = new ProgressBarDialog(mContext);
-		mFileTransferBarDialog.setDMax(currentCopyFile.fileSize);
-		mFileTransferBarDialog.setMyTitle("copying:" + currentCopyFile.fileName);
-		mFileTransferBarDialog.setTime(0);
-		mFileTransferBarDialog.setCancelable(true);
-//		mFileTransferBarDialog.setButton(Dialog.BUTTON_NEGATIVE, "Stop", new DialogInterface.OnClickListener() {
-//			@Override
-//			public void onClick(DialogInterface dialog, int which) {
-//				
-//				sendCommandMsg(Command.STOP_SEND_FILE + Command.AITE);
-////				if (copyLen < currentCopyFile.fileSize) {
-//////					file.delete();
-////					if (null != mCurrentLocalFile) {
-////						mCurrentLocalFile.delete();
-////						mCurrentLocalFile = null;
-////					}
-////				}
-////				currentCopyFile = null;
-//				mFileTransferBarDialog.setTitle("Pausing:" + currentCopyFile.fileName);
-////				DreamUtil.setDialogDismiss(dialog, false);
-//				try {
-//					Field field = dialog.getClass().getSuperclass().getDeclaredField("mShowing");
-//					field.setAccessible(true);
-//					field.set(dialog, false);
-//					dialog.dismiss();
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//				
-//			}
-//		});
-		mFileTransferBarDialog.show();
+		mFileTransferDialog = new FileTransferDialog(mContext, R.style.TransferDialog);
+		mFileTransferDialog.setDMax(currentCopyFile.fileSize);
+		mFileTransferDialog.setFileName(currentCopyFile.fileName);
+		mFileTransferDialog.setState(FileTransferDialog.STATE_COPYING);
+		mFileTransferDialog.setFileTransferOnClickListener(new FileTransferOnClickListener() {
+			@Override
+			public void onClick(View view) {
+				int id = view.getId();
+				switch (id) {
+				case R.id.left_button:
+					mNotice.showToast("Stop transfer");
+					break;
+				case R.id.right_button:
+					break;
+
+				default:
+					break;
+				}
+			}
+		});
+		mFileTransferDialog.setCancelable(true);
+		mFileTransferDialog.show();
 		
 		if (currentCopyFile.fileSize == 0) {
-			mFileTransferBarDialog.cancel();
-			mNotice.showToast("Transfer Success!");
+			mFileTransferDialog.setTP(0, 0);
+			mFileTransferDialog.setState(FileTransferDialog.STATE_COPY_OK);
 		}else {
 			start_time = System.currentTimeMillis();
 			Log.d(TAG, "start copy time:"+ start_time);
@@ -575,13 +552,31 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			mSpeedTimer.schedule(new TimerTask() {
 				@Override
 				public void run() {
-					now_time = System.currentTimeMillis();
 					long duration = now_time - start_time;
-					 long speed = (long) ((double)copyLen / (duration / 1000));
-					 mFileTransferBarDialog.setSpeed(speed);
-					 mFileTransferBarDialog.setTime(duration);
+					
+					 double speed =  copyLen / ((double)duration / 1000);
+					 mFileTransferDialog.setTP(speed, duration);
+					 
+					if (copyLen >= ((int) currentCopyFile.fileSize)) {
+						mFileTransferDialog.setState(FileTransferDialog.STATE_COPY_OK);
+						try {
+							if (null != fos) {
+								fos.close();
+							}
+						} catch (IOException e) {
+							e.printStackTrace();
+						} finally{
+							fos = null;
+						}
+						
+						currentCopyFile = null;
+						copyLen = 0;
+						start_time = 0;
+						now_time = 0;
+						mSpeedTimer.cancel();
+					}
 				}
-			}, 1000, 1000);
+			}, 1000, 500);
 			
 			//send msg to server that i want this file
 			String copyCmd = Command.COPY + Command.AITE + currentCopyFile.filePath;

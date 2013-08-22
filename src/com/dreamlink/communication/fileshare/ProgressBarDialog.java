@@ -37,7 +37,7 @@ public class ProgressBarDialog extends AlertDialog {
 	
 	private double dMax;
 	private double dProgress;
-	private long mSpeed = 0;
+	private double mSpeed = 0;
 	private long mTime;
 	private String mMessage = "";
 	private String mTitle = "";
@@ -48,9 +48,9 @@ public class ProgressBarDialog extends AlertDialog {
 	private double prev = 0;
 	
 	private Context mContext;
-	public ProgressBarDialog(Context context) {
-		super(context);
-		
+
+	public ProgressBarDialog(Context context, int theme) {
+		super(context, theme);
 		mContext = context;
 	}
 	
@@ -81,7 +81,7 @@ public class ProgressBarDialog extends AlertDialog {
 		mProgressBar.setMax(100);
 		
 		mTitleView = (TextView) view.findViewById(R.id.title_veiw);
-		mMessageView = (TextView) view.findViewById(R.id.message_view);
+		mMessageView = (TextView) view.findViewById(R.id.time_view);
 		mPercentView = (TextView) view.findViewById(R.id.percent_view);
 		mNumberView = (TextView) view.findViewById(R.id.number_view);
 		mSpeedView = (TextView) view.findViewById(R.id.speed_view);
@@ -127,7 +127,7 @@ public class ProgressBarDialog extends AlertDialog {
 		mMessage = mContext.getResources().getString(resId);
 	}
 	
-	public void setSpeed(long speed){
+	public void setSpeed(double speed){
 		mSpeed = speed;
 	}
 	

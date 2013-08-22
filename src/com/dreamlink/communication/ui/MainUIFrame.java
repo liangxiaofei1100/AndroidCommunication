@@ -807,7 +807,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		// TODO Auto-generated method stub
 		String nameString = localUser.getUserName();
 		Log.d(TAG, "onLoginSuccess");
-		mNotice.showToast("User Login Success!");
+//		mNotice.showToast("User Login Success!");
 		mCurrentStatus = CONNECTING;
 		mIsServer = false;
 		mHandler.sendMessage(mHandler.obtainMessage(MSG_REFRESH_USER_LIST));
@@ -817,7 +817,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	public void onLoginFail(int failReason, SocketCommunication communication) {
 		// TODO Auto-generated method stub
 		Log.d(TAG, "onLoginFail");
-		mNotice.showToast("User Login Fail.Reason:" + failReason);
+//		mNotice.showToast("User Login Fail.Reason:" + failReason);
 	}
 
 	@Override
