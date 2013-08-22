@@ -198,7 +198,12 @@
             ></activity>
         
         <activity 
-            android:name="com.dreamlink.communication.ui.ExitActivity"
+            android:name="com.dreamlink.communication.ui.dialog.ExitActivity"
+			android:theme="@style/MyDialogStyle"            
+            android:screenOrientation="portrait"
+            ></activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.dialog.FileTransferActivity"
 			android:theme="@style/MyDialogStyle"            
             android:screenOrientation="portrait"
             ></activity>
@@ -209,7 +214,7 @@
         </activity>
          <activity 
             android:name="com.dreamlink.communication.ui.file.LocalFolderDialog"
-            android:theme="@android:style/Theme.Dialog"
+            android:screenOrientation="portrait"
             ></activity>
         <!-- main ui end -->
         

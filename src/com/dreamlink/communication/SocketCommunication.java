@@ -180,6 +180,10 @@ public class SocketCommunication extends Thread {
 				// Read the remain header data to get the header data.
 				dataReceivedLength = in.read(mHeadBuffer, 0, HEAD_SIZE
 						- mRemainHeader.length);
+				if (dataReceivedLength == -1) {
+					Log.d(TAG, "Connection lost. dataReceivedLength = -1");
+					return false;
+				}
 				if (mRemainHeader.length + dataReceivedLength < HEAD_SIZE) {
 					Log.d(TAG,
 							"remain head + data received < HEAD_SIZE, dataReceivedLength = "
@@ -211,6 +215,10 @@ public class SocketCommunication extends Thread {
 			}
 			// Read received data.
 			dataReceivedLength = in.read(mReceiveBuffer, 0, packetLength);
+			if (dataReceivedLength == -1) {
+				Log.d(TAG, "Connection lost. dataReceivedLength = -1");
+				return false;
+			}
 			if (dataReceivedLength == packetLength) {
 				Log.d(TAG, "received data is on packet");
 				// received data is ok.
@@ -247,6 +255,10 @@ public class SocketCommunication extends Thread {
 			// Read the remain packet data.
 			dataReceivedLength = in.read(mReceiveBuffer, 0, mLastPacketLength
 					- mRemainPacket.length);
+			if (dataReceivedLength == -1) {
+				Log.d(TAG, "Connection lost. dataReceivedLength = -1");
+				return false;
+			}
 			if (dataReceivedLength + mRemainPacket.length == mLastPacketLength) {
 				Log.d(TAG,
 						"remain packet + received data is one packet.mLastPacketLength = "
@@ -300,6 +312,7 @@ public class SocketCommunication extends Thread {
 	 * @return return true if send success, return false if send fail.
 	 */
 	public boolean sendMessage(byte[] msg) {
+		Log.d(TAG, "sendMessage=>" + new String(msg));
 		try {
 			if (mDataOutputStream != null) {
 				mDataOutputStream.write(encode(msg));

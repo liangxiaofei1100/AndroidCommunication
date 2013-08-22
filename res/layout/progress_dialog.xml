@@ -1,50 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
-    
-    <TextView 
-        android:id="@+id/message_view"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textIsSelectable="false"
-        />
-    
-    <ProgressBar 
-        android:id="@+id/progress_bar"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
-        android:indeterminate="false"
-        android:layout_below="@+id/message_view"
-        />
-    
-    <TextView 
-        android:id="@+id/percent_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textIsSelectable="false"
-        android:layout_below="@+id/progress_bar"
-        android:layout_alignParentLeft="true"
-        />
-    
-    <TextView 
-        android:id="@+id/speed_view"
-       	android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textIsSelectable="false"
-        android:layout_below="@+id/progress_bar"
-        android:layout_toRightOf="@+id/percent_view"
-        android:paddingLeft="5dp"
-        />
-    
-     <TextView 
-        android:id="@+id/number_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textIsSelectable="false"
-        android:layout_below="@+id/progress_bar"
-        android:layout_alignParentRight="true"
-        />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/exit_layout"
+    android:layout_width="280dp"
+    android:layout_height="200dp"
+    android:background="@drawable/confirm_dialog_bg"
+    android:gravity="center_horizontal"
+    android:orientation="vertical" >
 
-</RelativeLayout>
+    <TextView
+        android:id="@+id/title_veiw"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:textColor="@color/black"
+        android:text="这里显示标题" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="20dp" >
+
+        <TextView
+            android:id="@+id/message_view"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="00:10"
+            android:textColor="@color/black"
+            android:textIsSelectable="false" />
+
+        <TextView
+            android:id="@+id/speed_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/progress_bar"
+            android:paddingLeft="5dp"
+            android:text="3.43MB/S"
+            android:textColor="@color/black"
+            android:textIsSelectable="false" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="@style/progressBarHorizontal_color"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/message_view"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp" />
+
+        <TextView
+            android:id="@+id/percent_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="88%"
+            android:textColor="@color/black"
+            android:textIsSelectable="false" />
+
+        <TextView
+            android:id="@+id/number_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/progress_bar"
+            android:text="3.54MB/99.23MB"
+            android:textColor="@color/black"
+            android:textIsSelectable="false" />
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/stop_button"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/button_cancel"
+        android:text="Stop"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+</LinearLayout>

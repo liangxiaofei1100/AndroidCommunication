@@ -26,6 +26,7 @@ import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.ui.app.AppFragmentActivity;
 import com.dreamlink.communication.ui.db.MetaData;
+import com.dreamlink.communication.ui.dialog.ExitActivity;
 import com.dreamlink.communication.ui.file.FileFragmentActivity;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.ui.image.ImageFragmentActivity;

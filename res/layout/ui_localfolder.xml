@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
     >
     <LinearLayout 
         android:id="@+id/button_layout"
@@ -41,13 +40,8 @@
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/button_layout"
+        android:layout_below="@+id/menulayout"
         >
-        <ListView 
-            android:id="@+id/listview"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            >
-        </ListView>
         
         <TextView 
             android:id="@+id/empty_view"
@@ -56,6 +50,46 @@
             android:text="NULL"
             android:layout_centerInParent="true"
             />
+
+        <ListView
+            android:id="@+id/listview"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true" >
+        </ListView>
+
     </RelativeLayout>
+    
+    <LinearLayout 
+        android:id="@+id/menulayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        >
+        <ImageButton
+            android:id="@+id/root_view"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_home" />
+		
+        <TextView 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="目录选择"
+            android:layout_gravity="center"
+            android:gravity="center"
+            />
+        
+        <ImageButton
+            android:id="@+id/up_view"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:src="@drawable/title_back_pressed" />
+
+    </LinearLayout>
 
 </RelativeLayout>

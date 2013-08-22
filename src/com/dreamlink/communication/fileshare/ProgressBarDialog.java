@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.DreamUtil;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -23,6 +24,8 @@ public class ProgressBarDialog extends AlertDialog {
 
 	/**view progress bar*/
 	private ProgressBar mProgressBar;
+	/**title view*/
+	private TextView mTitleView;
 	/**view extra message*/
 	private TextView mMessageView;
 	/**view percent*/
@@ -35,12 +38,14 @@ public class ProgressBarDialog extends AlertDialog {
 	private double dMax;
 	private double dProgress;
 	private long mSpeed = 0;
+	private long mTime;
 	private String mMessage = "";
+	private String mTitle = "";
 	
 	private String dProgressStr;
 	private String dMaxStr;
 	
-	private int prev = 0;
+	private double prev = 0;
 	
 	private Context mContext;
 	public ProgressBarDialog(Context context) {
@@ -54,17 +59,15 @@ public class ProgressBarDialog extends AlertDialog {
 	private Handler mViewUpdateHandler  = new Handler(){
 		@Override
 		public void handleMessage(Message msg) {
-			super.handleMessage(msg);
+//			super.handleMessage(msg);
 			double percent = dProgress / dMax;
-			if (prev != (int)(percent * 100)) {
+			if (prev != percent * 100) {
 				mProgressBar.setProgress((int)(percent * 100));
 				mPercentView.setText(nf.format(percent));
 				mNumberView.setText(dProgressStr + "/" + dMaxStr);
-				
-				///
 				mSpeedView.setText(sizeFormat(mSpeed) + "/s");
-				///
-				prev = (int)(percent * 100);
+				mMessageView.setText(DreamUtil.mediaTimeFormat(mTime));
+				prev = percent * 100;
 			}
 		}
 	};
@@ -77,6 +80,7 @@ public class ProgressBarDialog extends AlertDialog {
 		mProgressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
 		mProgressBar.setMax(100);
 		
+		mTitleView = (TextView) view.findViewById(R.id.title_veiw);
 		mMessageView = (TextView) view.findViewById(R.id.message_view);
 		mPercentView = (TextView) view.findViewById(R.id.percent_view);
 		mNumberView = (TextView) view.findViewById(R.id.number_view);
@@ -125,6 +129,14 @@ public class ProgressBarDialog extends AlertDialog {
 	
 	public void setSpeed(long speed){
 		mSpeed = speed;
+	}
+	
+	public void setTime(long duration){
+		mTime = duration;
+	}
+	
+	public void setMyTitle(String title){
+		mTitle = title;
 	}
 	
 	public static String sizeFormat(double size){

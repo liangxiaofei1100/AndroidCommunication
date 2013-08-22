@@ -34,6 +34,13 @@
         <item name="android:backgroundDimEnabled">true</item>
     </style>
     
+    <style name="progressBarHorizontal_color" parent="android:Widget.ProgressBar.Horizontal">  
+    	<item name="android:indeterminateOnly">false</item>  
+    	<item name="android:progressDrawable">@drawable/my_progressbar</item>  
+    	<item name="android:minHeight">5dip</item>  
+    	<item name="android:maxHeight">5dip</item>  
+	</style>  
+    
 <!--        <style name="ButtonContainer" parent="@android:style/DeviceDefault.SegmentedButton"> -->
 <!--         <item name="android:layout_width">fill_parent</item> -->
 <!--         <item name="android:layout_height">wrap_content</item> -->

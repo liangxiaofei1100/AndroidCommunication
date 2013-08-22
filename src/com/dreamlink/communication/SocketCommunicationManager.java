@@ -339,7 +339,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * @param msg
 	 */
 	public void sendMessageToAll(byte[] msg, int appID) {
-		Log.d(TAG, "sendMessageToAll.msg.length=" + msg.length);
+		Log.d(TAG, "sendMessageToAll.msg.=" + new String(msg));
 		int localUserID = mUserManager.getLocalUser().getUserID();
 		byte[] data = ProtocolEncoder.encodeSendMessageToAll(msg, localUserID,
 				appID);
