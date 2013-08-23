@@ -1,29 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/exit_layout"
     android:layout_width="280dp"
     android:layout_height="200dp"
     android:background="@drawable/confirm_dialog_bg"
     android:gravity="center_horizontal"
-    android:orientation="vertical" >
+    >
 
     <TextView
         android:id="@+id/title_veiw"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_margin="5dp"
         android:textColor="@color/black"
-        android:text="这里显示标题" />
+        android:textSize="15sp"
+        android:text="这里显示标题\n这是第二行\n第三行" />
 
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/button_layout"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
-        android:layout_marginTop="20dp" >
+        android:layout_marginBottom="15dp"
+         >
 
         <TextView
-            android:id="@+id/message_view"
+            android:id="@+id/time_view"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="00:10"
@@ -36,8 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/progress_bar"
-            android:paddingLeft="5dp"
-            android:text="3.43MB/S"
+            android:text="0KB/s"
             android:textColor="@color/black"
             android:textIsSelectable="false" />
 
@@ -46,7 +49,7 @@
             style="@style/progressBarHorizontal_color"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/message_view"
+            android:layout_below="@+id/time_view"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="5dp" />
 
@@ -55,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:text="88%"
+            android:text="0%"
             android:textColor="@color/black"
             android:textIsSelectable="false" />
 
@@ -65,19 +68,38 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_below="@+id/progress_bar"
-            android:text="3.54MB/99.23MB"
+            android:text="test/test"
             android:textColor="@color/black"
             android:textIsSelectable="false" />
     </RelativeLayout>
-
-    <Button
-        android:id="@+id/stop_button"
-        android:layout_width="110dp"
+    
+    <LinearLayout
+        android:id="@+id/button_layout"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:background="@drawable/button_cancel"
-        android:text="Stop"
-        android:textColor="@color/black"
-        android:textSize="16sp" />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal" >
 
-</LinearLayout>
+        <Button
+            android:id="@+id/left_button"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_cancel"
+            android:layout_marginRight="5dp"
+            android:text="Stop"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/right_button"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:background="@drawable/button_cancel"
+            android:text="Stop"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+    </LinearLayout>
+</RelativeLayout>

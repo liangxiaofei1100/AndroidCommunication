@@ -50,6 +50,7 @@ public class WifiOrAPService extends Service {
 	private boolean server_register = false;
 	private boolean client_register = false;
 	private boolean flag = false;
+	private boolean scann_flag = true;
 
 	@Override
 	public void onCreate() {
@@ -66,7 +67,7 @@ public class WifiOrAPService extends Service {
 	public boolean onUnbind(Intent intent) {
 		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
-			flag=false;
+			flag = false;
 			mSearchClient = null;
 		}
 		if (mSearchServer != null) {
@@ -103,7 +104,7 @@ public class WifiOrAPService extends Service {
 	public void startServer(String serverType, OnSearchListener searchListener) {
 		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
-			flag=false;
+			flag = false;
 			mSearchClient = null;
 		}
 		if (mSearchServer != null) {
@@ -234,6 +235,7 @@ public class WifiOrAPService extends Service {
 	 *            {@link OnSearchListener} the result notify interface
 	 * */
 	public void startSearch(OnSearchListener searchListener) {
+		scann_flag = true;
 		if (mWifiManager.isWifiEnabled()) {
 			mWifiManager.startScan();
 		} else {
@@ -245,7 +247,7 @@ public class WifiOrAPService extends Service {
 		}
 		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
-			flag=false;
+			flag = false;
 			mSearchClient = null;
 		}
 		if (client_register) {
@@ -359,14 +361,16 @@ public class WifiOrAPService extends Service {
 				}
 			}
 		}
+		if (scann_flag)
+			mWifiManager.startScan();
 	}
 
 	private void handleNetworkSate(NetworkInfo networkInfo) {
 		if (networkInfo.isConnected()) {
-			if(mSearchServer!=null){
+			if (mSearchServer != null) {
 				mSearchServer.stopSearch();
 			}
-			mSearchServer=SearchSever.getInstance(getApplicationContext());
+			mSearchServer = SearchSever.getInstance(getApplicationContext());
 			mSearchServer.setOnSearchListener(onSearchListener);
 			mSearchServer.startSearch();
 		}
@@ -425,11 +429,13 @@ public class WifiOrAPService extends Service {
 		UserManager.getInstance().addLocalServerUser();
 		this.sendBroadcast(new Intent(DreamConstant.SERVER_CREATED_ACTION));
 	}
-	public void stopSearch(){
-		if(mSearchClient!=null){
+
+	public void stopSearch() {
+		scann_flag = false;
+		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
 		}
-		if(mSearchServer!=null){
+		if (mSearchServer != null) {
 			mSearchServer.stopSearch();
 		}
 	}
