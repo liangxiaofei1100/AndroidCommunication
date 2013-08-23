@@ -266,7 +266,7 @@ public class SocketCommunication extends Thread {
 				// remain packet + received data is one packet.
 				mOnReceiveMessageListener.onReceiveMessage(
 						ArrayUtil.join(mRemainPacket, Arrays.copyOfRange(
-								mHeadBuffer, 0, dataReceivedLength)), this);
+								mReceiveBuffer, 0, dataReceivedLength)), this);
 				mRemainPacket = null;
 				return true;
 			} else if (dataReceivedLength + mRemainPacket.length < mLastPacketLength) {
