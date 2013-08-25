@@ -36,7 +36,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -595,6 +597,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					break;
 				}
 			}
+
 		});
 		mFileTransferDialog.setCancelable(true);
 		mFileTransferDialog.show();
