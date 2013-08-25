@@ -4,7 +4,10 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
@@ -28,7 +31,9 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -63,6 +68,7 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 	
 	public static  List<AppEntry> mNormalAppLists = new ArrayList<AppEntry>();
 	public static List<AppEntry> mGameAppList = new ArrayList<AppEntry>();
+	public static List<AppEntry> mMyAppList = new ArrayList<AppEntry>();
 	
 	private static int mCurrentPosition = -1;
 	private Context mContext;
@@ -246,33 +252,59 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 		protected List<AppEntry> doInBackground(String... params) {
 			mNormalAppLists.clear();
 			mGameAppList.clear();
+			mMyAppList.clear();
+			
+			//get we app
+			Intent appIntent = new Intent(DreamConstant.APP_ACTION);
+			appIntent.addCategory(Intent.CATEGORY_DEFAULT);
+			// 通过查询，获得所有ResolveInfo对象.
+			List<ResolveInfo> resolveInfos = pm.queryIntentActivities(appIntent, 0);
+			// 调用系统排序,根据name排序
+			Collections.sort(resolveInfos, new ResolveInfo.DisplayNameComparator(pm));
+			for (ResolveInfo resolveInfo : resolveInfos) {
+				AppEntry appEntry = new AppEntry(mContext, resolveInfo.activityInfo.applicationInfo);
+				String pkgName = resolveInfo.activityInfo.packageName; // 获得应用程序的包名
+				System.out.println("pkgmane=" + pkgName + "\n"
+						+ "label:" + resolveInfo.loadLabel(pm));
+				appEntry.setPackageName(pkgName);
+				appEntry.setLable((String)resolveInfo.loadLabel(pm));
+				appEntry.setIcon(resolveInfo.loadIcon(pm));
+				appEntry.loadVersion();
+				mMyAppList.add(appEntry);
+			}
+			//get we app end
+			
 			// Retrieve all known applications.
-            List<ApplicationInfo> apps = mAppManager.getAllApps();;
+            List<ApplicationInfo> apps = mAppManager.getAllApps();
             if (apps == null) {
                 apps = new ArrayList<ApplicationInfo>();
             }
-
             for (int i=0; i<apps.size(); i++) {
             	ApplicationInfo appInfo = apps.get(i);
-    			if ((appInfo.flags & ApplicationInfo.FLAG_SYSTEM) > 0) {
-    				//system app
-    			}else {
+            	//获取非系统应用
+            	int flag1 = appInfo.flags & ApplicationInfo.FLAG_SYSTEM;
+            	//本来是系统程序，被用户手动更新后，该系统程序也成为第三方应用程序了  
+            	int flag2 = appInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
+            	if ((flag1 <= 0) || flag2 != 0 ) {
     				AppEntry entry = new AppEntry(mContext, apps.get(i));
                     entry.setPackageName(appInfo.packageName);
                     entry.loadLabel();
                     entry.loadVersion();
                     boolean is_game_app = mAppManager.isGameApp(appInfo.packageName);
                     entry.setIsGameApp(is_game_app);
-                    if (is_game_app) {
-                    	mGameAppList.add(entry);
-					}else {
-						mNormalAppLists.add(entry);
+                    if (!isNeedIngore(entry.getPackageName())) {
+                    	if (is_game_app) {
+	                    	mGameAppList.add(entry);
+						}else {
+							mNormalAppLists.add(entry);
+						}
 					}
-                    
                     //
                     if (DreamConstant.PACKAGE_NAME.equals(appInfo.packageName)) {
 						DreamUtil.package_source_dir = appInfo.sourceDir;
 					}
+				}else {
+					//system app
 				}
             }
 
@@ -307,6 +339,15 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 			super.onProgressUpdate(values);
 		}
     	
+    }
+    
+    private boolean isNeedIngore(String pkgName){
+    	for (AppEntry appEntry : mMyAppList) {
+			if (pkgName.equals(appEntry.getPackageName())) {
+				return true;
+			}
+		}
+    	return false;
     }
     
     /**

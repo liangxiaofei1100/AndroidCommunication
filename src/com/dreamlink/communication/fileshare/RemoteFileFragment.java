@@ -401,7 +401,7 @@ public class RemoteFileFragment extends Fragment implements
 					e.printStackTrace();
 				}
 				
-				mFileTransferBarDialog = new ProgressBarDialog(mContext);
+				mFileTransferBarDialog = new ProgressBarDialog(mContext, R.style.TransferDialog);
 				mFileTransferBarDialog.setDMax(currentCopyFile.fileSize);
 				mFileTransferBarDialog.setMessage("copying:" + currentCopyFile.fileName);
 				mFileTransferBarDialog.setCancelable(true);

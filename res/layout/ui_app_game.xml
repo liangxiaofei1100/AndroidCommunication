@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-     >
-     
-    <TextView 
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/xx_game"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="XX游戏"
-        android:gravity="center"
-        android:background="#dddddd"
-        />
-    
-    <RelativeLayout 
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        >
+        android:layout_alignParentTop="true" >
+
+        <TextView
+            android:id="@+id/text1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:background="#dddddd"
+            android:gravity="center"
+            android:text="XX游戏" />
+
         <GridView
+            android:layout_below="@+id/text1"
             android:id="@+id/game_gridview_1"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:horizontalSpacing="4dip"
             android:numColumns="4"
@@ -28,32 +31,35 @@
             android:stretchMode="columnWidth"
             android:verticalSpacing="4dip" >
         </GridView>
-        
-        <TextView 
+
+        <TextView
             android:id="@+id/game_empty_textview_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/dream_app_content_null"
-            android:layout_centerInParent="true"
-            />
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/text1"
+            android:text="@string/dream_app_content_null" />
     </RelativeLayout>
-    
-    <TextView 
+
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="我的游戏"
-        android:gravity="center"
-        android:background="#dddddd"
-        />
-    
-    <RelativeLayout 
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        >
+        android:layout_below="@+id/xx_game" >
+
+        <TextView
+            android:id="@+id/text2"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:background="#dddddd"
+            android:gravity="center"
+            android:text="我的游戏" />
+
         <GridView
             android:id="@+id/game_gridview_2"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text2"
             android:gravity="center"
             android:horizontalSpacing="4dip"
             android:numColumns="4"
@@ -61,14 +67,14 @@
             android:stretchMode="columnWidth"
             android:verticalSpacing="4dip" >
         </GridView>
-        
-        <TextView 
+
+        <TextView
             android:id="@+id/game_empty_textview_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/game_app_content_null"
-            android:layout_centerInParent="true"
-            />
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/text2"
+            android:text="@string/game_app_content_null" />
     </RelativeLayout>
 
-</LinearLayout>
+</RelativeLayout>

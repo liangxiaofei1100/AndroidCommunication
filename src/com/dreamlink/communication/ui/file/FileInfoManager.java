@@ -361,7 +361,8 @@ public class FileInfoManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return null;
+		return context.getResources().getDrawable(
+				R.drawable.icon_apk);
 	}
 
 	public int fileFilter(String filepath) {

@@ -47,6 +47,11 @@
         <item>@string/menu_move_to_app</item>
     </string-array>
     
+        <string-array name="app_menu_game1">
+         <item>@string/menu_start</item>
+        <item>@string/menu_app_info</item>
+    </string-array>
+    
     <string-array name="fileshare_menu">
         <item>Copy</item>
     </string-array>

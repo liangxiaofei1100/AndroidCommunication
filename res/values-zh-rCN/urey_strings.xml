@@ -106,4 +106,10 @@
     <string name="click_to_set">点我设置名称</string>
     <string name="name_set_tip">名称最大长度为8个字符</string>
     <string name="save_setting">保存设置</string>
+    
+    <string name="copy_ready">准备下载:<xliff:g id="copy">%1$s</xliff:g></string>
+    <string name="copying">正在下载:<xliff:g id="copy">%1$s</xliff:g></string>
+    <string name="copy_ok">下载完成:<xliff:g id="copy">%1$s</xliff:g></string>
+    <string name="copy_fail">下载失败:<xliff:g id="copy">%1$s</xliff:g></string>
+    <string name="stop">停止</string>
 </resources>

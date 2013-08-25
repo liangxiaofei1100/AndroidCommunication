@@ -21,6 +21,7 @@ import android.renderscript.Element;
 import com.dreamlink.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.ui.DreamConstant.Cmd;
 import com.dreamlink.communication.util.AppUtil;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.LogFile;
@@ -172,27 +173,126 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 
 		String cmdMsg = new String(msg);
 		Log.d(TAG, "onReceiveMessage:" + cmdMsg);
+		int cmd = Integer.parseInt(cmdMsg.substring(0, 3));
+		String path = cmdMsg.substring(3);
+		doCommand(cmd, path);
 
-		// split msg
-		String[] splitMsg = cmdMsg.split(Command.AITE);
-
-		// command analyse
-		if (Command.LS.equals(splitMsg[0])) {
+//		// split msg
+//		String[] splitMsg = cmdMsg.split(Command.AITE);
+//
+//		// command analyse
+//		if (Command.LS.equals(splitMsg[0])) {
+//			// ls command
+//			String path = "";
+//			if (Command.ROOT_PATH.equals(splitMsg[1])) {
+//				if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+//					path = SDCARD_PATH;
+//				} else {
+//					// sdcard is not mount,do nothing
+//					return;
+//				}
+//			} else {
+//				// get the ls path
+//				path = splitMsg[1];
+//			}
+//
+//			File file = new File(path);
+//			if (!file.exists()) {
+//				return;
+//			} else if (file.isDirectory()) {
+//				fileLists.clear();
+//				/*
+//				 * [第一行]表示显示文件列表返回标识:lsretn
+//				 * [第二行]表示当前目录的绝对路径:如,/mnt/sdcard,/mnt/sdcard/Android/data
+//				 * [第三行]表示当前目录的父目录,如果当前目录已是sdcard的根目录，则设定父目录为空
+//				 * [第四行...第N行]表示当前目录中的内容，或文件夹，或文件，每一行表示一个文件夹，或文件
+//				 * 文件夹的格式规则：[最后修改时间],[文件夹标识<DIR],[文件夹大小(0)],文件夹名称]
+//				 * 文件的格式规则：[最后修改时间],[文件标识],[文件大小],[文件名称]
+//				 * 所以解析的时候，获得一个文件或文件夹的绝对路径，可以用[第二行]+文件名称/文件夹名称
+//				 * [最后一行]结束表示符，只有读到改行，即表示当前目录的所有文件信息已经传输完毕，可以显示并更新UI了
+//				 * */
+//				String head = Command.LSRETN;
+//				String currentPath = file.getPath();
+//				String parentPath;
+//				File parent = file.getParentFile();
+//				if (null == parent || path.equals(SDCARD_PATH)) {
+//					Log.d(TAG, "path=" + path + "  parent is null");
+//					parentPath = "";
+//				}else {
+//					parentPath = parent.getPath();
+//				}
+//				fileLists.add(head);
+//				fileLists.add(currentPath);
+//				fileLists.add(parentPath);
+//
+//				File[] files = file.listFiles();
+//				if (null != files) {
+//					for (int i = 0; i < files.length; i++) {
+//						String temp = "";
+//						if (files[i].isHidden()) {
+//							// hidden file do not show
+//						} else {
+////							Log.i(TAG, i + ":" + files[i].getName());
+//							if (files[i].isDirectory()) {
+//								// directory
+//								// [最后修改时间],[目录标识],[目录大小],[目录名称]
+//								temp = files[i].lastModified() + Command.SEPARTOR + Command.DIR_FLAG + Command.SEPARTOR + Command.DIR_SIZE
+//										+ Command.SEPARTOR + files[i].getName();
+//							} else {
+//								// file
+//								// [最后修改时间],[文件标识],[文件大小],[文件名称]
+//								temp = files[i].lastModified() + Command.SEPARTOR + Command.FILE_FLGA + Command.SEPARTOR + files[i].length()
+//										+ Command.SEPARTOR +  files[i].getName();
+//							}
+//							fileLists.add(temp);
+////							Log.i(TAG, "retMsg.length=" + retMsg.length());
+//						}
+//					}
+//				}
+//				// add end flag
+//				String endFlag = Command.END_FLAG;
+//				fileLists.add(endFlag);
+////				logFile.writeLog(retMsg);
+//				sendCommandMsg();
+//			} else {
+//				Log.e(TAG, "not folder,can not enter here");
+//				return;
+//			}
+//		} else if (Command.COPY.equals(splitMsg[0])) {
+//			mIsStopSendFile = false;
+//			// copy file command
+//			String copypath = splitMsg[1];
+//			Log.d(TAG, "OK,I got copy command:" + copypath);
+//			File file = new File(copypath);
+//			sendFile(file);
+//		} else if (Command.STOP_SEND_FILE.equals(splitMsg[0])){
+//			Log.d(TAG, "ok,you say stop,i jiu stop");
+//			mIsStopSendFile = true;
+//		} else {
+//			// another
+//			return;
+//		}
+	}
+	
+	private void doCommand(int cmd, String path){
+		Log.d(TAG, "cmd=" + cmd + ":" + path);
+		switch (cmd) {
+		case Cmd.LS:
 			// ls command
-			String path = "";
-			if (Command.ROOT_PATH.equals(splitMsg[1])) {
+			String filePath = "";
+			if (Command.ROOT_PATH.equals(path)) {
 				if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-					path = SDCARD_PATH;
+					filePath = SDCARD_PATH;
 				} else {
 					// sdcard is not mount,do nothing
 					return;
 				}
 			} else {
 				// get the ls path
-				path = splitMsg[1];
+				filePath = path;
 			}
 
-			File file = new File(path);
+			File file = new File(filePath);
 			if (!file.exists()) {
 				return;
 			} else if (file.isDirectory()) {
@@ -208,6 +308,7 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 				 * [最后一行]结束表示符，只有读到改行，即表示当前目录的所有文件信息已经传输完毕，可以显示并更新UI了
 				 * */
 				String head = Command.LSRETN;
+//				int head = Cmd.LSRETN;
 				String currentPath = file.getPath();
 				String parentPath;
 				File parent = file.getParentFile();
@@ -241,32 +342,32 @@ public class FileShareServerService extends Service implements OnCommunicationLi
 										+ Command.SEPARTOR +  files[i].getName();
 							}
 							fileLists.add(temp);
-//							Log.i(TAG, "retMsg.length=" + retMsg.length());
 						}
 					}
 				}
 				// add end flag
 				String endFlag = Command.END_FLAG;
 				fileLists.add(endFlag);
-//				logFile.writeLog(retMsg);
 				sendCommandMsg();
 			} else {
 				Log.e(TAG, "not folder,can not enter here");
 				return;
 			}
-		} else if (Command.COPY.equals(splitMsg[0])) {
+			break;
+		case Cmd.COPY:
 			mIsStopSendFile = false;
 			// copy file command
-			String copypath = splitMsg[1];
-			Log.d(TAG, "OK,I got copy command:" + copypath);
-			File file = new File(copypath);
-			sendFile(file);
-		} else if (Command.STOP_SEND_FILE.equals(splitMsg[0])){
+			Log.d(TAG, "OK,I got copy command:" + path);
+			File copyfile = new File(path);
+			sendFile(copyfile);
+			break;
+		case Cmd.STOP_SEND_FILE:
 			Log.d(TAG, "ok,you say stop,i jiu stop");
 			mIsStopSendFile = true;
-		} else {
-			// another
-			return;
+			break;
+
+		default:
+			break;
 		}
 	}
 

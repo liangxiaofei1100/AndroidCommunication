@@ -53,6 +53,7 @@ public class AppManager {
 
 	public List<ApplicationInfo> getAllApps() {
 		List<ApplicationInfo> allApps = pm.getInstalledApplications(0);
+		System.out.println("getallapps.size=" + allApps.size());
 		return allApps;
 	}
 	
@@ -119,7 +120,8 @@ public class AppManager {
     	//send broadcast & update ui
 		Intent intent = new Intent(ACTION_REFRESH_APP);
 		intent.putExtra(NORMAL_APP_SIZE, AppNormalFragment.mNormalAppLists.size());
-		intent.putExtra(GAME_APP_SIZE, AppNormalFragment.mGameAppList.size());
+		intent.putExtra(GAME_APP_SIZE, AppNormalFragment.mGameAppList.size() + 
+				AppNormalFragment.mMyAppList.size());
 		mContext.sendBroadcast(intent);
     }
     

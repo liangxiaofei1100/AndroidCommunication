@@ -55,6 +55,18 @@ public class DreamUtil {
 		}
 	}
 	
+	public static String getFormatSize(double size){
+		if (size > 1024 * 1024) {
+			Double dsize = size / (1024 * 1024);
+			return new DecimalFormat("#.00").format(dsize) + "MB";
+		}else if (size > 1024) {
+			Double dsize = size / 1024;
+			return new DecimalFormat("#.00").format(dsize) + "KB";
+		}else {
+			return String.valueOf((int)size) + " Bytes";
+		}
+	}
+	
 	/**get app install date*/
 	public static String getFormatDate(long date){
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
