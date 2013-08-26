@@ -4,21 +4,26 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.dreamlink.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.aidl.User;
-import com.dreamlink.communication.util.LogFile;
+import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 import com.dreamlink.communication.util.TimeUtil;
 
@@ -26,8 +31,7 @@ import com.dreamlink.communication.util.TimeUtil;
  * see {@code StabilityTest}.
  * 
  */
-public class StabilityTestClient extends Activity implements
-		OnCommunicationListenerExternal {
+public class StabilityTestClient extends Activity implements OnCommunicationListenerExternal {
 	private ListView mListView;
 	private ArrayAdapter<String> mAdapter;
 	private ArrayList<String> mData;
@@ -35,9 +39,6 @@ public class StabilityTestClient extends Activity implements
 	private boolean mStop = false;
 	private Notice mNotice;
 	private static final String TAG = "StabilityTestClient";
-
-	private LogFile mDataLogFile;
-	private LogFile mErrorLogFile;
 
 	private static final int SEND_MODE_ALL = 1;
 	private static final int SEND_MODE_SINGLE = 2;
@@ -48,6 +49,8 @@ public class StabilityTestClient extends Activity implements
 
 	/** Stability test app id */
 	private int mAppID = 0;
+
+	private String mTestMessage = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,15 +74,6 @@ public class StabilityTestClient extends Activity implements
 			mNotice.showToast("No connection!");
 		}
 
-		mDataLogFile = new LogFile(getApplicationContext(),
-				"StabilityTestClient-" + TimeUtil.getCurrentTime() + ".txt");
-		mDataLogFile.open();
-
-		mErrorLogFile = new LogFile(getApplicationContext(),
-				"StabilityTestClient_error-" + TimeUtil.getCurrentTime()
-						+ ".txt");
-		mErrorLogFile.open();
-
 		mUserManager = UserManager.getInstance();
 	}
 
@@ -93,7 +87,8 @@ public class StabilityTestClient extends Activity implements
 				Log.d(TAG, "Send message: " + count + ", send mode = "
 						+ mSendMode);
 				byte[] message = (TimeUtil.getCurrentTime() + "::"
-						+ String.valueOf(count) + '\n').getBytes();
+						+ String.valueOf(count) + '\n' + mTestMessage)
+						.getBytes();
 				switch (mSendMode) {
 				case SEND_MODE_ALL:
 					mCommunicationManager.sendMessageToAll(message, mAppID);
@@ -101,7 +96,7 @@ public class StabilityTestClient extends Activity implements
 				case SEND_MODE_SINGLE:
 					if (mSendModeSigleReceiver != null) {
 						mCommunicationManager.sendMessageToSingle(message,
-								mSendModeSigleReceiver, 100);
+								mSendModeSigleReceiver, mAppID);
 					}
 					break;
 
@@ -135,13 +130,24 @@ public class StabilityTestClient extends Activity implements
 	Handler mHandler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
 			String messageString = msg.obj.toString();
+
+			if (!messageString.contains(mTestMessage)) {
+				Log.e(TAG,
+						"Receive message error. length = "
+								+ messageString.length() + ". message: "
+								+ messageString);
+				mNotice.showToast("Received data error, data: " + messageString);
+			} else {
+				Log.d(TAG,
+						"Receive message success. length = "
+								+ messageString.length() + ". message: "
+								+ messageString);
+			}
 			if (mData.size() > 100) {
 				mData.clear();
 			}
 			mData.add(messageString);
 			mAdapter.notifyDataSetChanged();
-			mDataLogFile.writeLog(TimeUtil.getCurrentTime() + " Received: \n");
-			mDataLogFile.writeLog(messageString);
 		};
 	};
 
@@ -150,8 +156,6 @@ public class StabilityTestClient extends Activity implements
 		super.onDestroy();
 		mCommunicationManager.unregisterOnCommunicationListenerExternal(this);
 		mStop = true;
-		mDataLogFile.close();
-		mErrorLogFile.close();
 	}
 
 	@Override
@@ -186,10 +190,65 @@ public class StabilityTestClient extends Activity implements
 			mNotice.showToast("Send to ID = "
 					+ mSendModeSigleReceiver.getUserID() + ", name = "
 					+ mSendModeSigleReceiver.getUserName());
+			break;
+		case R.id.menu_message_size:
+			showSetMessageSizeDialog();
+			break;
 		default:
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void showSetMessageSizeDialog() {
+		LayoutInflater factory = LayoutInflater.from(this);
+		final View textEntryView = factory.inflate(
+				R.layout.message_size_dialog, null);
+		final EditText editText = (EditText) textEntryView
+				.findViewById(R.id.et_message_size);
+		AlertDialog dialog = new AlertDialog.Builder(this)
+				.setIconAttribute(android.R.attr.alertDialogIcon)
+				.setTitle("Message size of send.")
+				.setView(textEntryView)
+				.setPositiveButton(android.R.string.ok,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								String messageSize = editText.getText()
+										.toString();
+								if (!TextUtils.isEmpty(messageSize)) {
+									setMessageSize(Integer.valueOf(messageSize));
+								}
+							}
+
+						})
+				.setNegativeButton(android.R.string.cancel,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+
+							}
+						}).create();
+		dialog.show();
+	}
+
+	private void setMessageSize(int sizeOfByte) {
+		if (sizeOfByte >= 10 * 1024) {
+			mNotice.showToast("Set size fail. Too large size: " + sizeOfByte);
+			return;
+		}
+		StringBuffer stringBuffer = new StringBuffer();
+		if (sizeOfByte < 10) {
+			for (int i = 0; i < sizeOfByte; i++) {
+				stringBuffer.append(i);
+			}
+		} else {
+			for (int i = 0; i < sizeOfByte / 10; i++) {
+				stringBuffer.append("1234567890");
+			}
+		}
+		mTestMessage = stringBuffer.toString();
+		mNotice.showToast("Set message size success. size = " + sizeOfByte);
 	}
 
 	private static final int MENU_SEND_TO_SINGLE = 1;
@@ -214,6 +273,8 @@ public class StabilityTestClient extends Activity implements
 			Log.d(TAG, "User is lost connection.");
 			return;
 		}
+		Log.d(TAG, "onReceiveMessage():" + new String(msg) + ", from user: "
+				+ sendUser.getUserName());
 		Message message = mHandler.obtainMessage();
 		message.obj = "From " + sendUser.getUserName() + ": " + new String(msg);
 		mHandler.sendMessage(message);

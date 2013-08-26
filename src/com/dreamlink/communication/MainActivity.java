@@ -12,8 +12,6 @@ import com.dreamlink.aidl.User;
 import com.dreamlink.communication.client.ServerListActivity;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.ClientListActivity;
-import com.dreamlink.communication.ui.MainUIFrame;
-import com.dreamlink.communication.ui.StartLoader;
 import com.dreamlink.communication.ui.UserInfoSetting;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -21,6 +19,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private static final String TAG = "MainActivity";
 	private Button mStartServerButton;
 	private Button mStartClientButton;
+	private Button mTestAppsButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +31,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		checkUserInfo();
+		// Set user info by MainUIFrame, so don't set user info here.
+		// checkUserInfo();
 	}
 
 	private void checkUserInfo() {
@@ -58,6 +58,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		mStartServerButton.setOnClickListener(this);
 		mStartClientButton = (Button) findViewById(R.id.btn_start_client);
 		mStartClientButton.setOnClickListener(this);
+		mTestAppsButton = (Button) findViewById(R.id.btn_test_apps);
+		mTestAppsButton.setOnClickListener(this);
 	}
 
 	@Override
@@ -68,6 +70,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			break;
 		case R.id.btn_start_client:
 			searchServer();
+			break;
+		case R.id.btn_test_apps:
+			launchTestApps();
 			break;
 
 		default:
@@ -87,6 +92,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		startActivity(intent);
 	}
 
+	private void launchTestApps() {
+		Intent intent = new Intent();
+		intent.setClass(this, AppListActivity.class);
+		startActivity(intent);
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -101,14 +112,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			launchUserInfo();
 			return true;
 		case R.id.menu_start_test:
-//			Intent intent = new Intent();
-//			intent.setClass(MainActivity.this, StartLoader.class);
-//			startActivity(intent);
+			// Intent intent = new Intent();
+			// intent.setClass(MainActivity.this, StartLoader.class);
+			// startActivity(intent);
 			break;
 		case R.id.action_settings:
 			Intent intent2 = new Intent();
 			intent2.setClass(MainActivity.this, UserInfoSetting.class);
 			startActivityForResult(intent2, 127);
+			break;
+		case R.id.menu_test_apps:
+			launchTestApps();
 			break;
 
 		default:
@@ -116,11 +130,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	@Override
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
 		super.onBackPressed();
-//		System.exit(0);
+		// System.exit(0);
 	}
 }

@@ -11,7 +11,14 @@
         android:showAsAction="never"
         android:title="@string/send_to_single">
         <menu>
+            <!-- Submenu -->
         </menu>
+    </item>
+    <item
+        android:id="@+id/menu_message_size"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/message_size">
     </item>
 
 </menu>

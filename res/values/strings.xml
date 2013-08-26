@@ -30,7 +30,24 @@
     <string name="ui_menu_save">Save</string>
     <string name="lable_user_info">用户资料</string>
     <string name="menu_user_info">用户资料</string>
+
+    <!-- stability test begin -->
+    <string name="readme_stability_test">Communication stability test.\n
+			Client every 100ms send message to server. \n
+			Server show the received data, then send the received data return to clients.\n
+			Clients show the received data from server.</string>
     <string name="send_to_all">Send to all</string>
     <string name="send_to_single">Send to single</string>
+    <string name="message_size">Message size of send</string>
+    <!-- stability test end -->
+
+
+    <!-- speed test begin -->
+    <string name="readme_speed_test">his application is used for communication speed test. \n
+        Operation steps:\n
+        1. One choose SERVER and others choose CLIENT. After choose, it will turn to speed test activity.\n
+        2. Server input test speed and click Start button, Client click Start button. If everything is OK, the speed is shown\n</string>
+    <!-- speed test end -->
+    <string name="btn_test_apps">Test apps</string>
 
 </resources>
