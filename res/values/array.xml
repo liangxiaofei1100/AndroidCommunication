@@ -56,4 +56,15 @@
         <item>Copy</item>
     </string-array>
     
+    <string-array name="file_save_menu">
+        <item>@string/copy_replace</item>
+        <item>@string/copy_rename</item>
+        <item>@string/copy_cancel</item>
+    </string-array>
+    <string-array name="file_save_menu_tip">
+        <item>@string/copy_replace_msg</item>
+        <item>@string/copy_rename_msg</item>
+        <item>@string/copy_cancel_msg</item>
+    </string-array>
+    
 </resources>

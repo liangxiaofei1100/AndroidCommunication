@@ -13,8 +13,6 @@ import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -39,7 +37,6 @@ import android.widget.TextView;
 
 public class BaseImageFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnScrollListener {
 	private static final String TAG = "BaseImageFragment";
-	private DisplayImageOptions options;
 	protected GridView mGridview;
 	private TextView mEmptyView;
 	
@@ -70,15 +67,6 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
 		mEmptyView = (TextView) rootView.findViewById(R.id.picture_empty_textview);
 		
-		options = new DisplayImageOptions.Builder()
-				.showStubImage(R.drawable.zapya_data_photo_l)
-				.showImageForEmptyUri(R.drawable.zapya_data_photo_l)
-				.showImageOnFail(R.drawable.ic_picture_error)
-				.cacheInMemory(DreamConstant.CACHE)
-				.cacheOnDisc(DreamConstant.CACHE)
-				.bitmapConfig(Bitmap.Config.RGB_565)
-				.build();
-		
 		mGridview = (GridView) rootView.findViewById(R.id.picture_gridview);
 		mGridview.setEmptyView(mEmptyView);
 
@@ -87,14 +75,11 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 		filter.addAction(ImageFragmentActivity.PICTURE_ACTION);
 		mContext.registerReceiver(mGalleryReceiver, filter);
 
-//		mAdapter = new ImageAdapter(inflater, mList, imageLoader, options);
 		mAdapter = new ImageAdapter(mContext, mList);
 		mGridview.setAdapter(mAdapter);
 		mGridview.setOnItemClickListener(this);
 		mGridview.setOnItemLongClickListener(this);
 		mGridview.setOnScrollListener(this);
-//		setContextMenu();
-//		applyScrollListener();
 		
 		mFileInfoManager = new FileInfoManager(mContext);
 		
@@ -110,14 +95,6 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 		mEmptyView.setText(emptyTip);
 	}
 	
-	protected void setContextMenu() {
-		mGridview.setOnCreateContextMenuListener(new ListContextMenu(ListContextMenu.MENU_TYPE_IMAGE));
-	}
-	
-	private void applyScrollListener(){
-		mGridview.setOnScrollListener(new PauseOnScrollListener(imageLoader, true, false));
-	}
-
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		//use custom activity to show picture
@@ -129,7 +106,6 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-		// TODO Auto-generated method stub
 		final ImageInfo imageInfo = mList.get(position);
 		new AlertDialog.Builder(mContext)
 			.setTitle(imageInfo.getName())

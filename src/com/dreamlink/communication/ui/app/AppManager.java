@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 
 import com.dreamlink.communication.R;
@@ -21,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 
@@ -31,6 +33,7 @@ public class AppManager {
 	
 	public static final int NORMAL_APP = 0;
 	public static final int GAME_APP = 1;
+	public static final int MY_APP = 2;
 	public static final int ERROR_APP = -1;
 	
 	public static final String ACTION_REFRESH_APP = "intent.aciton.refresh.app";
@@ -69,13 +72,30 @@ public class AppManager {
     		do {
     			String pkg_name = cursor.getString(cursor.getColumnIndex(MetaData.Game.PKG_NAME));
     			if (pkgName.equals(pkg_name)) {
+    				cursor.close();
     				return true;
     			}
 			} while (cursor.moveToNext());
 		}else {
 			Log.e(TAG, "no db????????????");
 		}
+    	cursor.close();
     	return false;
+    }
+    
+    public boolean isMyApp(String packageName){
+    	//get we app
+		Intent appIntent = new Intent(DreamConstant.APP_ACTION);
+		appIntent.addCategory(Intent.CATEGORY_DEFAULT);
+		// 通过查询，获得所有ResolveInfo对象.
+		List<ResolveInfo> resolveInfos = pm.queryIntentActivities(appIntent, 0);
+		for (ResolveInfo resolveInfo : resolveInfos) {
+			String pkgName = resolveInfo.activityInfo.packageName; // 获得应用程序的包名
+			if (packageName.equals(pkgName)) {
+				return true;
+			}
+		}
+		return false;
     }
     
     /**
@@ -85,7 +105,7 @@ public class AppManager {
      * </br>
      * 	int[1]:(the position in the list)
      */
-    public int[] getAppEntry(String packageName, List<AppEntry> normalAppList, List<AppEntry> gameAppList){
+    public int[] getAppEntry(String packageName, List<AppEntry> normalAppList, List<AppEntry> gameAppList, List<AppEntry> myAppList){
     	int[] result = new int[2];
     	
     	for (int i = 0; i < normalAppList.size(); i++) {
@@ -103,6 +123,16 @@ public class AppManager {
 			if (packageName.equals(appEntry.getPackageName())) {
 				//is game app
 				result[0] = AppManager.GAME_APP;
+				result[1] = i;
+				return result;
+			}
+		}
+    	
+    	for (int i = 0; i < myAppList.size(); i++) {
+			AppEntry appEntry = myAppList.get(i);
+			if (packageName.equals(appEntry.getPackageName())) {
+				//is my app
+				result[0] = AppManager.MY_APP;
 				result[1] = i;
 				return result;
 			}

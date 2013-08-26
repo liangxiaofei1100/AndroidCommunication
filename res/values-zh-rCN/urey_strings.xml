@@ -112,4 +112,12 @@
     <string name="copy_ok">下载完成:<xliff:g id="copy">%1$s</xliff:g></string>
     <string name="copy_fail">下载失败:<xliff:g id="copy">%1$s</xliff:g></string>
     <string name="stop">停止</string>
+    
+    <string name="file_exist">此位置已包含同名的文件</string>
+    <string name="copy_replace">覆盖</string>
+    <string name="copy_replace_msg">使用正在复制中的文件替换目标文件夹的文件\n<xliff:g id="replace">%1$s</xliff:g></string>
+    <string name="copy_rename">重命名</string>
+    <string name="copy_rename_msg">正在复制的文件将重命名为 “<xliff:g id="rename">%1$s</xliff:g>“</string>
+    <string name="copy_cancel">取消</string>
+     <string name="copy_cancel_msg">将不会改变任何文件</string>
 </resources>

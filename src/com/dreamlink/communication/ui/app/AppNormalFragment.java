@@ -98,6 +98,7 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 		getActivity().registerReceiver(mAppReceiver, filter);
 		
 		mAppManager = new AppManager(mContext);
+		pm = mContext.getPackageManager();
 
 		//get user app
 		AppListTask appListTask = new AppListTask();
@@ -105,7 +106,6 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
-		pm = mContext.getPackageManager();
 		
 		Log.d(TAG, "onCreate end");
 		return rootView;
@@ -195,7 +195,6 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 			String action = intent.getAction();
 			Log.d(TAG, "get receiver:" + action);
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
-				//
 				mAdapter.notifyDataSetChanged();
 			}else {
 				//get install or uninstall app package name
@@ -211,13 +210,16 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 						entry.setPackageName(packageName);
 						entry.loadLabel();
 						entry.loadVersion();
-						
-						boolean is_game_app = mAppManager.isGameApp(packageName);
-						entry.setIsGameApp(is_game_app);
-						if (is_game_app) {
-							appList = mGameAppList;
+						if (mAppManager.isMyApp(packageName)) {
+							appList = mMyAppList;
 						}else {
-							appList = mNormalAppLists;
+							boolean is_game_app = mAppManager.isGameApp(packageName);
+							entry.setIsGameApp(is_game_app);
+							if (is_game_app) {
+								appList = mGameAppList;
+							}else {
+								appList = mNormalAppLists;
+							}
 						}
 						
 						int index = DreamUtil.getInsertIndex(appList, entry);
@@ -231,12 +233,14 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 						e.printStackTrace();
 					}
 				}  else if (Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
-					int[] result = mAppManager.getAppEntry(packageName, mNormalAppLists, mGameAppList);
+					int[] result = mAppManager.getAppEntry(packageName, mNormalAppLists, mGameAppList, mMyAppList);
 					int position = result[1];
 					if (AppManager.NORMAL_APP == result[0]) {
 						mNormalAppLists.remove(position);
 					}else if (AppManager.GAME_APP == result[0]) {
 						mGameAppList.remove(position);
+					}else if (AppManager.MY_APP == result[0]) {
+						mMyAppList.remove(position);
 					}
 				}
 			}
@@ -254,26 +258,6 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 			mGameAppList.clear();
 			mMyAppList.clear();
 			
-			//get we app
-			Intent appIntent = new Intent(DreamConstant.APP_ACTION);
-			appIntent.addCategory(Intent.CATEGORY_DEFAULT);
-			// 通过查询，获得所有ResolveInfo对象.
-			List<ResolveInfo> resolveInfos = pm.queryIntentActivities(appIntent, 0);
-			// 调用系统排序,根据name排序
-			Collections.sort(resolveInfos, new ResolveInfo.DisplayNameComparator(pm));
-			for (ResolveInfo resolveInfo : resolveInfos) {
-				AppEntry appEntry = new AppEntry(mContext, resolveInfo.activityInfo.applicationInfo);
-				String pkgName = resolveInfo.activityInfo.packageName; // 获得应用程序的包名
-				System.out.println("pkgmane=" + pkgName + "\n"
-						+ "label:" + resolveInfo.loadLabel(pm));
-				appEntry.setPackageName(pkgName);
-				appEntry.setLable((String)resolveInfo.loadLabel(pm));
-				appEntry.setIcon(resolveInfo.loadIcon(pm));
-				appEntry.loadVersion();
-				mMyAppList.add(appEntry);
-			}
-			//get we app end
-			
 			// Retrieve all known applications.
             List<ApplicationInfo> apps = mAppManager.getAllApps();
             if (apps == null) {
@@ -290,16 +274,19 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
                     entry.setPackageName(appInfo.packageName);
                     entry.loadLabel();
                     entry.loadVersion();
-                    boolean is_game_app = mAppManager.isGameApp(appInfo.packageName);
-                    entry.setIsGameApp(is_game_app);
-                    if (!isNeedIngore(entry.getPackageName())) {
-                    	if (is_game_app) {
-	                    	mGameAppList.add(entry);
-						}else {
-							mNormalAppLists.add(entry);
+                    if (mAppManager.isMyApp(appInfo.packageName)) {
+						mMyAppList.add(entry);
+					}else {
+						boolean is_game_app = mAppManager.isGameApp(appInfo.packageName);
+	                    entry.setIsGameApp(is_game_app);
+	                    if (!isNeedIngore(entry.getPackageName())) {
+	                    	if (is_game_app) {
+		                    	mGameAppList.add(entry);
+							}else {
+								mNormalAppLists.add(entry);
+							}
 						}
 					}
-                    //
                     if (DreamConstant.PACKAGE_NAME.equals(appInfo.packageName)) {
 						DreamUtil.package_source_dir = appInfo.sourceDir;
 					}
@@ -309,6 +296,7 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
             }
 
             // Sort the list.
+            Collections.sort(mMyAppList, ALPHA_COMPARATOR);
             Collections.sort(mNormalAppLists, ALPHA_COMPARATOR);
             Collections.sort(mGameAppList, ALPHA_COMPARATOR);
 
@@ -318,7 +306,6 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 		
 		@Override
 		protected void onPreExecute() {
-			// TODO Auto-generated method stub
 			super.onPreExecute();
 			mProgressBar.setVisibility(View.VISIBLE);
 		}

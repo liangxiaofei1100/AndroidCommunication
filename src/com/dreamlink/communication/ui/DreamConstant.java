@@ -65,5 +65,7 @@ public class DreamConstant {
 	public static final String EXIT_ACTION = "intent.exit.aciton";
 	public static final String APP_ACTION = "com.dreamlink.communication.action.app";
 	public static final String APP_CATEGORY = "com.dreamlink.communication.category.app";
-	
+
+	/**test for yuri,only for yuri*/
+	public static final boolean UREY_TEST = true;
 }

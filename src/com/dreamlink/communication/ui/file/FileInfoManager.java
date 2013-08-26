@@ -564,6 +564,45 @@ public class FileInfoManager {
 				+ fileInfo.getFormateDate();
 		return result;
 	}
+	
+	private static final String kuohu1 = ")";
+	private static final String kuohu2 = "(";
+	/**
+	 * auto rename
+	 * @param oldName
+	 * @return
+	 */
+	public static String autoRename(String oldName){
+		String newName = "";
+		String tempName = "";
+		String extensionName = "";
+		int index = oldName.lastIndexOf(".");
+		if (index == -1) {
+			tempName = oldName;
+		}else {
+			//得到除去扩展名的文件名，如：abc
+			tempName = oldName.substring(0, oldName.lastIndexOf("."));
+			extensionName =  oldName.substring(index);
+		}
+		
+		//得到倒数第一个括弧的位置
+		int kuohuoIndex1 = tempName.lastIndexOf(kuohu1);
+		//得到倒数第二个括弧的位置
+		int kuohuoIndex2 = tempName.lastIndexOf(kuohu2);
+		if (kuohuoIndex1 != tempName.length() - 1) {
+			newName = tempName + "(2)" + extensionName;
+		}else {
+			//得到括弧里面的String
+			String str = tempName.substring(kuohuoIndex2 + 1, kuohuoIndex1);
+			try {
+				int num = Integer.parseInt(str);
+				newName =  tempName.substring(0, kuohuoIndex2) + "(" + (num + 1) + ")"+ extensionName;
+			} catch (NumberFormatException e) {
+				newName = tempName + "(2)" + extensionName;
+			}
+		}
+		return newName;
+	}
 
 	private List<NavigationRecord> mNavigationLists = new LinkedList<FileInfoManager.NavigationRecord>();
 

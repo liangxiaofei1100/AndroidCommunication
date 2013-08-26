@@ -106,15 +106,15 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	private RelativeLayout mTitleLeftLayout;
 	private ImageView mUserIconView;
 	private TextView mUserNameView;
-	// title right
+	// title right,view invite & close button layout
 	private RelativeLayout mTitleRightLayout;
 	/** show invite,close icons */
 	private ImageView mRightIconView;
 	/** show like:invite,close */
 	private TextView mRightTextView;
-	// title center，显示正在创建，或已经创建完成
+	/**connect button*/
 	private TextView mConnectView;
-	private ProgressBar mProgressBar;
+	/**show connectiing,creating,create_ok msg and so on.*/
 	private TextView mProgressTipView;
 	/** load bg view */
 	private LinearLayout loadView;
@@ -425,7 +425,6 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		mUserNameView.setText(mUser.getUserName());
 
 		mConnectView = (TextView) findViewById(R.id.connect_button);
-		mProgressBar = (ProgressBar) findViewById(R.id.connect_progress);
 		mProgressTipView = (TextView) findViewById(R.id.connect_progress_tip);
 
 		mTitleRightLayout = (RelativeLayout) findViewById(R.id.title_right_layout);
@@ -824,12 +823,19 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	public void onLoginRequest(final User user,
 			final SocketCommunication communication) {
 		// TODO Auto-generated method stub
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				showAllowLoginDialog(user, communication);
-			}
-		});
+		//****************test auto allow*************
+		if (DreamConstant.UREY_TEST) {
+			mSocketComMgr.respondLoginRequest(user, communication, true);
+		}
+		//****************test auto allow*************
+		else {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					showAllowLoginDialog(user, communication);
+				}
+			});
+		}
 
 	}
 
@@ -888,5 +894,11 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	@Override
+	public void onBackPressed() {
+		Log.d(TAG, "onBackPressed");
+		showExitDialog();
 	}
 }
