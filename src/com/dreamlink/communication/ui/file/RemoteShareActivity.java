@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Timer;
@@ -19,14 +18,11 @@ import com.dreamlink.communication.fileshare.Command;
 import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.fileshare.FileListAdapter;
 import com.dreamlink.communication.fileshare.FileShareServerService;
-import com.dreamlink.communication.fileshare.LocalFileFragment;
-import com.dreamlink.communication.fileshare.ProgressBarDialog;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.DreamConstant.Cmd;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.dialog.FileTransferActivity;
 import com.dreamlink.communication.ui.dialog.FileTransferDialog;
 import com.dreamlink.communication.ui.dialog.FileTransferDialog.FileTransferOnClickListener;
-import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.util.AppUtil;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.LogFile;
@@ -34,7 +30,6 @@ import com.dreamlink.communication.util.Notice;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -46,6 +41,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -81,6 +77,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	private ArrayList<FileInfo> mList = new ArrayList<FileInfo>();
 	
 	private FileListAdapter mAdapter = null;
+	private FileInfoManager mFileInfoManager = null;
 	
 	private Notice mNotice = null;
 	
@@ -142,7 +139,6 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	LogFile logFile = null;
 	@Override
 	protected void onCreate(Bundle arg0) {
-		// TODO Auto-generated method stub
 		super.onCreate(arg0);
 		Log.d(TAG, "onCreate begin");
 		setContentView(R.layout.ui_remote_share);
@@ -151,6 +147,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		mSocketMgr = SocketCommunicationManager
 				.getInstance(mContext);
 		mAppId = AppUtil.getAppID(getParent());
+		
+		mFileInfoManager = new FileInfoManager(mContext);
 		
 		logFile = new LogFile(mContext, "log_client.txt");
 		logFile.open();
@@ -172,6 +170,25 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		mRootViewBtn = (ImageButton) findViewById(R.id.root_view);
 		mUpDirBtn = (ImageButton) findViewById(R.id.up_view);
 		mRefreshBtn = (ImageButton) findViewById(R.id.refresh_view);
+		//just for test=================
+		mUpDirBtn.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				mUnconnectLayout.setVisibility(View.INVISIBLE);
+				mListLayout.setVisibility(View.INVISIBLE);
+				mServerOrClientLayout.setVisibility(View.VISIBLE);
+				mStopServerBtn.setVisibility(View.INVISIBLE);
+				return true;
+			}
+		});
+		mRefreshBtn.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				currentCopyFile = null;
+				return true;
+			}
+		});
+		//just for test=================
 		
 		mRootViewBtn.setOnClickListener(this);
 		mUpDirBtn.setOnClickListener(this);
@@ -192,7 +209,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			mLoadingLayout.setVisibility(View.VISIBLE);
 
 			// tell server that i want look u sdcard files
-			String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
+//			String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
+			String cmdMsg = Cmd.LS + Command.ROOT_PATH;
 			sendCommandMsg(cmdMsg);
 		}
 		
@@ -233,7 +251,9 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		// tell server that the path you want into
 		FileInfo fileInfo = mList.get(position);
 		if (fileInfo.isDir) {
-			msg = Command.LS + Command.AITE + fileInfo.filePath;
+//			msg = Command.LS + Command.AITE + fileInfo.filePath;
+			//use int command
+			msg = Cmd.LS + fileInfo.filePath;
 			mLoadingLayout.setVisibility(View.VISIBLE);
 			sendCommandMsg(msg);
 		}
@@ -301,7 +321,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		case R.id.client_button:
 			mSocketMgr.registerOnCommunicationListenerExternal(this, mAppId);
 			
-			String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
+//			String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
+			String cmdMsg =  Cmd.LS + Command.ROOT_PATH;
 			mLoadingLayout.setVisibility(View.VISIBLE);
 			sendCommandMsg(cmdMsg);
 			
@@ -321,20 +342,23 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			break;
 			
 		case R.id.root_view:
-			String cmd = Command.LS + Command.AITE + Command.ROOT_PATH;
+//			String cmd = Command.LS + Command.AITE + Command.ROOT_PATH;
+			String cmd = Cmd.LS + Command.ROOT_PATH;
 			mLoadingLayout.setVisibility(View.VISIBLE);
 			sendCommandMsg(cmd);
 			break;
 		case R.id.up_view:
 			if (!"".equals(parentPath)) {
-				String msg = Command.LS + Command.AITE + parentPath;
+//				String msg = Command.LS + Command.AITE + parentPath;
+				String msg = Cmd.LS + parentPath;
 				mLoadingLayout.setVisibility(View.VISIBLE);
 				sendCommandMsg(msg);
 			}
 			break;
 		case R.id.refresh_view:
 			if (!"".equals(currentPath)) {
-				String msg = Command.LS + Command.AITE + currentPath;
+//				String msg = Command.LS + Command.AITE + currentPath;
+				String msg = Cmd.LS + currentPath;
 				mLoadingLayout.setVisibility(View.VISIBLE);
 				sendCommandMsg(msg);
 			}
@@ -456,6 +480,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					wholeReceiveMsg = "";
 
 					uihandler.sendMessage(uihandler.obtainMessage(UPDATE_UI));
+				}else {
+					Log.e(TAG, "why i here:" + newSplitMsg[0]);
 				}
 			} else {
 				// not over yet
@@ -502,8 +528,13 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		}
 	}
 	
+	/**
+	 * copy remote file to local
+	 * @param path
+	 */
 	public void doCopy(String path){
-		mCurrentLocalFile = new File(path + "/" + currentCopyFile.fileName);
+		final String localFilePath = path + "/" + currentCopyFile.fileName;
+		mCurrentLocalFile = new File(localFilePath);
 		try {
 			if (!mCurrentLocalFile.exists()) {
 				mCurrentLocalFile.createNewFile();
@@ -524,19 +555,49 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		mFileTransferDialog.setState(FileTransferDialog.STATE_COPYING);
 		mFileTransferDialog.setFileTransferOnClickListener(new FileTransferOnClickListener() {
 			@Override
-			public void onClick(View view) {
+			public void onClick(View view, int state) {
 				int id = view.getId();
 				switch (id) {
 				case R.id.left_button:
-					mNotice.showToast("Stop transfer");
+					switch (state) {
+					case FileTransferDialog.STATE_COPY_OK:
+						//copy ok.click this can open file
+						mFileInfoManager.openFile(localFilePath);
+						break;
+					case FileTransferDialog.STATE_COPYING:
+						//copying,click this can stop file transfer
+						mNotice.showToast("Stop");
+						break;
+					case FileTransferDialog.STATE_COPY_FAIL:
+						//copy fail,click this can retry
+						mNotice.showToast("Retry");
+						break;
+
+					default:
+						break;
+					}
 					break;
 				case R.id.right_button:
+					switch (state) {
+					case FileTransferDialog.STATE_COPYING:
+						//copying ,click this hide dialog .and show in notificaion
+						mNotice.showToast("Hide");
+						break;
+					case FileTransferDialog.STATE_COPY_FAIL:
+						//copy fail ,click this 1)delete local file. and so on,and dismiss dialog
+						mNotice.showToast("Cancel");
+						break;
+
+					default:
+						break;
+					}
 					break;
 
 				default:
 					break;
 				}
 			}
+
 		});
 		mFileTransferDialog.setCancelable(true);
 		mFileTransferDialog.show();
@@ -544,6 +605,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		if (currentCopyFile.fileSize == 0) {
 			mFileTransferDialog.setTP(0, 0);
 			mFileTransferDialog.setState(FileTransferDialog.STATE_COPY_OK);
+			
+			doClear();
 		}else {
 			start_time = System.currentTimeMillis();
 			Log.d(TAG, "start copy time:"+ start_time);
@@ -559,29 +622,35 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					 
 					if (copyLen >= ((int) currentCopyFile.fileSize)) {
 						mFileTransferDialog.setState(FileTransferDialog.STATE_COPY_OK);
-						try {
-							if (null != fos) {
-								fos.close();
-							}
-						} catch (IOException e) {
-							e.printStackTrace();
-						} finally{
-							fos = null;
-						}
-						
-						currentCopyFile = null;
-						copyLen = 0;
-						start_time = 0;
-						now_time = 0;
+						doClear();
 						mSpeedTimer.cancel();
 					}
 				}
 			}, 1000, 500);
 			
 			//send msg to server that i want this file
-			String copyCmd = Command.COPY + Command.AITE + currentCopyFile.filePath;
+//			String copyCmd = Command.COPY + Command.AITE + currentCopyFile.filePath;
+			String copyCmd = Cmd.COPY + currentCopyFile.filePath;
 			sendCommandMsg(copyCmd);
 		}
+	}
+	
+	private void doClear(){
+		Log.d(TAG, "doClear<===============");
+		try {
+			if (null != fos) {
+				fos.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			fos = null;
+		}
+		
+		currentCopyFile = null;
+		copyLen = 0;
+		start_time = 0;
+		now_time = 0;
 	}
 
 	

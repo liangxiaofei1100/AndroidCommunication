@@ -6,7 +6,6 @@ import java.text.NumberFormat;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamUtil;
 
-import android.R.anim;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -66,7 +65,7 @@ public class FileTransferDialog extends Dialog implements android.view.View.OnCl
 	
 	private FileTransferOnClickListener mListener = null;
 	public interface FileTransferOnClickListener{
-		public void onClick(View view);
+		public void onClick(View view, int state);
 	}
 	
 	public void setFileTransferOnClickListener(FileTransferOnClickListener listener){
@@ -190,20 +189,38 @@ private static final NumberFormat nf = NumberFormat.getPercentInstance();
 			switch (state) {
 			case STATE_COPYING:
 				//stop
-				mListener.onClick(v);
+				mListener.onClick(v, STATE_COPYING);
 				break;
 			case STATE_COPY_OK:
+				//open
+				mListener.onClick(v, STATE_COPY_OK);
 				dismiss();
 				break;
 			case STATE_COPY_FAIL:
-				mListener.onClick(v);
+				//retry
+				mListener.onClick(v, STATE_COPY_FAIL);
 				break;
 
 			default:
 				break;
 			}
 		}else if (R.id.right_button == v.getId()) {
-			
+			switch (state) {
+			case STATE_COPYING:
+				//Hide
+				mListener.onClick(v, STATE_COPYING);
+				break;
+			case STATE_COPY_OK:
+				dismiss();
+				break;
+			case STATE_COPY_FAIL:
+				//Cancel
+				mListener.onClick(v, STATE_COPY_FAIL);
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
 

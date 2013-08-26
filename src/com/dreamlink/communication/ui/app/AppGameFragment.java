@@ -1,6 +1,7 @@
 package com.dreamlink.communication.ui.app;
 
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.dreamlink.communication.R;
@@ -52,6 +53,8 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 		View rootView = inflater.inflate(R.layout.ui_app_game, container, false);
 		gridView1 = (GridView) rootView.findViewById(R.id.game_gridview_1);
 		gridView1.setEmptyView(rootView.findViewById(R.id.game_empty_textview_1));
+		gridView1.setOnItemClickListener(this);
+		gridView1.setOnItemLongClickListener(this);
 		gridView2 = (GridView) rootView.findViewById(R.id.game_gridview_2);
 		gridView2.setEmptyView(rootView.findViewById(R.id.game_empty_textview_2));
 		gridView2.setOnItemClickListener(this);
@@ -66,6 +69,9 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 		IntentFilter filter = new IntentFilter(AppManager.ACTION_REFRESH_APP);
 		mContext.registerReceiver(mAppReceiver, filter);
 		
+		mAdapter1 = new AppBrowserAdapter(mContext, AppNormalFragment.mMyAppList);
+		gridView1.setAdapter(mAdapter1);
+		
 		mAdapter2 = new AppBrowserAdapter(mContext, AppNormalFragment.mGameAppList);
 		gridView2.setAdapter(mAdapter2);
 		
@@ -75,7 +81,17 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		final ApplicationInfo applicationInfo = (ApplicationInfo) AppNormalFragment.mGameAppList.get(position).getApplicationInfo();
+		ApplicationInfo applicationInfo = null;
+		switch (parent.getId()) {
+		case R.id.game_gridview_1:
+			applicationInfo = (ApplicationInfo) AppNormalFragment.mMyAppList.get(position).getApplicationInfo();
+			break;
+		case R.id.game_gridview_2:
+			applicationInfo = (ApplicationInfo) AppNormalFragment.mGameAppList.get(position).getApplicationInfo();
+			break;
+		default:
+			break;
+		}
 		String packageName = applicationInfo.packageName;
 		if (DreamConstant.PACKAGE_NAME.equals(packageName)) {
 			mNotice.showToast(R.string.app_has_started);
@@ -85,7 +101,7 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 		Intent intent = pm.getLaunchIntentForPackage(packageName);
 		if (null != intent) {
 			startActivity(intent);
-		}else {
+ 		}else {
 			mNotice.showToast(R.string.cannot_start_app);
 			return;
 		}
@@ -93,11 +109,39 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-		final List<AppEntry> appList = AppNormalFragment.mGameAppList;
-		final AppEntry appEntry = appList.get(position);
-		new AlertDialog.Builder(mContext)
-			.setIcon(appEntry.getIcon())
-			.setTitle(appEntry.getLabel())
+		switch (parent.getId()) {
+		case R.id.game_gridview_1:
+			final List<AppEntry> appList1 = AppNormalFragment.mMyAppList;
+			final AppEntry appEntry1 = appList1.get(position);
+			new AlertDialog.Builder(mContext)
+			.setIcon(appEntry1.getIcon())
+			.setTitle(appEntry1.getLabel())
+			.setItems(R.array.app_menu_game1, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+						switch (which) {
+						case 0:
+							//open
+							break;
+						case 1:
+							//app info
+							mAppManager.showInfoDialog(appEntry1);
+							break;
+
+						default:
+							break;
+						}
+				}
+			}).create().show();
+			break;
+			
+		case R.id.game_gridview_2:
+			final List<AppEntry> appList2 = AppNormalFragment.mGameAppList;
+			final AppEntry appEntry2 = appList2.get(position);
+			new AlertDialog.Builder(mContext)
+			.setIcon(appEntry2.getIcon())
+			.setTitle(appEntry2.getLabel())
 			.setItems(R.array.app_menu_game, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
@@ -111,28 +155,28 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 							break;
 						case 2:
 							//uninstall 
-							mAppManager.uninstallApp(appEntry.getPackageName());
+							mAppManager.uninstallApp(appEntry2.getPackageName());
 							break;
 						case 3:
 							//app info
-							mAppManager.showInfoDialog(appEntry);
+							mAppManager.showInfoDialog(appEntry2);
 //							String info = mAppManager.getAppInfo(appEntry);
 //							FileInfoDialog fragment = FileInfoDialog.newInstance(info);
 //							fragment.show(getActivity().getSupportFragmentManager(), "Info");
 							break;
 						case 4:
 							//move to app
-							appList.remove(position);
+							appList2.remove(position);
 							
-							int index = DreamUtil.getInsertIndex(AppNormalFragment.mNormalAppLists, appEntry);
+							int index = DreamUtil.getInsertIndex(AppNormalFragment.mNormalAppLists, appEntry2);
 							if (AppNormalFragment.mNormalAppLists.size() == index) {
-								AppNormalFragment.mNormalAppLists.add(appEntry);
+								AppNormalFragment.mNormalAppLists.add(appEntry2);
 							} else {
-								AppNormalFragment.mNormalAppLists.add(index, appEntry);
+								AppNormalFragment.mNormalAppLists.add(index, appEntry2);
 							}
 							
 							//delete from db
-							Uri uri = Uri.parse(MetaData.Game.CONTENT_URI + "/" + appEntry.getPackageName());
+							Uri uri = Uri.parse(MetaData.Game.CONTENT_URI + "/" + appEntry2.getPackageName());
 							mContext.getContentResolver().delete(uri, null, null);
 							
 							mAdapter2.notifyDataSetChanged();
@@ -144,6 +188,10 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 						}
 				}
 			}).create().show();
+			break;
+		default:
+			break;
+		}
 		return true;
 	}
 
@@ -155,6 +203,7 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 			String action = intent.getAction();
 			Log.d(TAG, "get receiver:" + action);
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
+				mAdapter1.notifyDataSetChanged();
 				mAdapter2.notifyDataSetChanged();
 			}
 		}

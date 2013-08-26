@@ -32,6 +32,19 @@ public class DreamConstant {
 		
 		public static final String COPY_PATH = "copy_path";
 	}
+	
+	public static class Cmd{
+		/** List files of current directory */
+		public static final int LS = 100;
+		/**copy command*/
+		public static final int COPY = 101;
+		/**stop send file command*/
+		public static final int STOP_SEND_FILE = 102;
+		/**LRETN*/
+		public static final int LSRETN = 103;
+		/**end flag*/
+		public static final int END_FLAG = 105;
+	}
 
 	public static final String MEDIA_AUDIO_ACTION = "intent.media.audio.action";
 	public static final String MEDIA_VIDEO_ACTION = "intent.media.video.action";
@@ -50,5 +63,7 @@ public class DreamConstant {
 	public static final String PACKAGE_NAME = "com.dreamlink.communication";
 	
 	public static final String EXIT_ACTION = "intent.exit.aciton";
+	public static final String APP_ACTION = "com.dreamlink.communication.action.app";
+	public static final String APP_CATEGORY = "com.dreamlink.communication.category.app";
 	
 }

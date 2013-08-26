@@ -66,11 +66,11 @@
         <activity
             android:name="com.dreamlink.communication.fileshare.FileShareLauncher"
             android:label="@string/fileshare_label" >
-            <intent-filter>
-                <action android:name="com.dreamlink.communication.action.app" />
+<!--             <intent-filter> -->
+<!--                 <action android:name="com.dreamlink.communication.action.app" /> -->
 
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+<!--                 <category android:name="android.intent.category.DEFAULT" /> -->
+<!--             </intent-filter> -->
 
             <meta-data
                 android:name="app_id"

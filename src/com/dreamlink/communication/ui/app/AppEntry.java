@@ -6,6 +6,7 @@ import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.util.Log;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -31,6 +32,13 @@ public class AppEntry {
 	private String version;
 	private Context context;
 	private PackageManager pm;
+	private Intent startIntent;
+	
+	public AppEntry(Context context){
+		this.context = context;
+		mApkFile = null;
+		pm = context.getPackageManager();
+	}
 	
 	public AppEntry(Context context, ApplicationInfo info) {
 		this.context = context;
@@ -86,6 +94,18 @@ public class AppEntry {
 				mLabel = label != null ? label.toString() : mInfo.packageName;
 			}
 		}
+	}
+	
+	public void setLable(String label){
+		mLabel = label;
+	}
+	
+	public void setIcon(Drawable icon){
+		mIcon = icon;
+	}
+	
+	public void setIntent(Intent intent){
+		startIntent = intent;
 	}
 	
 	public void loadVersion(){
