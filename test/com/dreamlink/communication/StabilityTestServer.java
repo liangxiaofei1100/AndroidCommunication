@@ -8,28 +8,23 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.dreamlink.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.aidl.User;
-import com.dreamlink.communication.util.LogFile;
-import com.dreamlink.communication.util.TimeUtil;
+import com.dreamlink.communication.util.Log;
 
 /**
  * see {@code StabilityTest}.
  * 
  */
-public class StabilityTestServer extends Activity implements
-		OnCommunicationListenerExternal {
+public class StabilityTestServer extends Activity implements OnCommunicationListenerExternal {
 	private static final String TAG = "StabilityTestServer";
 	private ListView mListView;
 	private ArrayAdapter<String> mAdapter;
 	private ArrayList<String> mData;
 	private SocketCommunicationManager mCommunicationManager;
-	private LogFile mDataLogFile;
-	private LogFile mErrorLogFile;
 
 	/** Stability test app id */
 	private int mAppID = 0;
@@ -47,14 +42,6 @@ public class StabilityTestServer extends Activity implements
 		mCommunicationManager.registerOnCommunicationListenerExternal(this,
 				mAppID);
 
-		mDataLogFile = new LogFile(getApplicationContext(),
-				"StabilityTestServer-" + TimeUtil.getCurrentTime() + ".txt");
-		mDataLogFile.open();
-
-		mErrorLogFile = new LogFile(getApplicationContext(),
-				"StabilityTestServer_error-" + TimeUtil.getCurrentTime()
-						+ ".txt");
-		mErrorLogFile.open();
 	}
 
 	private void initView() {
@@ -79,10 +66,7 @@ public class StabilityTestServer extends Activity implements
 			}
 			mData.add(messageString);
 			mAdapter.notifyDataSetChanged();
-			mDataLogFile.writeLog(TimeUtil.getCurrentTime() + " Received: \n");
-			mDataLogFile.writeLog(messageString);
 
-			// mCommunicationManager.sendMessage(messageString.getBytes(), 0);
 			mCommunicationManager.sendMessageToAll(messageString.getBytes(),
 					mAppID);
 		};
@@ -100,6 +84,8 @@ public class StabilityTestServer extends Activity implements
 			Log.d(TAG, "User is lost connection.");
 			return;
 		}
+		Log.d(TAG, "onReceiveMessage():" + new String(msg) + ", from user: "
+				+ sendUser.getUserName());
 		Message message = mHandler.obtainMessage();
 		message.obj = "From " + sendUser.getUserName() + ": " + new String(msg);
 		mHandler.sendMessage(message);

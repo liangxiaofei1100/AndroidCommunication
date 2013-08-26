@@ -26,7 +26,9 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 /**
- * Get all app.
+ * Get all test app.
+ * 
+ * TODO this activity is old code.
  * 
  */
 public class AppListActivity extends Activity implements OnItemClickListener {
@@ -57,7 +59,7 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 	 * <category android:name="android.intent.category.DEFAULT" />
 	 * </intent-filter>
 	 */
-	public static final String ACTION_APP = "com.dreamlink.communication.action.app";
+	public static final String ACTION_APP = "com.dreamlink.communication.action.testapp";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -157,11 +159,11 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 	@Override
 	public void finish() {
 		super.finish();
-		SocketCommunicationManager.getInstance(this).closeAllCommunication();
-		if (Build.VERSION.SDK_INT >= 14) {
-			WifiDirectManager manager = new WifiDirectManager(this);
-			manager.stopConnect();
-		}
+//		SocketCommunicationManager.getInstance(this).closeAllCommunication();
+//		if (Build.VERSION.SDK_INT >= 14) {
+//			WifiDirectManager manager = new WifiDirectManager(this);
+//			manager.stopConnect();
+//		}
 	}
 
 	@Override
