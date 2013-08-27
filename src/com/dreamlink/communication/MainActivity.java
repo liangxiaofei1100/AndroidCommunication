@@ -125,10 +125,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			launchTestApps();
 			break;
 
+		case R.id.menu_network_status:
+			showNetworkStatus();
+			break;
+		case R.id.menu_listener_status:
+			showListenerStatus();
+			break;
 		default:
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void showNetworkStatus() {
+		NetworkStatus status = new NetworkStatus(this);
+		status.show();
+	}
+
+	private void showListenerStatus() {
+		CommunicationListenerStatus status = new CommunicationListenerStatus(
+				this);
+		status.show();
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package com.dreamlink.communication;
 
-import java.io.File;
 import java.net.Socket;
 import java.util.Map;
 import java.util.Vector;
@@ -43,22 +42,30 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	private static final String TAG = "SocketCommunicationManager";
 
 	/**
-	 * Interface for Activity.
+	 * Interface of SocketCommunication. </br>
+	 * 
+	 * Notice: </br>
+	 * 
+	 * 1. Message in this interface is not encoded with Protocol.</br>
+	 * 
+	 * 2. This is only used before Login operation. After Login success, use
+	 * OnCommunicationListenerExternal instead of this.</br>
 	 * 
 	 */
 	public interface OnCommunicationListener {
-		// TODO need to update.
-
 		/**
 		 * Received a message from communication.</br>
 		 * 
 		 * Be careful, this method is not run in UI thread. If do UI operation,
-		 * we can use {@link android.os.Handler} to do UI operation.</br>
+		 * we can use {@link android.os.Handler}.</br>
+		 * 
+		 * Message in this method is not encoded with Protocol.</br>
 		 * 
 		 * @param msg
 		 *            the message.
 		 * @param communication
 		 *            the message from.
+		 * 
 		 */
 		void onReceiveMessage(byte[] msg, SocketCommunication communication);
 
@@ -96,6 +103,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	private UserManager mUserManager = UserManager.getInstance();
 	private ProtocolDecoder mProtocolDecoder;
 
+	/** Used for Login confirm UI */
 	private ILoginRequestCallBack mLoginRequestCallBack;
 	private ILoginRespondCallback mLoginRespondCallback;
 
@@ -280,6 +288,13 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		mProtocolDecoder.decode(msg, socketCommunication);
 	}
 
+	/**
+	 * In the WiFi Direct network. record the communications which connect us as
+	 * clients.</br>
+	 * 
+	 * Key means user ID assigned by us(Note, the user ID will reassigned by the
+	 * Server we connected.). Value is the SocketCommunication.</br>
+	 */
 	private ConcurrentHashMap<Integer, SocketCommunication> mLocalCommunications = new ConcurrentHashMap<Integer, SocketCommunication>();
 	private int mLastLocalID = 0;
 
@@ -411,6 +426,16 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		clientTask.execute(new String[] { serverIp, SocketCommunication.PORT });
 	}
 
+	/**
+	 * Notify all listeners that we received a message sent by the user with the
+	 * ID sendUserID for us.
+	 * 
+	 * This is used by ProtocolDecoder.
+	 * 
+	 * @param sendUserID
+	 * @param appID
+	 * @param data
+	 */
 	public void notifyReceiveListeners(int sendUserID, int appID, byte[] data) {
 		int index = SocketCommunicationService.callBackList.beginBroadcast();
 		for (int i = 0; i < index; i++) {
@@ -423,7 +448,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 					l.onReceiveMessage(data,
 							mUserManager.getAllUser().get(sendUserID));
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -436,7 +460,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 					entry.getKey().onReceiveMessage(data,
 							mUserManager.getAllUser().get(sendUserID));
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -453,7 +476,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				l.onUserConnected(user);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -464,7 +486,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				entry.getKey().onUserConnected(user);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -480,7 +501,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				l.onUserDisconnected(user);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -491,7 +511,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				entry.getKey().onUserDisconnected(user);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -545,5 +564,24 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	public void onConnectedToServer(Socket socket) {
 		startCommunication(socket);
 	}
+
+	// For debug begin.
+	/**
+	 * This method is used for debug.
+	 * 
+	 * @return
+	 */
+	public String getOnCommunicationListenerExternalStatus() {
+		StringBuffer status = new StringBuffer();
+		status.append(mOnCommunicationListenerExternals.toString());
+		return status.toString();
+	}
+
+	public String getOnCommunicationListenerStatus() {
+		StringBuffer status = new StringBuffer();
+		status.append(mOnCommunicationListeners.toString());
+		return status.toString();
+	}
+	// For debug end.
 
 }
