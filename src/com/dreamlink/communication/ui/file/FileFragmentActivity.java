@@ -42,13 +42,11 @@ public class FileFragmentActivity extends FragmentActivity implements TabContent
 		mTabHost = (TabHost) findViewById(android.R.id.tabhost);
 		mTabHost.setup();
 
-		mTabHost.addTab(mTabHost.newTabSpec(TAG_ONE).setIndicator("文件分类").setContent(R.id.file_frag1));
 		mTabHost.addTab(mTabHost.newTabSpec(TAG_TWO).setIndicator("全部文件").setContent(R.id.file_frag2));
+		mTabHost.addTab(mTabHost.newTabSpec(TAG_ONE).setIndicator("文件分类").setContent(R.id.file_frag1));
 		
 		mTabHost.setCurrentTab(0);
 		mTabHost.setOnTabChangedListener(this);
-		//得到Tab标题中的Textview控件，可以用此修改标题，颜色，字体大小等等
-		TextView textView = (TextView) mTabHost.getTabWidget().getChildAt(0).findViewById(android.R.id.title);
 	}
 
 	@Override

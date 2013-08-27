@@ -9,7 +9,9 @@ import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.app.AppNormalFragment;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileInfoDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.image.ImageFragmentActivity;
 import com.dreamlink.communication.util.Log;
@@ -133,18 +135,20 @@ public class MediaVideoFragment extends Fragment implements OnItemLongClickListe
      * @param path file path
      */
     public void showDeleteDialog(final int pos, final String path) {
-    	new AlertDialog.Builder(mContext)
-    		.setIcon(android.R.drawable.ic_delete)
-    		.setTitle(R.string.menu_delete)
-    		.setMessage(getResources().getString(R.string.confirm_msg, path))
-    		.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
+    	final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
+		deleteDialog.setOnClickListener(new OnDelClickListener() {
+			@Override
+			public void onClick(View view, String path) {
+				switch (view.getId()) {
+				case R.id.left_button:
 					doDelete(pos, path);
+					break;
+				default:
+					break;
 				}
-			})
-			.setNegativeButton(android.R.string.cancel, null)
-			.create().show();
+			}
+		});
+		deleteDialog.show();
     }
     
     private void doDelete(int position, String path) {

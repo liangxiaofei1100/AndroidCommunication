@@ -79,6 +79,7 @@ public class FileExistDialog extends Dialog implements OnItemClickListener {
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		mListener.onMenuItemClick(position);
+		dismiss();
 	}
 	
 	private class MyAdapter extends BaseAdapter{

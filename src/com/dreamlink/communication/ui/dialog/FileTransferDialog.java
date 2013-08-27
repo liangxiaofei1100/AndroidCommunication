@@ -125,7 +125,7 @@ private static final NumberFormat nf = NumberFormat.getPercentInstance();
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.progress_dialog);
+		setContentView(R.layout.ui_filetransfer_dialog);
 		
 		mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
 		mProgressBar.setMax(100);

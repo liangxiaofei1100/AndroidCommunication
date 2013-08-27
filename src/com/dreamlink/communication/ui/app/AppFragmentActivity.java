@@ -2,7 +2,6 @@ package com.dreamlink.communication.ui.app;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.util.Log;
 
 import android.content.BroadcastReceiver;

@@ -120,4 +120,6 @@
     <string name="copy_rename_msg">正在复制的文件将重命名为 “<xliff:g id="rename">%1$s</xliff:g>“</string>
     <string name="copy_cancel">取消</string>
      <string name="copy_cancel_msg">将不会改变任何文件</string>
+     
+     <string name="delete_confirm_msg">确定要删除这个文件？</string>
 </resources>

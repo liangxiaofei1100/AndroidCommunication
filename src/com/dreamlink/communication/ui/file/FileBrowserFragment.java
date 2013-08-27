@@ -16,9 +16,8 @@ import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.PopupView;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
-import com.dreamlink.communication.ui.dialog.DeleteDialog;
-import com.dreamlink.communication.ui.dialog.FileInfoDialog;
-import com.dreamlink.communication.ui.dialog.DeleteDialog.ConfirmListener;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
 import com.dreamlink.communication.util.Log;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -27,7 +26,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,8 +42,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 public class FileBrowserFragment extends BaseFragment implements
-		OnClickListener, OnItemClickListener, ConfirmListener,
-		PopupViewClickListener, OnScrollListener {
+		OnClickListener, OnItemClickListener,PopupViewClickListener, OnScrollListener {
 	private static final String TAG = "FileBrowserFragment";
 
 	// 文件路径导航栏
@@ -139,6 +136,9 @@ public class FileBrowserFragment extends BaseFragment implements
 			mSwitchImageView.setVisibility(View.GONE);
 			doInternal();
 		} else {
+			if (MountManager.NO_INTERNAL_SDCARD.equals(MountManager.INTERNAL_PATH)) {
+				mSwitchImageView.setVisibility(View.GONE);
+			}
 			doSdcard();
 		}
 
@@ -264,9 +264,6 @@ public class FileBrowserFragment extends BaseFragment implements
 			break;
 		case ListContextMenu.MENU_INFO:
 			mFileInfoManager.showInfoDialog(fileInfo);
-			// FileInfoDialog fragment = FileInfoDialog.newInstance(fileInfo,
-			// FileInfoDialog.FILE_INFO);
-			// fragment.show(getFragmentManager(), "Info");
 			break;
 		case ListContextMenu.MENU_RENAME:
 			break;
@@ -278,21 +275,27 @@ public class FileBrowserFragment extends BaseFragment implements
 
 	/**
 	 * show confrim dialog
-	 * 
-	 * @param path
-	 *            file path
+	 * @param path  file path
 	 */
 	public void showConfirmDialog(String path) {
-		DeleteDialog fragment = DeleteDialog.newInstance(path);
-		// if (fragment != null) {
-		// fragment.dismissAllowingStateLoss();
-		// }
-		fragment.setConfirmListener(this);
-		fragment.show(getFragmentManager(), "Confirm");
-	}
+		final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
+		deleteDialog.setOnClickListener(new OnDelClickListener() {
+			@Override
+			public void onClick(View view, String path) {
+				switch (view.getId()) {
+				case R.id.left_button:
+					doDelete(path);
+					break;
 
-	@Override
-	public void confirm(String path) {
+				default:
+					break;
+				}
+			}
+		});
+		deleteDialog.show();
+	}
+	
+	public void doDelete(String path){
 		File file = new File(path);
 		if (!file.exists()) {
 			Log.e(TAG, path + " is not exist");

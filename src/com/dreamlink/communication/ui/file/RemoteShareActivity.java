@@ -95,7 +95,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	/**record the file that need copy,this file info is the file that exist in remote device*/
 	public FileInfo currentCopyFile = null;
 	/**the file that current copy that save in local device*/
-	public File mCurrentLocalFile = null;
+	public File mLocalFile = null;
 	public  String currentFileNmae = "";
 	private FileOutputStream fos = null;
 	
@@ -264,16 +264,16 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-		FileInfo fileInfo = mList.get(position);
+		final FileInfo fileInfo = mList.get(position);
 		if (!fileInfo.isDir) {
-			currentCopyFile = mList.get(position);
-			new AlertDialog.Builder(mContext).setTitle(currentCopyFile.fileName)
+			new AlertDialog.Builder(mContext).setTitle(fileInfo.fileName)
 					.setItems(R.array.fileshare_menu, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							switch (which) {
 							case 0:
 								// copy
+								currentCopyFile = fileInfo;
 								Intent intent = new Intent(mContext, LocalFolderDialog.class);
 								startActivityForResult(intent, LOCAL_REQUEST_CODE);
 								break;
@@ -537,10 +537,10 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	 */
 	public void doCopy(final String path){
 		final String localFilePath = path + "/" + currentCopyFile.fileName;
-		mCurrentLocalFile = new File(localFilePath);
+		mLocalFile = new File(localFilePath);
 		try {
-			if (!mCurrentLocalFile.exists()) {
-				mCurrentLocalFile.createNewFile();
+			if (!mLocalFile.exists()) {
+				mLocalFile.createNewFile();
 				startTransferDialog(currentCopyFile.fileName);
 			}else {
 				final FileExistDialog dialog = new FileExistDialog(mContext, path, currentCopyFile.fileName);
@@ -552,20 +552,17 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 						case 0:
 							//replace and copy
 							startTransferDialog(currentCopyFile.fileName);
-							dialog.cancel();
 							break;
 						case 1:
 							//rename and copy
 							String name = dialog.getRenameStr();
-							mCurrentLocalFile = new File(path + "/" + name);
+							mLocalFile = new File(path + "/" + name);
 							startTransferDialog(name);
-							dialog.cancel();
 							break;
 						case 2:
 							//cancel
 							//do nothing
 							currentCopyFile = null;
-							dialog.cancel();
 							break;
 						default:
 							break;
@@ -575,7 +572,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 				dialog.setCancelable(false);
 				dialog.show();
 			}
-			Log.d(TAG, "Current copy file is " + mCurrentLocalFile.getAbsolutePath());
+			Log.d(TAG, "Current copy file is " + mLocalFile.getAbsolutePath());
 		} catch (IOException e) {
 			Log.e(TAG, "IO error:" + e.toString());
 			e.printStackTrace();
@@ -584,10 +581,12 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	
 	private void startTransferDialog(String name){
 		try {
-			fos = new FileOutputStream(mCurrentLocalFile);
+			fos = new FileOutputStream(mLocalFile);
 		} catch (FileNotFoundException e) {
 			Log.e(TAG, "file error:" + e.toString());
+			currentCopyFile = null;
 			e.printStackTrace();
+			return;
 		}
 		mFileTransferDialog = new FileTransferDialog(mContext, R.style.TransferDialog);
 		mFileTransferDialog.setDMax(currentCopyFile.fileSize);
@@ -602,10 +601,12 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					switch (state) {
 					case FileTransferDialog.STATE_COPY_OK:
 						//copy ok.click this can open file
-						mFileInfoManager.openFile(mCurrentLocalFile.getPath());
+						mFileInfoManager.openFile(mLocalFile.getPath());
 						break;
 					case FileTransferDialog.STATE_COPYING:
 						//copying,click this can stop file transfer
+						String copyCmd = Cmd.STOP_SEND_FILE + currentCopyFile.filePath;
+						sendCommandMsg(copyCmd);
 						mNotice.showToast("Stop");
 						break;
 					case FileTransferDialog.STATE_COPY_FAIL:
@@ -638,7 +639,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			}
 
 		});
-		mFileTransferDialog.setCancelable(true);
+		mFileTransferDialog.setCancelable(false);
 		mFileTransferDialog.show();
 		
 		if (currentCopyFile.fileSize == 0) {

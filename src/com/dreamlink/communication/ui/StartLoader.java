@@ -19,6 +19,9 @@ public class StartLoader extends Activity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui_loader);
 		
+		MountManager mountManager = new MountManager();
+		mountManager.init();
+		
 		mHandler.sendEmptyMessage(LOADING);
 	}
 	

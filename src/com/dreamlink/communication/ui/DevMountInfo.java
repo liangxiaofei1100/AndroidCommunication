@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.dreamlink.communication.ui.DevMountInfo.DevInfo;
+import com.dreamlink.communication.util.Log;
+
 import android.os.Environment;
 
 /**
@@ -14,6 +16,7 @@ import android.os.Environment;
  *
  */
 public class DevMountInfo implements IDev {  
+	private static final String TAG = "DevMountInfo";
     public final String HEAD = "dev_mount";  
     public final String LABEL = "<label>";  
     public final String MOUNT_POINT = "<mount_point>";  
@@ -34,8 +37,8 @@ public class DevMountInfo implements IDev {
     private final int NMOUNT_POINT = 3;  
     private final int NSYSFS_PATH = 4;  
   
-    private final int DEV_INTERNAL = 1;  
-    private final int DEV_EXTERNAL = 0;  
+    private final int DEV_INTERNAL = 0;  
+    private final int DEV_EXTERNAL = 1;  
   
     private ArrayList<String> cache = new ArrayList<String>();  
   
@@ -63,17 +66,25 @@ public class DevMountInfo implements IDev {
         } catch (IOException e) {  
             e.printStackTrace();  
         }  
+        
+        String[] exterSinfo = null;
+        String[] interSinfo = null;
+		if (1 >= cache.size()) {
+			exterSinfo = cache.get(0).split(" ");
+			info.setInterPath(MountManager.NO_INTERNAL_SDCARD);
+		} else {
+			interSinfo = cache.get(0).split(" ");
+			exterSinfo = cache.get(1).split(" ");
+			 info.setInterPath(interSinfo[NPATH]);
+		}
+        Log.d(TAG, "getInfo.cache.size=" + cache.size());
+        Log.d(TAG, "device=" + device + "\n" + exterSinfo[NPATH]);
   
-        if (device >= cache.size()){
-        	return null;  
-        }  
-            
-        String[] sinfo = cache.get(device).split(" ");  
-  
-        info.setLabel(sinfo[NLABEL]);  
-        info.setMount_point(sinfo[NMOUNT_POINT]);  
-        info.setPath(sinfo[NPATH]);  
-        info.setSysfs_path(sinfo[NSYSFS_PATH]);  
+        info.setLabel(exterSinfo[NLABEL]);  
+        info.setMount_point(exterSinfo[NMOUNT_POINT]);  
+        info.setPath(exterSinfo[NPATH]);  
+        info.setExterPath(exterSinfo[NPATH]);
+        info.setSysfs_path(exterSinfo[NSYSFS_PATH]);  
   
         return info;  
     }  
@@ -88,7 +99,7 @@ public class DevMountInfo implements IDev {
         String tmp = null;  
         while ((tmp = br.readLine()) != null) {  
             // the words startsWith "dev_mount" are the SD info  
-        	System.out.println("tmp:" + tmp);
+        	Log.i(TAG, "tmp:" + tmp);
             if (tmp.startsWith(HEAD)) {  
                 cache.add(tmp);  
             }  
@@ -98,7 +109,7 @@ public class DevMountInfo implements IDev {
     }  
   
     public class DevInfo {  
-        private String label, mount_point, path, sysfs_path;  
+        private String label, mount_point, path, inter_path, exter_path,  sysfs_path;  
   
         /** 
          * return the label name of the SD card 
@@ -135,6 +146,22 @@ public class DevMountInfo implements IDev {
         private void setPath(String path) {  
             this.path = path;  
         }  
+        
+        public String getExterPath(){
+        	return exter_path;
+        }
+        
+        private void setExterPath(String path){
+        	this.exter_path = path;
+        }
+        
+        public String getInterPath(){
+        	return inter_path;
+        }
+        
+        private void setInterPath(String path){
+        	this.inter_path = path;
+        }
   
         /** 
          * "unknow" 
@@ -161,6 +188,11 @@ public class DevMountInfo implements IDev {
     }  
     
     @Override
+    public DevInfo getDevInfo() {
+    	return getInfo(DEV_EXTERNAL);
+    }
+    
+    @Override
     public boolean isExistExternal() {
     	return VOLD_FSTAB.exists();
     }
@@ -169,6 +201,7 @@ public class DevMountInfo implements IDev {
 interface IDev {  
     DevInfo getInternalInfo();  
     DevInfo getExternalInfo();  
+    DevInfo getDevInfo();
     /**is exist external sdcard*/
     boolean isExistExternal();
 }  
