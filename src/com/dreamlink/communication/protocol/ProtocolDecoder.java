@@ -278,6 +278,17 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 	public void onReceiveMessageAllType(int sendUserID, int appID, byte[] data) {
 		Log.d(TAG, "onReceiveMessageAllType sendUserID = " + sendUserID
 				+ ", appID = " + appID);
+		if (sendUserID == mUserManager.getLocalUser().getUserID()) {
+			// When the client connected to the server but is not login success,
+			// the client can receive the message, and the client will send the
+			// message to other communications which user ID is not the same as
+			// the message from. So the client will send the message back to the
+			// server. So this message should ignore.
+			// TODO This condition should avoid in the future.
+			Log.d(TAG,
+					"onReceiveMessageAllType, This message is sent by me, ignore.");
+			return;
+		}
 		mCommunicationManager.notifyReceiveListeners(sendUserID, appID, data);
 
 		byte[] msg = SendProtocol.encodeSendMessageToAll(data, sendUserID,

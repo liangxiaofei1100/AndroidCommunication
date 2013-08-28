@@ -1,7 +1,5 @@
 package com.dreamlink.communication.util;
 
-import android.R.anim;
-
 public class Log {
 	public static final boolean isDebug = true;
 	private static final String TAG = "dmLink/";

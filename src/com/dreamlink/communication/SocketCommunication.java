@@ -106,7 +106,10 @@ public class SocketCommunication extends Thread {
 			mListener.OnCommunicationEstablished(this);
 			mReceiveBuffer = new byte[RECEIVE_BUFFER_SIZE];
 			while (!mSocket.isClosed()) {
+				long start = System.currentTimeMillis();
 				boolean isContinue = decode(mDataInputStream);
+				long end = System.currentTimeMillis();
+				Log.i(TAG, "decode takes time: " + (end - start));
 				if (!isContinue) {
 					mListener.OnCommunicationLost(this);
 					break;
