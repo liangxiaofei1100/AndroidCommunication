@@ -190,6 +190,7 @@ private static final NumberFormat nf = NumberFormat.getPercentInstance();
 			case STATE_COPYING:
 				//stop
 				mListener.onClick(v, STATE_COPYING);
+				dismiss();
 				break;
 			case STATE_COPY_OK:
 				//open

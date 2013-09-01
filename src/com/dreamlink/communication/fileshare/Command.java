@@ -44,4 +44,7 @@ public class Command {
 	public static final String ROOT_PATH = "root";
 	/**end flag*/
 	public static final String END_FLAG = "&_&";
+	/**stop success*/
+	public static final String STOP_SUCCESS = "stop_success";
+			
 }

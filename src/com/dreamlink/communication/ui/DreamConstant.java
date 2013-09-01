@@ -42,6 +42,8 @@ public class DreamConstant {
 		public static final int STOP_SEND_FILE = 102;
 		/**LRETN*/
 		public static final int LSRETN = 103;
+		/**stop return*/
+		public static final int STOP_RETN = 104;
 		/**end flag*/
 		public static final int END_FLAG = 105;
 	}

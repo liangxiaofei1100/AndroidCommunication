@@ -7,9 +7,7 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.media.MediaInfo;
 import com.dreamlink.communication.ui.media.MediaInfoManager;
 import com.dreamlink.communication.util.Log;
 
@@ -17,10 +15,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.TabHost.OnTabChangeListener;
@@ -31,9 +32,11 @@ public class ImageFragmentActivity extends FragmentActivity implements
 	private static final String TAG = "ImageFragmentActivity";
 
 	private TabHost mTabHost;
+	private LayoutInflater layoutInflater;
 
-	private static final String TAG_ONE = "one";
-	private static final String TAG_TWO = "two";
+	private static final String TAG_ONE = "相机";
+	private static final String TAG_TWO = "图库";
+	private static final String[] TAB_TAG = {TAG_ONE, TAG_TWO};
 	private TextView mTextView1;
 	private TextView mTextView2;
 
@@ -53,7 +56,6 @@ public class ImageFragmentActivity extends FragmentActivity implements
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			// TODO Auto-generated method stub
 			int cameraSize = intent.getIntExtra(Extra.CAMERA_SIZE,
 					mCamearLists.size());
 			int gallerySize = intent.getIntExtra(Extra.GALLERY_SIZE,
@@ -89,26 +91,60 @@ public class ImageFragmentActivity extends FragmentActivity implements
 	}
 
 	public void initViews() {
+		//实例化布局对象
+		layoutInflater = LayoutInflater.from(this);
 		mTabHost = (TabHost) findViewById(android.R.id.tabhost);
 		mTabHost.setup();
-
-		mTabHost.addTab(mTabHost.newTabSpec(TAG_ONE).setIndicator(CAMERA_TITLE)
+		
+		mTabHost.addTab(mTabHost.newTabSpec(TAB_TAG[0]).setIndicator(getTabItemView(0))
 				.setContent(R.id.picture_frag1));
-		mTabHost.addTab(mTabHost.newTabSpec(TAG_TWO)
-				.setIndicator(GALLERY_TITLE).setContent(R.id.picture_frag2));
+		mTabHost.addTab(mTabHost.newTabSpec(TAB_TAG[1])
+				.setIndicator(getTabItemView(1)).setContent(R.id.picture_frag2));
 
 		mTabHost.setCurrentTab(0);
 		mTabHost.setOnTabChangedListener(this);
 		mTextView1 = (TextView) mTabHost.getTabWidget().getChildAt(0)
-				.findViewById(android.R.id.title);
+				.findViewById(R.id.textview);
 		mTextView2 = (TextView) mTabHost.getTabWidget().getChildAt(1)
-				.findViewById(android.R.id.title);
+				.findViewById(R.id.textview);
+	}
+	
+	/**
+	 * 给Tab按钮设置图标和文字
+	 */
+	private static final int[] VIS = {View.VISIBLE, View.GONE};
+	private static final int[] VIS2 = {View.GONE, View.VISIBLE};
+	private static final int[] COLORs = {0xff33b5e5, Color.GRAY};
+	private View getTabItemView(int index){
+		View view = layoutInflater.inflate(R.layout.tab_view, null);
+	
+		ImageView imageView = (ImageView) view.findViewById(R.id.cursor1);
+		ImageView imageView2 = (ImageView) view.findViewById(R.id.cursor2);
+		imageView.setVisibility(VIS[index]);
+		imageView2.setVisibility(VIS2[index]);
+		
+		TextView textView = (TextView) view.findViewById(R.id.textview);		
+		textView.setText(TAB_TAG[index]);
+		textView.setTextColor(COLORs[index]);
+		return view;
 	}
 
 	@Override
 	public void onTabChanged(String tabId) {
-		// TODO Auto-generated method stub
-
+		for (int j = 0; j < TAB_TAG.length; j++) {
+			TextView textView = (TextView) mTabHost.getTabWidget().getChildAt(j).findViewById(R.id.textview);
+			ImageView imageView = (ImageView) mTabHost.getTabWidget().getChildAt(j).findViewById(R.id.cursor1);
+			ImageView imageView2 = (ImageView) mTabHost.getTabWidget().getChildAt(j).findViewById(R.id.cursor2);
+			if (tabId.equals(TAB_TAG[j])) {
+				textView.setTextColor(0xff33b5e5);
+				imageView.setVisibility(View.VISIBLE);
+				imageView2.setVisibility(View.GONE);
+			}else {
+				textView.setTextColor(Color.GRAY);
+				imageView.setVisibility(View.GONE);
+				imageView2.setVisibility(View.VISIBLE);
+			}
+		}
 	}
 
 	@Override

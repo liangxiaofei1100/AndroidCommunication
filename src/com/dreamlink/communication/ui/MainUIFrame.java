@@ -284,6 +284,10 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		mContext = this;
 		instance = this;
 		mActivityManager = getLocalActivityManager();
+		
+		//get sdcards
+		MountManager mountManager = new MountManager();
+		mountManager.init();
 
 		mUserHelper = new UserHelper(mContext);
 		mUser = mUserHelper.loadUser();

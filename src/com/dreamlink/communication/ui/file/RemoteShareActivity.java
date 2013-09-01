@@ -507,8 +507,10 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			mFileTransferDialog.cancel();
 		}
 		
-		currentCopyFile = null;
-		
+		if (mSpeedTimer != null) {
+			mSpeedTimer.cancel();
+		}
+		doClear();
 		uihandler.sendMessage(uihandler.obtainMessage(USER_DISCONNECTED));
 	}
 	
@@ -607,7 +609,10 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 						//copying,click this can stop file transfer
 						String copyCmd = Cmd.STOP_SEND_FILE + currentCopyFile.filePath;
 						sendCommandMsg(copyCmd);
-						mNotice.showToast("Stop");
+						if (mLocalFile.exists()) {
+							mLocalFile.delete();
+						}
+//						mNotice.showToast("Stop");
 						break;
 					case FileTransferDialog.STATE_COPY_FAIL:
 						//copy fail,click this can retry

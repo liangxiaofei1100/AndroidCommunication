@@ -49,6 +49,7 @@ import android.widget.TextView;
 
 /**
  * list remote server /sdcard files to client
+ * @unuse
  * @author yuri
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB) 
