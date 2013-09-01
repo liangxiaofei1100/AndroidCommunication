@@ -11,17 +11,26 @@
         android:showAsAction="never"
         android:title="@string/menu_user_info"/>
     <!-- main ui start test -->
-    <item 
+    <item
         android:id="@+id/menu_start_test"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="Start main ui"
-        />
-    <item 
+        android:title="Start main ui"/>
+    <item
         android:id="@+id/menu_test_apps"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="Test apps"
-        />
+        android:title="Test apps"/>
+    <item
+        android:id="@+id/menu_network_status"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom"
+        android:title="@string/menu_network_status"/>
+    <item
+        android:id="@+id/menu_listener_status"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="Listener status"/>
 
 </menu>

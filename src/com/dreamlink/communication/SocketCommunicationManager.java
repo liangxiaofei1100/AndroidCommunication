@@ -1,6 +1,7 @@
 package com.dreamlink.communication;
 
 import java.net.Socket;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -285,7 +286,10 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	public void onReceiveMessage(byte[] msg,
 			SocketCommunication socketCommunication) {
 		// decode;
+		long start = System.currentTimeMillis();
 		mProtocolDecoder.decode(msg, socketCommunication);
+		long end = System.currentTimeMillis();
+		Log.i(TAG, "onReceiveMessage() decode takes time: " + (end - start));
 	}
 
 	/**
