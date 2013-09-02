@@ -122,4 +122,5 @@
      <string name="copy_cancel_msg">将不会改变任何文件</string>
      
      <string name="delete_confirm_msg">确定要删除这个文件？</string>
+     <string name="delete_fail">无法删除这个文件</string>
 </resources>

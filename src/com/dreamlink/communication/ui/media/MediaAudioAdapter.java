@@ -14,6 +14,7 @@ import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.Notice;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -44,6 +45,7 @@ public class MediaAudioAdapter extends BaseAdapter {
 	private DisplayImageOptions options;
 	private AsyncImageLoader bitmapLoader;
 	private FileInfoManager mFileInfoManager = null;
+	private Notice mNotice;
 
 	public MediaAudioAdapter(Context context, List<MediaInfo> data,
 			ImageLoader loader, DisplayImageOptions options) {
@@ -56,6 +58,7 @@ public class MediaAudioAdapter extends BaseAdapter {
 		// bitmapLoader = new AsyncImageLoader(context);
 
 		mFileInfoManager = new FileInfoManager(context);
+		mNotice = new Notice(context);
 	}
 
 	@Override
@@ -261,9 +264,9 @@ public class MediaAudioAdapter extends BaseAdapter {
 			// TODO Auto-generated method stub
 			del_pos = params[0];
 			String path = mList.get(del_pos).getUrl();
-			mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI,
+			boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI,
 					path);
-			return null;
+			return ret;
 		}
 
 		@Override
@@ -283,13 +286,17 @@ public class MediaAudioAdapter extends BaseAdapter {
 				dialog.cancel();
 			}
 
-			mList.remove(del_pos);
-			current_position = -1;
-			notifyDataSetChanged();
+			if (result) {
+				mList.remove(del_pos);
+				current_position = -1;
+				notifyDataSetChanged();
 
-			Intent intent = new Intent(DreamConstant.MEDIA_AUDIO_ACTION);
-			intent.putExtra(Extra.AUDIO_SIZE, mList.size());
-			mContext.sendBroadcast(intent);
+				Intent intent = new Intent(DreamConstant.MEDIA_AUDIO_ACTION);
+				intent.putExtra(Extra.AUDIO_SIZE, mList.size());
+				mContext.sendBroadcast(intent);
+			}else {
+				mNotice.showToast(R.string.delete_fail);
+			}
 		}
 
 	}

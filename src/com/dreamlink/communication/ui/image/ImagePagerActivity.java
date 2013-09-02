@@ -24,7 +24,6 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
-import com.nostra13.universalimageloader.core.assist.ViewScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 public class ImagePagerActivity extends Activity {
@@ -56,6 +55,7 @@ public class ImagePagerActivity extends Activity {
 		pager = (ViewPager) findViewById(R.id.image_viewpager);
 		pager.setAdapter(new ImagePagerAdapter(imageList));
 		pager.setCurrentItem(pagerPosition);
+		
 	}
 
 	@Override
@@ -161,4 +161,5 @@ public class ImagePagerActivity extends Activity {
 		imageLoader.clearMemoryCache();
 		imageLoader.clearDiscCache();
 	}
+
 }

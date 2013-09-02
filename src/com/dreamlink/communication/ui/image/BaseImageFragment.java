@@ -15,6 +15,7 @@ import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.Notice;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -45,6 +46,8 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 	private GalleryReceiver mGalleryReceiver;
 	private ImageAdapter mAdapter;
 	
+	private Notice mNotice;
+	
 	private Context mContext;
 	private int mCurrentPosition = -1;
 	//用来保存GridView中每个Item的图片，以便释放
@@ -68,6 +71,8 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 		mContext = getActivity();
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
 		mEmptyView = (TextView) rootView.findViewById(R.id.picture_empty_textview);
+		
+		mNotice = new Notice(mContext);
 		
 		mGridview = (GridView) rootView.findViewById(R.id.picture_gridview);
 		mGridview.setEmptyView(mEmptyView);
@@ -199,9 +204,14 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
     }
     
 	private void doDelete(int position, String path) {
-		mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, path);
-		mList.remove(position);
-		mAdapter.notifyDataSetChanged();
+		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, path);
+		if (!ret) {
+			mNotice.showToast(R.string.delete_fail);
+			Log.e(TAG, path + " delete failed");
+		}else {
+			mList.remove(position);
+			mAdapter.notifyDataSetChanged();
+		}
 		
 		Intent intent = new Intent(ImageFragmentActivity.PICTURE_ACTION);
 		mContext.sendBroadcast(intent);

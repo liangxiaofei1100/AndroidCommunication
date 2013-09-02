@@ -90,22 +90,12 @@ public class FileBrowserFragment extends BaseFragment implements
 	// save current sdcard type path
 	private String current_root_path;
 
-	// ////////////
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.ui_file_all, container, false);
 		Log.d(TAG, "onCreate begin");
 		mContext = getActivity();
-
-		options = new DisplayImageOptions.Builder()
-				.showStubImage(R.drawable.icon_image)
-				.showImageForEmptyUri(R.drawable.icon_image)
-				.showImageOnFail(R.drawable.icon_image)
-				.cacheInMemory(DreamConstant.CACHE)
-				.cacheOnDisc(DreamConstant.CACHE)
-				.bitmapConfig(Bitmap.Config.RGB_565).build();
 
 		mFileListView = (ListView) rootView.findViewById(R.id.file_listview);
 		if (mFileListView != null) {
@@ -165,6 +155,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		FileInfo fileInfo = mAllLists.get(position);
+		System.out.println("fileino.type=" + fileInfo.type);
 		int top = view.getTop();
 		if (fileInfo.isDir) {
 			addToNavigationList(mCurrentPath, top, fileInfo);
@@ -197,12 +188,14 @@ public class FileBrowserFragment extends BaseFragment implements
 				isFirst = false;
 
 				// mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
-				mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists,
-						imageLoader, options);
+				mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
 				mFileListView.setAdapter(mFileInfoAdapter);
 			} else {
 				mFileInfoAdapter.notifyDataSetChanged();
 			}
+			//back to the listview top,every time
+			mFileListView.setSelection(0);
+			
 			mFileInfoAdapter.selectAll(false);
 			mTabManager.refreshTab(mCurrentPath, storge_type);
 		} else {
@@ -216,7 +209,7 @@ public class FileBrowserFragment extends BaseFragment implements
 		mFileLists.clear();
 	}
 
-	// Fill
+	/**fill current folder's files into list*/
 	private void fillList(File[] file) {
 		for (File currentFile : file) {
 			FileInfo fileInfo = null;
@@ -260,7 +253,7 @@ public class FileBrowserFragment extends BaseFragment implements
 		case ListContextMenu.MENU_SEND:
 			break;
 		case ListContextMenu.MENU_DELETE:
-			showConfirmDialog(fileInfo.filePath);
+			showDeleteDialog(fileInfo);
 			break;
 		case ListContextMenu.MENU_INFO:
 			mFileInfoManager.showInfoDialog(fileInfo);
@@ -274,17 +267,19 @@ public class FileBrowserFragment extends BaseFragment implements
 	}
 
 	/**
-	 * show confrim dialog
+	 * show delete dialog
 	 * @param path  file path
 	 */
-	public void showConfirmDialog(String path) {
+	public void showDeleteDialog(FileInfo fileInfo) {
+		String path = fileInfo.filePath;
+		final int type = fileInfo.type;
 		final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
 		deleteDialog.setOnClickListener(new OnDelClickListener() {
 			@Override
 			public void onClick(View view, String path) {
 				switch (view.getId()) {
 				case R.id.left_button:
-					doDelete(path);
+					doDelete(path, type);
 					break;
 
 				default:
@@ -295,12 +290,33 @@ public class FileBrowserFragment extends BaseFragment implements
 		deleteDialog.show();
 	}
 	
-	public void doDelete(String path){
+	/**
+	 * do delete file</br>
+	 * if file is media file(image,audio,video),need delete in db
+	 * @param path
+	 * @param type
+	 */
+	public void doDelete(String path, int type){
 		File file = new File(path);
 		if (!file.exists()) {
 			Log.e(TAG, path + " is not exist");
 		} else {
-			boolean ret = file.delete();
+			boolean ret = true;
+			switch (type) {
+			case FileInfoManager.TYPE_IMAGE:
+				ret =  mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, path);
+				break;
+			case FileInfoManager.TYPE_AUDIO:
+				ret =  mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI, path);
+				break;
+			case FileInfoManager.TYPE_VIDEO:
+				ret =  mFileInfoManager.deleteFileInMediaStore(DreamConstant.VIDEO_URI, path);
+				break;
+			default:
+				//普通文件直接删除，不删除数据库，因为在3.0以前，还没有普通文件的数据哭
+				ret = file.delete();
+				break;
+			}
 			if (!ret) {
 				Log.e(TAG, path + " delete failed");
 			} else {
@@ -316,7 +332,7 @@ public class FileBrowserFragment extends BaseFragment implements
 				top, selectFile));
 	}
 
-	// file path tab manager
+	/**file path tab manager*/
 	protected class TabManager {
 		private List<String> mTabNameList = new ArrayList<String>();
 		protected LinearLayout mTabsHolder = null;

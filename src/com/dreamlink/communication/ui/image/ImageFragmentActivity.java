@@ -15,9 +15,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,13 +83,17 @@ public class ImageFragmentActivity extends FragmentActivity implements
 		registerReceiver(imageReceiver, filter);
 
 		GetImagesTask getImagesTask = new GetImagesTask();
-		getImagesTask.execute("");
+		getImagesTask.execute();
 
 		if (arg0 != null) {
 			mTabHost.setCurrentTabByTag(arg0.getString("picture_tab"));
 		}
 
 		initViews();
+		
+		//register image contentObserver,when image db change,update ui
+		ImageContent imageContent = new ImageContent(new Handler());
+		this.getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, imageContent);
 		Log.d(TAG, "onCreate end");
 	}
 
@@ -174,11 +181,11 @@ public class ImageFragmentActivity extends FragmentActivity implements
 	/**
 	 * get images from the images db
 	 */
-	public class GetImagesTask extends AsyncTask<String, String, Integer> {
+	public class GetImagesTask extends AsyncTask<Void, String, Integer> {
 		private MediaInfoManager mediaScan = new MediaInfoManager(mContext);
 
 		@Override
-		protected Integer doInBackground(String... params) {
+		protected Integer doInBackground(Void... params) {
 			mImageInfos.clear();
 			mCamearLists.clear();
 			mGalleryLists.clear();
@@ -233,5 +240,19 @@ public class ImageFragmentActivity extends FragmentActivity implements
 		super.onDestroy();
 		unregisterReceiver(imageReceiver);
 	}
-
+	
+	//image contentObserver listener
+	class ImageContent extends ContentObserver{
+		public ImageContent(Handler handler) {
+			super(handler);
+			// TODO Auto-generated constructor stub
+		}
+		
+		@Override
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
+			GetImagesTask getImagesTask = new GetImagesTask();
+			getImagesTask.execute();
+		}
+	}
 }

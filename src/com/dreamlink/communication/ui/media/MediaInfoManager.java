@@ -43,11 +43,11 @@ public class MediaInfoManager {
 	public static List<FileInfo> musicList = new ArrayList<FileInfo>();
 
 	// SD卡中的图片保存数据库Uri
-	private Uri imagesUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+	public Uri imagesUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 	// SD卡中的Audio保存数据库Uri
-	private Uri audioUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+	public Uri audioUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 	// SD卡中的Video保存数据库Uri
-	private Uri videoUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+	public Uri videoUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
 	public MediaInfoManager(Context context) {
 		this.context = context;

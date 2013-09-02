@@ -14,8 +14,10 @@ import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +41,21 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 	
 	private Context mContext;
 	private DisplayImageOptions options;
+	
+	class AudioContent extends ContentObserver{
+		public AudioContent(Handler handler) {
+			super(handler);
+			// TODO Auto-generated constructor stub
+		}
+		
+		@Override
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
+			GetAudiosTask getAudiosTask = new GetAudiosTask();
+			getAudiosTask.execute();
+		}
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.d(TAG, "onCreate begin");
@@ -63,6 +80,9 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		
 		GetAudiosTask getAudiosTask = new GetAudiosTask();
 		getAudiosTask.execute();
+		
+		AudioContent audioContent = new AudioContent(new Handler());
+		getActivity().getContentResolver().registerContentObserver(mScan.audioUri, true, audioContent);
 		Log.d(TAG, "onCreate end");
 		return rootView;
 	}

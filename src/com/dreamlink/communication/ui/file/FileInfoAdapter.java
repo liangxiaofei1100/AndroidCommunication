@@ -1,15 +1,11 @@
 package com.dreamlink.communication.ui.file;
 
-import java.util.HashMap;
 import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.ui.AsyncImageLoader;
-import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -30,9 +26,6 @@ public class FileInfoAdapter extends BaseAdapter {
 	
 	private SparseBooleanArray mIsSelected = null;
 	
-	private ImageLoader imageLoader;
-	private DisplayImageOptions options;
-	
 	private AsyncImageLoader bitmapLoader;
 	
 	private boolean flag = true;
@@ -43,24 +36,12 @@ public class FileInfoAdapter extends BaseAdapter {
 	 * @param list
 	 */
 	public FileInfoAdapter(Context context, List<FileInfo> list){
-		new FileInfoAdapter(context, list, null, null);
-	}
-	
-	/**
-	 * use universal ImageLoader
-	 */
-	public FileInfoAdapter(Context context, List<FileInfo> list, ImageLoader loader, DisplayImageOptions options){
 		mInflater = LayoutInflater.from(context);
 		this.mList = list;
 		this.mContext = context;
 		mIsSelected = new SparseBooleanArray();
 		//init checkbox
 		selectAll(false);
-		bitmapLoader = new AsyncImageLoader(context);
-		
-		this.imageLoader = loader;
-		this.options = options;
-		
 		bitmapLoader = new AsyncImageLoader(context);
 	}
 	
