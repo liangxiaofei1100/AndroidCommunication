@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import com.dreamlink.communication.fileshare.FileUtil;
+import com.dreamlink.communication.ui.file.FileUtil;
 
 import android.content.Context;
 import android.os.Environment;

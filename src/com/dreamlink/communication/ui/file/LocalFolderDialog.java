@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
-import com.dreamlink.communication.fileshare.FileListAdapter;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.util.Notice;

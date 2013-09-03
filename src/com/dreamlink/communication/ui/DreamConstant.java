@@ -1,5 +1,6 @@
 package com.dreamlink.communication.ui;
 
+import android.R.integer;
 import android.net.Uri;
 import android.provider.MediaStore;
 
@@ -46,6 +47,10 @@ public class DreamConstant {
 		public static final int STOP_RETN = 104;
 		/**end flag*/
 		public static final int END_FLAG = 105;
+		/**ask for get remote file share service*/
+		public static final int GET_REMOTE_SHARE_SERVICE = 106;
+		/**return for get remote file share service*/
+		public static final int RETURN_REMOTE_SHARE_SERVICE = 107;
 	}
 
 	public static final String MEDIA_AUDIO_ACTION = "intent.media.audio.action";

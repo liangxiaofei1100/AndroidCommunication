@@ -4,27 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
-import com.dreamlink.communication.fileshare.ProgressBarDialog;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +23,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 public class MediaAudioAdapter extends BaseAdapter {
@@ -41,20 +30,15 @@ public class MediaAudioAdapter extends BaseAdapter {
 	private LayoutInflater mInflater = null;
 	private Context mContext;
 	private int current_position = -1;
-	private ImageLoader imageLoader;
-	private DisplayImageOptions options;
 	private AsyncImageLoader bitmapLoader;
 	private FileInfoManager mFileInfoManager = null;
 	private Notice mNotice;
 
-	public MediaAudioAdapter(Context context, List<MediaInfo> data,
-			ImageLoader loader, DisplayImageOptions options) {
+	public MediaAudioAdapter(Context context, List<MediaInfo> data) {
 		mInflater = LayoutInflater.from(context);
 		mList = data;
 
 		mContext = context;
-		imageLoader = loader;
-		this.options = options;
 		// bitmapLoader = new AsyncImageLoader(context);
 
 		mFileInfoManager = new FileInfoManager(context);
@@ -125,7 +109,7 @@ public class MediaAudioAdapter extends BaseAdapter {
 
 		MediaInfo mediaInfo = mList.get(position);
 
-		holder.titleView.setText(mediaInfo.getDisplayName());
+		holder.titleView.setText((position + 1) + "." + mediaInfo.getDisplayName());
 		holder.timeView.setText(mediaInfo.formatTime());
 		holder.artistView.setText(mediaInfo.getArtist());
 		holder.sizeView.setText(mediaInfo.getFormatSize());
@@ -261,7 +245,6 @@ public class MediaAudioAdapter extends BaseAdapter {
 
 		@Override
 		protected Boolean doInBackground(Integer... params) {
-			// TODO Auto-generated method stub
 			del_pos = params[0];
 			String path = mList.get(del_pos).getUrl();
 			boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI,
@@ -298,7 +281,6 @@ public class MediaAudioAdapter extends BaseAdapter {
 				mNotice.showToast(R.string.delete_fail);
 			}
 		}
-
 	}
 
 }

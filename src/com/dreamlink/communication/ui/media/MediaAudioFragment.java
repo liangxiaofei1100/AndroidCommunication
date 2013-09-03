@@ -8,9 +8,6 @@ import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.util.Log;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,16 +15,11 @@ import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView.OnScrollListener;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.PopupWindow;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
@@ -40,7 +32,6 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 	private ProgressBar mScanBar;
 	
 	private Context mContext;
-	private DisplayImageOptions options;
 	
 	class AudioContent extends ContentObserver{
 		public AudioContent(Handler handler) {
@@ -51,6 +42,7 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		@Override
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
+			//when audio db changed,refresh list
 			GetAudiosTask getAudiosTask = new GetAudiosTask();
 			getAudiosTask.execute();
 		}
@@ -62,18 +54,8 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		View rootView = inflater.inflate(R.layout.ui_media_audio, container, false);
 		mContext = getActivity();
 		
-		options = new DisplayImageOptions.Builder()
-		.showStubImage(R.drawable.default_audio_iv)
-		.showImageForEmptyUri(R.drawable.default_audio_iv)
-		.showImageOnFail(R.drawable.default_audio_iv)
-		.cacheInMemory(DreamConstant.CACHE)
-		.cacheOnDisc(DreamConstant.CACHE)
-		.displayer(new RoundedBitmapDisplayer(20))
-		.build();
-		
 		mListView = (ListView) rootView.findViewById(R.id.audio_listview);
 		mListView.setEmptyView( rootView.findViewById(R.id.audio_list_empty));
-//		mListView.setOnItemClickListener(this);
 		mScanBar = (ProgressBar) rootView.findViewById(R.id.audio_progressbar);
 		
 		mScan = new MediaInfoManager(mContext);
@@ -105,7 +87,7 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		protected void onPostExecute(String result) {
 			super.onPostExecute(result);
 			mScanBar.setVisibility(View.GONE);
-			mAdapter = new MediaAudioAdapter(mContext, mLists, imageLoader, options);
+			mAdapter = new MediaAudioAdapter(mContext, mLists);
 			mListView.setAdapter(mAdapter);
 			
 			Intent intent = new Intent(DreamConstant.MEDIA_AUDIO_ACTION);

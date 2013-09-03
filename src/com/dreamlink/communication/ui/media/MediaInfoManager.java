@@ -23,7 +23,7 @@ import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
+import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.image.ImageInfo;
 import com.dreamlink.communication.util.Log;
 

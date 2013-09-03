@@ -3,7 +3,6 @@ package com.dreamlink.communication.ui.file;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
 
@@ -30,11 +29,6 @@ public class FileInfoAdapter extends BaseAdapter {
 	
 	private boolean flag = true;
 	
-	/**
-	 * if you do not use universal ImageLoader
-	 * @param context
-	 * @param list
-	 */
 	public FileInfoAdapter(Context context, List<FileInfo> list){
 		mInflater = LayoutInflater.from(context);
 		this.mList = list;

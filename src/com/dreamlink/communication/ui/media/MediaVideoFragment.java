@@ -8,21 +8,15 @@ import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.app.AppNormalFragment;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
-import com.dreamlink.communication.ui.dialog.FileInfoDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.image.ImageFragmentActivity;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
-import android.R.bool;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -123,7 +117,6 @@ public class MediaVideoFragment extends Fragment implements OnItemLongClickListe
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
 		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 		int position = menuInfo.position;

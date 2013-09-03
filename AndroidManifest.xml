@@ -87,7 +87,7 @@
             android:screenOrientation="portrait" >
         </activity>
 
-        <service android:name="com.dreamlink.communication.fileshare.FileShareServerService" >
+        <service android:name="com.dreamlink.communication.ui.file.RemoteShareService" >
         </service>
 
         <activity
@@ -173,6 +173,9 @@
         <activity 
             android:name="com.dreamlink.communication.ui.file.RemoteShareActivity"
             >
+            <meta-data
+                android:name="app_id"
+                android:value="112" />
         </activity>
         <activity 
             android:name="com.dreamlink.communication.ui.ConnectFriendActivity"
@@ -201,7 +204,7 @@
             android:theme="@style/MyDialogStyle" >
         </activity>
         <activity
-            android:name="com.dreamlink.communication.ui.file.FileShareServer"
+            android:name="com.dreamlink.communication.fileshare.FileShareServer"
             android:screenOrientation="portrait" >
         </activity>
         <activity

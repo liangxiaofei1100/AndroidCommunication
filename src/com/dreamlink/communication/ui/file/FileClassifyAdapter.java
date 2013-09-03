@@ -23,7 +23,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
