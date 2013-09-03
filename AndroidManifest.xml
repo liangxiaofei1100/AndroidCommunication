@@ -199,6 +199,10 @@
             android:theme="@style/MyDialogStyle" >
         </activity>
         <activity
+            android:name="com.dreamlink.communication.ui.history.HistoryActivity"
+            >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.ui.dialog.FileTransferActivity"
             android:screenOrientation="portrait"
             android:theme="@style/MyDialogStyle" >

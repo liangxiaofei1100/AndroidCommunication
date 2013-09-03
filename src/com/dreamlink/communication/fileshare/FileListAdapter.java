@@ -70,7 +70,7 @@ public class FileListAdapter extends BaseAdapter {
 		String date = mData.get(position).getFormateDate();
 		
 		if (mData.get(position).isDir) {
-			holder.iconView.setImageResource(R.drawable.folder);
+			holder.iconView.setImageResource(R.drawable.icon_folder);
 			holder.fileInfoText.setText(date);
 		}else {
 			holder.iconView.setImageResource(R.drawable.file);
