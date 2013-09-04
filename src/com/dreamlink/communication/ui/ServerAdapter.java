@@ -62,7 +62,7 @@ public class ServerAdapter extends BaseAdapter {
 			holder = (ViewHolder) view.getTag();
 		}
 		
-		holder.userIcon.setImageResource(R.drawable.dm_icon_default_user);
+		holder.userIcon.setImageResource(R.drawable.user_icon_default);
 		holder.userName.setText(serverData.get(position).get("name") + "");
 		holder.tipView.setText("点击加入");
 		

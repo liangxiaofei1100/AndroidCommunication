@@ -37,6 +37,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -63,17 +66,14 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	private LinearLayout mLoadingLayout;
 	//show tip msg
 	private LinearLayout mUnconnectLayout = null;
-	private LinearLayout mServerOrClientLayout = null;
 	private Button mAccessBtn;
-	private Button mServerBtn;
-	private Button mClientBtn;
 	private Button mStopServerBtn;
 	//show remote share server list
 	private RelativeLayout mServerListLayout;
-	private Button mCreateServerBtn;
+	private Button mCreateServerBtn, mSearchServerBtn;
 	private ListView mServerListView;
 	private RemoteShareAdapter mShareAdapter = null;
-	private List<User> mServerNameList = new ArrayList<User>();
+	private List<User> mRemoteShareList = new ArrayList<User>();
 	//show remote share server list
 	
 	private Context mContext = null;
@@ -109,10 +109,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	
 	/**file transfer progress dialog*/
 	//use custom progressbar dialog
-//	private ProgressBarDialog mFileTransferBarDialog = null;
 	private FileTransferDialog mFileTransferDialog = null;
 	
-	//test var
 	private long start_time = 0;
 	//record time to jisuan transfer speed
 	private long now_time = 0;
@@ -122,7 +120,10 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	private static final int LOCAL_REQUEST_CODE = 0x001;
 	private static final int FILE_TRANSFER_REQUEST_CODE = 0x002;
 	
-	private Handler uihandler = new Handler(){
+	/**current connect user*/
+	private User mCurrentConnectUser;
+	
+	private Handler uiHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case UPDATE_UI:
@@ -133,7 +134,6 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 				break;
 			case USER_DISCONNECTED:
 				mUnconnectLayout.setVisibility(View.VISIBLE);
-				mServerOrClientLayout.setVisibility(View.INVISIBLE);
 				mServerListLayout.setVisibility(View.INVISIBLE);
 				mListLayout.setVisibility(View.INVISIBLE);
 				mStopServerBtn.setVisibility(View.INVISIBLE);
@@ -155,10 +155,10 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		super.onCreate(arg0);
 		Log.d(TAG, "onCreate begin");
 		setContentView(R.layout.ui_remote_share);
+		setTitle("未连接");
 		
 		mContext = this;
-		mSocketMgr = SocketCommunicationManager
-				.getInstance(mContext);
+		mSocketMgr = SocketCommunicationManager.getInstance(mContext);
 //		mAppId = AppUtil.getAppID(getParent());
 		mAppId = AppUtil.getAppID(this);
 		
@@ -171,47 +171,24 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		mListLayout = (RelativeLayout) findViewById(R.id.list_layout);
 		mLoadingLayout = (LinearLayout) findViewById(R.id.loading_layout);
 		mUnconnectLayout = (LinearLayout) findViewById(R.id.unconnect_layout);
-		mServerOrClientLayout = (LinearLayout) findViewById(R.id.server_or_client);
 		mAccessBtn = (Button) findViewById(R.id.access_button);
-		mServerBtn = (Button) findViewById(R.id.server_button);
-		mClientBtn = (Button) findViewById(R.id.client_button);
 		mStopServerBtn = (Button) findViewById(R.id.stop_server_button);
-		mServerBtn.setOnClickListener(this);
-		mClientBtn.setOnClickListener(this);
 		mAccessBtn.setOnClickListener(this);
 		mStopServerBtn.setOnClickListener(this);
 		
 		mServerListLayout = (RelativeLayout) findViewById(R.id.remote_share_server_list);
 		mCreateServerBtn = (Button) findViewById(R.id.create_share);
 		mCreateServerBtn.setOnClickListener(this);
+		mSearchServerBtn = (Button) findViewById(R.id.search_share);
+		mSearchServerBtn.setOnClickListener(this);
 		mServerListView = (ListView) findViewById(R.id.server_listview);
 		mServerListView.setOnItemClickListener(this);
-		mShareAdapter = new RemoteShareAdapter(mContext, mServerNameList);
+		mShareAdapter = new RemoteShareAdapter(mContext, mRemoteShareList);
 		mServerListView.setAdapter(mShareAdapter);
 		
 		mRootViewBtn = (ImageButton) findViewById(R.id.root_view);
 		mUpDirBtn = (ImageButton) findViewById(R.id.up_view);
 		mRefreshBtn = (ImageButton) findViewById(R.id.refresh_view);
-		//just for test=================
-		mUpDirBtn.setOnLongClickListener(new OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				mUnconnectLayout.setVisibility(View.INVISIBLE);
-				mListLayout.setVisibility(View.INVISIBLE);
-				mServerOrClientLayout.setVisibility(View.INVISIBLE);
-				mStopServerBtn.setVisibility(View.INVISIBLE);
-				mServerListLayout.setVisibility(View.INVISIBLE);
-				return true;
-			}
-		});
-		mRefreshBtn.setOnLongClickListener(new OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				currentCopyFile = null;
-				return true;
-			}
-		});
-		//just for test=================
 		
 		mRootViewBtn.setOnClickListener(this);
 		mUpDirBtn.setOnClickListener(this);
@@ -221,7 +198,6 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		if (mSocketMgr.getCommunications().isEmpty()) {
 			mUnconnectLayout.setVisibility(View.VISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
-			mServerOrClientLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.INVISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
 		} else {
@@ -229,16 +205,12 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			
 			mUnconnectLayout.setVisibility(View.INVISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
-			mServerOrClientLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.VISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
 
 			mLoadingLayout.setVisibility(View.VISIBLE);
 
-			// tell server that i want look u sdcard files
-//			String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
-			String cmdMsg = Cmd.GET_REMOTE_SHARE_SERVICE + "";
-			sendCommandMsg(cmdMsg);
+			getShareServerList();
 		}
 		
 		mAdapter = new FileListAdapter(mContext, mList);
@@ -251,16 +223,29 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	}
 	
 	/**
-	 * send command to remote connected server
-	 * @param cmd command
-	 * @param path file path
+	 * send command to current connect remote share device
 	 */
-	public void sendCommandMsg(String cmdMsg){
-		Log.d(TAG, "sendCommandMsg=>" + cmdMsg);
+	public void sendMsgToSingle(String cmdMsg){
+		Log.d(TAG, "sendMsgToSingle=>" + cmdMsg);
 		if ("".equals(cmdMsg)) {
 			return;
 		}
-		// TODO need to implement appID.
+		if (null == mCurrentConnectUser) {
+			Log.e(TAG, "current connect user is null");
+			mNotice.showToast("User is null");
+		}else {
+			mSocketMgr.sendMessageToSingle(cmdMsg.getBytes(), mCurrentConnectUser, mAppId);
+		}
+	}
+	
+	/**
+	 * send command msg to all connected devices
+	 */
+	public void sendMsgToAll(String cmdMsg){
+		Log.d(TAG, "sendMsgToAll=>" + cmdMsg);
+		if ("".equals(cmdMsg)) {
+			return;
+		}
 		mSocketMgr.sendMessageToAll(cmdMsg.getBytes(), mAppId);
 	}
 
@@ -270,11 +255,11 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		case R.id.server_listview:
 			String cmdMsg =  Cmd.LS + Command.ROOT_PATH;
 			mLoadingLayout.setVisibility(View.VISIBLE);
-//			sendCommandMsg(cmdMsg);
-			mSocketMgr.sendMessageToSingle(cmdMsg.getBytes(), mServerNameList.get(position), mAppId);
+			mCurrentConnectUser = mRemoteShareList.get(position);
+			setTitle("已连接到" + mCurrentConnectUser.getUserName());
+			sendMsgToSingle(cmdMsg);
 			
 			mUnconnectLayout.setVisibility(View.INVISIBLE);
-			mServerOrClientLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.INVISIBLE);
 			mListLayout.setVisibility(View.VISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
@@ -293,7 +278,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 				//use int command
 				msg = Cmd.LS + fileInfo.filePath;
 				mLoadingLayout.setVisibility(View.VISIBLE);
-				sendCommandMsg(msg);
+				sendMsgToSingle(msg);
 			}
 			break;
 		}
@@ -339,58 +324,30 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					.create().show();
 			}else {
 				mUnconnectLayout.setVisibility(View.INVISIBLE);
-				mServerOrClientLayout.setVisibility(View.INVISIBLE);
 				mServerListLayout.setVisibility(View.VISIBLE);
 				mListLayout.setVisibility(View.INVISIBLE);
 				mStopServerBtn.setVisibility(View.INVISIBLE);
 			}
 			break;
 			
-		case R.id.server_button:
-			Intent intent = new Intent(mContext, RemoteShareService.class);
-			intent.putExtra("app_id", mAppId);
-			startService(intent);
-//			Intent intent = new Intent(mContext, FileShareServer.class);
-//			intent.putExtra("app_id", mAppId);
-//			startActivity(intent);
-			
-			mUnconnectLayout.setVisibility(View.INVISIBLE);
-			mServerOrClientLayout.setVisibility(View.INVISIBLE);
-			mServerListLayout.setVisibility(View.INVISIBLE);
-			mListLayout.setVisibility(View.INVISIBLE);
-			mStopServerBtn.setVisibility(View.VISIBLE);
-			break;
 		case R.id.create_share:
 			Intent intent2 = new Intent(mContext, RemoteShareService.class);
 			intent2.putExtra("app_id", mAppId);
 			startService(intent2);
 			
 			mUnconnectLayout.setVisibility(View.INVISIBLE);
-			mServerOrClientLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.INVISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
 			mStopServerBtn.setVisibility(View.VISIBLE);
 			break;
-		case R.id.client_button:
-			mSocketMgr.registerOnCommunicationListenerExternal(this, mAppId);
-			
-//			String cmdMsg = Command.LS + Command.AITE + Command.ROOT_PATH;
-			String cmdMsg =  Cmd.LS + Command.ROOT_PATH;
-			mLoadingLayout.setVisibility(View.VISIBLE);
-			sendCommandMsg(cmdMsg);
-			
-			mUnconnectLayout.setVisibility(View.INVISIBLE);
-			mServerOrClientLayout.setVisibility(View.INVISIBLE);
-			mServerListLayout.setVisibility(View.INVISIBLE);
-			mListLayout.setVisibility(View.VISIBLE);
-			mStopServerBtn.setVisibility(View.INVISIBLE);
+		case R.id.search_share:
+			getShareServerList();
 			break;
 		case R.id.stop_server_button:
 			Intent stopIntent = new Intent(mContext, RemoteShareService.class);
 			stopService(stopIntent);
 			
 			mUnconnectLayout.setVisibility(View.INVISIBLE);
-			mServerOrClientLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.VISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
@@ -400,14 +357,14 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 //			String cmd = Command.LS + Command.AITE + Command.ROOT_PATH;
 			String cmd = Cmd.LS + Command.ROOT_PATH;
 			mLoadingLayout.setVisibility(View.VISIBLE);
-			sendCommandMsg(cmd);
+			sendMsgToSingle(cmd);
 			break;
 		case R.id.up_view:
 			if (!"".equals(parentPath)) {
 //				String msg = Command.LS + Command.AITE + parentPath;
 				String msg = Cmd.LS + parentPath;
 				mLoadingLayout.setVisibility(View.VISIBLE);
-				sendCommandMsg(msg);
+				sendMsgToSingle(msg);
 			}
 			break;
 		case R.id.refresh_view:
@@ -415,7 +372,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 //				String msg = Command.LS + Command.AITE + currentPath;
 				String msg = Cmd.LS + currentPath;
 				mLoadingLayout.setVisibility(View.VISIBLE);
-				sendCommandMsg(msg);
+				sendMsgToSingle(msg);
 			}
 			break;
 
@@ -433,6 +390,22 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	@Override
 	public void onReceiveMessage(byte[] msg, User sendUser) throws RemoteException {
 		Log.d(TAG, "onReceiveMessage:" + new String(msg)  + ",sendUser:" + sendUser.getUserName());
+		if (null == mCurrentConnectUser) {
+			// 表示还没有连接远程共享设备,这时候收到的应该是更新共享列表的消息，其他的不用理会
+			int cmd = -1;
+			try {
+				cmd = Integer.parseInt(new String(msg).substring(0, 3));
+				if (Cmd.RETURN_REMOTE_SHARE_SERVICE == cmd) {
+					mRemoteShareList.add(sendUser);
+					uiHandler.sendMessage(uiHandler.obtainMessage(UPDATE_SERVER_LIST));
+				}
+			} catch (NumberFormatException e) {
+			}
+			return;
+		}else if (mCurrentConnectUser.getUserID() != sendUser.getUserID()) {
+			//不是和我相连的设备，我不想接受你的消息，没空啊
+			return;
+		}
 		
 		if (currentCopyFile != null) {
 			Log.d(TAG, "copying:" + currentCopyFile.fileName);
@@ -456,7 +429,6 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					Log.e(TAG, "fos is null");
 				}
 				now_time = System.currentTimeMillis();
-				Log.d(TAG, "out copy time:"+ now_time);
 			} catch (Exception e) {
 				Log.e(TAG, "Receive error:" + e.toString());
 				e.printStackTrace();
@@ -477,18 +449,6 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			logFile.writeLog(msg);
 //			logFile.writeLog("\n=============\n");
 			String ret_msg = new String(msg);
-			
-			int cmd = -1;
-			try {
-				cmd = Integer.parseInt(ret_msg.substring(0, 3));
-				if (Cmd.RETURN_REMOTE_SHARE_SERVICE == cmd) {
-					mServerNameList.add(sendUser);
-					uihandler.sendMessage(uihandler.obtainMessage(UPDATE_SERVER_LIST));
-					return;
-				}
-			} catch (NumberFormatException e) {
-//				return;
-			}
 //			logFile.writeLog(ret_msg);
 			
 			Log.i(TAG, "onReceiveMessage.ret_msg" + ret_msg);
@@ -550,7 +510,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					// clear 0
 					mFileMsgList.clear();
 
-					uihandler.sendMessage(uihandler.obtainMessage(UPDATE_UI));
+					uiHandler.sendMessage(uiHandler.obtainMessage(UPDATE_UI));
 				}else {
 					Log.e(TAG, "why i here:" + mFileMsgList.get(0));
 				}
@@ -582,7 +542,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			mSpeedTimer.cancel();
 		}
 		doClear();
-		uihandler.sendMessage(uihandler.obtainMessage(USER_DISCONNECTED));
+		uiHandler.sendMessage(uiHandler.obtainMessage(USER_DISCONNECTED));
 	}
 	
 	@Override
@@ -679,7 +639,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					case FileTransferDialog.STATE_COPYING:
 						//copying,click this can stop file transfer
 						String copyCmd = Cmd.STOP_SEND_FILE + currentCopyFile.filePath;
-						sendCommandMsg(copyCmd);
+						sendMsgToSingle(copyCmd);
 						if (mLocalFile.exists()) {
 							mLocalFile.delete();
 						}
@@ -696,6 +656,9 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					break;
 				case R.id.right_button:
 					switch (state) {
+					case FileTransferDialog.STATE_COPY_OK:
+						mNotice.showToast("saved to " + mLocalFile.getPath());
+						break;
 					case FileTransferDialog.STATE_COPYING:
 						//copying ,click this hide dialog .and show in notificaion
 						mNotice.showToast("Hide");
@@ -747,8 +710,14 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			//send msg to server that i want this file
 //			String copyCmd = Command.COPY + Command.AITE + currentCopyFile.filePath;
 			String copyCmd = Cmd.COPY + currentCopyFile.filePath;
-			sendCommandMsg(copyCmd);
+			sendMsgToSingle(copyCmd);
 		}
+	}
+	
+	private void getShareServerList(){
+		mRemoteShareList.clear();
+		String search_cmd = Cmd.GET_REMOTE_SHARE_SERVICE + "";
+		sendMsgToAll(search_cmd);
 	}
 	
 	private void doClear(){
@@ -769,13 +738,65 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		now_time = 0;
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.share, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if (null == mCurrentConnectUser) {
+			menu.findItem(R.id.menu_disconnect).setEnabled(false);
+		}else {
+			menu.findItem(R.id.menu_disconnect).setEnabled(true);
+		}
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_disconnect:
+			//断开连接
+			mCurrentConnectUser = null;
+			
+			setTitle("未连接");
+			
+			mUnconnectLayout.setVisibility(View.INVISIBLE);
+			mListLayout.setVisibility(View.INVISIBLE);
+			mServerListLayout.setVisibility(View.VISIBLE);
+			mStopServerBtn.setVisibility(View.INVISIBLE);
+
+			mLoadingLayout.setVisibility(View.VISIBLE);
+
+			getShareServerList();
+			break;
+
+		default:
+			break;
+		}
+		return true;
+	}
+	
+	private void updateUI(int status){
+		mUnconnectLayout.setVisibility(View.INVISIBLE);
+		mServerListLayout.setVisibility(View.INVISIBLE);
+		mListLayout.setVisibility(View.INVISIBLE);
+		mStopServerBtn.setVisibility(View.VISIBLE);
+	}
 	
 	@Override
 	public void onBackPressed() {
 		Log.d(TAG, "onBackPressed");
-		Intent intent = new Intent(RemoteShareActivity.this, MainUIFrame.class);
-		intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
-		startActivity(intent);
+		if (null == mCurrentConnectUser) {
+			this.finish();
+		}else {
+			Intent intent = new Intent(RemoteShareActivity.this, MainUIFrame.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
+			startActivity(intent);
+		}
 	}
 	
 }

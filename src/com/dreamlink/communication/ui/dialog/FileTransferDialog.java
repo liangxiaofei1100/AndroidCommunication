@@ -212,6 +212,7 @@ private static final NumberFormat nf = NumberFormat.getPercentInstance();
 				mListener.onClick(v, STATE_COPYING);
 				break;
 			case STATE_COPY_OK:
+				mListener.onClick(v, STATE_COPY_OK);
 				dismiss();
 				break;
 			case STATE_COPY_FAIL:

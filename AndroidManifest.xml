@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="9"
-        android:targetSdkVersion="17" />
+        android:targetSdkVersion="11" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -42,7 +42,7 @@
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="app_id"
-                android:value="112" />
+                android:value="113" />
         </activity>
         <activity
             android:name="com.dreamlink.communication.MainActivity"

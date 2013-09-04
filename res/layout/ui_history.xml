@@ -2,13 +2,63 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/history_bg_default"
     android:orientation="vertical" >
+    
+    <RelativeLayout 
+         android:id="@+id/test"
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         >
+         <Button 
+             android:id="@+id/btn_test1"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_alignParentLeft="true"
+             android:text="add"
+             />
+         
+         <Button 
+             android:id="@+id/btn_test2"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_alignParentRight="true"
+             android:text="add"
+             />
+     </RelativeLayout>
 
     <TextView 
-        
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="这里显示历史，显示发送过程"
+        android:gravity="center_horizontal"
+        android:text="传输记录"
         />
+    
+    <View 
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@color/bright_blue"
+        />
+    
+     <TextView 
+         android:id="@+id/tv_storage"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="存储空间:共 13G, 2G可用"
+        />
+     
+     <View 
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@color/bright_blue"
+        />
+     
+     <ListView 
+         android:id="@+id/lv_history_msg"
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         android:divider="@null"
+         android:focusable="false"
+         ></ListView>
 
 </LinearLayout>
