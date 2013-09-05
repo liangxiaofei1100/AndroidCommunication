@@ -14,6 +14,7 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
 import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.ui.BaseFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
@@ -31,10 +32,11 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.view.KeyEvent;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class HistoryActivity extends Activity implements OnFileTransportListener {
+public class HistoryActivity extends BaseFragmentActivity implements OnFileTransportListener {
 	private static final String TAG = "HistoryActivity";
 	private int mAppId = -1;
 	private Context mContext;
@@ -147,6 +149,7 @@ public class HistoryActivity extends Activity implements OnFileTransportListener
 				DreamUtil.getFormatSize(Environment.getExternalStorageDirectory().getFreeSpace()));
 		mStorageTV.setText(space);
 		mHistoryMsgLV = (ListView) findViewById(R.id.lv_history_msg);
+		mHistoryMsgLV.setEmptyView(findViewById(R.id.tv_empty));
 		//test=================
 //		HistoryInfo historyInfo = null;
 //		for (int i = 0; i < 10; i++) {
@@ -188,4 +191,5 @@ public class HistoryActivity extends Activity implements OnFileTransportListener
 		// TODO Auto-generated method stub
 		
 	}
+	
 }

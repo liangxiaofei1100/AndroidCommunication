@@ -1,6 +1,7 @@
 package com.dreamlink.communication.ui.app;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.BaseFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.util.Log;
 
@@ -19,7 +20,7 @@ import android.widget.TextView;
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TabHost.TabContentFactory;
 
-public class AppFragmentActivity extends FragmentActivity implements TabContentFactory, OnTabChangeListener{
+public class AppFragmentActivity extends BaseFragmentActivity implements TabContentFactory, OnTabChangeListener{
 	private static final String TAG = "AppFragmentActivity";
 	
 	private TabHost mTabHost;
@@ -119,13 +120,6 @@ public class AppFragmentActivity extends FragmentActivity implements TabContentF
 	public View createTabContent(String tag) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-	
-	@Override
-	public void onBackPressed() {
-		Log.d(TAG, "onBackPressed");
-		Intent intent = new Intent(DreamConstant.EXIT_ACTION);
-		sendBroadcast(intent);
 	}
 	
 	@Override
