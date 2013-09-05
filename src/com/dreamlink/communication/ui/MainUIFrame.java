@@ -35,6 +35,7 @@ import com.dreamlink.communication.ui.media.MediaFragmentActivity;
 import com.dreamlink.communication.ui.service.FileManagerService;
 import com.dreamlink.communication.ui.service.FileManagerService.ServiceBinder;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 import android.app.ActivityGroup;
@@ -799,6 +800,10 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 				public void onClick(DialogInterface dialog, int which) {
 					mNotificationMgr.cancelNotification();
 					mIsExit = true;
+					// Disable wifi AP.
+					NetWorkUtil.setWifiAPEnabled(mContext, null, false);
+					// Clear wifi connect history.
+					NetWorkUtil.clearWifiConnectHistory(mContext);
 					MainUIFrame.this.finish();
 				}
 			})

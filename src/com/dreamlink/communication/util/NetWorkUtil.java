@@ -5,8 +5,10 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.List;
 
 import com.dreamlink.communication.search.Search;
+import com.dreamlink.communication.search.WiFiNameEncryption;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -118,7 +120,8 @@ public class NetWorkUtil {
 									|| intf.getDisplayName().contains("eth") || intf
 									.getDisplayName().contains("ap"))) {
 						return inetAddress;
-					}else if(inetAddress.getHostAddress().equals("192.168.43.1")){
+					} else if (inetAddress.getHostAddress().equals(
+							"192.168.43.1")) {
 						return inetAddress;
 					}
 				}
@@ -164,10 +167,15 @@ public class NetWorkUtil {
 	}
 
 	/**
-	 * Enable WiFi AP or close.
+	 * Enable WiFi AP or close
 	 * 
+	 * @param context
+	 * @param apName
+	 *            If enable, apName is needed. If disable, apName is not needed,
+	 *            just set null.
 	 * @param enabled
 	 *            ? enable AP : close AP.
+	 * @return
 	 */
 	public static boolean setWifiAPEnabled(Context context, String apName,
 			boolean enabled) {
@@ -207,6 +215,26 @@ public class NetWorkUtil {
 		} catch (Exception e) {
 			Log.e(TAG, "Can not set WiFi AP state, " + e);
 			return false;
+		}
+	}
+
+	public static void clearWifiConnectHistory(Context context) {
+		Log.d(TAG, "clearWifiConnectHistory");
+		WifiManager wifiManager = (WifiManager) context
+				.getSystemService(Context.WIFI_SERVICE);
+
+		List<WifiConfiguration> configurations = wifiManager
+				.getConfiguredNetworks();
+		if (configurations == null) {
+			return;
+		}
+		for (WifiConfiguration configuration : configurations) {
+			// SSID format is "ABC@PKQDJTTRJOATQMVX", so remove the "".
+			String SSID = configuration.SSID.substring(1,
+					configuration.SSID.length() - 1);
+			if (WiFiNameEncryption.checkWiFiName(SSID)) {
+				wifiManager.removeNetwork(configuration.networkId);
+			}
 		}
 	}
 }
