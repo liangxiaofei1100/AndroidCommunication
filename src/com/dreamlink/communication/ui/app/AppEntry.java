@@ -3,6 +3,7 @@ package com.dreamlink.communication.ui.app;
 import java.io.File;
 
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.util.Log;
 
 import android.content.Context;
@@ -11,10 +12,12 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class AppEntry {
+public class AppEntry implements Parcelable{
 	private  ApplicationInfo mInfo;
-	private final File mApkFile;
+	private File mApkFile;
 	/**App name*/
 	private String mLabel;
 	/**App Icon*/
@@ -33,6 +36,10 @@ public class AppEntry {
 	private Context context;
 	private PackageManager pm;
 	private Intent startIntent;
+	
+	private AppEntry(Parcel in){
+		readFromParcel(in);
+	}
 	
 	public AppEntry(Context context){
 		this.context = context;
@@ -153,6 +160,37 @@ public class AppEntry {
 	public String getDate(){
 		long date = mApkFile.lastModified();
 		return DreamUtil.getFormatDate(date);
+	}
+	
+	public static final Parcelable.Creator<AppEntry> CREATOR  = new Parcelable.Creator<AppEntry>() {
+
+		@Override
+		public AppEntry createFromParcel(Parcel source) {
+			return new AppEntry(source);
+		}
+
+		@Override
+		public AppEntry[] newArray(int size) {
+			return new AppEntry[size];
+		}
+	};
+
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		
+	}
+	
+	public void readFromParcel(Parcel in){
+//		isDir = in.readInt() == 1 ? true : false;
+//		fileName = in.readString();
+//		fileSize = in.readDouble();
+//		fileDate = in.readLong();
 	}
 	
 }

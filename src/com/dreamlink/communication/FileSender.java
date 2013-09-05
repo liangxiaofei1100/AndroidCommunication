@@ -131,15 +131,15 @@ public class FileSender {
 				long sentBytes = data.getLong(KEY_SENT_BYTES);
 				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
 				if (mListener != null) {
-					mListener.onProgress(sentBytes, totalBytes);
+					mListener.onSendProgress(sentBytes, totalBytes);
 				}
 				break;
 			case MSG_FINISH:
 				if (mListener != null) {
 					if (msg.arg1 == FINISH_RESULT_SUCCESS) {
-						mListener.onFinished(true);
+						mListener.onSendFinished(true);
 					} else {
-						mListener.onFinished(false);
+						mListener.onSendFinished(false);
 					}
 				}
 
@@ -218,13 +218,13 @@ public class FileSender {
 		 * @param sentBytes
 		 * @param totalBytes
 		 */
-		void onProgress(long sentBytes, long totalBytes);
+		void onSendProgress(long sentBytes, long totalBytes);
 
 		/**
 		 * The file is sent.
 		 * 
 		 * @param success
 		 */
-		void onFinished(boolean success);
+		void onSendFinished(boolean success);
 	}
 }

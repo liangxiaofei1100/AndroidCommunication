@@ -3,7 +3,7 @@ package com.dreamlink.communication.protocol;
 import java.io.File;
 import java.io.Serializable;
 
-public class FileInfo implements Serializable {
+public class FileTransferInfo implements Serializable {
 	/**
 	 * 
 	 */
@@ -11,7 +11,7 @@ public class FileInfo implements Serializable {
 	public String mFileName;
 	public long mFileSize;
 
-	public FileInfo(File file) {
+	public FileTransferInfo(File file) {
 		mFileName = file.getName();
 		mFileSize = file.length();
 	}

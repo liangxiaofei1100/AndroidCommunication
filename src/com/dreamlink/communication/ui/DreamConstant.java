@@ -32,6 +32,9 @@ public class DreamConstant {
 		public static final String IS_FIRST_START = "is_first_start";
 		
 		public static final String COPY_PATH = "copy_path";
+		
+		public static final String SEND_FILE = "send_file";
+		public static final String RECEIVE_FILE = "receive_file";
 	}
 	
 	public static class Cmd{
@@ -51,11 +54,15 @@ public class DreamConstant {
 		public static final int GET_REMOTE_SHARE_SERVICE = 106;
 		/**return for get remote file share service*/
 		public static final int RETURN_REMOTE_SHARE_SERVICE = 107;
+		/**send file command*/
+		public static final int SEND_FILE = 108;
 	}
 
 	public static final String MEDIA_AUDIO_ACTION = "intent.media.audio.action";
 	public static final String MEDIA_VIDEO_ACTION = "intent.media.video.action";
 	public static final String SERVER_CREATED_ACTION = "com.dreamlink.communication.server.created";
+	public static final String SEND_FILE_ACTION = "com.dreamlink.communication.sendfile";
+	public static final String RECEIVE_FILE_ACTION = "com.dreamlink.communication.receivefile";
 
 	public static final String FILE_EX = "file://";
 	public static final String ENTER = "\n";

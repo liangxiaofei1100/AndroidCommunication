@@ -10,7 +10,6 @@ import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
@@ -210,7 +209,7 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 			Log.e(TAG, path + " delete failed");
 		}else {
 			mList.remove(position);
-			mAdapter.notifyDataSetChanged();
+//			mAdapter.notifyDataSetChanged();
 		}
 		
 		Intent intent = new Intent(ImageFragmentActivity.PICTURE_ACTION);

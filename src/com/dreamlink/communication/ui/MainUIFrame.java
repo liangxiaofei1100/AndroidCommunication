@@ -36,6 +36,7 @@ import com.dreamlink.communication.ui.service.FileManagerService;
 import com.dreamlink.communication.ui.service.FileManagerService.ServiceBinder;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
+import com.readystatesoftware.viewbadger.BadgeView;
 
 import android.app.ActivityGroup;
 import android.app.AlertDialog;
@@ -87,6 +88,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 
 	//Tab button in buttom
 	private ImageView mAppBtn, mPicBtn, mMediaBtn, mFileBtn, mHistoryBtn, mAnimImg;
+	/**tab badge*/
+	private BadgeView mAppBadge,mPicBadge,mMediaBadge,mFileBadge,mHistoryBadge;
 	/**navgation linearlayout*/
 	private LinearLayout mAppLayout,mPictureLayout,mMediaLayout,mFileLayout,mShareLayout;
 
@@ -380,10 +383,15 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	private void initTab() {
 		// four modules,and a animation image
 		mAppBtn = (ImageView) findViewById(R.id.img_app);
+		mAppBadge = new BadgeView(mContext, mAppBtn);
 		mPicBtn = (ImageView) findViewById(R.id.img_pictures);
+		mPicBadge = new BadgeView(mContext, mPicBtn);
 		mMediaBtn = (ImageView) findViewById(R.id.img_media);
+		mMediaBadge = new BadgeView(mContext, mMediaBtn);
 		mFileBtn = (ImageView) findViewById(R.id.img_file);
+		mFileBadge = new BadgeView(mContext, mFileBtn);
 		mHistoryBtn = (ImageView) findViewById(R.id.img_history);
+		mHistoryBadge = new BadgeView(mContext, mHistoryBtn);
 		mAnimImg = (ImageView) findViewById(R.id.img_tab_now);
 
 		mAppLayout = (LinearLayout) findViewById(R.id.app_layout);
@@ -789,8 +797,6 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	}
 	
 	public void showExitDialog(){
-//		Intent intent = new Intent(mContext, ExitActivity.class);
-//		startActivity(intent);
 		new AlertDialog.Builder(mContext)
 			.setTitle(R.string.exit_app)
 			.setMessage(R.string.confirm_exit)

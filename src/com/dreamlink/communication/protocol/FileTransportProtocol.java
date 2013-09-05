@@ -7,7 +7,7 @@ import com.dreamlink.communication.util.ArrayUtil;
 public class FileTransportProtocol {
 
 	public static byte[] encodeSendFile(int sendUserID, int receiveUserID,
-			int appID, byte[] inetAddressData, int serverPort, FileInfo fileInfo) {
+			int appID, byte[] inetAddressData, int serverPort, FileTransferInfo fileInfo) {
 		byte[] result = null;
 		byte[] headData = ArrayUtil
 				.int2ByteArray(Protocol.DATA_TYPE_HEADER_SEND_FILE);
@@ -57,7 +57,7 @@ public class FileTransportProtocol {
 		start = end;
 		end = data.length;
 		byte[] fileInfoData = Arrays.copyOfRange(data, start, end);
-		FileInfo fileInfo = (FileInfo) ArrayUtil
+		FileTransferInfo fileInfo = (FileTransferInfo) ArrayUtil
 				.byteArrayToObject(fileInfoData);
 
 		if (callback != null) {
@@ -68,6 +68,6 @@ public class FileTransportProtocol {
 
 	public interface OnReceiveFileCallback {
 		void onReceiveFile(int sendUserID, int receiveUserID, int appID,
-				byte[] serverAddress, int serverPort, FileInfo fileInfo);
+				byte[] serverAddress, int serverPort, FileTransferInfo fileInfo);
 	}
 }

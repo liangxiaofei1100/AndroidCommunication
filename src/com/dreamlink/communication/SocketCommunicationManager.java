@@ -23,7 +23,7 @@ import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedLis
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.client.SocketClientTask;
 import com.dreamlink.communication.client.SocketClientTask.OnConnectedToServerListener;
-import com.dreamlink.communication.protocol.FileInfo;
+import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.protocol.ProtocolDecoder;
 import com.dreamlink.communication.protocol.ProtocolEncoder;
 import com.dreamlink.communication.server.SocketServer;
@@ -256,7 +256,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		byte[] inetAddressData = inetAddress.getAddress();
 		byte[] data = ProtocolEncoder.encodeSendFile(mUserManager
 				.getLocalUser().getUserID(), receiveUser.getUserID(), appID,
-				inetAddressData, serverPort, new FileInfo(file));
+				inetAddressData, serverPort, new FileTransferInfo(file));
 		SocketCommunication communication = mUserManager
 				.getSocketCommunication(userID);
 		if (communication != null) {
@@ -278,7 +278,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * @param fileInfo
 	 */
 	public void notifyFileReceiveListeners(int sendUserID, int appID,
-			byte[] serverAddress, int serverPort, FileInfo fileInfo) {
+			byte[] serverAddress, int serverPort, FileTransferInfo fileInfo) {
 		for (Map.Entry<OnFileTransportListener, Integer> entry : mOnFileTransportListener
 				.entrySet()) {
 			if (entry.getValue() == appID) {
