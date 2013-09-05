@@ -1,12 +1,14 @@
 package com.dreamlink.communication.search;
 
+import com.dreamlink.communication.SocketPort;
+
 public class Search {
 	public static final String MULTICAST_IP = "239.3.3.3";
 	/** timeout:10 seconds */
 	public static final int TIME_OUT = 10 * 1000;
 
-	public static final int MULTICAST_SEND_PORT = 40006;
-	public static final int MULTICAST_RECEIVE_PORT = 40007;
+	public static final int MULTICAST_SEND_PORT = SocketPort.MULTICAST_SEND_PORT;
+	public static final int MULTICAST_RECEIVE_PORT = SocketPort.MULTICAST_RECEIVE_PORT;
 
 	public static final long MULTICAST_DELAY_TIME = 2000;
 
@@ -20,8 +22,8 @@ public class Search {
 	public static final String ANDROID_AP_SERVER_RESPOND = "Yes, AP is server.";
 	/** This message is only used when AP is client. */
 	public static final String ANDROID_AP_SERVER_REQUEST = "I am server. IP: ";
-	public static final int ANDROID_AP_SEND_PORT = 55556;
-	public static final int ANDROID_AP_RECEIVE_PORT = 55557;
+	public static final int ANDROID_AP_SEND_PORT = SocketPort.ANDROID_AP_SEND_PORT;
+	public static final int ANDROID_AP_RECEIVE_PORT = SocketPort.ANDROID_AP_RECEIVE_PORT;
 	/** Search request send delay time (second) */
 	public static final long ANDROID_AP_SEARCH_DELAY = 2000;
 }

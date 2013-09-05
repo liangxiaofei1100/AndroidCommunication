@@ -29,7 +29,10 @@ public class Protocol {
 	public static final int SEND_APP_ID_HEADER_SIZE = 4;
 	public static final int DATA_TYPE_HEADER_SEND_SINGLE = 200;
 	// Send to single
-
 	public static final int DATA_TYPE_HEADER_SEND_ALL = 201;
-
+	
+	// File transport
+	public static final int DATA_TYPE_HEADER_SEND_FILE = 300;
+	public static final int SEND_FILE_SERVER_PORT_HEAD_SIZE = 4;
+	public static final int SEND_FILE_SERVER_ADDRESS_HEAD_SIZE = 4;
 }

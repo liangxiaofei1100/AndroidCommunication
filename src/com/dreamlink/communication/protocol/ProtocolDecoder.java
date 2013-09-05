@@ -10,6 +10,7 @@ import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.protocol.FileTransportProtocol.OnReceiveFileCallback;
 import com.dreamlink.communication.protocol.LoginProtocol.DecodeLoginRequestForwardResult;
 import com.dreamlink.communication.protocol.LoginProtocol.DecodeLoginRespondForwardResult;
 import com.dreamlink.communication.protocol.SendProtocol.ISendProtocolTypeAllCallBack;
@@ -22,7 +23,8 @@ import com.dreamlink.communication.util.Log;
  * 
  */
 public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
-		ISendProtocolTypeAllCallBack, ILoginRespondCallback {
+		ISendProtocolTypeAllCallBack, ILoginRespondCallback,
+		OnReceiveFileCallback {
 	private static final String TAG = "ProtocolDecoder";
 
 	private UserManager mUserManager;
@@ -92,12 +94,19 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 			Log.d(TAG, "DATA_TYPE_HEADER_SEND_ALL");
 			handleSendAll(data);
 			break;
+		case Protocol.DATA_TYPE_HEADER_SEND_FILE:
+			Log.d(TAG, "DATA_TYPE_HEADER_SEND_FILE");
+			handleSendFile(data);
 
 		default:
 			Log.d(TAG, "Unkown data type: " + dataType);
 			break;
 		}
 		return data;
+	}
+
+	private void handleSendFile(byte[] data) {
+		FileTransportProtocol.decodeSendFile(data, this);
 	}
 
 	/**
@@ -357,6 +366,28 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 						+ user.getUserName());
 		if (loginResult) {
 			sendMessageToUpdateAllUser();
+		}
+	}
+
+	@Override
+	public void onReceiveFile(int sendUserID, int receiveUserID, int appID,
+			byte[] serverAddress, int serverPort, FileInfo fileInfo) {
+		Log.d(TAG, "onReceiveFile senUserID = " + sendUserID
+				+ ", receiveUserID = " + receiveUserID + ", appID = " + appID
+				+ ", serverPort = " + serverPort + ", file = "
+				+ fileInfo.mFileName);
+		User localUser = mUserManager.getLocalUser();
+		if (receiveUserID == localUser.getUserID()) {
+			Log.d(TAG, "onReceiveFile This file is for me");
+			mCommunicationManager.notifyFileReceiveListeners(sendUserID, appID,
+					serverAddress, serverPort, fileInfo);
+		} else {
+			Log.d(TAG, "onReceiveFile This file is not for me");
+			SocketCommunication communication = mUserManager
+					.getSocketCommunication(receiveUserID);
+			byte[] originalMsg = ProtocolEncoder.encodeSendFile(sendUserID,
+					receiveUserID, appID, serverAddress, serverPort, fileInfo);
+			communication.sendMessage(originalMsg);
 		}
 	}
 }

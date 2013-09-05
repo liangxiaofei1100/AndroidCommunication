@@ -143,6 +143,30 @@
             android:label="SpeedTestServer"
             android:screenOrientation="portrait" >
         </activity>
+         <activity
+            android:name="com.dreamlink.communication.FileTransportTest"
+            android:label="FileTransportTest"
+            android:launchMode="singleTask" >
+            <intent-filter>
+                <action android:name="com.dreamlink.communication.action.testapp" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="app_id"
+                android:value="202" />
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.FileTransportTestClient"
+            android:label="FileTransportTestClient"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.FileTransportTestServer"
+            android:label="FileTransportTestServer"
+            android:screenOrientation="portrait" >
+        </activity>
 
         <service android:name=".SocketCommunicationService" >
             <intent-filter>

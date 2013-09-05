@@ -1,5 +1,7 @@
 package com.dreamlink.communication.protocol;
 
+import java.io.File;
+
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.UserManager;
 
@@ -26,5 +28,12 @@ public class ProtocolEncoder {
 
 	public static byte[] encodeUpdateAllUser(UserManager userManager) {
 		return LoginProtocol.encodeUpdateAllUser(userManager);
+	}
+
+	public static byte[] encodeSendFile(int sendUserID, int receiveUserID,
+			int appID, byte[] inetAddressData, int serverPort, FileInfo fileInfo) {
+		return FileTransportProtocol.encodeSendFile(sendUserID, receiveUserID,
+				appID, inetAddressData, serverPort, fileInfo);
+
 	}
 }

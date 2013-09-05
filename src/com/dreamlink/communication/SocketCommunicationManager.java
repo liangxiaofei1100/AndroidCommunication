@@ -1,7 +1,8 @@
 package com.dreamlink.communication;
 
+import java.io.File;
+import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,17 +17,20 @@ import com.dreamlink.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
+import com.dreamlink.communication.FileSender.OnFileSendListener;
 import com.dreamlink.communication.SocketCommunication.OnReceiveMessageListener;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.client.SocketClientTask;
 import com.dreamlink.communication.client.SocketClientTask.OnConnectedToServerListener;
+import com.dreamlink.communication.protocol.FileInfo;
 import com.dreamlink.communication.protocol.ProtocolDecoder;
 import com.dreamlink.communication.protocol.ProtocolEncoder;
 import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.server.SocketServerTask;
 import com.dreamlink.communication.server.SocketServerTask.OnClientConnectedListener;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 /**
@@ -79,6 +83,15 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 
 	}
 
+	public interface OnFileTransportListener {
+		/**
+		 * Receive a file. Use fileReciver to receive file.
+		 * 
+		 * @param fileReceiver
+		 */
+		void onReceiveFile(FileReceiver fileReceiver);
+	}
+
 	private static SocketCommunicationManager mInstance;
 
 	private Context mContext;
@@ -101,6 +114,18 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * key: listener, value: app ID.
 	 */
 	private ConcurrentHashMap<OnCommunicationListenerExternal, Integer> mOnCommunicationListenerExternals = new ConcurrentHashMap<OnCommunicationListenerExternal, Integer>();
+
+	/**
+	 * Map for OnFileTransportListener and appID management. When an application
+	 * register to SocketCommunicationManager, record it in this map. When
+	 * received a message, notify the related applications base on the
+	 * appID.</br>
+	 * 
+	 * Map structure</br>
+	 * 
+	 * key: listener, value: app ID.
+	 */
+	private ConcurrentHashMap<OnFileTransportListener, Integer> mOnFileTransportListener = new ConcurrentHashMap<OnFileTransportListener, Integer>();
 	private UserManager mUserManager = UserManager.getInstance();
 	private ProtocolDecoder mProtocolDecoder;
 
@@ -155,6 +180,26 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		}
 	}
 
+	public void registerOnFileTransportListener(
+			OnFileTransportListener listener, int appID) {
+		Log.d(TAG, "registerOnFileTransportListener() appID = " + appID);
+		mOnFileTransportListener.put(listener, appID);
+	}
+
+	public void unregisterOnFileTransportListener(
+			OnFileTransportListener listener) {
+		if (listener == null) {
+			Log.e(TAG, "the params listener is null");
+		} else {
+			if (mOnFileTransportListener.containsKey(listener)) {
+				int appID = mOnFileTransportListener.remove(listener);
+				Log.d(TAG, "mOnFileTransportListener() appID = " + appID);
+			} else {
+				Log.e(TAG, "there is no this listener in the map");
+			}
+		}
+	}
+
 	public void setLoginRequestCallBack(ILoginRequestCallBack callback) {
 		mLoginRequestCallBack = callback;
 	}
@@ -179,6 +224,69 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			communication.sendMessage(message);
 		} else {
 			mNotice.showToast("Connection lost.");
+		}
+	}
+
+	/**
+	 * Send file to the receiveUser.
+	 * 
+	 * @param file
+	 * @param receiveUser
+	 * @param appID
+	 */
+	public void sendFile(File file, OnFileSendListener listener,
+			User receiveUser, int appID) {
+		Log.d(TAG, "sendFile() file = " + file.getName() + ", receive user = "
+				+ receiveUser.getUserName() + ", appID = " + appID);
+		FileSender fileSender = new FileSender();
+		int serverPort = fileSender.sendFile(file, listener);
+		if (serverPort == -1) {
+			Log.e(TAG, "sendFile error, create socket server fail. file = "
+					+ file.getName());
+			return;
+		}
+		InetAddress inetAddress = NetWorkUtil.getLocalInetAddress();
+		if (inetAddress == null) {
+			Log.e(TAG,
+					"sendFile error, get inet address fail. file = "
+							+ file.getName());
+			return;
+		}
+		int userID = receiveUser.getUserID();
+		byte[] inetAddressData = inetAddress.getAddress();
+		byte[] data = ProtocolEncoder.encodeSendFile(mUserManager
+				.getLocalUser().getUserID(), receiveUser.getUserID(), appID,
+				inetAddressData, serverPort, new FileInfo(file));
+		SocketCommunication communication = mUserManager
+				.getSocketCommunication(userID);
+		if (communication != null) {
+			communication.sendMessage(data);
+		} else {
+			Log.e(TAG, "sendFile fail. can not connect with the receiver: "
+					+ receiveUser);
+		}
+	}
+
+	/**
+	 * 
+	 * This is used by ProtocolDecoder.
+	 * 
+	 * @param sendUserID
+	 * @param appID
+	 * @param serverAddress
+	 * @param serverPort
+	 * @param fileInfo
+	 */
+	public void notifyFileReceiveListeners(int sendUserID, int appID,
+			byte[] serverAddress, int serverPort, FileInfo fileInfo) {
+		for (Map.Entry<OnFileTransportListener, Integer> entry : mOnFileTransportListener
+				.entrySet()) {
+			if (entry.getValue() == appID) {
+				FileReceiver fileReceiver = new FileReceiver(mUserManager
+						.getAllUser().get(sendUserID), serverAddress,
+						serverPort, fileInfo);
+				entry.getKey().onReceiveFile(fileReceiver);
+			}
 		}
 	}
 
@@ -589,5 +697,4 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		return status.toString();
 	}
 	// For debug end.
-
 }

@@ -49,5 +49,6 @@
         2. Server input test speed and click Start button, Client click Start button. If everything is OK, the speed is shown\n</string>
     <!-- speed test end -->
     <string name="btn_test_apps">Test apps</string>
+    <string name="readme_file_transport_test">File Transport test.</string>
 
 </resources>

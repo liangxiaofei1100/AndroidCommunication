@@ -27,7 +27,7 @@ import com.dreamlink.communication.util.Log;
 public class SocketCommunication extends Thread {
 	private static final String TAG = "SocketCommunication";
 	/** Socket server port */
-	public static final String PORT = "55555";
+	public static final String PORT = SocketPort.COMMUNICATION_SERVER_PORT;
 
 	/**
 	 * Listen socket connect and disconnect event.
@@ -267,9 +267,9 @@ public class SocketCommunication extends Thread {
 						"remain packet + received data is one packet.mLastPacketLength = "
 								+ mLastPacketLength);
 				// remain packet + received data is one packet.
-				mOnReceiveMessageListener.onReceiveMessage(
-						ArrayUtil.join(mRemainPacket, Arrays.copyOfRange(
-								mReceiveBuffer, 0, dataReceivedLength)), this);
+				mOnReceiveMessageListener.onReceiveMessage(ArrayUtil.join(
+						mRemainPacket, Arrays.copyOfRange(mReceiveBuffer, 0,
+								dataReceivedLength)), this);
 				mRemainPacket = null;
 				return true;
 			} else if (dataReceivedLength + mRemainPacket.length < mLastPacketLength) {
