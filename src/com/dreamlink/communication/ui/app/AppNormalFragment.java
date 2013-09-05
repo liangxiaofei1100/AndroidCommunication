@@ -149,6 +149,13 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 					String currentMenu = current_menus[which];
 					if (normal_menus[0].equals(currentMenu)) {
 						//open
+						Intent intent = pm.getLaunchIntentForPackage(appEntry.getPackageName());
+						if (null != intent) {
+							startActivity(intent);
+						}else {
+							mNotice.showToast(R.string.cannot_start_app);
+							return;
+						}
 					}else if (normal_menus[1].equals(currentMenu)) {
 						//send
 					}else if (normal_menus[2].equals(currentMenu)) {
@@ -157,11 +164,6 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 					}else if (normal_menus[3].equals(currentMenu)) {
 						//app info
 						mAppManager.showInfoDialog(appEntry);
-//						DialogFragment fragment = FileInfoDialog.newInstance(appEntry, FileInfoDialog.APP_INFO);
-////						DialogFragment fragment = FileInfoDialog.newInstance(info);
-//						fragment.show(getActivity().getSupportFragmentManager(), "Info");
-//						android.support.v4.app.FragmentManager manager = getFragmentManager();
-//						manager.executePendingTransactions();
 					}else if (normal_menus[4].equals(currentMenu)) {
 						//move to game
 						mNormalAppLists.remove(position);

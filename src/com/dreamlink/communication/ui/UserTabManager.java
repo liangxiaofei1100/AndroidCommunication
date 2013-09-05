@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
+import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.util.Log;
 
 import android.content.Context;

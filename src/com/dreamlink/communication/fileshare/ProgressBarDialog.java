@@ -76,7 +76,7 @@ public class ProgressBarDialog extends AlertDialog {
 	protected void onCreate(Bundle savedInstanceState) {
 		LayoutInflater inflater = LayoutInflater.from(getContext());
 		
-		View view = inflater.inflate(R.layout.progress_dialog, null);
+		View view = inflater.inflate(R.layout.ui_filetransfer_dialog, null);
 		mProgressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
 		mProgressBar.setMax(100);
 		

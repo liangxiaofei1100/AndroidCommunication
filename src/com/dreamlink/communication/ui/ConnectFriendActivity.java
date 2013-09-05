@@ -116,7 +116,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_SEARCH_SUCCESS:
-				updateUI(SEARCHED);
 				addServer((ServerInfo) msg.obj);
 				break;
 			case MSG_SEARCH_FAIL:
@@ -216,7 +215,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			mSearchBar.setVisibility(View.INVISIBLE);
 			mSearchView.setText(R.string.connecting);
 			mSearchView.setClickable(false);
-			mServerListView.setClickable(false);
+			mServerListView.setFocusable(false);
 		}
 	}
 	
@@ -235,7 +234,6 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 		mTimeoutTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-//				connectHelper.stopSearch();
 				connectHelper.stopSearch(false);
 				Message message = mHandler.obtainMessage(MSG_SEARCH_STOP);
 				mHandler.sendMessage(message);
@@ -326,8 +324,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	private void addServer(ServerInfo info) {
 		if (info.getServer_type().equals("wifi")) {
 			if (isServerAlreadyAdded(info.getServer_name(), info.getServer_ip())) {
-				Log.d(TAG,
-						"addServer()	ignore, name = " + info.getServer_name());
+				Log.d(TAG,"wifi.addServer()	ignore, name = " + info.getServer_name());
 				return;
 			}
 			if (Search.ANDROID_AP_ADDRESS.equals(info.getServer_ip())) {
@@ -341,7 +338,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			ipServer.put(KEY_TYPE, info.getServer_ip());
 			ipServer.put(KEY_VALUE, info);
 			mServerData.add(ipServer);
-			Log.i(TAG, "type:" + info.getServer_type()
+			Log.i(TAG, "type:" + info.getServer_type() + ",name:" + info.getServer_name()
 					+ "    mServerData.size:" + mServerData.size());
 			mServerAdapter.notifyDataSetChanged();
 		} else if (info.getServer_type().equals("wifi-ap")) {
@@ -349,7 +346,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 					info.getServer_ssid())) {
 				// TODO if two server has the same name, How to do?
 				Log.d(TAG,
-						"addServer()	ignore, name = " + info.getServer_name());
+						"wifiAp.addServer()	ignore, name = " + info.getServer_name());
 				return;
 			}
 			// Found a AP, add the user name to the server list.
@@ -358,14 +355,14 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			apServer.put(KEY_TYPE, info.getServer_ssid());
 			apServer.put(KEY_VALUE, info);
 			mServerData.add(apServer);
-			Log.i(TAG, "type:" + info.getServer_type()
+			Log.i(TAG, "type:" + info.getServer_type() + ",name:" + info.getServer_name()
 					+ "    mServerData.size:" + mServerData.size());
 			mServerAdapter.notifyDataSetChanged();
 		} else {
 			if (isServerAlreadyAdded(info.getServer_name(),
 					info.getServer_device().deviceAddress)) {
 				Log.d(TAG,
-						"addServer()	ignore, name = " + info.getServer_name());
+						"another.addServer()	ignore, name = " + info.getServer_name());
 				return;
 			}
 			HashMap<String, Object> apServer = new HashMap<String, Object>();
@@ -373,7 +370,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 			apServer.put(KEY_TYPE, info.getServer_device().deviceAddress);
 			apServer.put(KEY_VALUE, info);
 			mServerData.add(apServer);
-			Log.i(TAG, "type:" + info.getServer_type()
+			Log.i(TAG, "type:" + info.getServer_type() + ",name:" + info.getServer_name()
 					+ "    mServerData.size:" + mServerData.size());
 			mServerAdapter.notifyDataSetChanged();
 		}
@@ -503,6 +500,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void onSearchSuccess(ServerInfo serverInfo) {
+		Log.d(TAG, "onSearchSuccess.serverInfo=" + serverInfo.getServer_name());
 		Message message = mHandler.obtainMessage(MSG_SEARCH_SUCCESS);
 		message.obj = serverInfo;
 		message.sendToTarget();

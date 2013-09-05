@@ -21,7 +21,6 @@ import android.util.DisplayMetrics;
 import android.widget.Toast;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.dialog.DeleteDialog;
@@ -43,15 +42,15 @@ public class FileInfoManager {
 	public static final int IMAGE = 0x12;
 	public static final int UNKNOW = 0x20;
 
-	public static final int TYPE_DEFAULT = 0x20;
+	public static final int TYPE_DEFAULT = 0x20;//32
 	public static final int TYPE_EBOOK = 0x21;
 	public static final int TYPE_VIDEO = 0x22;
 	public static final int TYPE_DOC = 0x23;
-	public static final int TYPE_APK = 0x24;
+	public static final int TYPE_APK = 0x24;//36
 	public static final int TYPE_ZIP = 0x25;
 	public static final int TYPE_BIG_FILE = 0x26;
 	public static final int TYPE_IMAGE = 0x27;
-	public static final int TYPE_AUDIO = 0x28;
+	public static final int TYPE_AUDIO = 0x28;//40
 
 	private Context context;
 
@@ -490,9 +489,9 @@ public class FileInfoManager {
 		}
 	}
 
-	public void deleteFile(String filePath) {
+	public boolean deleteFile(String filePath) {
 		File file = new File(filePath);
-		deleteFile(file);
+		return deleteFile(file);
 	}
 
 	/**
@@ -501,11 +500,14 @@ public class FileInfoManager {
 	 * 
 	 * @param path
 	 */
-	public void deleteFileInMediaStore(Uri uri, String path) {
+	public boolean deleteFileInMediaStore(Uri uri, String path) {
 		if (TextUtils.isEmpty(path)) {
-			return;
+			return false;
 		}
-		deleteFile(path);
+		
+		if (!deleteFile(path)) {
+			return false;
+		}
 
 		String where = MediaStore.Audio.Media.DATA + "=?";
 		String[] whereArgs = new String[] { path };
@@ -516,17 +518,23 @@ public class FileInfoManager {
 			// TODO: handle exception
 			Log.e(TAG, "Error in delete file in media store:" + e.toString());
 		}
+		
+		return true;
 	}
 
 	/**
 	 * 3.0以上系统，才可以使用该方法，删除多媒体文件
 	 */
-	public void deleteFIleInMediaStore(String path) {
+	public boolean deleteFileInMediaStore(String path) {
 
 		if (TextUtils.isEmpty(path)) {
-			return;
+			return false;
 		}
-		deleteFile(path);
+		
+		if (!deleteFile(path)) {
+			return false;
+		}
+		
 		Uri uri = null;
 		// 不能用Files这个类，这个类API11 以后才支持
 		// Uri uri = MediaStore.Files.getContentUri("external");
@@ -539,7 +547,8 @@ public class FileInfoManager {
 			// TODO: handle exception
 			Log.e(TAG, "Error in delete file in media store:" + e.toString());
 		}
-
+		
+		return true;
 	}
 
 	public boolean deleteFile(File file) {

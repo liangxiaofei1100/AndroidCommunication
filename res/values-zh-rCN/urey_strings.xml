@@ -26,6 +26,7 @@
     <string name="image">图片</string>
     <string name="media">影音</string>
     <string name="remote_share">远程访问</string>
+    <string name="history">记录</string>
     
     <string name="connect">连接</string>
     <string name="connecting">"正在连接&#8230;"</string>
@@ -120,4 +121,20 @@
     <string name="copy_rename_msg">正在复制的文件将重命名为 “<xliff:g id="rename">%1$s</xliff:g>“</string>
     <string name="copy_cancel">取消</string>
      <string name="copy_cancel_msg">将不会改变任何文件</string>
+     
+     <string name="delete_confirm_msg">确定要删除这个文件？</string>
+     <string name="delete_fail">无法删除这个文件</string>
+     
+     <string name="remote_share_server_list_msg">远程文件共享列表</string>
+     <string name="create_remote_share">创建共享</string>
+     <string name="search_remote_share">搜索共享列表</string>
+     
+     <string name="hide">隐藏</string>
+     <string name="exit_app">退出程序</string>
+     <string name="confirm_exit">确定要退出？</string>
+     <string name="running">正在运行&#8230;</string>
+     <string name="unconnected">未连接</string>
+     <string name="connected">已连接</string>
+     
+     <string name="storage_space">存储空间:共<xliff:g id="total">%1$s</xliff:g>，<xliff:g id="free">%2$s</xliff:g>可用</string>
 </resources>

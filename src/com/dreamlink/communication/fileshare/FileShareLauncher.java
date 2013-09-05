@@ -1,6 +1,7 @@
 package com.dreamlink.communication.fileshare;
 
 import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.ui.file.RemoteShareService;
 import com.dreamlink.communication.util.AppUtil;
 
 import android.app.Activity;
@@ -33,7 +34,7 @@ public class FileShareLauncher extends Activity {
 		if (isServer) {
 //			intent.setClass(this, ServerActivity.class);
 			//start service 
-			intent.setClass(this, FileShareServerService.class);
+			intent.setClass(this, RemoteShareService.class);
 			startService(intent);
 			showDialog();
 		} else {
@@ -51,7 +52,7 @@ public class FileShareLauncher extends Activity {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				Intent intent = new Intent();
-				intent.setClass(FileShareLauncher.this, FileShareServerService.class);
+				intent.setClass(FileShareLauncher.this, RemoteShareService.class);
 				stopService(intent);
 				FileShareLauncher.this.finish();
 			}

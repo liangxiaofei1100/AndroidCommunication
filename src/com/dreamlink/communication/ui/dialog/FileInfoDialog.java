@@ -1,8 +1,8 @@
 package com.dreamlink.communication.ui.dialog;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.ui.app.AppEntry;
+import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.image.ImageInfo;
 import com.dreamlink.communication.ui.media.MediaInfo;
 import com.dreamlink.communication.util.Log;

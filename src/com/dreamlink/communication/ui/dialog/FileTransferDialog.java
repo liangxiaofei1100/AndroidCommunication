@@ -125,7 +125,7 @@ private static final NumberFormat nf = NumberFormat.getPercentInstance();
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.progress_dialog);
+		setContentView(R.layout.ui_filetransfer_dialog);
 		
 		mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
 		mProgressBar.setMax(100);
@@ -190,6 +190,7 @@ private static final NumberFormat nf = NumberFormat.getPercentInstance();
 			case STATE_COPYING:
 				//stop
 				mListener.onClick(v, STATE_COPYING);
+				dismiss();
 				break;
 			case STATE_COPY_OK:
 				//open
@@ -211,6 +212,7 @@ private static final NumberFormat nf = NumberFormat.getPercentInstance();
 				mListener.onClick(v, STATE_COPYING);
 				break;
 			case STATE_COPY_OK:
+				mListener.onClick(v, STATE_COPY_OK);
 				dismiss();
 				break;
 			case STATE_COPY_FAIL:

@@ -8,19 +8,19 @@ import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.app.AppNormalFragment;
-import com.dreamlink.communication.ui.dialog.FileInfoDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.image.ImageFragmentActivity;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.Notice;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
+import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -37,7 +37,7 @@ public class MediaVideoFragment extends Fragment implements OnItemLongClickListe
 	private GridView mGridView;
 	
 	private MediaVideoAdapter mAdapter;
-	
+	private Notice mNotice;
 	private List<MediaInfo> mLists = new ArrayList<MediaInfo>();
 	
 	private MediaInfoManager mScan;
@@ -46,6 +46,22 @@ public class MediaVideoFragment extends Fragment implements OnItemLongClickListe
 	
 	private FileInfoManager mFileInfoManager;
 	private Context mContext;
+	
+	//video contentObserver listener
+	class VideoContent extends ContentObserver{
+		public VideoContent(Handler handler) {
+			super(handler);
+			// TODO Auto-generated constructor stub
+		}
+		
+		@Override
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
+			GetVideosTask getVideosTask = new GetVideosTask();
+			getVideosTask.execute();
+		}
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.d(TAG, "onCreate begin");
@@ -58,20 +74,23 @@ public class MediaVideoFragment extends Fragment implements OnItemLongClickListe
 		mGridView.setOnCreateContextMenuListener(new ListContextMenu(ListContextMenu.MENU_TYPE_VIDEO));
 		
 		mScan = new MediaInfoManager(mContext);
+		mNotice = new Notice(mContext);
 		
 		GetVideosTask getVideosTask = new GetVideosTask();
-		getVideosTask.execute("");
+		getVideosTask.execute();
 		
 		mFileInfoManager = new FileInfoManager(mContext);
 				
+		VideoContent videoContent  = new VideoContent(new Handler());
+		getActivity().getContentResolver().registerContentObserver(mScan.videoUri, true, videoContent);
 		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 	
-	public  class GetVideosTask extends AsyncTask<String, String, String>{
+	public  class GetVideosTask extends AsyncTask<Void, String, String>{
 
 		@Override
-		protected String doInBackground(String... params) {
+		protected String doInBackground(Void... params) {
 			mLists = mScan.getVideoInfo();
 			return null;
 		}
@@ -98,7 +117,6 @@ public class MediaVideoFragment extends Fragment implements OnItemLongClickListe
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
 		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 		int position = menuInfo.position;
@@ -133,24 +151,31 @@ public class MediaVideoFragment extends Fragment implements OnItemLongClickListe
      * @param path file path
      */
     public void showDeleteDialog(final int pos, final String path) {
-    	new AlertDialog.Builder(mContext)
-    		.setIcon(android.R.drawable.ic_delete)
-    		.setTitle(R.string.menu_delete)
-    		.setMessage(getResources().getString(R.string.confirm_msg, path))
-    		.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
+    	final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
+		deleteDialog.setOnClickListener(new OnDelClickListener() {
+			@Override
+			public void onClick(View view, String path) {
+				switch (view.getId()) {
+				case R.id.left_button:
 					doDelete(pos, path);
+					break;
+				default:
+					break;
 				}
-			})
-			.setNegativeButton(android.R.string.cancel, null)
-			.create().show();
+			}
+		});
+		deleteDialog.show();
     }
     
     private void doDelete(int position, String path) {
-		mFileInfoManager.deleteFileInMediaStore(DreamConstant.VIDEO_URI, path);
-		mLists.remove(position);
-		mAdapter.notifyDataSetChanged();
+		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.VIDEO_URI, path);
+		if (!ret) {
+			mNotice.showToast(R.string.delete_fail);
+			Log.e(TAG, path + " delete failed");
+		}else {
+			mLists.remove(position);
+			mAdapter.notifyDataSetChanged();
+		}
 		
 		Intent intent = new Intent(ImageFragmentActivity.PICTURE_ACTION);
 		mContext.sendBroadcast(intent);

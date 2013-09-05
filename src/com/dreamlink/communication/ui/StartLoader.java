@@ -5,6 +5,7 @@ import java.util.TimerTask;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.notification.NotificationMgr;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 
 import android.app.Activity;

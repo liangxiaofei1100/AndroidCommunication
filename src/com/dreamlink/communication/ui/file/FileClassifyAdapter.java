@@ -23,11 +23,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 
 public class FileClassifyAdapter extends BaseAdapter{
 	private LayoutInflater inflater;
@@ -293,23 +294,21 @@ public class FileClassifyAdapter extends BaseAdapter{
 		@Override
 		public void onClick(View v) {
 			String path = mItemList.get(position).filePath;
-			new AlertDialog.Builder(mContext)
-					.setTitle(
-							mContext.getResources().getString(
-									R.string.item_msg, position + 1))
-					.setMessage(
-							mContext.getResources().getString(
-									R.string.confirm_msg, path))
-					.setPositiveButton(android.R.string.ok,
-							new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									DeleteTask deleteTask = new DeleteTask();
-									deleteTask.execute(position, fileType);
-								}
-							}).setNegativeButton(android.R.string.cancel, null)
-					.create().show();
+			final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
+			deleteDialog.setOnClickListener(new OnDelClickListener() {
+				@Override
+				public void onClick(View view, String path) {
+					switch (view.getId()) {
+					case R.id.left_button:
+						DeleteTask deleteTask = new DeleteTask();
+						deleteTask.execute(position, fileType);
+						break;
+					default:
+						break;
+					}
+				}
+			});
+			deleteDialog.show();
 		}
 
 	}

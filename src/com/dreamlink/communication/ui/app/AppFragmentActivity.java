@@ -2,16 +2,18 @@ package com.dreamlink.communication.ui.app;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.util.Log;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.TabHost.OnTabChangeListener;
@@ -21,9 +23,10 @@ public class AppFragmentActivity extends FragmentActivity implements TabContentF
 	private static final String TAG = "AppFragmentActivity";
 	
 	private TabHost mTabHost;
-	
-	private static final String TAG_ONE = "one";
-	private static final String TAG_TWO = "two";
+	private LayoutInflater layoutInflater;
+	private static final String TAG_ONE = "应用";
+	private static final String TAG_TWO = "游戏";
+	private static final String[] TAB_TAG = {TAG_ONE, TAG_TWO};
 	
 	private TextView mTextView1;
 	private TextView mTextView2;
@@ -58,23 +61,58 @@ public class AppFragmentActivity extends FragmentActivity implements TabContentF
 	}
 	
 	public void initViews(){
+		layoutInflater = LayoutInflater.from(this);
+		
 		mTabHost = (TabHost) findViewById(android.R.id.tabhost);
 		mTabHost.setup();
 
 		mTabHost.addTab(mTabHost.newTabSpec(TAG_ONE).
-				setIndicator(getResources().getString(R.string.app)).setContent(R.id.app_frag1));
+				setIndicator(getTabItemView(0)).setContent(R.id.app_frag1));
 		mTabHost.addTab(mTabHost.newTabSpec(TAG_TWO).
-				setIndicator(getResources().getString(R.string.game)).setContent(R.id.app_frag2));
+				setIndicator(getTabItemView(1)).setContent(R.id.app_frag2));
 		
 		mTabHost.setCurrentTab(0);
 		mTabHost.setOnTabChangedListener(this);
-		mTextView1 = (TextView) mTabHost.getTabWidget().getChildAt(0).findViewById(android.R.id.title);
-		mTextView2 = (TextView) mTabHost.getTabWidget().getChildAt(1).findViewById(android.R.id.title);
+		mTextView1 = (TextView) mTabHost.getTabWidget().getChildAt(0).findViewById(R.id.textview);
+		mTextView2 = (TextView) mTabHost.getTabWidget().getChildAt(1).findViewById(R.id.textview);
+	}
+	
+	/**
+	 * 给Tab按钮设置图标和文字
+	 */
+	private static final int[] VIS = {View.VISIBLE, View.GONE};
+	private static final int[] VIS2 = {View.GONE, View.VISIBLE};
+	private static final int[] COLORs = {0xff33b5e5, Color.GRAY};
+	private View getTabItemView(int index){
+		View view = layoutInflater.inflate(R.layout.tab_view, null);
+	
+		ImageView imageView = (ImageView) view.findViewById(R.id.cursor1);
+		ImageView imageView2 = (ImageView) view.findViewById(R.id.cursor2);
+		imageView.setVisibility(VIS[index]);
+		imageView2.setVisibility(VIS2[index]);
+		
+		TextView textView = (TextView) view.findViewById(R.id.textview);		
+		textView.setText(TAB_TAG[index]);
+		textView.setTextColor(COLORs[index]);
+		return view;
 	}
 
 	@Override
 	public void onTabChanged(String tabId) {
-		// TODO Auto-generated method stub
+		for (int j = 0; j < TAB_TAG.length; j++) {
+			TextView textView = (TextView) mTabHost.getTabWidget().getChildAt(j).findViewById(R.id.textview);
+			ImageView imageView = (ImageView) mTabHost.getTabWidget().getChildAt(j).findViewById(R.id.cursor1);
+			ImageView imageView2 = (ImageView) mTabHost.getTabWidget().getChildAt(j).findViewById(R.id.cursor2);
+			if (tabId.equals(TAB_TAG[j])) {
+				textView.setTextColor(0xff33b5e5);
+				imageView.setVisibility(View.VISIBLE);
+				imageView2.setVisibility(View.GONE);
+			}else {
+				textView.setTextColor(Color.GRAY);
+				imageView.setVisibility(View.GONE);
+				imageView2.setVisibility(View.VISIBLE);
+			}
+		}
 	}
 
 	@Override

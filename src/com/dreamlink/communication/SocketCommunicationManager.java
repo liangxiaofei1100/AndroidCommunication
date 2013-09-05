@@ -481,9 +481,10 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	public void sendMessageToAllWithoutEncode(byte[] msg) {
 		synchronized (mCommunications) {
 			for (SocketCommunication communication : mCommunications) {
-				sendMessage(communication, msg);
-			}
+			sendMessage(communication, msg);
 		}
+		}
+		
 	}
 
 	/**

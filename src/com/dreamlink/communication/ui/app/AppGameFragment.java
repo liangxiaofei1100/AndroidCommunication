@@ -123,6 +123,13 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 						switch (which) {
 						case 0:
 							//open
+							Intent intent = pm.getLaunchIntentForPackage(appEntry1.getPackageName());
+							if (null != intent) {
+								startActivity(intent);
+							}else {
+								mNotice.showToast(R.string.cannot_start_app);
+								return;
+							}
 							break;
 						case 1:
 							//app info
@@ -145,10 +152,16 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 			.setItems(R.array.app_menu_game, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
 						switch (which) {
 						case 0:
 							//open
+							Intent intent = pm.getLaunchIntentForPackage(appEntry2.getPackageName());
+							if (null != intent) {
+								startActivity(intent);
+							}else {
+								mNotice.showToast(R.string.cannot_start_app);
+								return;
+							}
 							break;
 						case 1:
 							//send
@@ -160,9 +173,6 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 						case 3:
 							//app info
 							mAppManager.showInfoDialog(appEntry2);
-//							String info = mAppManager.getAppInfo(appEntry);
-//							FileInfoDialog fragment = FileInfoDialog.newInstance(info);
-//							fragment.show(getActivity().getSupportFragmentManager(), "Info");
 							break;
 						case 4:
 							//move to app

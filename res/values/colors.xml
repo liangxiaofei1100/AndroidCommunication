@@ -12,4 +12,8 @@
     <drawable name="list_item_press">#ff5b544d</drawable>
     <drawable name="list_item_normal">#ff787470</drawable>
     
+    <drawable name="list_item_press2">#ff00eeee</drawable><!-- 淡蓝色 -->
+    <drawable name="list_item_normal2">#ffffff</drawable>
+    
+    
 </resources>

@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.dreamlink.aidl.User;
@@ -24,11 +22,13 @@ import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.notification.NotificationMgr;
 import com.dreamlink.communication.ui.app.AppFragmentActivity;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.dialog.ExitActivity;
 import com.dreamlink.communication.ui.file.FileFragmentActivity;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
+import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.image.ImageFragmentActivity;
 import com.dreamlink.communication.ui.invite.InviteMainActivity;
 import com.dreamlink.communication.ui.media.MediaFragmentActivity;
@@ -68,10 +68,8 @@ import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.view.Window;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -87,7 +85,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	private LocalActivityManager mActivityManager = null;
 	private Intent mTabIntent = null;
 
-	private ImageView mAppBtn, mPicBtn, mMediaBtn, mFileBtn, mShareBtn, mAnimImg;
+	//Tab button in buttom
+	private ImageView mAppBtn, mPicBtn, mMediaBtn, mFileBtn, mHistoryBtn, mAnimImg;
 	/**navgation linearlayout*/
 	private LinearLayout mAppLayout,mPictureLayout,mMediaLayout,mFileLayout,mShareLayout;
 
@@ -175,6 +174,11 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	/**save users*/
 	private List<User> mUserLists = new ArrayList<User>();
 	
+	private NotificationMgr mNotificationMgr = null;
+	/**is mainui exit*/
+	private boolean mIsExit = false;
+	
+	/**@unuse*/
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
 		@Override
@@ -284,6 +288,13 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		mContext = this;
 		instance = this;
 		mActivityManager = getLocalActivityManager();
+		
+		mNotificationMgr = new NotificationMgr(MainUIFrame.this);
+		mNotificationMgr.showNotificaiton(NotificationMgr.STATUS_UNCONNECTED);
+		
+		//get sdcards
+		MountManager mountManager = new MountManager();
+		mountManager.init();
 
 		mUserHelper = new UserHelper(mContext);
 		mUser = mUserHelper.loadUser();
@@ -372,7 +383,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		mPicBtn = (ImageView) findViewById(R.id.img_pictures);
 		mMediaBtn = (ImageView) findViewById(R.id.img_media);
 		mFileBtn = (ImageView) findViewById(R.id.img_file);
-		mShareBtn = (ImageView) findViewById(R.id.img_share);
+		mHistoryBtn = (ImageView) findViewById(R.id.img_history);
 		mAnimImg = (ImageView) findViewById(R.id.img_tab_now);
 
 		mAppLayout = (LinearLayout) findViewById(R.id.app_layout);
@@ -409,7 +420,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		views.add(getView(MEDIA, mediaIntent));
 		Intent fileIntent = new Intent(mContext, FileFragmentActivity.class);
 		views.add(getView(FILE, fileIntent));
-		Intent shareIntent = new Intent(mContext, RemoteShareActivity.class);
+		Intent shareIntent = new Intent(mContext, HistoryActivity.class);
 		views.add(getView(SHARE, shareIntent));
 
 		mTabPager = (ViewPager) findViewById(R.id.tabpager);
@@ -515,7 +526,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 							R.drawable.main_tab_file_normal));
 				} else if (currIndex == 4) {
 					animation = new TranslateAnimation(four, 0, 0, 0);
-					mShareBtn.setImageDrawable(getResources().getDrawable(
+					mHistoryBtn.setImageDrawable(getResources().getDrawable(
 							R.drawable.main_tab_share_normal));
 				}
 				break;
@@ -536,7 +547,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 							R.drawable.main_tab_file_normal));
 				} else if (currIndex == 4) {
 					animation = new TranslateAnimation(four, one, 0, 0);
-					mShareBtn.setImageDrawable(getResources().getDrawable(
+					mHistoryBtn.setImageDrawable(getResources().getDrawable(
 							R.drawable.main_tab_share_normal));
 				}
 				break;
@@ -557,7 +568,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 							R.drawable.main_tab_file_normal));
 				} else if (currIndex == 4) {
 					animation = new TranslateAnimation(four, two, 0, 0);
-					mShareBtn.setImageDrawable(getResources().getDrawable(
+					mHistoryBtn.setImageDrawable(getResources().getDrawable(
 							R.drawable.main_tab_share_normal));
 				}
 				break;
@@ -578,13 +589,13 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 							R.drawable.main_tab_media_normal));
 				} else if (currIndex == 4) {
 					animation = new TranslateAnimation(four, three, 0, 0);
-					mShareBtn.setImageDrawable(getResources().getDrawable(
+					mHistoryBtn.setImageDrawable(getResources().getDrawable(
 							R.drawable.main_tab_share_normal));
 				}
 				break;
 
 			case 4:
-				mShareBtn.setImageDrawable(getResources().getDrawable(
+				mHistoryBtn.setImageDrawable(getResources().getDrawable(
 						R.drawable.main_tab_share_selected));
 				if (currIndex == 0) {
 					animation = new TranslateAnimation(zero, four, 0, 0);
@@ -778,8 +789,28 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	}
 	
 	public void showExitDialog(){
-		Intent intent = new Intent(mContext, ExitActivity.class);
-		startActivity(intent);
+//		Intent intent = new Intent(mContext, ExitActivity.class);
+//		startActivity(intent);
+		new AlertDialog.Builder(mContext)
+			.setTitle(R.string.exit_app)
+			.setMessage(R.string.confirm_exit)
+			.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					mNotificationMgr.cancelNotification();
+					mIsExit = true;
+					MainUIFrame.this.finish();
+				}
+			})
+			.setNeutralButton(R.string.hide, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					moveTaskToBack(true);
+					mNotificationMgr.updateNotification(NotificationMgr.STATUS_DEFAULT);
+				}
+			})
+			.setNegativeButton(android.R.string.cancel, null)
+			.create().show();
 	}
 	
 	@Override
@@ -857,38 +888,52 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 
 	@Override
 	public void onUserConnected(User user) {
-		// TODO Auto-generated method stub.
 		mCurrentStatus = CONNECT_OK;
 		Log.d(TAG, "onUserConnected:" + user.getUserName());
 		Log.i(TAG, "onUserConnected.users.size:" + mUserManager.getAllUser().size());
 		Message msg = mHandler.obtainMessage(MSG_REFRESH_USER_LIST);
 		msg.obj = user;
 		msg.sendToTarget();
+		
+		mNotificationMgr.updateNotification(NotificationMgr.STATUS_CONNECTED);
 	}
 
 	@Override
 	public void onUserDisconnected(User user) {
-		// TODO Auto-generated method stub
-//		Log.d(TAG, "onUserDisconnected:" + user.getUserName());
+		Log.d(TAG, "onUserDisconnected:" + user.getUserName());
 		mHandler.sendMessage(mHandler.obtainMessage(MSG_REFRESH_USER_LIST));
+		if (mSocketComMgr.getCommunications().isEmpty()) {
+			if (!mIsExit) {
+				mNotificationMgr.updateNotification(NotificationMgr.STATUS_UNCONNECTED);
+			}
+		}
 	}
 	
 	
 	/**options menu*/
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// TODO Auto-generated method stub
 		menu.add(0, 0, 0, "旧入口");
+		menu.add(0, 1, 0, "Share");
+		menu.add(0, 2, 0, "远程共享");
 		return super.onCreateOptionsMenu(menu);
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
 		switch (item.getItemId()) {
 		case 0:
 			Intent intent = new Intent(mContext, MainActivity.class);
 			startActivity(intent);
+			break;
+		case 1:
+			mTabPager.setCurrentItem(4);
+			break;
+		case 2:
+			Intent shareIntent = new Intent(mContext, RemoteShareActivity.class);
+			//如果这个activity已经启动了，就不产生新的activity，而只是把这个activity实例加到栈顶来就可以了。
+			shareIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
+			startActivity(shareIntent);
 			break;
 		default:
 			break;

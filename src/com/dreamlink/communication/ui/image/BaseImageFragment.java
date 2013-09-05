@@ -11,8 +11,11 @@ import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.ListContextMenu;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.Notice;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -43,6 +46,8 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 	private GalleryReceiver mGalleryReceiver;
 	private ImageAdapter mAdapter;
 	
+	private Notice mNotice;
+	
 	private Context mContext;
 	private int mCurrentPosition = -1;
 	//用来保存GridView中每个Item的图片，以便释放
@@ -66,6 +71,8 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
 		mContext = getActivity();
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
 		mEmptyView = (TextView) rootView.findViewById(R.id.picture_empty_textview);
+		
+		mNotice = new Notice(mContext);
 		
 		mGridview = (GridView) rootView.findViewById(R.id.picture_gridview);
 		mGridview.setEmptyView(mEmptyView);
@@ -180,27 +187,31 @@ public class BaseImageFragment extends BaseFragment implements OnItemClickListen
      */
     public void showDeleteDialog(final int pos, final String path) {
     	//do not use dialogfragment
-//        DeleteDialog fragment = DeleteDialog.newInstance(path);
-//        fragment.setConfirmListener(this);
-//        fragment.show(getFragmentManager(), "Delete");
-    	new AlertDialog.Builder(mContext)
-    		.setIcon(android.R.drawable.ic_delete)
-    		.setTitle(R.string.menu_delete)
-    		.setMessage(getResources().getString(R.string.confirm_msg, path))
-    		.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
+		final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
+		deleteDialog.setOnClickListener(new OnDelClickListener() {
+			@Override
+			public void onClick(View view, String path) {
+				switch (view.getId()) {
+				case R.id.left_button:
 					doDelete(pos, path);
+					break;
+				default:
+					break;
 				}
-			})
-			.setNegativeButton(android.R.string.cancel, null)
-			.create().show();
+			}
+		});
+		deleteDialog.show();
     }
     
 	private void doDelete(int position, String path) {
-		mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, path);
-		mList.remove(position);
-		mAdapter.notifyDataSetChanged();
+		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, path);
+		if (!ret) {
+			mNotice.showToast(R.string.delete_fail);
+			Log.e(TAG, path + " delete failed");
+		}else {
+			mList.remove(position);
+			mAdapter.notifyDataSetChanged();
+		}
 		
 		Intent intent = new Intent(ImageFragmentActivity.PICTURE_ACTION);
 		mContext.sendBroadcast(intent);

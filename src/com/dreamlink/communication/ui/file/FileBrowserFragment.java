@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.ListContextMenu;
@@ -16,9 +15,8 @@ import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.PopupView;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
-import com.dreamlink.communication.ui.dialog.DeleteDialog;
-import com.dreamlink.communication.ui.dialog.FileInfoDialog;
-import com.dreamlink.communication.ui.dialog.DeleteDialog.ConfirmListener;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
 import com.dreamlink.communication.util.Log;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -27,7 +25,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,8 +41,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 public class FileBrowserFragment extends BaseFragment implements
-		OnClickListener, OnItemClickListener, ConfirmListener,
-		PopupViewClickListener, OnScrollListener {
+		OnClickListener, OnItemClickListener,PopupViewClickListener, OnScrollListener {
 	private static final String TAG = "FileBrowserFragment";
 
 	// 文件路径导航栏
@@ -93,22 +89,12 @@ public class FileBrowserFragment extends BaseFragment implements
 	// save current sdcard type path
 	private String current_root_path;
 
-	// ////////////
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.ui_file_all, container, false);
 		Log.d(TAG, "onCreate begin");
 		mContext = getActivity();
-
-		options = new DisplayImageOptions.Builder()
-				.showStubImage(R.drawable.icon_image)
-				.showImageForEmptyUri(R.drawable.icon_image)
-				.showImageOnFail(R.drawable.icon_image)
-				.cacheInMemory(DreamConstant.CACHE)
-				.cacheOnDisc(DreamConstant.CACHE)
-				.bitmapConfig(Bitmap.Config.RGB_565).build();
 
 		mFileListView = (ListView) rootView.findViewById(R.id.file_listview);
 		if (mFileListView != null) {
@@ -139,6 +125,9 @@ public class FileBrowserFragment extends BaseFragment implements
 			mSwitchImageView.setVisibility(View.GONE);
 			doInternal();
 		} else {
+			if (MountManager.NO_INTERNAL_SDCARD.equals(MountManager.INTERNAL_PATH)) {
+				mSwitchImageView.setVisibility(View.GONE);
+			}
 			doSdcard();
 		}
 
@@ -165,6 +154,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		FileInfo fileInfo = mAllLists.get(position);
+		System.out.println("fileino.type=" + fileInfo.type);
 		int top = view.getTop();
 		if (fileInfo.isDir) {
 			addToNavigationList(mCurrentPath, top, fileInfo);
@@ -197,12 +187,14 @@ public class FileBrowserFragment extends BaseFragment implements
 				isFirst = false;
 
 				// mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
-				mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists,
-						imageLoader, options);
+				mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
 				mFileListView.setAdapter(mFileInfoAdapter);
 			} else {
 				mFileInfoAdapter.notifyDataSetChanged();
 			}
+			//back to the listview top,every time
+			mFileListView.setSelection(0);
+			
 			mFileInfoAdapter.selectAll(false);
 			mTabManager.refreshTab(mCurrentPath, storge_type);
 		} else {
@@ -216,7 +208,7 @@ public class FileBrowserFragment extends BaseFragment implements
 		mFileLists.clear();
 	}
 
-	// Fill
+	/**fill current folder's files into list*/
 	private void fillList(File[] file) {
 		for (File currentFile : file) {
 			FileInfo fileInfo = null;
@@ -260,13 +252,10 @@ public class FileBrowserFragment extends BaseFragment implements
 		case ListContextMenu.MENU_SEND:
 			break;
 		case ListContextMenu.MENU_DELETE:
-			showConfirmDialog(fileInfo.filePath);
+			showDeleteDialog(fileInfo);
 			break;
 		case ListContextMenu.MENU_INFO:
 			mFileInfoManager.showInfoDialog(fileInfo);
-			// FileInfoDialog fragment = FileInfoDialog.newInstance(fileInfo,
-			// FileInfoDialog.FILE_INFO);
-			// fragment.show(getFragmentManager(), "Info");
 			break;
 		case ListContextMenu.MENU_RENAME:
 			break;
@@ -277,27 +266,56 @@ public class FileBrowserFragment extends BaseFragment implements
 	}
 
 	/**
-	 * show confrim dialog
-	 * 
-	 * @param path
-	 *            file path
+	 * show delete dialog
+	 * @param path  file path
 	 */
-	public void showConfirmDialog(String path) {
-		DeleteDialog fragment = DeleteDialog.newInstance(path);
-		// if (fragment != null) {
-		// fragment.dismissAllowingStateLoss();
-		// }
-		fragment.setConfirmListener(this);
-		fragment.show(getFragmentManager(), "Confirm");
-	}
+	public void showDeleteDialog(FileInfo fileInfo) {
+		String path = fileInfo.filePath;
+		final int type = fileInfo.type;
+		final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
+		deleteDialog.setOnClickListener(new OnDelClickListener() {
+			@Override
+			public void onClick(View view, String path) {
+				switch (view.getId()) {
+				case R.id.left_button:
+					doDelete(path, type);
+					break;
 
-	@Override
-	public void confirm(String path) {
+				default:
+					break;
+				}
+			}
+		});
+		deleteDialog.show();
+	}
+	
+	/**
+	 * do delete file</br>
+	 * if file is media file(image,audio,video),need delete in db
+	 * @param path
+	 * @param type
+	 */
+	public void doDelete(String path, int type){
 		File file = new File(path);
 		if (!file.exists()) {
 			Log.e(TAG, path + " is not exist");
 		} else {
-			boolean ret = file.delete();
+			boolean ret = true;
+			switch (type) {
+			case FileInfoManager.TYPE_IMAGE:
+				ret =  mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, path);
+				break;
+			case FileInfoManager.TYPE_AUDIO:
+				ret =  mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI, path);
+				break;
+			case FileInfoManager.TYPE_VIDEO:
+				ret =  mFileInfoManager.deleteFileInMediaStore(DreamConstant.VIDEO_URI, path);
+				break;
+			default:
+				//普通文件直接删除，不删除数据库，因为在3.0以前，还没有普通文件的数据哭
+				ret = file.delete();
+				break;
+			}
 			if (!ret) {
 				Log.e(TAG, path + " delete failed");
 			} else {
@@ -313,7 +331,7 @@ public class FileBrowserFragment extends BaseFragment implements
 				top, selectFile));
 	}
 
-	// file path tab manager
+	/**file path tab manager*/
 	protected class TabManager {
 		private List<String> mTabNameList = new ArrayList<String>();
 		protected LinearLayout mTabsHolder = null;

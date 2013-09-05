@@ -77,6 +77,7 @@
             android:id="@+id/file_listview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:fastScrollEnabled="true"
             android:layout_below="@+id/menu_layout" >
         </ListView>
         
@@ -91,42 +92,63 @@
                 style="@android:style/Widget.ProgressBar.Inverse"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-
-<!--             <TextView -->
-<!--                 android:layout_width="wrap_content" -->
-<!--                 android:layout_height="wrap_content" -->
-<!--                 android:paddingTop="10dp" -->
-<!--                 android:text="Loading..." /> -->
         </LinearLayout>
 
     </RelativeLayout>
     
-    <!-- init ui -->
-    <LinearLayout
-        android:id="@+id/server_or_client"
+    <!-- Remote file share server list -->
+    <RelativeLayout 
+        android:id="@+id/remote_share_server_list"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:gravity="center"
-        android:orientation="vertical" 
-        android:visibility="gone"
+        android:layout_height="fill_parent"
+        android:visibility="invisible"
         >
-
-        <Button 
-            android:id="@+id/server_button"
+        <TextView 
+            android:id="@+id/serverlist_text"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Server"
+            android:background="@color/black"
+            android:textColor="@color/white"
+            android:text="@string/remote_share_server_list_msg"
+            android:layout_alignParentTop="true"
             />
         
-        <Button 
-            android:id="@+id/client_button"
+        <LinearLayout 
+            android:id="@+id/create_remote_share_layout"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:text="Client"
-            />
-    </LinearLayout>
+            android:orientation="vertical"
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            >
+            
+            <Button 
+                android:id="@+id/search_share"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/search_remote_share"
+                />
+            
+            <Button 
+                android:id="@+id/create_share"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/create_remote_share"
+                />
+            
+        </LinearLayout>
+        
+        <ListView 
+            android:id="@+id/server_listview"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/serverlist_text"
+            android:layout_above="@+id/create_remote_share_layout"
+            ></ListView>
+        
+    </RelativeLayout>
     
     <!-- server ui -->
     <Button 

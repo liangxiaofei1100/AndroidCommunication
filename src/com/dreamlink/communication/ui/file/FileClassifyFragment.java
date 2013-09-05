@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.fileshare.FileInfo;
 import com.dreamlink.communication.util.Log;
 
 import android.R.integer;

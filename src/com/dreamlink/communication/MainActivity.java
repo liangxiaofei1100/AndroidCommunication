@@ -128,9 +128,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		case R.id.menu_network_status:
 			showNetworkStatus();
 			break;
-		case R.id.menu_listener_status:
-			showListenerStatus();
-			break;
+//		case R.id.menu_listener_status:
+//			showListenerStatus();
+//			break;
 		default:
 			break;
 		}

@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="9"
-        android:targetSdkVersion="17" />
+        android:targetSdkVersion="11" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -42,7 +42,7 @@
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="app_id"
-                android:value="112" />
+                android:value="113" />
         </activity>
         <activity
             android:name="com.dreamlink.communication.MainActivity"
@@ -87,7 +87,7 @@
             android:screenOrientation="portrait" >
         </activity>
 
-        <service android:name="com.dreamlink.communication.fileshare.FileShareServerService" >
+        <service android:name="com.dreamlink.communication.ui.file.RemoteShareService" >
         </service>
 
         <activity
@@ -197,6 +197,9 @@
         <activity 
             android:name="com.dreamlink.communication.ui.file.RemoteShareActivity"
             >
+            <meta-data
+                android:name="app_id"
+                android:value="112" />
         </activity>
         <activity 
             android:name="com.dreamlink.communication.ui.ConnectFriendActivity"
@@ -220,12 +223,16 @@
             android:theme="@style/MyDialogStyle" >
         </activity>
         <activity
+            android:name="com.dreamlink.communication.ui.history.HistoryActivity"
+            >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.ui.dialog.FileTransferActivity"
             android:screenOrientation="portrait"
             android:theme="@style/MyDialogStyle" >
         </activity>
         <activity
-            android:name="com.dreamlink.communication.ui.file.FileShareServer"
+            android:name="com.dreamlink.communication.fileshare.FileShareServer"
             android:screenOrientation="portrait" >
         </activity>
         <activity

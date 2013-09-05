@@ -43,27 +43,33 @@ public class DreamUtil {
 	 * @param size like 3232332
 	 * @return like 3.23M
 	 */
-	public static String getFormatSize(long size){
-		if (size > 1024 * 1024) {
-			Double dsize = (double) (size / (1024 * 1024));
-			return new DecimalFormat("#.00").format(dsize) + "MB";
-		}else if (size > 1024) {
-			Double dsize = (double)size / (1024);
-			return new DecimalFormat("#.00").format(dsize) + "KB";
-		}else {
-			return String.valueOf((int)size) + " Bytes";
-		}
-	}
+//	public static String getFormatSize(long size){
+//		if (size >= 1024 * 1024 * 1024){
+//			Double dsize = (double) (size / (1024 * 1024 * 1024));
+//			return new DecimalFormat("#.00").format(dsize) + "G";
+//		}else if (size >= 1024 * 1024) {
+//			Double dsize = (double) (size / (1024 * 1024));
+//			return new DecimalFormat("#.00").format(dsize) + "M";
+//		}else if (size >= 1024) {
+//			Double dsize = (double) (size / 1024);
+//			return new DecimalFormat("#.00").format(dsize) + "K";
+//		}else {
+//			return String.valueOf((int)size) + "B";
+//		}
+//	}
 	
 	public static String getFormatSize(double size){
-		if (size > 1024 * 1024) {
+		if (size >= 1024 * 1024 * 1024){
+			Double dsize = size / (1024 * 1024 * 1024);
+			return new DecimalFormat("#.00").format(dsize) + "G";
+		}else if (size >= 1024 * 1024) {
 			Double dsize = size / (1024 * 1024);
-			return new DecimalFormat("#.00").format(dsize) + "MB";
-		}else if (size > 1024) {
+			return new DecimalFormat("#.00").format(dsize) + "M";
+		}else if (size >= 1024) {
 			Double dsize = size / 1024;
-			return new DecimalFormat("#.00").format(dsize) + "KB";
+			return new DecimalFormat("#.00").format(dsize) + "K";
 		}else {
-			return String.valueOf((int)size) + " Bytes";
+			return String.valueOf((int)size) + "B";
 		}
 	}
 	
