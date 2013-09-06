@@ -31,7 +31,7 @@ public class ProtocolEncoder {
 	}
 
 	public static byte[] encodeSendFile(int sendUserID, int receiveUserID,
-			int appID, byte[] inetAddressData, int serverPort, FileInfo fileInfo) {
+			int appID, byte[] inetAddressData, int serverPort, FileTransferInfo fileInfo) {
 		return FileTransportProtocol.encodeSendFile(sendUserID, receiveUserID,
 				appID, inetAddressData, serverPort, fileInfo);
 

@@ -371,7 +371,7 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 
 	@Override
 	public void onReceiveFile(int sendUserID, int receiveUserID, int appID,
-			byte[] serverAddress, int serverPort, FileInfo fileInfo) {
+			byte[] serverAddress, int serverPort, FileTransferInfo fileInfo) {
 		Log.d(TAG, "onReceiveFile senUserID = " + sendUserID
 				+ ", receiveUserID = " + receiveUserID + ", appID = " + appID
 				+ ", serverPort = " + serverPort + ", file = "

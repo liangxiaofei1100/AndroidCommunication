@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.BaseFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.media.MediaInfoManager;
@@ -30,7 +31,7 @@ import android.widget.TextView;
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TabHost.TabContentFactory;
 
-public class ImageFragmentActivity extends FragmentActivity implements
+public class ImageFragmentActivity extends BaseFragmentActivity implements
 		TabContentFactory, OnTabChangeListener {
 	private static final String TAG = "ImageFragmentActivity";
 
@@ -228,12 +229,6 @@ public class ImageFragmentActivity extends FragmentActivity implements
 
 	}
 
-	@Override
-	public void onBackPressed() {
-		Log.d(TAG, "onBackPressed");
-		Intent intent = new Intent(DreamConstant.EXIT_ACTION);
-		sendBroadcast(intent);
-	}
 
 	@Override
 	protected void onDestroy() {

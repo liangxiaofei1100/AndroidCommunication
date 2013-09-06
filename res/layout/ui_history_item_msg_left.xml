@@ -75,7 +75,7 @@
                     	android:id="@+id/tv_send_file_name"
                    	 	android:layout_width="wrap_content"
                     	android:layout_height="wrap_content"
-                    	android:text="androidcommuncation.apk"
+                    	android:text="test.apk"
                      />
                   
                     <TextView

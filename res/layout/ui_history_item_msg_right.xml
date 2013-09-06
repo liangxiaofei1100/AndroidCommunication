@@ -96,7 +96,16 @@
                     	android:layout_height="wrap_content"
                     	android:text="androidcommuncation.apk"
                      />
-                  
+                     
+                     <ProgressBar
+                        android:id="@+id/bar_progressing"
+                        style="@style/progressBarHorizontal_color"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginTop="5dp" />
+
                     <TextView
                     	android:id="@+id/tv_send_file_size"
                     	android:layout_width="wrap_content"

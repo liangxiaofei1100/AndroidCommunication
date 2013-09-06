@@ -158,6 +158,7 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 						}
 					}else if (normal_menus[1].equals(currentMenu)) {
 						//send
+						
 					}else if (normal_menus[2].equals(currentMenu)) {
 						//uninstall
 						mAppManager.uninstallApp(appEntry.getPackageName());

@@ -17,7 +17,7 @@ import android.os.Message;
 import android.os.Handler.Callback;
 
 import com.dreamlink.aidl.User;
-import com.dreamlink.communication.protocol.FileInfo;
+import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -30,7 +30,7 @@ public class FileReceiver {
 	private User mSendUser;
 	private InetAddress mServerInetAddress;
 	private int mServerPort;
-	private FileInfo mFileInfo;
+	private FileTransferInfo mFileInfo;
 	private File mReceivedFile;
 	private OnReceiveListener mListener;
 
@@ -51,7 +51,7 @@ public class FileReceiver {
 	private Socket mSocket;
 
 	public FileReceiver(User sendUser, byte[] serverAddress, int serverPort,
-			FileInfo fileInfo) {
+			FileTransferInfo fileInfo) {
 		mSendUser = sendUser;
 		try {
 			mServerInetAddress = InetAddress.getByAddress(serverAddress);
@@ -72,7 +72,7 @@ public class FileReceiver {
 	/**
 	 * @return the FileInfo
 	 */
-	public FileInfo getFileInfo() {
+	public FileTransferInfo getFileInfo() {
 		return mFileInfo;
 	}
 
@@ -200,15 +200,15 @@ public class FileReceiver {
 				long receiveBytes = data.getLong(KEY_RECEIVE_BYTES);
 				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
 				if (mListener != null) {
-					mListener.onProgress(receiveBytes, totalBytes);
+					mListener.onReceiveProgress(receiveBytes, totalBytes);
 				}
 				break;
 			case MSG_FINISH:
 				if (mListener != null) {
 					if (msg.arg1 == FINISH_RESULT_SUCCESS) {
-						mListener.onFinished(true);
+						mListener.onReceiveFinished(true);
 					} else {
-						mListener.onFinished(false);
+						mListener.onReceiveFinished(false);
 					}
 				}
 				// Quit the HandlerThread.
@@ -266,14 +266,14 @@ public class FileReceiver {
 		 * @param receivedBytes
 		 * @param totalBytes
 		 */
-		void onProgress(long receivedBytes, long totalBytes);
+		void onReceiveProgress(long receivedBytes, long totalBytes);
 
 		/**
 		 * The file is received.
 		 * 
 		 * @param success
 		 */
-		void onFinished(boolean success);
+		void onReceiveFinished(boolean success);
 	}
 
 	/*

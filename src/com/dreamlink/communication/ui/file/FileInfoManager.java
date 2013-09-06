@@ -558,6 +558,17 @@ public class FileInfoManager {
 
 		return file.delete();
 	}
+	
+	/**
+	 * rename the file
+	 * @param oldFile
+	 * @param newName
+	 */
+	public void rename(File oldFile, String newName){
+			String parentPath = oldFile.getParent(); // 取得上一级目录
+			File newPath = new File(parentPath + "/" + newName);
+			oldFile.renameTo(newPath);
+	}
 
 	public void showInfoDialog(FileInfo fileInfo) {
 		String info = getFileInfo(fileInfo);

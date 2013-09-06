@@ -14,14 +14,20 @@ import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.PopupView;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
+import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
+import android.R.integer;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -36,6 +42,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -250,6 +257,12 @@ public class FileBrowserFragment extends BaseFragment implements
 			mFileInfoManager.openFile(fileInfo.filePath);
 			break;
 		case ListContextMenu.MENU_SEND:
+			Intent intent = new Intent();
+			intent.setAction(DreamConstant.SEND_FILE_ACTION);
+			Bundle bundle = new Bundle();
+			bundle.putParcelable(Extra.SEND_FILE, fileInfo);
+			intent.putExtras(bundle);
+			mContext.sendBroadcast(intent);
 			break;
 		case ListContextMenu.MENU_DELETE:
 			showDeleteDialog(fileInfo);
@@ -258,11 +271,36 @@ public class FileBrowserFragment extends BaseFragment implements
 			mFileInfoManager.showInfoDialog(fileInfo);
 			break;
 		case ListContextMenu.MENU_RENAME:
+			showRenameDialog(fileInfo, position);
 			break;
 		default:
 			break;
 		}
 		return super.onContextItemSelected(item);
+	}
+	
+	public void showRenameDialog(final FileInfo fileInfo, final int position){
+		LayoutInflater inflater = LayoutInflater.from(mContext);
+		View view = inflater.inflate(R.layout.ui_rename_dialog, null);
+		final EditText editText = (EditText) view.findViewById(R.id.et_rename);
+		editText.setText(fileInfo.fileName);
+		editText.selectAll();
+		new AlertDialog.Builder(mContext)
+			.setTitle("重命名")
+			.setView(view)
+			.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+					String newName = editText.getText().toString().trim();
+					mAllLists.get(position).fileName = newName;
+					mFileInfoManager.rename(new File(fileInfo.filePath), newName);
+					mFileInfoAdapter.notifyDataSetChanged();
+				}
+			})
+			.setNegativeButton(android.R.string.cancel, null)
+			.create().show();
 	}
 
 	/**
