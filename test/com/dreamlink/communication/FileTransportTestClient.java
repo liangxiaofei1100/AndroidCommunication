@@ -170,7 +170,7 @@ public class FileTransportTestClient extends Activity implements
 	}
 
 	@Override
-	public void onProgress(long receivedBytes, long totalBytes) {
+	public void onReceiveProgress(long receivedBytes, long totalBytes) {
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_UPDATE_RECEIVE_PROGRESS;
 		Bundle data = new Bundle();
@@ -181,7 +181,7 @@ public class FileTransportTestClient extends Activity implements
 	}
 
 	@Override
-	public void onFinished(boolean success) {
+	public void onReceiveFinished(boolean success) {
 		mHandler.sendEmptyMessage(MSG_FINISHED);
 	}
 }

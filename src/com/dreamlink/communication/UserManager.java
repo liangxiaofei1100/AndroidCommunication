@@ -85,7 +85,7 @@ public class UserManager {
 			Log.d(TAG, "addUser ignore, user is already exist. " + user);
 			return false;
 		}
-		
+
 		if (user.getUserID() != 0) {
 			// This is a client, The user is already assigned a id by server.
 		} else {
@@ -158,11 +158,13 @@ public class UserManager {
 	}
 
 	public synchronized void removeUser(int id) {
-		for (OnUserChangedListener listener : mOnUserChangedListeners) {
-			listener.onUserDisconnected(mUsers.get(id));
-		}
+		User tempUser = mUsers.get(id);
 		mUsers.remove(id);
 		mCommunications.remove(id);
+		for (OnUserChangedListener listener : mOnUserChangedListeners) {
+			listener.onUserDisconnected(tempUser);
+		}
+		tempUser = null;
 		Log.d(TAG, "remove user id = " + id);
 	}
 
