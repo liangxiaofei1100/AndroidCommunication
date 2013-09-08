@@ -88,6 +88,7 @@ public class FileInfo implements Parcelable,Comparable{
 		dest.writeString(fileName);
 		dest.writeDouble(fileSize);
 		dest.writeLong(fileDate);
+		dest.writeString(filePath);
 	}
 	
 	public void readFromParcel(Parcel in){
@@ -95,6 +96,7 @@ public class FileInfo implements Parcelable,Comparable{
 		fileName = in.readString();
 		fileSize = in.readDouble();
 		fileDate = in.readLong();
+		filePath = in.readString();
 	}
 
 	//make it can sort

@@ -29,6 +29,7 @@ import com.dreamlink.communication.protocol.ProtocolEncoder;
 import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.server.SocketServerTask;
 import com.dreamlink.communication.server.SocketServerTask.OnClientConnectedListener;
+import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
@@ -90,6 +91,8 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		 * @param fileReceiver
 		 */
 		void onReceiveFile(FileReceiver fileReceiver);
+		//test by yuri 
+		void onReceiveFileByYuri(FileReceiverByYuri fileReceiverByYuri);
 	}
 
 	private static SocketCommunicationManager mInstance;
@@ -264,6 +267,44 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		} else {
 			Log.e(TAG, "sendFile fail. can not connect with the receiver: "
 					+ receiveUser);
+		}
+	}
+	
+	/**
+	 * yuri test
+	 */
+	public void sendFile(HistoryInfo historyInfo, com.dreamlink.communication.FileSenderByYuri.OnFileSendListener listener, int appID) {
+		Log.d(TAG, "sendFile() file = " + historyInfo.getFileInfo().fileName + "," + 
+	historyInfo.getFileInfo().filePath + ", receive user = "
+				+ historyInfo.getReceiveUser().getUserName() + ", appID = " + appID);
+//		FileSender fileSender = new FileSender();
+//		int serverPort = fileSender.sendFile(file, listener);
+		FileSenderByYuri fileSenderByYuri = new FileSenderByYuri();
+		int serverPort = fileSenderByYuri.sendFile(historyInfo, listener);
+		if (serverPort == -1) {
+			Log.e(TAG, "sendFile error, create socket server fail. file = "
+					+ historyInfo.getFileInfo().fileName);
+			return;
+		}
+		InetAddress inetAddress = NetWorkUtil.getLocalInetAddress();
+		if (inetAddress == null) {
+			Log.e(TAG,
+					"sendFile error, get inet address fail. file = "
+							+ historyInfo.getFileInfo().fileName);
+			return;
+		}
+		int userID = historyInfo.getReceiveUser().getUserID();
+		byte[] inetAddressData = inetAddress.getAddress();
+		byte[] data = ProtocolEncoder.encodeSendFile(mUserManager
+				.getLocalUser().getUserID(), historyInfo.getReceiveUser().getUserID(), appID,
+				inetAddressData, serverPort, new FileTransferInfo(new File(historyInfo.getFileInfo().filePath)));
+		SocketCommunication communication = mUserManager
+				.getSocketCommunication(userID);
+		if (communication != null) {
+			communication.sendMessage(data);
+		} else {
+			Log.e(TAG, "sendFile fail. can not connect with the receiver: "
+					+ historyInfo.getReceiveUser());
 		}
 	}
 

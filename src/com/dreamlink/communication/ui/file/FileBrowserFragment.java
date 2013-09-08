@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.dreamlink.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
@@ -19,14 +20,13 @@ import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
-import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
-import android.R.integer;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -257,12 +257,22 @@ public class FileBrowserFragment extends BaseFragment implements
 			mFileInfoManager.openFile(fileInfo.filePath);
 			break;
 		case ListContextMenu.MENU_SEND:
-			Intent intent = new Intent();
-			intent.setAction(DreamConstant.SEND_FILE_ACTION);
-			Bundle bundle = new Bundle();
-			bundle.putParcelable(Extra.SEND_FILE, fileInfo);
-			intent.putExtras(bundle);
-			mContext.sendBroadcast(intent);
+			//get current connected user list
+			ArrayList<String> userNameList = mUserManager.getAllUserNameList();
+			if (userNameList.size() == 0) {
+				mNotice.showToast("请先连接");
+				break;
+			}else if (userNameList.size() == 1) {
+				//if only one user.send directory
+				ArrayList<User> userList = new ArrayList<User>();
+				User user = mUserManager.getUser(userNameList.get(0));
+				userList.add(user);
+				System.out.println("before send.fileinfo.filepath=" + fileInfo.filePath);
+				doSend(userList, fileInfo);
+			}else {
+				//if there are two or more user,need show dialog for user choose
+				showUserChooseDialog(userNameList, fileInfo);
+			}
 			break;
 		case ListContextMenu.MENU_DELETE:
 			showDeleteDialog(fileInfo);
@@ -279,6 +289,55 @@ public class FileBrowserFragment extends BaseFragment implements
 		return super.onContextItemSelected(item);
 	}
 	
+	public void showUserChooseDialog(List<String> data, final FileInfo fileInfo){
+		final String[] items = new String[data.size()];
+		final boolean[] checkes = new boolean[data.size()];
+		for (int i = 0; i < data.size(); i++) {
+			items[i] = data.get(i);
+			checkes[i] = true;
+		}
+		new AlertDialog.Builder(mContext)
+			.setTitle("用户列表")
+			.setMultiChoiceItems(items, checkes, new OnMultiChoiceClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+					//TODO
+				}
+			})
+			.setPositiveButton("发送", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					ArrayList<User> userList = new ArrayList<User>();
+					for (int i = 0; i < checkes.length; i++) {
+						if (checkes[i]) {
+							User user = mUserManager.getUser(items[i]);
+							userList.add(user);
+						}
+					}
+					doSend(userList, fileInfo);
+				}
+			})
+			.setNegativeButton(android.R.string.cancel, null)
+			.create().show();
+	}
+	
+	/**
+	 * notify HistoryActivity that send file
+	 * @param list the send user list
+	 * @param fileInfo the file that send
+	 */
+	public void doSend(ArrayList<User> list, FileInfo fileInfo){
+		System.out.println("doSend.filepath=" + fileInfo.filePath);
+		Intent intent = new Intent();
+		intent.setAction(DreamConstant.SEND_FILE_ACTION);
+		Bundle bundle = new Bundle();
+		bundle.putParcelable(Extra.SEND_FILE, fileInfo);
+		bundle.putParcelableArrayList(Extra.SEND_USER, list);
+		intent.putExtras(bundle);
+		mContext.sendBroadcast(intent);
+	}
+	
 	public void showRenameDialog(final FileInfo fileInfo, final int position){
 		LayoutInflater inflater = LayoutInflater.from(mContext);
 		View view = inflater.inflate(R.layout.ui_rename_dialog, null);
@@ -292,7 +351,6 @@ public class FileBrowserFragment extends BaseFragment implements
 				
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
 					String newName = editText.getText().toString().trim();
 					mAllLists.get(position).fileName = newName;
 					mFileInfoManager.rename(new File(fileInfo.filePath), newName);
@@ -624,5 +682,4 @@ public class FileBrowserFragment extends BaseFragment implements
 			}
 		}
 	}
-
 }

@@ -14,6 +14,11 @@ public class HistoryManager {
 		
 		public static final NumberFormat nf = NumberFormat.getPercentInstance();
 		
+		public static final int TYPE_SEND = 0;
+		public static final int TYPE_RECEIVE = 1;
+		
+		public static final String ME = "ME";
+		
 		/**
 	     * Perform alphabetical comparison of application entry objects.
 	     */

@@ -1,5 +1,6 @@
 package com.dreamlink.communication.ui;
 
+import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,6 +22,10 @@ public class StartLoader extends Activity{
 		setContentView(R.layout.ui_loader);
 		
 		mHandler.sendEmptyMessage(LOADING);
+		File file  = new File(DreamConstant.DEFAULT_SAVE_FOLDER);
+		if (!file.exists()) {
+			file.mkdirs();
+		}
 	}
 	
 	private static final int LOADING = 0x111;

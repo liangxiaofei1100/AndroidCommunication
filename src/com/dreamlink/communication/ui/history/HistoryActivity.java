@@ -1,15 +1,18 @@
 package com.dreamlink.communication.ui.history;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.FileReceiver;
+import com.dreamlink.communication.FileReceiver.OnReceiveListener;
+import com.dreamlink.communication.FileReceiverByYuri;
+import com.dreamlink.communication.FileSender.OnFileSendListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
@@ -23,7 +26,6 @@ import com.dreamlink.communication.util.AppUtil;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,11 +34,10 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.view.KeyEvent;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class HistoryActivity extends BaseFragmentActivity implements OnFileTransportListener {
+public class HistoryActivity extends BaseFragmentActivity implements OnFileTransportListener, com.dreamlink.communication.FileSenderByYuri.OnFileSendListener, OnReceiveListener {
 	private static final String TAG = "HistoryActivity";
 	private int mAppId = -1;
 	private Context mContext;
@@ -53,11 +54,18 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileTrans
 	
 	private Notice mNotice;
 	private SocketCommunicationManager communicationManager;
-	private UserManager mUserManager;
 	
 	//msg
 	private static final int MSG_SEND_FILE = 0;
 	private static final int MSG_UPDATE_UI = 1;
+	private static final int MSG_UPDATE_SEND_PROGRESS = 2;
+	private static final int MSG_UPDATE_SEND_STATUS = 3;
+	private static final int MSG_UPDATE_RECEIVE_STATUS = 4;
+	private static final int MSG_UPDATE_RECEIVE_PROGRESS = 5;
+	
+	private static final String KEY_RECEIVE_BYTES = "KEY_RECEIVE_BYTES";
+	private static final String KEY_SENT_BYTES = "KEY_SENT_BYTES";
+	private static final String KEY_TOTAL_BYTES = "KEY_TOTAL_BYTES";
 	
 	public BroadcastReceiver historyReceiver = new BroadcastReceiver() {
 		
@@ -70,8 +78,8 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileTrans
 				bundle = intent.getExtras();
 				if (null != bundle) {
 					FileInfo fileInfo = bundle.getParcelable(Extra.SEND_FILE);
-					CreateFileThread createFileThread = new CreateFileThread(fileInfo);
-					createFileThread.start();
+					List<User> userList = bundle.getParcelableArrayList(Extra.SEND_USER);
+					sendFile(fileInfo, userList);
 				}
 			}
 		}
@@ -82,39 +90,50 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileTrans
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_SEND_FILE:
-				FileInfo fileInfo = (FileInfo) msg.obj;
-				final double max = fileInfo.fileSize;
-				mAdapter.setMax(fileInfo.fileSize);
-				mAdapter.setStatus(HistoryManager.STATUS_SENDING);
-				//模拟发送文件,查看UI效果
-				HistoryInfo historyInfo = new HistoryInfo();
-				User user = new User();
-				user.setUserID(1111);
-				user.setUserName("大众化");
-				historyInfo.setUser(user);
-				historyInfo.setFileInfo(fileInfo);
-				historyInfo.setDate(System.currentTimeMillis());
-				mHistoryList.add(historyInfo);
-				int position = mHistoryList.indexOf(historyInfo);
-				new Timer().schedule(new TimerTask() {
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-						len += max * 0.1;
-						Log.i(TAG, "len=" + len);
-						if (len > max) {
-							cancel();
-						}else {
-							mAdapter.setProgress(len);
-							mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_UI));
-						}
-					}
-				}, 0, 1000);
 				break;
 			case MSG_UPDATE_UI:
+				HistoryInfo historyInfo1 = (HistoryInfo) msg.obj;
 				Collections.sort(mHistoryList, HistoryManager.DATE_COMPARATOR);
+				int position = mHistoryList.indexOf(historyInfo1);
+				mHistoryList.get(position).setProgress(len);
+				Log.i(TAG, "position=" + position);
 				mHistoryMsgLV.setSelection(0);
 				mAdapter.notifyDataSetChanged();
+				break;
+				
+			case MSG_UPDATE_SEND_PROGRESS:
+				Log.d(TAG, "MSG_UPDATE_SEND_PROGRESS");
+//				Bundle data = msg.getData();
+//				long sentBytes = data.getLong(KEY_SENT_BYTES);
+//				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
+//				int progress = (int) ((sentBytes / (float) totalBytes) * 100);
+//				Log.d(TAG, "sentBytes = " + sentBytes + ", totalBytes = "
+//						+ totalBytes + "progress = " + progress);
+				HistoryInfo historyInfo2 = (HistoryInfo) msg.obj;
+				Collections.sort(mHistoryList, HistoryManager.DATE_COMPARATOR);
+				int position2 = mHistoryList.indexOf(historyInfo2);
+				mHistoryMsgLV.setSelection(position2);
+				mAdapter.notifyDataSetChanged();
+				break;
+				
+			case MSG_UPDATE_RECEIVE_PROGRESS:
+				Bundle data = msg.getData();
+				long receivedBytes = data.getLong(KEY_RECEIVE_BYTES);
+				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
+				int progress = (int) ((receivedBytes / (float) totalBytes) * 100);
+				mProgressBar.setProgress(progress);
+				Log.d(TAG, "receivedBytes = " + receivedBytes
+						+ ", totalBytes = " + totalBytes + "progress = "
+						+ progress);
+				mSpeedTextView.setText(FileTransportTest.getSpeedText(
+						receivedBytes, mStartTime));
+				break;
+				
+			case MSG_UPDATE_SEND_STATUS:
+				break;
+			case MSG_UPDATE_RECEIVE_STATUS:
+				int status = msg.arg1;
+				mAdapter.setReciveStatus(status);
 				break;
 
 			default:
@@ -133,7 +152,6 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileTrans
 		mNotice = new Notice(mContext);
 		communicationManager = SocketCommunicationManager.getInstance(mContext);
 		communicationManager.registerOnFileTransportListener(this, mAppId);
-		mUserManager = UserManager.getInstance();
 		
 		//register broadcast
 		IntentFilter filter = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
@@ -151,45 +169,139 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileTrans
 		mHistoryMsgLV = (ListView) findViewById(R.id.lv_history_msg);
 		mHistoryMsgLV.setEmptyView(findViewById(R.id.tv_empty));
 		//test=================
-//		HistoryInfo historyInfo = null;
-//		for (int i = 0; i < 10; i++) {
-//			historyInfo = new HistoryInfo();
-//			if (i % 2 == 0) {
-//				historyInfo.setDate(System.currentTimeMillis() + i * 1000);
-//				historyInfo.setMsgType(false);
-//				mHistoryList.add(historyInfo);
-//			}else {
-//				historyInfo.setDate(System.currentTimeMillis() + i * 1000);
-//				historyInfo.setMsgType(true);
-//				mHistoryList.add(historyInfo);
-//			}
-//		}
-//		Collections.sort(mHistoryList, DATE_COMPARATOR);
+		HistoryInfo historyInfo = null;
+		for (int i = 0; i < 10; i++) {
+			historyInfo = new HistoryInfo();
+			FileInfo fileInfo = new FileInfo("testFile" + i);
+			historyInfo.setFileInfo(fileInfo);
+			historyInfo.setDate(System.currentTimeMillis() + i * 1000);
+			if (i % 2 == 0) {
+				historyInfo.setSendUserName("name" + i);
+				historyInfo.setMsgType(HistoryManager.TYPE_RECEIVE);
+			}else {
+				historyInfo.setSendUserName(HistoryManager.ME);
+				historyInfo.setMsgType(HistoryManager.TYPE_SEND);
+			}
+			mHistoryList.add(historyInfo);
+		}
+		Collections.sort(mHistoryList, HistoryManager.DATE_COMPARATOR);
 		//test=================
 		mAdapter = new HistoryMsgAdapter(mContext, mHistoryList);
 		mHistoryMsgLV.setAdapter(mAdapter);
 		mHistoryMsgLV.setSelection(0);
 	}
 	
-    class CreateFileThread extends Thread {
+	public void sendFile(FileInfo fileInfo, List<User> list){
+		for (int i = 0; i < list.size(); i++) {
+			User receiverUser = list.get(i);
+			SendFileThread sendFileThread = new SendFileThread(fileInfo, receiverUser);
+			sendFileThread.start();
+		}
+	}
+	
+    class SendFileThread extends Thread {
     	FileInfo fileInfo = null;
-    	CreateFileThread(FileInfo fileInfo){
+    	User receiveUser = null;
+    	SendFileThread(FileInfo fileInfo, User receiveUser){
     		this.fileInfo = fileInfo;
+    		this.receiveUser = receiveUser;
     	}
     	
 		@Override
 		public void run() {
-			Message message = mHandler.obtainMessage();
-			message.what = MSG_SEND_FILE;
-			message.obj = fileInfo;
-			message.sendToTarget();
+			HistoryInfo historyInfo = new HistoryInfo();
+			historyInfo.setFileInfo(fileInfo);
+			historyInfo.setReceiveUser(receiveUser);
+			historyInfo.setSendUserName(HistoryManager.ME);
+			historyInfo.setMsgType(HistoryManager.TYPE_SEND);
+			historyInfo.setDate(System.currentTimeMillis());
+			
+			mHistoryList.add(historyInfo);
+			
+//			communicationManager.sendFile(new File(fileInfo.filePath),
+//					HistoryActivity.this, receiveUser, mAppId);
+			
+			communicationManager.sendFile(historyInfo, HistoryActivity.this, mAppId);
 		}
 	}
     
 	@Override
 	public void onReceiveFile(FileReceiver fileReceiver) {
 		// TODO Auto-generated method stub
+		Log.d(TAG, "onReceiveFile:" + fileReceiver.getFileInfo().mFileName + "," + fileReceiver.getSendUser().getUserName());
+		//define a file to save the receive file
+		File fileDir = new File(DreamConstant.DEFAULT_SAVE_FOLDER);
+		if (!fileDir.exists()) {
+			fileDir.mkdirs();
+		}
+		
+		File file = new File(DreamConstant.DEFAULT_SAVE_FOLDER + fileReceiver.getFileInfo().mFileName);
+		if (file.exists()) {
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		HistoryInfo historyInfo = new HistoryInfo();
+		FileInfo fileInfo = new FileInfo(fileReceiver.getFileInfo().mFileName);
+		fileInfo.fileDate = file.lastModified();
+		fileInfo.filePath = file.getAbsolutePath();
+		fileInfo.fileSize = file.length();
+		historyInfo.setFileInfo(fileInfo);
+		historyInfo.setSendUserName(fileReceiver.getSendUser().getUserName());
+		historyInfo.setMsgType(HistoryManager.TYPE_RECEIVE);
+		historyInfo.setDate(System.currentTimeMillis());
+		mHistoryList.add(historyInfo);
+		
+		fileReceiver.receiveFile(file, this);
+		
+		Message message = mHandler.obtainMessage();
+		message.what = MSG_UPDATE_RECEIVE_STATUS;
+		message.arg1 = HistoryManager.STATUS_RECEIVING;
+		mHandler.sendMessage(message);
+	}
+
+	@Override
+	public void onSendProgress(HistoryInfo historyInfo) {
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onSendProgress=" + historyInfo.getProgress());
+		Message message = mHandler.obtainMessage();
+		message.what = MSG_UPDATE_SEND_PROGRESS;
+		message.obj = historyInfo;
+		mHandler.sendMessage(message);
+	}
+
+	@Override
+	public void onSendFinished(boolean success) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void onReceiveProgress(long receivedBytes, long totalBytes) {
+		// TODO Auto-generated method stub
+		Message message = mHandler.obtainMessage();
+		message.what = MSG_UPDATE_RECEIVE_PROGRESS;
+		Bundle data = new Bundle();
+		data.putLong(KEY_RECEIVE_BYTES, receivedBytes);
+		data.putLong(KEY_TOTAL_BYTES, totalBytes);
+		message.setData(data);
+		mHandler.sendMessage(message);
+	}
+
+	@Override
+	public void onReceiveFinished(boolean success) {
+		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void onReceiveFileByYuri(FileReceiverByYuri fileReceiverByYuri) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 }

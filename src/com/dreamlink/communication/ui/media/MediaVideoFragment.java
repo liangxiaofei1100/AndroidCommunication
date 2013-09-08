@@ -57,8 +57,8 @@ public class MediaVideoFragment extends Fragment implements OnItemLongClickListe
 		@Override
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
-			GetVideosTask getVideosTask = new GetVideosTask();
-			getVideosTask.execute();
+//			GetVideosTask getVideosTask = new GetVideosTask();
+//			getVideosTask.execute();
 		}
 	}
 	

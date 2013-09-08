@@ -246,8 +246,8 @@ public class ImageFragmentActivity extends BaseFragmentActivity implements
 		@Override
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
-			GetImagesTask getImagesTask = new GetImagesTask();
-			getImagesTask.execute();
+//			GetImagesTask getImagesTask = new GetImagesTask();
+//			getImagesTask.execute();
 		}
 	}
 }

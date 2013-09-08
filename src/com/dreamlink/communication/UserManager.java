@@ -1,5 +1,6 @@
 package com.dreamlink.communication;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -269,6 +270,37 @@ public class UserManager {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 *Get connected all user
+	 * @return the user list
+	 */
+	public ArrayList<String> getAllUserNameList() {
+		ArrayList<String> allUsers = new ArrayList<String>();
+		User localUser = getLocalUser();
+		for (Map.Entry<Integer, User> entry : getAllUser()
+				.entrySet()) {
+			if (localUser.getUserID() != (int) entry.getKey()) {
+				allUsers.add(entry.getValue().getUserName());
+			}
+		}
+		return allUsers;
+	}
+
+	/**
+	 * accord the username to get the user info
+	 * @param userName
+	 * @return user
+	 */
+	public User getUser(String userName) {
+		for (Map.Entry<Integer, User> entry : getAllUser()
+				.entrySet()) {
+			if (entry.getValue().getUserName().equals(userName)) {
+				return entry.getValue();
+			}
+		}
+		return null;
 	}
 
 }

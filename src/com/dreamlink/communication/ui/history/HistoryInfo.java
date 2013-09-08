@@ -9,16 +9,19 @@ import com.dreamlink.communication.ui.file.FileInfo;
 
 public class HistoryInfo implements Parcelable{
 	/**
-	 * true,is send message </br>
-	 * false, is receive message
+	 * 0, send message </br>
+	 * 1, receive message
 	 * */
-	private boolean isSendMsg;
+	private int msgType;
 	
 	/**send or receive time*/
 	private long date;
 	
-	/**send user*/
-	private User sendUser;
+	/**receive message user*/
+	private User receiveUser;
+	
+	/**send user name*/
+	private String sendUserName;
 	
 	/**send or receive file info*/
 	private FileInfo fileInfo;
@@ -33,19 +36,19 @@ public class HistoryInfo implements Parcelable{
 	public HistoryInfo(){
 	}
 	
-	public HistoryInfo(boolean isSendMsg, long date, User user, FileInfo fileInfo){
-		this.isSendMsg = isSendMsg;
+	public HistoryInfo(int  msgType, long date, User user, FileInfo fileInfo){
+		this.msgType = msgType;
 		this.date = date;
-		this.sendUser = user;
+		this.receiveUser = user;
 		this.fileInfo = fileInfo;
 	}
 	
-	public boolean getMsgType(){
-		return isSendMsg;
+	public int getMsgType(){
+		return msgType;
 	}
 	
-	public void setMsgType(boolean type){
-		isSendMsg = type;
+	public void setMsgType(int type){
+		msgType = type;
 	}
 	
 	public long getDate(){
@@ -60,12 +63,20 @@ public class HistoryInfo implements Parcelable{
 		this.date = date;
 	}
 	
-	public User getUser(){
-		return sendUser;
+	public User getReceiveUser(){
+		return receiveUser;
 	}
 	
-	public void setUser(User user){
-		this.sendUser = user;
+	public void setReceiveUser(User user){
+		this.receiveUser = user;
+	}
+	
+	public String getSendUserName(){
+		return sendUserName;
+	}
+	
+	public void setSendUserName(String name){
+		this.sendUserName = name;
 	}
 	
 	public FileInfo getFileInfo(){

@@ -576,10 +576,11 @@ public class FileInfoManager {
 	}
 
 	private String getFileInfo(FileInfo fileInfo) {
+		String path = fileInfo.filePath.substring(0, fileInfo.filePath.lastIndexOf("/"));
 		String result = "";
 		result = "名称:" + fileInfo.fileName + DreamConstant.ENTER + "类型:"
 				+ (fileInfo.isDir ? "文件夹" : "文件") + DreamConstant.ENTER + "位置:"
-				+ fileInfo.filePath + DreamConstant.ENTER + "大小:"
+				+ path + DreamConstant.ENTER + "大小:"
 				+ fileInfo.getFormatFileSize() + DreamConstant.ENTER + "修改日期:"
 				+ fileInfo.getFormateDate();
 		return result;

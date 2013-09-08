@@ -59,43 +59,48 @@ public class MediaInfoManager {
 		Cursor cursor = context.getContentResolver().query(audioUri, null,
 				null, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
 
-		if (cursor.moveToFirst()) {
-			MediaInfo mediaInfo = null;
-			do {
-				mediaInfo = new MediaInfo();
-				long id = cursor.getLong(cursor
-						.getColumnIndex(MediaStore.Audio.Media._ID)); // 音乐id
-				String title = cursor.getString((cursor
-						.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
-				// Log.d("Yuri", title);
-				String artist = cursor.getString(cursor
-						.getColumnIndex(MediaStore.Audio.Media.ARTIST)); // 艺术家
-				String album = cursor.getString(cursor
-						.getColumnIndex(MediaStore.Audio.Media.ALBUM)); // 专辑
-				long albumId = cursor.getInt(cursor
-						.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-				long duration = cursor.getLong(cursor
-						.getColumnIndex(MediaStore.Audio.Media.DURATION)); // 时长
-				long size = cursor.getLong(cursor
-						.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
-				String url = cursor.getString(cursor
-						.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
-				int isMusic = cursor.getInt(cursor
-						.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC)); // 是否为音乐
-				if (isMusic != 0) { // 只把音乐添加到集合当中
-					mediaInfo.setId(id);
-					mediaInfo.setDisplayName(title);
-					mediaInfo.setArtist(artist);
-					mediaInfo.setAlbum(album);
-					mediaInfo.setAlbumId(albumId);
-					mediaInfo.setDuration(duration);
-					mediaInfo.setSize(size);
-					mediaInfo.setUrl(url);
-					list.add(mediaInfo);
-				}
-			} while (cursor.moveToNext());
+		if (null == cursor) {
+			
+		}else {
+			if (cursor.moveToFirst()) {
+				MediaInfo mediaInfo = null;
+				do {
+					mediaInfo = new MediaInfo();
+					long id = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Audio.Media._ID)); // 音乐id
+					String title = cursor.getString((cursor
+							.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
+					// Log.d("Yuri", title);
+					String artist = cursor.getString(cursor
+							.getColumnIndex(MediaStore.Audio.Media.ARTIST)); // 艺术家
+					String album = cursor.getString(cursor
+							.getColumnIndex(MediaStore.Audio.Media.ALBUM)); // 专辑
+					long albumId = cursor.getInt(cursor
+							.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+					long duration = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Audio.Media.DURATION)); // 时长
+					long size = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
+					String url = cursor.getString(cursor
+							.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
+					int isMusic = cursor.getInt(cursor
+							.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC)); // 是否为音乐
+					if (isMusic != 0) { // 只把音乐添加到集合当中
+						mediaInfo.setId(id);
+						mediaInfo.setDisplayName(title);
+						mediaInfo.setArtist(artist);
+						mediaInfo.setAlbum(album);
+						mediaInfo.setAlbumId(albumId);
+						mediaInfo.setDuration(duration);
+						mediaInfo.setSize(size);
+						mediaInfo.setUrl(url);
+						list.add(mediaInfo);
+					}
+				} while (cursor.moveToNext());
+			}
+			cursor.close();
 		}
-		cursor.close();
+		
 		return list;
 	}
 
@@ -106,39 +111,44 @@ public class MediaInfoManager {
 		Cursor cursor = contentResolver.query(videoUri, null, null, null,
 				MediaStore.Video.Media.DEFAULT_SORT_ORDER);
 
-		if (cursor.moveToFirst()) {
-			MediaInfo mediaInfo = null;
-			do {
-				mediaInfo = new MediaInfo();
-				long id = cursor.getLong(cursor
-						.getColumnIndex(MediaStore.Video.Media._ID));
-				long duration = cursor.getLong(cursor
-						.getColumnIndex(MediaStore.Video.Media.DURATION)); // 时长
-				long size = cursor.getLong(cursor
-						.getColumnIndex(MediaStore.Video.Media.SIZE)); // 文件大小
-				String url = cursor.getString(cursor
-						.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
-				String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
-				if (new File(url).exists()) {
-					BitmapFactory.Options options = new BitmapFactory.Options();
-					options.inDither = false;
-					options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-					// get video thumbail
-					Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(
-							contentResolver, id, Images.Thumbnails.MICRO_KIND,
-							options);
-					mediaInfo.setId(id);
-					mediaInfo.setDuration(duration);
-					mediaInfo.setSize(size);
-					mediaInfo.setUrl(url);
-					mediaInfo.setDisplayName(displayName);
-					mediaInfo.setIcon(bitmap);
-					list.add(mediaInfo);
-				}
-				
-			} while (cursor.moveToNext());
+		if (null == cursor) {
+			
+		}else {
+			if (cursor.moveToFirst()) {
+				MediaInfo mediaInfo = null;
+				do {
+					mediaInfo = new MediaInfo();
+					long id = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Video.Media._ID));
+					long duration = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Video.Media.DURATION)); // 时长
+					long size = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Video.Media.SIZE)); // 文件大小
+					String url = cursor.getString(cursor
+							.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
+					String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
+					if (new File(url).exists()) {
+						BitmapFactory.Options options = new BitmapFactory.Options();
+						options.inDither = false;
+						options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+						// get video thumbail
+						Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(
+								contentResolver, id, Images.Thumbnails.MICRO_KIND,
+								options);
+						mediaInfo.setId(id);
+						mediaInfo.setDuration(duration);
+						mediaInfo.setSize(size);
+						mediaInfo.setUrl(url);
+						mediaInfo.setDisplayName(displayName);
+						mediaInfo.setIcon(bitmap);
+						list.add(mediaInfo);
+					}
+					
+				} while (cursor.moveToNext());
+			}
+			cursor.close();
 		}
-		cursor.close();
+		
 		return list;
 	}
 
@@ -150,35 +160,39 @@ public class MediaInfoManager {
 		Cursor cursor = contentResolver.query(imagesUri, null, null, null,
 				MediaStore.MediaColumns.DATE_MODIFIED);
 
-		if (cursor.moveToFirst()) {
-			ImageInfo imageInfo = null;
-			do {
-				long id = cursor.getLong(cursor
-						.getColumnIndex(MediaStore.Images.ImageColumns._ID));
-				String path = cursor.getString(cursor
-						.getColumnIndex(MediaStore.MediaColumns.DATA));
-				// 图片所在文件夹名
-				String folder = cursor.getString(cursor
-								.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME));
-				long width = 0;
-				long height = 0;
-				if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-					width = cursor.getLong(cursor.getColumnIndex("width"));
-					height = cursor.getLong(cursor.getColumnIndex("height"));
-				}
-				if (new File(path).exists()) {
-					imageInfo = new ImageInfo(id);
-					imageInfo.setPath(path);
-					imageInfo.setBucketDisplayName(folder);
-					imageInfo.setWidth(width);
-					imageInfo.setHeight(height);
-					
-					imageInfos.add(imageInfo);
-				}
+		if(null == cursor){
+			
+		}else {
+			if (cursor.moveToFirst()) {
+				ImageInfo imageInfo = null;
+				do {
+					long id = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Images.ImageColumns._ID));
+					String path = cursor.getString(cursor
+							.getColumnIndex(MediaStore.MediaColumns.DATA));
+					// 图片所在文件夹名
+					String folder = cursor.getString(cursor
+									.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME));
+					long width = 0;
+					long height = 0;
+					if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+						width = cursor.getLong(cursor.getColumnIndex("width"));
+						height = cursor.getLong(cursor.getColumnIndex("height"));
+					}
+					if (new File(path).exists()) {
+						imageInfo = new ImageInfo(id);
+						imageInfo.setPath(path);
+						imageInfo.setBucketDisplayName(folder);
+						imageInfo.setWidth(width);
+						imageInfo.setHeight(height);
+						
+						imageInfos.add(imageInfo);
+					}
 
-			} while (cursor.moveToNext());
+				} while (cursor.moveToNext());
+			}
+			cursor.close();
 		}
-		cursor.close();
 		Log.d(TAG, "getImageInfo.end:" + System.currentTimeMillis());
 		return imageInfos;
 	}

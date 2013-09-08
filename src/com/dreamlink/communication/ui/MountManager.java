@@ -23,6 +23,7 @@ import android.os.Environment;
 dev_mount sdcard /storage/sdcard0 emmc@fat /devices/platform/goldfish_mmc.0 /devices/platform/mtk-msdc.0/mmc </br>
 dev_mount sdcard2 /storage/sdcard1 auto /devices/platform/goldfish_mmc.1 /devices/platform/mtk-msdc.1/mmc_ho </br>
  * 你可以读到两行信息，像上面一样，我们可以确定肯定有内置sdcard和外置sdcard，而且第一行表示内置sdcard的信息，第二行的是外置sdcard  </br>
+ * (PS:一般情况下，我们都会认为第一行表示的是内置的sdcard，但是谁又能确保呢)
  * 但是，到了这里，你无法确定外置sdcard是否挂载，我们就可以通过new File( /storage/sdcard1).canWrite()来电判断外置sdcard是否挂载 </br>
  * 因为如果外置sdcard挂载了的话，肯定是可写的</br>
  * 如果只有一行的话，那么一是，不存在内置sdcard，二是外置sdcard肯定挂载</br>
@@ -49,7 +50,7 @@ public class MountManager {
 
 		if (mDevMountInfo.isExistExternal()) {
 			Log.d(TAG, "isExistExternal");
-			if (isSdcardMounted()) {
+//			if (isSdcardMounted()) {
 				//可以肯定存在sdcard，支持外置sdcard
 				DevInfo exDevInfo = mDevMountInfo.getExternalInfo();
 				DevInfo interDevInfo = mDevMountInfo.getInternalInfo();
@@ -57,25 +58,25 @@ public class MountManager {
 //				SDCARD_PATH = exDevInfo.getPath();
 				SDCARD_PATH = devInfo.getExterPath();
 				INTERNAL_PATH = devInfo.getInterPath();
+				Log.i(TAG, "SDCARD_PATH:" +  SDCARD_PATH);
+				Log.i(TAG, "INTERNAL_PATH:" +  INTERNAL_PATH);
 				if (!new File(SDCARD_PATH).canWrite()) {
 					//外置sdcard未挂载
 					SDCARD_PATH = NO_EXTERNAL_SDCARD;
 				}
-				Log.d(TAG, "SDCARD_PATH=" + SDCARD_PATH);
 				
-//				if (null == interDevInfo) {
-//					//不存在内置sdcard
-//					INTERNAL_PATH = NO_INTERNAL_SDCARD;
-//				} else {
-//					INTERNAL_PATH = interDevInfo.getPath();
-					Log.d(TAG, "INTERNAL_PATH=" + INTERNAL_PATH);
-//				}
-			} else {
-				//不存在内置sdcard，而且外置sdcard也未挂载
-				Log.e(TAG, "ther is no sdcard");
-				INTERNAL_PATH = NO_INTERNAL_SDCARD;
-				SDCARD_PATH = NO_EXTERNAL_SDCARD;
-			}
+				if (!new File(INTERNAL_PATH).canWrite()) {
+					INTERNAL_PATH = NO_INTERNAL_SDCARD;
+				}
+				Log.d(TAG, "SDCARD_PATH=" + SDCARD_PATH);
+				Log.d(TAG, "INTERNAL_PATH=" + INTERNAL_PATH);
+//			} else {
+//				//不存在内置sdcard，而且外置sdcard也未挂载
+//				//不能这样做，因为有的内置sdcard，的状态时removed,这样做会有问题
+//				Log.e(TAG, "ther is no sdcard");
+//				INTERNAL_PATH = NO_INTERNAL_SDCARD;
+//				SDCARD_PATH = NO_EXTERNAL_SDCARD;
+//			}
 		} else {
 			//不支持外置sdcard
 			if (isSdcardMounted()) {

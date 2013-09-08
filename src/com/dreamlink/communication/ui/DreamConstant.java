@@ -2,6 +2,7 @@ package com.dreamlink.communication.ui;
 
 import android.R.integer;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 
 public class DreamConstant {
@@ -35,6 +36,11 @@ public class DreamConstant {
 		
 		public static final String SEND_FILE = "send_file";
 		public static final String RECEIVE_FILE = "receive_file";
+		public static final String SEND_USER ="send_user";
+		
+		public static final String SHARED_PERFERENCE_NAME = "my_shared";
+		public static final String DEFAULT_SAVE_PATH = "DEFAULT_SAVE_PATH";
+		
 	}
 	
 	public static class Cmd{
@@ -82,4 +88,7 @@ public class DreamConstant {
 
 	/**test for yuri,only for yuri*/
 	public static final boolean UREY_TEST = true;
+	
+	/**the default folder that save the receive files*/
+	public static final String DEFAULT_SAVE_FOLDER = Environment.getExternalStorageDirectory() + "/dreamLink";
 }

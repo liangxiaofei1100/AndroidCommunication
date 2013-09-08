@@ -39,7 +39,7 @@
 
         <LinearLayout 
             android:id="@+id/layout_chatcontent"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_toRightOf="@id/iv_userhead"
@@ -50,42 +50,49 @@
             android:orientation="vertical"
             >
             
-            <LinearLayout 
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_margin="8dp"
-                >
-                <ImageView 
+                android:orientation="horizontal" >
+
+                <ImageView
                     android:id="@+id/iv_send_file_icon"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/icon_image"
                     android:layout_marginRight="8dp"
-                    />
-                
-                <LinearLayout 
+                    android:src="@drawable/icon_image" />
+
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:layout_gravity="center_vertical"
                     android:layout_margin="5dp"
-                    >
-                     <TextView
-                    	android:id="@+id/tv_send_file_name"
-                   	 	android:layout_width="wrap_content"
-                    	android:layout_height="wrap_content"
-                    	android:text="test.apk"
-                     />
-                  
+                    android:layout_weight="6.26"
+                    android:orientation="vertical" >
+
                     <TextView
-                    	android:id="@+id/tv_send_file_size"
-                    	android:layout_width="wrap_content"
-                    	android:layout_height="wrap_content"
-                    	android:text="1.23M"
-                     />
+                        android:id="@+id/tv_send_file_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="test.apk" />
+
+                    <ProgressBar
+                        android:id="@+id/bar_progressing"
+                        style="@style/progressBarHorizontal_color"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginTop="5dp" />
+
+                    <TextView
+                        android:id="@+id/tv_send_file_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1.23M" />
                 </LinearLayout>
-                
             </LinearLayout>
 
         </LinearLayout>

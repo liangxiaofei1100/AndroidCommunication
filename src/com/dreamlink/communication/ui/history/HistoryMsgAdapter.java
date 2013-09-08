@@ -19,9 +19,8 @@ public class HistoryMsgAdapter extends BaseAdapter {
 
 	private LayoutInflater inflater = null;
 	private List<HistoryInfo> list = new ArrayList<HistoryInfo>();
-	private double progress = 0;
-	private int status = -1;
-	private double max = 0;
+	private int sendStatus = -1;
+	private int receiveStatus = -1;
 	private double prev = 0;
 	
 	public HistoryMsgAdapter(Context context, List<HistoryInfo> list){
@@ -46,7 +45,7 @@ public class HistoryMsgAdapter extends BaseAdapter {
 	@Override
 	public int getItemViewType(int position) {
 		HistoryInfo historyInfo = list.get(position);
-		if (historyInfo.getMsgType()) {
+		if (HistoryManager.TYPE_RECEIVE == historyInfo.getMsgType()) {
 			return 0;
 		}else {
 			return 1;
@@ -59,26 +58,30 @@ public class HistoryMsgAdapter extends BaseAdapter {
 		return 2;
 	}
 	
-	public void setStatus(int status){
-		this.status = status;
+	public void setSendStatus(int status){
+		this.sendStatus = status;
 	}
 	
-	public void setProgress(double progress){
-		this.progress = progress;
+	public void setReciveStatus(int status){
+		this.receiveStatus = status;
 	}
 	
-	public void setMax(double max){
-		this.max = max;
-	}
+//	public void setProgress(double progress){
+//		this.progress = progress;
+//	}
+	
+//	public void setMax(double max){
+//		this.max = max;
+//	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// TODO Auto-generated method stub
 		ViewHolder holder = null;
 		View view = null;
-		boolean type = list.get(position).getMsgType();
+		int type = list.get(position).getMsgType();
 		if (null == convertView || null == convertView.getTag()) {
-			if (type) {
+			if (HistoryManager.TYPE_RECEIVE == type) {
 				view = inflater.inflate(R.layout.ui_history_item_msg_left, null);
 			}else {
 				view = inflater.inflate(R.layout.ui_history_item_msg_right, null);
@@ -93,7 +96,7 @@ public class HistoryMsgAdapter extends BaseAdapter {
 			holder.userNameView = (TextView) view.findViewById(R.id.tv_username);
 			holder.fileNameView = (TextView) view.findViewById(R.id.tv_send_file_name);
 			holder.fileSizeView = (TextView) view.findViewById(R.id.tv_send_file_size);
-			holder.isSendMsg = type;
+//			holder.isSendMsg = type;
 			
 			view.setTag(holder);
 		}else {
@@ -103,22 +106,24 @@ public class HistoryMsgAdapter extends BaseAdapter {
 		
 		String time = list.get(position).getFormatDate();
 		String fileName = list.get(position).getFileInfo().fileName;
-		String userName = list.get(position).getUser().getUserName();
+		String userName = list.get(position).getSendUserName();
 		double max = list.get(position).getMax();
-		
+		double progress = list.get(position).getProgress();
+//		
 		holder.dateView.setText(time);
 		holder.userNameView.setText(userName);
 		holder.fileNameView.setText(fileName);
-		switch (status) {
+		switch (sendStatus) {
 		case HistoryManager.STATUS_SENDING:
+			holder.transferBar.setVisibility(View.VISIBLE);
 			double percent = progress / max;
 			Log.d("HistoryActivity", "percent=" + percent + "|prev=" + prev);
-			if (prev != percent * 100) {
+//			if (prev != percent * 100) {
 				Log.d("HistoryActivity", "percent=" + HistoryManager.nf.format(percent));
 				holder.transferBar.setProgress((int)(percent * 100));
 				holder.fileSizeView.setText(HistoryManager.nf.format(percent) + " | " + list.get(position).getFileInfo().getFormatFileSize());
-				prev = percent * 100;
-			}
+//				prev = percent * 100;
+//			}
 			break;
 
 		default:

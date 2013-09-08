@@ -23,6 +23,7 @@ import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.notification.NotificationMgr;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.app.AppFragmentActivity;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.dialog.ExitActivity;
@@ -298,7 +299,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		//get sdcards
 		MountManager mountManager = new MountManager();
 		mountManager.init();
-
+		
+		
 		mUserHelper = new UserHelper(mContext);
 		mUser = mUserHelper.loadUser();
 		mUserManager = UserManager.getInstance();
@@ -919,10 +921,11 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 	/**options menu*/
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		Log.d(TAG, "onCreateOptionsMenu");
 		menu.add(0, 0, 0, "旧入口");
-		menu.add(0, 1, 0, "Share");
+//		menu.add(0, 1, 0, "Share");
 		menu.add(0, 2, 0, "远程共享");
-		return super.onCreateOptionsMenu(menu);
+		return true;
 	}
 	
 	@Override
@@ -944,12 +947,6 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		default:
 			break;
 		}
-		return super.onOptionsItemSelected(item);
-	}
-	
-	@Override
-	public void onBackPressed() {
-		Log.d(TAG, "onBackPressed");
-		showExitDialog();
+		return true;
 	}
 }
