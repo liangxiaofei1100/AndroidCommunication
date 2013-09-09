@@ -699,6 +699,10 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 								mIsServer = false;
 							}
 							mSocketComMgr.closeAllCommunication();
+							// Disable wifi AP.
+							NetWorkUtil.setWifiAPEnabled(mContext, null, false);
+							// Clear wifi connect history.
+							NetWorkUtil.clearWifiConnectHistory(mContext);
 							mCurrentStatus = INIT;
 //							updateConnectUI(mCurrentStatus);
 							mHandler.sendMessage(mHandler.obtainMessage(MSG_REFRESH_USER_LIST));
@@ -808,10 +812,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 				public void onClick(DialogInterface dialog, int which) {
 					mNotificationMgr.cancelNotification();
 					mIsExit = true;
-					// Disable wifi AP.
-					NetWorkUtil.setWifiAPEnabled(mContext, null, false);
-					// Clear wifi connect history.
-					NetWorkUtil.clearWifiConnectHistory(mContext);
+					
 					MainUIFrame.this.finish();
 				}
 			})
@@ -841,6 +842,10 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		unregisterReceiver(mainReceiver);
 		//when finish，cloase all connect
 		mSocketComMgr.closeAllCommunication();
+		// Disable wifi AP.
+		NetWorkUtil.setWifiAPEnabled(mContext, null, false);
+		// Clear wifi connect history.
+		NetWorkUtil.clearWifiConnectHistory(mContext);
 		
 		System.exit(0);
 	}

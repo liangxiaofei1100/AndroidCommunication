@@ -189,12 +189,24 @@ public class ConnectHelper {
 	}
 
 	public void stopSearch() {
+		if (wifiOrAPService != null) {
+			wifiOrAPService.stopSearch();
+		}
+		if(directService!=null){
+			directService.stopSearch();
+		}
 		unbindServer(wifiConnection);
 		unbindServer(directConnection);
 	}
 
 	public void stopSearch(boolean flag) {
 		if (flag) {
+			if (wifiOrAPService != null) {
+				wifiOrAPService.stopSearch();
+			}
+			if(directService!=null){
+				directService.stopSearch();
+			}
 			unbindServer(wifiConnection);
 			unbindServer(directConnection);
 		} else {

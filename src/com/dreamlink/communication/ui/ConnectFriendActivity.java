@@ -16,6 +16,7 @@ import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.server.service.ConnectHelper;
 import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.Notice;
 
 import android.annotation.TargetApi;
@@ -221,6 +222,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	
 	/**start search server*/
 	private void startSearch(){
+		NetWorkUtil.clearWifiConnectHistory(getApplicationContext());
 		clearServerList();
 		if (SocketServer.getInstance().isServerStarted()) {
 			SocketServer.getInstance().stopServer();
@@ -516,6 +518,9 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 	@Override
 	public void finish() {
 		super.finish();
+		if(null != mTimeoutTimer){
+			mTimeoutTimer.cancel();
+		}
 		mIsAPSelected=false;
 		if (!sever_flag) {
 			connectHelper.stopSearch();
