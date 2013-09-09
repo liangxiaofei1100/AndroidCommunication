@@ -3,7 +3,7 @@ package com.dreamlink.communication.ui.file;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
 
 import android.content.Context;

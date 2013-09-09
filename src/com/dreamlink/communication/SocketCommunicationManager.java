@@ -13,8 +13,8 @@ import java.util.concurrent.RejectedExecutionException;
 import android.content.Context;
 import android.os.RemoteException;
 
-import com.dreamlink.aidl.OnCommunicationListenerExternal;
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.FileSender.OnFileSendListener;
@@ -23,6 +23,7 @@ import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedLis
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.client.SocketClientTask;
 import com.dreamlink.communication.client.SocketClientTask.OnConnectedToServerListener;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.protocol.ProtocolDecoder;
 import com.dreamlink.communication.protocol.ProtocolEncoder;
@@ -32,7 +33,6 @@ import com.dreamlink.communication.server.SocketServerTask.OnClientConnectedList
 import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
-import com.dreamlink.communication.util.Notice;
 
 /**
  * This class is used for providing communication operations for activity.</br>

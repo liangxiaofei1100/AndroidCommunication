@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
@@ -14,7 +15,6 @@ import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.Notice;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;

@@ -11,7 +11,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.io.IOException;
 
-import com.dreamlink.communication.util.ArrayUtil;
+import com.dreamlink.communication.lib.util.ArrayUtil;
 import com.dreamlink.communication.util.Log;
 
 /**

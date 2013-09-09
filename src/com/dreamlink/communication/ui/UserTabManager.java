@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
 import com.dreamlink.communication.ui.file.FileInfo;

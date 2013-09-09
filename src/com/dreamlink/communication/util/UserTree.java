@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 
 public class UserTree implements Serializable {
 	private static final long serialVersionUID = 18121118330L;

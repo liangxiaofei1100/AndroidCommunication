@@ -17,8 +17,8 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
 
-import com.dreamlink.aidl.OnCommunicationListenerExternal;
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.ui.Command;
 import com.dreamlink.communication.ui.DreamConstant.Cmd;

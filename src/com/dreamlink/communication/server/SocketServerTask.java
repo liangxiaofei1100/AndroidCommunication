@@ -7,9 +7,9 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Message;
 
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.server.SocketServer.OnClientConnectedListener;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.Notice;
 
 /**
  * This class is a AsyncTask, used for creating server socket and accept client

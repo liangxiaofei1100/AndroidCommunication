@@ -8,7 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.client.ServerListActivity;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.server.ClientListActivity;

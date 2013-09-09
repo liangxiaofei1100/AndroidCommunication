@@ -3,7 +3,7 @@ package com.dreamlink.communication.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.util.UserTree.UserNode;
 

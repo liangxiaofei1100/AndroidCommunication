@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.UserTree;
 

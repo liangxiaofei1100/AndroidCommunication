@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.util.Notice;
 
 import android.app.ProgressDialog;
 import android.content.Context;

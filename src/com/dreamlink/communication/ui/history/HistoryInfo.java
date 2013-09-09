@@ -3,7 +3,7 @@ package com.dreamlink.communication.ui.history;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.file.FileInfo;
 

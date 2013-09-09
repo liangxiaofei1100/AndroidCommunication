@@ -9,7 +9,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.lib.util.Notice;
 
 /**
  * This class is a AsyncTask, used for creating client socket and connecting to

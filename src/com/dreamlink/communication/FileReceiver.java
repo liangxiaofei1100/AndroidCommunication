@@ -16,7 +16,7 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Handler.Callback;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.util.Log;
 

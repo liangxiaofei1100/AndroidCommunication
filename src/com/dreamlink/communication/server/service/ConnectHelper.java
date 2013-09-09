@@ -10,7 +10,7 @@ import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.widget.Toast;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;

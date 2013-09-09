@@ -5,7 +5,7 @@ import java.util.Map;
 import android.app.AlertDialog;
 import android.content.Context;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 /**

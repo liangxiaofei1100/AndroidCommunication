@@ -15,12 +15,12 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.dreamlink.aidl.OnCommunicationListenerExternal;
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.FileReceiver.OnReceiveListener;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.Notice;
 
 /**
  * see {@code SpeedTest}.
@@ -183,5 +183,11 @@ public class FileTransportTestClient extends Activity implements
 	@Override
 	public void onReceiveFinished(boolean success) {
 		mHandler.sendEmptyMessage(MSG_FINISHED);
+	}
+
+	@Override
+	public void onReceiveFileByYuri(FileReceiverByYuri fileReceiverByYuri) {
+		// TODO Auto-generated method stub
+		
 	}
 }

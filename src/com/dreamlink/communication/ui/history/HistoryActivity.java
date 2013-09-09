@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.FileReceiver;
 import com.dreamlink.communication.FileReceiver.OnReceiveListener;
 import com.dreamlink.communication.FileReceiverByYuri;
@@ -17,14 +17,14 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
 import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.lib.util.AppUtil;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.file.FileInfo;
-import com.dreamlink.communication.util.AppUtil;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.Notice;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -121,12 +121,12 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileTrans
 				long receivedBytes = data.getLong(KEY_RECEIVE_BYTES);
 				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
 				int progress = (int) ((receivedBytes / (float) totalBytes) * 100);
-				mProgressBar.setProgress(progress);
+//				mProgressBar.setProgress(progress);
 				Log.d(TAG, "receivedBytes = " + receivedBytes
 						+ ", totalBytes = " + totalBytes + "progress = "
 						+ progress);
-				mSpeedTextView.setText(FileTransportTest.getSpeedText(
-						receivedBytes, mStartTime));
+//				mSpeedTextView.setText(FileTransportTest.getSpeedText(
+//						receivedBytes, mStartTime));
 				break;
 				
 			case MSG_UPDATE_SEND_STATUS:

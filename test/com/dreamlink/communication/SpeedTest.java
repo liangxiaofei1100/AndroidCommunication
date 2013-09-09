@@ -2,7 +2,7 @@ package com.dreamlink.communication;
 
 import java.text.DecimalFormat;
 
-import com.dreamlink.communication.util.AppUtil;
+import com.dreamlink.communication.lib.util.AppUtil;
 
 import android.app.Activity;
 import android.content.Intent;

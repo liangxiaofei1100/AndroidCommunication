@@ -1,7 +1,7 @@
 package com.dreamlink.communication.fileshare;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.lib.util.Notice;
 
 import android.content.Context;
 import android.view.ActionMode;

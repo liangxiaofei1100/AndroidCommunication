@@ -1,7 +1,7 @@
 package com.dreamlink.communication.server;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.lib.util.Notice;
 
 import android.app.AlertDialog;
 import android.content.Context;

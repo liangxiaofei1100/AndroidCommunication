@@ -1,11 +1,11 @@
 package com.dreamlink.communication.ui;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.util.NetWorkUtil;
-import com.dreamlink.communication.util.Notice;
 
 import android.app.Activity;
 import android.content.Intent;

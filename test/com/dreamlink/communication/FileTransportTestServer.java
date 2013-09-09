@@ -21,11 +21,11 @@ import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
-import com.dreamlink.aidl.OnCommunicationListenerExternal;
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.FileSender.OnFileSendListener;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.Notice;
 
 /**
  * see {@code SpeedTest}.
