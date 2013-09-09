@@ -1,35 +1,52 @@
 package com.dreamlink.communication.ui.media;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.common.FileSendUtil;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
+import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
-public class MediaAudioFragment extends BaseFragment implements OnItemClickListener {
+public class MediaAudioFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
 	private static final String TAG = "MediaAudioFragment";
 	private ListView mListView;
 	private MediaAudioAdapter mAdapter;
-	private List<MediaInfo> mLists = new ArrayList<MediaInfo>();
+	private List<MediaInfo> mAudioLists = new ArrayList<MediaInfo>();
 	private MediaInfoManager mScan;
 	private ProgressBar mScanBar;
+	private FileInfoManager mFileInfoManager = null;
 	
 	private Context mContext;
 	
@@ -57,6 +74,10 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		mListView = (ListView) rootView.findViewById(R.id.audio_listview);
 		mListView.setEmptyView( rootView.findViewById(R.id.audio_list_empty));
 		mScanBar = (ProgressBar) rootView.findViewById(R.id.audio_progressbar);
+		mListView.setOnItemClickListener(this);
+		mListView.setOnItemLongClickListener(this);
+		
+		mFileInfoManager = new FileInfoManager(mContext);
 		
 		mScan = new MediaInfoManager(mContext);
 		
@@ -73,7 +94,7 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 
 		@Override
 		protected String doInBackground(Void... params) {
-			mLists = mScan.getAudioInfo();
+			mAudioLists = mScan.getAudioInfo();
 			return null;
 		}
 		
@@ -87,11 +108,11 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		protected void onPostExecute(String result) {
 			super.onPostExecute(result);
 			mScanBar.setVisibility(View.GONE);
-			mAdapter = new MediaAudioAdapter(mContext, mLists);
+			mAdapter = new MediaAudioAdapter(mContext, mAudioLists);
 			mListView.setAdapter(mAdapter);
 			
 			Intent intent = new Intent(DreamConstant.MEDIA_AUDIO_ACTION);
-			intent.putExtra(Extra.AUDIO_SIZE, mLists.size());
+			intent.putExtra(Extra.AUDIO_SIZE, mAudioLists.size());
 			mContext.sendBroadcast(intent);
 		}
 		
@@ -100,14 +121,102 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 	private int currentposition = -1;
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		//20130909 do not use expand menu
+		//just single click to open file,double click to open menu
+//		if (currentposition == position) {
+//			currentposition = -1;
+//		}else {
+//			currentposition = position;
+//		}
+//		
+//		mAdapter.setPosition(currentposition);
+//		mAdapter.notifyDataSetChanged();
 		
-		if (currentposition == position) {
-			currentposition = -1;
+		//open audio
+		mFileInfoManager.openFile(mAudioLists.get(position).getUrl());
+	} 
+	
+	@Override
+	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+		final MediaInfo mediaInfo = mAudioLists.get(position);
+		new AlertDialog.Builder(mContext)
+		.setTitle(mediaInfo.getDisplayName())
+		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case 0:
+						//open
+						mFileInfoManager.openFile(mediaInfo.getUrl());
+						break;
+					case 1:
+						//send
+						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(mediaInfo.getUrl()));
+
+						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+						fileSendUtil.sendFile(fileTransferInfo);
+						break;
+					case 2:
+						//delete
+						showDeleteDialog(position, mediaInfo.getUrl());
+						break;
+					case 3:
+						//info
+						String info = getAudioInfo(mediaInfo);
+						DreamUtil.showInfoDialog(mContext, info);
+						break;
+
+					default:
+						break;
+					}
+			}
+		}).create().show();
+		return true;
+	}
+	
+	/**
+     * show confrim dialog
+     * @param path file path
+     */
+    public void showDeleteDialog(final int pos, final String path) {
+    	final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
+		deleteDialog.setOnClickListener(new OnDelClickListener() {
+			@Override
+			public void onClick(View view, String path) {
+				switch (view.getId()) {
+				case R.id.left_button:
+					doDelete(pos, path);
+					break;
+				default:
+					break;
+				}
+			}
+		});
+		deleteDialog.show();
+    }
+    
+    private void doDelete(int position, String path) {
+		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.VIDEO_URI, path);
+		if (!ret) {
+			mNotice.showToast(R.string.delete_fail);
+			Log.e(TAG, path + " delete failed");
 		}else {
-			currentposition = position;
+			mAudioLists.remove(position);
+			mAdapter.notifyDataSetChanged();
 		}
 		
-		mAdapter.setPosition(currentposition);
-		mAdapter.notifyDataSetChanged();
-	} 
+		Intent intent = new Intent(DreamConstant.MEDIA_AUDIO_ACTION);
+		intent.putExtra(Extra.AUDIO_SIZE, mAudioLists.size());
+		mContext.sendBroadcast(intent);
+	}
+	
+	 public String getAudioInfo(MediaInfo mediaInfo){
+	    	String result = "";
+			result = "名称:" + mediaInfo.getDisplayName()+ DreamConstant.ENTER
+					+ "类型:" + "音频" + DreamConstant.ENTER
+					+ "位置:" + mediaInfo.getUrl() + DreamConstant.ENTER
+					+ "大小:" + mediaInfo.getFormatSize()+ DreamConstant.ENTER
+					+ "修改日期:" + mediaInfo.getFormatDate();
+			return result;
+	    }
 }

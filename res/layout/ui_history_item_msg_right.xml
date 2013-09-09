@@ -50,6 +50,7 @@
             android:orientation="vertical"
             >
             <LinearLayout
+                android:id="@+id/layout_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal" >
@@ -70,7 +71,7 @@
             </LinearLayout>
             
             <LinearLayout 
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_margin="8dp"
@@ -84,25 +85,26 @@
                     />
                 
                 <LinearLayout 
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:layout_gravity="center_vertical"
                     android:layout_margin="5dp"
+                    android:layout_weight="6.26"
+                    android:orientation="vertical"
                     >
                      <TextView
                     	android:id="@+id/tv_send_file_name"
                    	 	android:layout_width="wrap_content"
                     	android:layout_height="wrap_content"
-                    	android:text="androidcommuncation.apk"
+                    	android:text="mytests"
                      />
                      
                      <ProgressBar
                         android:id="@+id/bar_progressing"
                         style="@style/progressBarHorizontal_color"
-                        android:layout_width="fill_parent"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         android:layout_marginRight="5dp"
                         android:layout_marginBottom="5dp"
                         android:layout_marginTop="5dp" />

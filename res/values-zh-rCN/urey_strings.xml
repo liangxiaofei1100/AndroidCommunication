@@ -135,6 +135,14 @@
      <string name="running">正在运行&#8230;</string>
      <string name="unconnected">未连接</string>
      <string name="connected">已连接</string>
+     <string name="connect_first">请先连接！</string>
      
-     <string name="storage_space">存储空间:共<xliff:g id="total">%1$s</xliff:g>，<xliff:g id="free">%2$s</xliff:g>可用</string>
+     <string name="storage_space">存储空间:共<xliff:g id="total">%1$s</xliff:g>,<xliff:g id="free">%2$s</xliff:g>可用</string>
+     
+     <string name="user_list">用户列表</string>
+     <string name="pre_send">准备发送给:<xliff:g id="pre_send">%1$s</xliff:g></string>
+     <string name="sending">正在发送给:<xliff:g id="sending">%1$s</xliff:g></string>
+     <string name="send_ok">已发送给:<xliff:g id="send_ok">%1$s</xliff:g></string>
+     <string name="send_fail">传输失败:<xliff:g id="send_fail">%1$s</xliff:g></string>
+     <string name="receive_fail">传输失败</string>
 </resources>

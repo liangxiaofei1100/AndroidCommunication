@@ -18,6 +18,7 @@ import com.dreamlink.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.FileSender.OnFileSendListener;
+import com.dreamlink.communication.FileSenderTest.OnFileSendListenerTest;
 import com.dreamlink.communication.SocketCommunication.OnReceiveMessageListener;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
@@ -84,15 +85,17 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 
 	}
 
-	public interface OnFileTransportListener {
+	public interface OnFileTransportListenerTest {
 		/**
 		 * Receive a file. Use fileReciver to receive file.
 		 * 
 		 * @param fileReceiver
 		 */
+		void onReceiveFileTest(FileReceiverTest fileReceiver);
+	}
+	
+	public interface OnFileTransportListener{
 		void onReceiveFile(FileReceiver fileReceiver);
-		//test by yuri 
-		void onReceiveFileByYuri(FileReceiverByYuri fileReceiverByYuri);
 	}
 
 	private static SocketCommunicationManager mInstance;
@@ -128,7 +131,8 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * 
 	 * key: listener, value: app ID.
 	 */
-	private ConcurrentHashMap<OnFileTransportListener, Integer> mOnFileTransportListener = new ConcurrentHashMap<OnFileTransportListener, Integer>();
+	private ConcurrentHashMap<OnFileTransportListenerTest, Integer> mOnFileTransportListenerTest = new ConcurrentHashMap<OnFileTransportListenerTest, Integer>();
+	private ConcurrentHashMap<OnFileTransportListener, Integer> mOnFileTransportListener = new ConcurrentHashMap<SocketCommunicationManager.OnFileTransportListener, Integer>();
 	private UserManager mUserManager = UserManager.getInstance();
 	private ProtocolDecoder mProtocolDecoder;
 
@@ -183,20 +187,39 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		}
 	}
 
-	public void registerOnFileTransportListener(
-			OnFileTransportListener listener, int appID) {
+	public void registerOnFileTransportListenerTest(
+			OnFileTransportListenerTest listener, int appID) {
+		Log.d(TAG, "registerOnFileTransportListenerTest() appID = " + appID);
+		mOnFileTransportListenerTest.put(listener, appID);
+	}
+	
+	public void registerOnFileTransportListener(OnFileTransportListener listener, int appID){
 		Log.d(TAG, "registerOnFileTransportListener() appID = " + appID);
 		mOnFileTransportListener.put(listener, appID);
 	}
+	
+	public void unregisterOnFileTransportListener(OnFileTransportListener listener){
+		if (null == listener) {
+			Log.e(TAG, "the params listener is null");
+		}else {
+			if (mOnFileTransportListener.contains(listener)) {
+				int appID = mOnFileTransportListener.remove(listener);
+				Log.d(TAG, "mOnFileTransportListener() appID = " + appID);
+			}else {
+				Log.e(TAG, "there is no this listener in the map");
+			}
+		}
+	}
+	//test by yuri
 
-	public void unregisterOnFileTransportListener(
-			OnFileTransportListener listener) {
+	public void unregisterOnFileTransportListenerTest(
+			OnFileTransportListenerTest listener) {
 		if (listener == null) {
 			Log.e(TAG, "the params listener is null");
 		} else {
-			if (mOnFileTransportListener.containsKey(listener)) {
-				int appID = mOnFileTransportListener.remove(listener);
-				Log.d(TAG, "mOnFileTransportListener() appID = " + appID);
+			if (mOnFileTransportListenerTest.containsKey(listener)) {
+				int appID = mOnFileTransportListenerTest.remove(listener);
+				Log.d(TAG, "mOnFileTransportListenerTest() appID = " + appID);
 			} else {
 				Log.e(TAG, "there is no this listener in the map");
 			}
@@ -237,11 +260,11 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * @param receiveUser
 	 * @param appID
 	 */
-	public void sendFile(File file, OnFileSendListener listener,
+	public void sendFileTest(File file, OnFileSendListenerTest listener,
 			User receiveUser, int appID) {
 		Log.d(TAG, "sendFile() file = " + file.getName() + ", receive user = "
 				+ receiveUser.getUserName() + ", appID = " + appID);
-		FileSender fileSender = new FileSender();
+		FileSenderTest fileSender = new FileSenderTest();
 		int serverPort = fileSender.sendFile(file, listener);
 		if (serverPort == -1) {
 			Log.e(TAG, "sendFile error, create socket server fail. file = "
@@ -270,34 +293,29 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		}
 	}
 	
-	/**
-	 * yuri test
-	 */
-	public void sendFile(HistoryInfo historyInfo, com.dreamlink.communication.FileSenderByYuri.OnFileSendListener listener, int appID) {
-		Log.d(TAG, "sendFile() file = " + historyInfo.getFileInfo().fileName + "," + 
-	historyInfo.getFileInfo().filePath + ", receive user = "
+	public void sendFile(HistoryInfo historyInfo, OnFileSendListener listener, int appID) {
+		Log.d(TAG, "sendFile() file = " + historyInfo.getFileInfo().getFileName() + "," + 
+	historyInfo.getFileInfo().getFilePath() + ", receive user = "
 				+ historyInfo.getReceiveUser().getUserName() + ", appID = " + appID);
-//		FileSender fileSender = new FileSender();
-//		int serverPort = fileSender.sendFile(file, listener);
-		FileSenderByYuri fileSenderByYuri = new FileSenderByYuri();
-		int serverPort = fileSenderByYuri.sendFile(historyInfo, listener);
+		FileSender fileSender = new FileSender();
+		int serverPort = fileSender.sendFile(historyInfo, listener);
 		if (serverPort == -1) {
 			Log.e(TAG, "sendFile error, create socket server fail. file = "
-					+ historyInfo.getFileInfo().fileName);
+					+ historyInfo.getFileInfo().getFileName());
 			return;
 		}
 		InetAddress inetAddress = NetWorkUtil.getLocalInetAddress();
 		if (inetAddress == null) {
 			Log.e(TAG,
 					"sendFile error, get inet address fail. file = "
-							+ historyInfo.getFileInfo().fileName);
+							+ historyInfo.getFileInfo().getFileName());
 			return;
 		}
 		int userID = historyInfo.getReceiveUser().getUserID();
 		byte[] inetAddressData = inetAddress.getAddress();
 		byte[] data = ProtocolEncoder.encodeSendFile(mUserManager
 				.getLocalUser().getUserID(), historyInfo.getReceiveUser().getUserID(), appID,
-				inetAddressData, serverPort, new FileTransferInfo(new File(historyInfo.getFileInfo().filePath)));
+				inetAddressData, serverPort, new FileTransferInfo(new File(historyInfo.getFileInfo().getFilePath())));
 		SocketCommunication communication = mUserManager
 				.getSocketCommunication(userID);
 		if (communication != null) {
@@ -308,6 +326,19 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		}
 	}
 
+	public void notifyFileReceiveListenersTest(int sendUserID, int appID,
+			byte[] serverAddress, int serverPort, FileTransferInfo fileTransferInfo) {
+		for (Map.Entry<OnFileTransportListenerTest, Integer> entry : mOnFileTransportListenerTest
+				.entrySet()) {
+			if (entry.getValue() == appID) {
+				FileReceiverTest fileReceiver = new FileReceiverTest(mUserManager
+						.getAllUser().get(sendUserID), serverAddress,
+						serverPort, fileTransferInfo);
+				entry.getKey().onReceiveFileTest(fileReceiver);
+			}
+		}
+	}
+	
 	/**
 	 * 
 	 * This is used by ProtocolDecoder.
@@ -318,14 +349,13 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * @param serverPort
 	 * @param fileInfo
 	 */
-	public void notifyFileReceiveListeners(int sendUserID, int appID,
-			byte[] serverAddress, int serverPort, FileTransferInfo fileInfo) {
-		for (Map.Entry<OnFileTransportListener, Integer> entry : mOnFileTransportListener
-				.entrySet()) {
+	public void notfiyFileReceiveListeners(int sendUserID, int appID, 
+			byte[] serverAddress, int serverPort, FileTransferInfo fileTransferInfo){
+		for (Map.Entry<OnFileTransportListener, Integer> entry : mOnFileTransportListener.entrySet()) {
 			if (entry.getValue() == appID) {
 				FileReceiver fileReceiver = new FileReceiver(mUserManager
-						.getAllUser().get(sendUserID), serverAddress,
-						serverPort, fileInfo);
+						.getAllUser().get(sendUserID), serverAddress, 
+						serverPort, fileTransferInfo);
 				entry.getKey().onReceiveFile(fileReceiver);
 			}
 		}
