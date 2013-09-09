@@ -1,7 +1,6 @@
 package com.dreamlink.communication;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,22 +18,20 @@ import android.os.Handler.Callback;
 
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.protocol.FileTransferInfo;
-import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 
 /**
  * Connect to server socket and get the file from server.
  * 
  */
-public class FileReceiverByYuri {
-	private static final String TAG = "FileReceiverByYuri";
+public class FileReceiverTest {
+	private static final String TAG = "FileReceiverTest";
 	private static final int SOCKET_TIMEOUT = 5000;
 	private User mSendUser;
 	private InetAddress mServerInetAddress;
 	private int mServerPort;
-	private FileTransferInfo mFileTransferInfo;
+	private FileTransferInfo mFileInfo;
 	private File mReceivedFile;
-	private HistoryInfo mReceivedHistoryInfo;
 	private OnReceiveListener mListener;
 
 	private ReceiveHandlerThread mHandlerThread;
@@ -53,8 +50,8 @@ public class FileReceiverByYuri {
 	/** The socket to recieve file. */
 	private Socket mSocket;
 
-	public FileReceiverByYuri(User sendUser, byte[] serverAddress, int serverPort,
-			FileTransferInfo fileTransferInfo) {
+	public FileReceiverTest(User sendUser, byte[] serverAddress, int serverPort,
+			FileTransferInfo fileInfo) {
 		mSendUser = sendUser;
 		try {
 			mServerInetAddress = InetAddress.getByAddress(serverAddress);
@@ -62,7 +59,7 @@ public class FileReceiverByYuri {
 			Log.e(TAG, "FileReceiver() get server addresss error. " + e);
 		}
 		mServerPort = serverPort;
-		mFileTransferInfo = fileTransferInfo;
+		mFileInfo = fileInfo;
 	}
 
 	/**
@@ -75,8 +72,8 @@ public class FileReceiverByYuri {
 	/**
 	 * @return the FileInfo
 	 */
-	public FileTransferInfo getFileTransferInfo() {
-		return mFileTransferInfo;
+	public FileTransferInfo getFileInfo() {
+		return mFileInfo;
 	}
 
 	/**
@@ -86,11 +83,10 @@ public class FileReceiverByYuri {
 	 *            the file to save.
 	 * @param listener
 	 */
-	public void receiveFile(HistoryInfo historyInfo, OnReceiveListener listener) {
+	public void receiveFile(File receivedFile, OnReceiveListener listener) {
 		Log.d(TAG,
-				"receiveFile() received file " + historyInfo.getFileInfo().filePath);
-//		mReceivedFile = receivedFile;
-		mReceivedHistoryInfo = historyInfo;
+				"receiveFile() received file " + receivedFile.getAbsolutePath());
+		mReceivedFile = receivedFile;
 		mListener = listener;
 		if (mServerInetAddress == null) {
 			Log.e(TAG, "receiveFile() Server Address is null.");
@@ -158,27 +154,22 @@ public class FileReceiverByYuri {
 		}
 	}
 
-	private void copyFile(InputStream inputStream, OutputStream out) throws FileNotFoundException {
-		out = new FileOutputStream(mReceivedHistoryInfo.getFileInfo().filePath);
+	private void copyFile(InputStream inputStream, OutputStream out) {
 		byte buf[] = new byte[4096];
 		int len;
 		long receiveBytes = 0;
-		double totalBytes = mFileTransferInfo.getFileSize();
+		long totalBytes = mFileInfo.getFileSize();
 		long start = System.currentTimeMillis();
-		double lastProgress = 0;
-		double currentProgress = 0;
-		
+		int lastProgress = 0;
+		int currentProgress = 0;
 		try {
 			while ((len = inputStream.read(buf)) != -1) {
 				out.write(buf, 0, len);
 				receiveBytes += len;
-//				currentProgress = (int) (((double) receiveBytes / totalBytes) * 100);
-				currentProgress = (receiveBytes / totalBytes) * 100;
+				currentProgress = (int) (((double) receiveBytes / totalBytes) * 100);
 				if (lastProgress != currentProgress) {
 					lastProgress = currentProgress;
-//					notifyProgress(receiveBytes, totalBytes);
-					mReceivedHistoryInfo.setProgress(currentProgress);
-					notifyProgress();
+					notifyProgress(receiveBytes, totalBytes);
 				}
 			}
 
@@ -209,8 +200,7 @@ public class FileReceiverByYuri {
 				long receiveBytes = data.getLong(KEY_RECEIVE_BYTES);
 				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
 				if (mListener != null) {
-//					mListener.onReceiveProgress(receiveBytes, totalBytes);
-					mListener.onReceiveProgress(mReceivedHistoryInfo);
+					mListener.onReceiveProgress(receiveBytes, totalBytes);
 				}
 				break;
 			case MSG_FINISH:
@@ -253,12 +243,6 @@ public class FileReceiverByYuri {
 		message.setData(data);
 		mHandler.sendMessage(message);
 	}
-	
-	public void notifyProgress(){
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_PROGRESS;
-		mHandler.sendMessage(message);
-	}
 
 	private void notifyFinish(boolean result) {
 		Message message = mHandler.obtainMessage();
@@ -282,8 +266,7 @@ public class FileReceiverByYuri {
 		 * @param receivedBytes
 		 * @param totalBytes
 		 */
-//		void onReceiveProgress(long receivedBytes, long totalBytes);
-		void onReceiveProgress(HistoryInfo historyInfo);
+		void onReceiveProgress(long receivedBytes, long totalBytes);
 
 		/**
 		 * The file is received.
@@ -302,7 +285,7 @@ public class FileReceiverByYuri {
 	public String toString() {
 		return "FileReceiver [mSendUser=" + mSendUser + ", mServerInetAddress="
 				+ mServerInetAddress + ", mServerPort=" + mServerPort
-				+ ", mFileInfo=" + mFileTransferInfo + "]";
+				+ ", mFileInfo=" + mFileInfo + "]";
 	}
 
 }

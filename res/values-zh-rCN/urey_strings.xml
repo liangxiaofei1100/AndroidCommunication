@@ -135,6 +135,9 @@
      <string name="running">正在运行&#8230;</string>
      <string name="unconnected">未连接</string>
      <string name="connected">已连接</string>
+     <string name="connect_first">请先连接！</string>
      
      <string name="storage_space">存储空间:共<xliff:g id="total">%1$s</xliff:g>，<xliff:g id="free">%2$s</xliff:g>可用</string>
+     
+     <string name="user_list">用户列表</string>
 </resources>

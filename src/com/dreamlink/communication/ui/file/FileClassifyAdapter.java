@@ -91,6 +91,10 @@ public class FileClassifyAdapter extends BaseAdapter{
 	public void setPosition(int position) {
 		this.current_position = position;
 	}
+	
+	public int getFileType(){
+		return file_type;
+	}
 
 	private class ViewHolder {
 		ImageView iconView;
@@ -149,11 +153,12 @@ public class FileClassifyAdapter extends BaseAdapter{
 				holderItem.infoView = (TextView) view.findViewById(R.id.file_info_textview);
 				holderItem.menuNameView = (TextView) view.findViewById(R.id.file_item_open_textview);
 
-				holderItem.mainLayout = (LinearLayout) view.findViewById(R.id.file_layout_main);
+				//20130909 do not use expand menu
+				/*holderItem.mainLayout = (LinearLayout) view.findViewById(R.id.file_layout_main);
 				holderItem.expandLayout = (LinearLayout) view.findViewById(R.id.file_layout_expand);
 				holderItem.openLayout = (LinearLayout) view.findViewById(R.id.file_item_open);
 				holderItem.sendLayout = (LinearLayout) view.findViewById(R.id.file_item_send);
-				holderItem.deleteLayout = (LinearLayout) view.findViewById(R.id.file_item_delete);
+				holderItem.deleteLayout = (LinearLayout) view.findViewById(R.id.file_item_delete);*/
 
 				view.setTag(holderItem);
 			} else {
@@ -205,7 +210,7 @@ public class FileClassifyAdapter extends BaseAdapter{
 				holderItem.menuNameView.setText(R.string.menu_open);
 			}
 
-			holderItem.mainLayout.setOnClickListener(new MainOnClickLinstener(
+			/*holderItem.mainLayout.setOnClickListener(new MainOnClickLinstener(
 					position));
 			holderItem.openLayout.setOnClickListener(new OpenOnClickListener(
 					position));
@@ -225,7 +230,7 @@ public class FileClassifyAdapter extends BaseAdapter{
 				holderItem.openLayout.setClickable(false);
 				holderItem.sendLayout.setClickable(false);
 				holderItem.deleteLayout.setClickable(false);
-			}
+			}*/
 		}
 
 		return view;

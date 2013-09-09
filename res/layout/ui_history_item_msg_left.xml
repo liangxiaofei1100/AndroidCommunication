@@ -50,8 +50,31 @@
             android:orientation="vertical"
             >
             
-            <LinearLayout
+             <LinearLayout
+                android:id="@+id/layout_title"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" 
+                android:visibility="gone"
+                >
+                <TextView
+                    android:id="@+id/tv_send_title_msg"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:text="已发送给samsung"
+                     />
+                <ProgressBar 
+                    android:id="@+id/bar_send_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@android:style/Widget.ProgressBar.Small.Inverse"
+                    android:visibility="gone"
+                    />
+            </LinearLayout>
+            
+            <LinearLayout
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:orientation="horizontal" >
@@ -64,7 +87,7 @@
                     android:src="@drawable/icon_image" />
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_margin="5dp"
@@ -82,10 +105,10 @@
                         style="@style/progressBarHorizontal_color"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:visibility="gone"
                         android:layout_marginBottom="5dp"
                         android:layout_marginRight="5dp"
-                        android:layout_marginTop="5dp" />
+                        android:layout_marginTop="5dp"
+                        android:visibility="visible" />
 
                     <TextView
                         android:id="@+id/tv_send_file_size"

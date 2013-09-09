@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -482,7 +483,13 @@ public class FileInfoManager {
 		}
 		// open
 		if (intent != null) {
-			context.startActivity(intent);
+			try {
+				context.startActivity(intent);
+			} catch (ActivityNotFoundException e) {
+				Log.e(TAG, e.toString());
+				Toast.makeText(context, "Can not find app to open this file",
+						Toast.LENGTH_SHORT).show();
+			}
 		} else {
 			Toast.makeText(context, "Can not find app to open this file",
 					Toast.LENGTH_SHORT).show();

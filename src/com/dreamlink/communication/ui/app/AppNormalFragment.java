@@ -1,5 +1,6 @@
 package com.dreamlink.communication.ui.app;
 
+import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,9 +12,11 @@ import java.util.Set;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
+import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.ListContextMenu;
+import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.dialog.FileInfoDialog;
 import com.dreamlink.communication.util.Log;
@@ -158,7 +161,10 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 						}
 					}else if (normal_menus[1].equals(currentMenu)) {
 						//send
-						
+						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appEntry.getInstallPath()));
+
+						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+						fileSendUtil.sendFile(fileTransferInfo);
 					}else if (normal_menus[2].equals(currentMenu)) {
 						//uninstall
 						mAppManager.uninstallApp(appEntry.getPackageName());

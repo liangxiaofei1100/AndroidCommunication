@@ -67,6 +67,10 @@ public class FileTransportProtocol {
 	}
 
 	public interface OnReceiveFileCallback {
+		//for test
+		void onReceiveFileTest(int sendUserID, int receiveUserID, int appID,
+				byte[] serverAddress, int serverPort, FileTransferInfo fileInfo);
+		//for test
 		void onReceiveFile(int sendUserID, int receiveUserID, int appID,
 				byte[] serverAddress, int serverPort, FileTransferInfo fileInfo);
 	}

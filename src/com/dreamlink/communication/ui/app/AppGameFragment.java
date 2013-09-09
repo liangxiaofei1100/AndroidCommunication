@@ -1,13 +1,16 @@
 package com.dreamlink.communication.ui.app;
 
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
+import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.util.Log;
 
@@ -165,6 +168,10 @@ public class AppGameFragment extends Fragment implements OnItemClickListener, On
 							break;
 						case 1:
 							//send
+							FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appEntry2.getInstallPath()));
+
+							FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+							fileSendUtil.sendFile(fileTransferInfo);
 							break;
 						case 2:
 							//uninstall 

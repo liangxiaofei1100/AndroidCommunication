@@ -91,16 +91,12 @@ public class MediaAudioAdapter extends BaseAdapter {
 			holder.artistView = (TextView) view.findViewById(R.id.audio_artist);
 			holder.sizeView = (TextView) view.findViewById(R.id.audio_size);
 
-			holder.mainLayout = (LinearLayout) view
-					.findViewById(R.id.audio_layout_main);
-			holder.menuLayout = (LinearLayout) view
-					.findViewById(R.id.layout_expand);
-			holder.playLayout = (LinearLayout) view
-					.findViewById(R.id.item_play);
-			holder.sendLayout = (LinearLayout) view
-					.findViewById(R.id.item_send);
-			holder.deleteLayout = (LinearLayout) view
-					.findViewById(R.id.item_delete);
+			//2013-09-09 do not use this expand menu
+//			holder.mainLayout = (LinearLayout) view.findViewById(R.id.audio_layout_main);
+//			holder.menuLayout = (LinearLayout) view.findViewById(R.id.layout_expand);
+//			holder.playLayout = (LinearLayout) view.findViewById(R.id.item_play);
+//			holder.sendLayout = (LinearLayout) view.findViewById(R.id.item_send);
+//			holder.deleteLayout = (LinearLayout) view.findViewById(R.id.item_delete);
 			view.setTag(holder);
 		} else {
 			view = convertView;
@@ -137,27 +133,30 @@ public class MediaAudioAdapter extends BaseAdapter {
 		// }
 		holder.iconView.setImageResource(R.drawable.default_audio_iv);
 
-		holder.mainLayout
-				.setOnClickListener(new MainOnClickLinstener(position));
-		holder.playLayout.setOnClickListener(new PlayOnClickListener(position));
-		holder.sendLayout.setOnClickListener(new SendOnClickListener(position));
-		holder.deleteLayout.setOnClickListener(new DeleteOnClickListener(
-				position));
-		if (current_position == position) {
-			holder.menuLayout.setVisibility(View.VISIBLE);
-			holder.playLayout.setClickable(true);
-			holder.sendLayout.setClickable(true);
-			holder.deleteLayout.setClickable(true);
-		} else {
-			holder.menuLayout.setVisibility(View.GONE);
-			holder.playLayout.setClickable(false);
-			holder.sendLayout.setClickable(false);
-			holder.deleteLayout.setClickable(false);
-		}
+//		holder.mainLayout
+//				.setOnClickListener(new MainOnClickLinstener(position));
+//		holder.playLayout.setOnClickListener(new PlayOnClickListener(position));
+//		holder.sendLayout.setOnClickListener(new SendOnClickListener(position));
+//		holder.deleteLayout.setOnClickListener(new DeleteOnClickListener(
+//				position));
+//		if (current_position == position) {
+//			holder.menuLayout.setVisibility(View.VISIBLE);
+//			holder.playLayout.setClickable(true);
+//			holder.sendLayout.setClickable(true);
+//			holder.deleteLayout.setClickable(true);
+//		} else {
+//			holder.menuLayout.setVisibility(View.GONE);
+//			holder.playLayout.setClickable(false);
+//			holder.sendLayout.setClickable(false);
+//			holder.deleteLayout.setClickable(false);
+//		}
 
 		return view;
 	}
 
+	/**
+	 * @unuse
+	 */
 	private class MainOnClickLinstener implements OnClickListener {
 		int position;
 

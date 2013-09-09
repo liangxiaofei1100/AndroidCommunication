@@ -5,12 +5,17 @@ import java.util.Comparator;
 
 public class HistoryManager {
 		//status
-		public static final int STATUS_SENDING = 0;
-		public static final int STATUS_SEND_SUCCESS = 1;
-		public static final int STATUS_SEND_FAIL = 2;
-		public static final int STATUS_RECEIVING = 3;
-		public static final int STATUS_RECEIVE_SUCCESS = 4;
-		public static final int STATUS_RECEIVE_FAIL = 5;
+		public static final int STATUS_PRE_SEND = 0;
+		public static final int STATUS_SENDING = 1;
+		public static final int STATUS_SEND_SUCCESS = 2;
+		public static final int STATUS_SEND_FAIL = 3;
+		
+		public static final int STATUS_PRE_RECEIVE = 4;
+		public static final int STATUS_RECEIVING = 5;
+		public static final int STATUS_RECEIVE_SUCCESS = 6;
+		public static final int STATUS_RECEIVE_FAIL = 7;
+		
+		public static final int STATUS_DEFAULT = 8;
 		
 		public static final NumberFormat nf = NumberFormat.getPercentInstance();
 		

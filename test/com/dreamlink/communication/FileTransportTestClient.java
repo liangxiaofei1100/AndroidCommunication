@@ -17,9 +17,14 @@ import android.widget.TextView;
 
 import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.communication.aidl.User;
+import com.dreamlink.communication.FileReceiverTest;
 import com.dreamlink.communication.FileReceiver.OnReceiveListener;
+import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
 import com.dreamlink.communication.lib.util.Notice;
+import com.dreamlink.communication.protocol.FileTransferInfo;
+import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListenerTest;
+import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -63,15 +68,15 @@ public class FileTransportTestClient extends Activity implements
 
 			case MSG_UPDATE_RECEIVE_PROGRESS:
 				Bundle data = msg.getData();
-				long receivedBytes = data.getLong(KEY_RECEIVE_BYTES);
-				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
+				double receivedBytes = data.getDouble(KEY_RECEIVE_BYTES);
+				double totalBytes = data.getDouble(KEY_TOTAL_BYTES);
 				int progress = (int) ((receivedBytes / (float) totalBytes) * 100);
 				mProgressBar.setProgress(progress);
 				Log.d(TAG, "receivedBytes = " + receivedBytes
 						+ ", totalBytes = " + totalBytes + "progress = "
 						+ progress);
 				mSpeedTextView.setText(FileTransportTest.getSpeedText(
-						receivedBytes, mStartTime));
+						(long)receivedBytes, mStartTime));
 				break;
 			case MSG_FINISHED:
 				mStatusTextView.setText("Send Finished.");
@@ -156,38 +161,38 @@ public class FileTransportTestClient extends Activity implements
 	}
 
 	@Override
-	public void onReceiveFile(FileReceiver receiver) {
-		Log.d(TAG, "onReceiveFile " + receiver);
-		File file = new File("/sdcard/receivedFile.txt");
-		receiver.receiveFile(file, this);
-		mFileReceiver = receiver;
-		mStartTime = System.currentTimeMillis();
-
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_STATUS;
-		message.obj = "Receiving file " + receiver.getFileInfo().mFileName;
-		mHandler.sendMessage(message);
-	}
-
-	@Override
-	public void onReceiveProgress(long receivedBytes, long totalBytes) {
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_RECEIVE_PROGRESS;
-		Bundle data = new Bundle();
-		data.putLong(KEY_RECEIVE_BYTES, receivedBytes);
-		data.putLong(KEY_TOTAL_BYTES, totalBytes);
-		message.setData(data);
-		mHandler.sendMessage(message);
-	}
-
-	@Override
 	public void onReceiveFinished(boolean success) {
 		mHandler.sendEmptyMessage(MSG_FINISHED);
 	}
 
 	@Override
-	public void onReceiveFileByYuri(FileReceiverByYuri fileReceiverByYuri) {
-		// TODO Auto-generated method stub
+	public void onReceiveProgress(HistoryInfo historyInfo) {
+		
+		Message message = mHandler.obtainMessage();
+		message.what = MSG_UPDATE_RECEIVE_PROGRESS;
+		Bundle data = new Bundle();
+		data.putDouble(KEY_RECEIVE_BYTES, historyInfo.getProgress());
+		data.putDouble(KEY_TOTAL_BYTES, historyInfo.getMax());
+		message.setData(data);
+		mHandler.sendMessage(message);
+	}
+
+	@Override
+	public void onReceiveFile(FileReceiver fileReceiver) {
+		Log.d(TAG, "onReceiveFile " + fileReceiver);
+		File file = new File("/sdcard/receivedFile.txt");
+		// TODO 
+		HistoryInfo historyInfo = new HistoryInfo();
+		FileTransferInfo fileInfo = new FileTransferInfo(file);
+		historyInfo.setFileInfo(fileInfo);
+		fileReceiver.receiveFile(historyInfo, this);
+		mFileReceiver = fileReceiver;
+		mStartTime = System.currentTimeMillis();
+
+		Message message = mHandler.obtainMessage();
+		message.what = MSG_UPDATE_STATUS;
+		message.obj = "Receiving file " + fileReceiver.getFileTransferInfo().mFileName;
+		mHandler.sendMessage(message);
 		
 	}
 }

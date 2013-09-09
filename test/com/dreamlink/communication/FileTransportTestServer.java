@@ -25,6 +25,9 @@ import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.FileSender.OnFileSendListener;
 import com.dreamlink.communication.lib.util.Notice;
+import com.dreamlink.communication.protocol.FileTransferInfo;
+import com.dreamlink.communication.ui.file.FileInfo;
+import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -70,15 +73,15 @@ public class FileTransportTestServer extends Activity implements
 
 			case MSG_UPDATE_SEND_PROGRESS:
 				Bundle data = msg.getData();
-				long sentBytes = data.getLong(KEY_SENT_BYTES);
-				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
+				double sentBytes = data.getDouble(KEY_SENT_BYTES);
+				double totalBytes = data.getDouble(KEY_TOTAL_BYTES);
 				int progress = (int) ((sentBytes / (float) totalBytes) * 100);
 				Log.d(TAG, "sentBytes = " + sentBytes + ", totalBytes = "
 						+ totalBytes + "progress = " + progress);
 				mProgressBar.setProgress(progress);
 
 				mSpeedTextView.setText(FileTransportTest.getSpeedText(
-						sentBytes, mStartTime));
+						(long) sentBytes, mStartTime));
 				break;
 			case MSG_FINISHED:
 				mStatusTextView.setText("Send Finished.");
@@ -99,8 +102,13 @@ public class FileTransportTestServer extends Activity implements
 						return;
 					}
 					mStatusTextView.setText("Sending file```");
-					mCommunicationManager.sendFile(file,
-							FileTransportTestServer.this, receiveUser, mAppID);
+					
+					HistoryInfo historyInfo = new HistoryInfo();
+					FileTransferInfo fileInfo = new FileTransferInfo(file);
+					historyInfo.setFileInfo(fileInfo);
+					historyInfo.setReceiveUser(receiveUser);
+					mCommunicationManager.sendFile(historyInfo,
+							FileTransportTestServer.this, mAppID);
 
 					mStartTime = System.currentTimeMillis();
 				} else {
@@ -214,17 +222,6 @@ public class FileTransportTestServer extends Activity implements
 	}
 
 	@Override
-	public void onSendProgress(long sentBytes, long totalBytes) {
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_SEND_PROGRESS;
-		Bundle data = new Bundle();
-		data.putLong(KEY_SENT_BYTES, sentBytes);
-		data.putLong(KEY_TOTAL_BYTES, totalBytes);
-		message.setData(data);
-		mHandler.sendMessage(message);
-	}
-
-	@Override
 	public void onSendFinished(boolean success) {
 		mHandler.sendEmptyMessage(MSG_FINISHED);
 	}
@@ -257,5 +254,17 @@ public class FileTransportTestServer extends Activity implements
 			e.printStackTrace();
 		}
 		return file;
+	}
+
+	@Override
+	public void onSendProgress(HistoryInfo historyInfo) {
+		Message message = mHandler.obtainMessage();
+		message.what = MSG_UPDATE_SEND_PROGRESS;
+		Bundle data = new Bundle();
+		data.putDouble(KEY_SENT_BYTES, historyInfo.getProgress());
+		data.putDouble(KEY_TOTAL_BYTES, historyInfo.getMax());
+		message.setData(data);
+		mHandler.sendMessage(message);
+
 	}
 }

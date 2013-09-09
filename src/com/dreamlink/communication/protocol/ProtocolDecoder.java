@@ -379,7 +379,7 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 		User localUser = mUserManager.getLocalUser();
 		if (receiveUserID == localUser.getUserID()) {
 			Log.d(TAG, "onReceiveFile This file is for me");
-			mCommunicationManager.notifyFileReceiveListeners(sendUserID, appID,
+			mCommunicationManager.notfiyFileReceiveListeners(sendUserID, appID,
 					serverAddress, serverPort, fileInfo);
 		} else {
 			Log.d(TAG, "onReceiveFile This file is not for me");
@@ -390,4 +390,27 @@ public class ProtocolDecoder implements ISendProtocolTypeSingleCallBack,
 			communication.sendMessage(originalMsg);
 		}
 	}
+	
+	@Override
+	public void onReceiveFileTest(int sendUserID, int receiveUserID, int appID, 
+			byte[] serverAddress, int serverPort, FileTransferInfo fileInfo) {
+
+		Log.d(TAG, "onReceiveFileTest senUserID = " + sendUserID
+				+ ", receiveUserID = " + receiveUserID + ", appID = " + appID
+				+ ", serverPort = " + serverPort + ", file = "
+				+ fileInfo.mFileName);
+		User localUser = mUserManager.getLocalUser();
+		if (receiveUserID == localUser.getUserID()) {
+			Log.d(TAG, "onReceiveFile This file is for me");
+			mCommunicationManager.notifyFileReceiveListenersTest(sendUserID, appID,
+					serverAddress, serverPort, fileInfo);
+		} else {
+			Log.d(TAG, "onReceiveFile This file is not for me");
+			SocketCommunication communication = mUserManager
+					.getSocketCommunication(receiveUserID);
+			byte[] originalMsg = ProtocolEncoder.encodeSendFile(sendUserID,
+					receiveUserID, appID, serverAddress, serverPort, fileInfo);
+			communication.sendMessage(originalMsg);
+		}
+	};
 }
