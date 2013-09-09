@@ -2,7 +2,6 @@ package com.dreamlink.communication;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,21 +14,19 @@ import android.os.Handler.Callback;
 import android.os.HandlerThread;
 import android.os.Message;
 
-import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 
 /**
  * Create server socket to send file. Send file to the connected client.
  * 
  */
-public class FileSenderByYuri {
-	private static final String TAG = "FileSenderByYuri";
+public class FileSenderTest {
+	private static final String TAG = "FileSender";
 	/** 3 minutes time out. */
 	private static final int SEND_SOCKET_TIMEOUT = 3 * 60 * 1000;
 
-	private OnFileSendListener mListener;
+	private OnFileSendListenerTest mListener;
 	private File mSendFile;
-	private HistoryInfo mSendHistoryInfo;
 	private ServerSocket mServerSocket;
 
 	private SendHandlerThread mHandlerThread;
@@ -52,14 +49,13 @@ public class FileSenderByYuri {
 	 * @param listener
 	 * @return The server socket port.
 	 */
-	public int sendFile(HistoryInfo historyInfo, OnFileSendListener listener) {
+	public int sendFile(File file, OnFileSendListenerTest listener) {
 		mListener = listener;
-//		mSendFile = file;
-		mSendHistoryInfo = historyInfo;
+		mSendFile = file;
 
 		mServerSocket = createServerSocket();
 		if (mServerSocket == null) {
-			Log.e(TAG, "sendFile() file: " + historyInfo.getFileInfo().filePath
+			Log.e(TAG, "sendFile() file: " + file
 					+ ", fail. Create server socket error");
 			return -1;
 		}
@@ -107,8 +103,8 @@ public class FileSenderByYuri {
 						+ client.getInetAddress().getHostAddress());
 				Log.d(TAG, "Server: connection done");
 				OutputStream outputStream = client.getOutputStream();
-				Log.d(TAG, "server: copying files " + mSendHistoryInfo.getFileInfo().filePath);
-				copyFile(mSendHistoryInfo, outputStream);
+				Log.d(TAG, "server: copying files " + mSendFile.toString());
+				copyFile(new FileInputStream(mSendFile), outputStream);
 				mServerSocket.close();
 			} catch (IOException e) {
 				Log.e(TAG, "FileSenderThread " + e.toString());
@@ -131,14 +127,11 @@ public class FileSenderByYuri {
 
 			switch (msg.what) {
 			case MSG_UPDATE_PROGRESS:
-//				Bundle data = msg.getData();
-//				long sentBytes = data.getLong(KEY_SENT_BYTES);
-//				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
-//				if (mListener != null) {
-//					mListener.onSendProgress(sentBytes, totalBytes);
-//				}
+				Bundle data = msg.getData();
+				long sentBytes = data.getLong(KEY_SENT_BYTES);
+				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
 				if (mListener != null) {
-					mListener.onSendProgress(mSendHistoryInfo);
+					mListener.onSendProgress(sentBytes, totalBytes);
 				}
 				break;
 			case MSG_FINISH:
@@ -161,30 +154,22 @@ public class FileSenderByYuri {
 
 	}
 
-	private void copyFile(HistoryInfo historyInfo, OutputStream out) throws FileNotFoundException {
-		InputStream inputStream = new FileInputStream(historyInfo.getFileInfo().filePath);
+	private void copyFile(InputStream inputStream, OutputStream out) {
 		byte buf[] = new byte[4096];
 		int len;
 		long sentBytes = 0;
 		long start = System.currentTimeMillis();
-//		long totalBytes = mSendFile.length();
-		double totalBytes = historyInfo.getMax();
-//		int lastProgress = 0;
-//		int currentProgress = 0;
-		double lastProgress = 0;
-		double currentProgress = 0;
+		long totalBytes = mSendFile.length();
+		int lastProgress = 0;
+		int currentProgress = 0;
 		try {
 			while ((len = inputStream.read(buf)) != -1) {
 				out.write(buf, 0, len);
 				sentBytes += len;
-//				currentProgress = (int) (((double) sentBytes / totalBytes) * 100);
-				currentProgress = (sentBytes / totalBytes) * 100;
-				System.out.println("**** currentProgress=" + currentProgress);
+				currentProgress = (int) (((double) sentBytes / totalBytes) * 100);
 				if (lastProgress != currentProgress) {
 					lastProgress = currentProgress;
-//					notifyProgress(sentBytes, totalBytes);
-					mSendHistoryInfo.setProgress(currentProgress);
-					notifiyProgress();
+					notifyProgress(sentBytes, totalBytes);
 				}
 			}
 
@@ -199,12 +184,6 @@ public class FileSenderByYuri {
 		long time = System.currentTimeMillis() - start;
 		Log.d(TAG, "Total size = " + sentBytes + "bytes time = " + time
 				+ ", speed = " + (sentBytes / time) + "KB/s");
-	}
-	
-	private void notifiyProgress(){
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_PROGRESS;
-		mHandler.sendMessage(message);
 	}
 
 	private void notifyProgress(long sentBytes, long totalBytes) {
@@ -232,15 +211,14 @@ public class FileSenderByYuri {
 	 * Callback to get the send status.
 	 * 
 	 */
-	public interface OnFileSendListener {
+	public interface OnFileSendListenerTest {
 		/**
 		 * Every send 1 percent of file, this method is invoked.
 		 * 
 		 * @param sentBytes
 		 * @param totalBytes
 		 */
-//		void onSendProgress(long sentBytes, long totalBytes);
-		void onSendProgress(HistoryInfo historyInfo);
+		void onSendProgress(long sentBytes, long totalBytes);
 
 		/**
 		 * The file is sent.

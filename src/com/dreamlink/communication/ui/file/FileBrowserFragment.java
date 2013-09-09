@@ -9,6 +9,7 @@ import java.util.Map;
 
 import com.dreamlink.aidl.User;
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.ListContextMenu;
@@ -17,6 +18,7 @@ import com.dreamlink.communication.ui.PopupView;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
+import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
@@ -257,22 +259,10 @@ public class FileBrowserFragment extends BaseFragment implements
 			mFileInfoManager.openFile(fileInfo.filePath);
 			break;
 		case ListContextMenu.MENU_SEND:
-			//get current connected user list
-			ArrayList<String> userNameList = mUserManager.getAllUserNameList();
-			if (userNameList.size() == 0) {
-				mNotice.showToast("请先连接");
-				break;
-			}else if (userNameList.size() == 1) {
-				//if only one user.send directory
-				ArrayList<User> userList = new ArrayList<User>();
-				User user = mUserManager.getUser(userNameList.get(0));
-				userList.add(user);
-				System.out.println("before send.fileinfo.filepath=" + fileInfo.filePath);
-				doSend(userList, fileInfo);
-			}else {
-				//if there are two or more user,need show dialog for user choose
-				showUserChooseDialog(userNameList, fileInfo);
-			}
+			FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(fileInfo.filePath));
+
+			FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+			fileSendUtil.sendFile(fileTransferInfo);
 			break;
 		case ListContextMenu.MENU_DELETE:
 			showDeleteDialog(fileInfo);
@@ -287,55 +277,6 @@ public class FileBrowserFragment extends BaseFragment implements
 			break;
 		}
 		return super.onContextItemSelected(item);
-	}
-	
-	public void showUserChooseDialog(List<String> data, final FileInfo fileInfo){
-		final String[] items = new String[data.size()];
-		final boolean[] checkes = new boolean[data.size()];
-		for (int i = 0; i < data.size(); i++) {
-			items[i] = data.get(i);
-			checkes[i] = true;
-		}
-		new AlertDialog.Builder(mContext)
-			.setTitle("用户列表")
-			.setMultiChoiceItems(items, checkes, new OnMultiChoiceClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-					//TODO
-				}
-			})
-			.setPositiveButton("发送", new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					ArrayList<User> userList = new ArrayList<User>();
-					for (int i = 0; i < checkes.length; i++) {
-						if (checkes[i]) {
-							User user = mUserManager.getUser(items[i]);
-							userList.add(user);
-						}
-					}
-					doSend(userList, fileInfo);
-				}
-			})
-			.setNegativeButton(android.R.string.cancel, null)
-			.create().show();
-	}
-	
-	/**
-	 * notify HistoryActivity that send file
-	 * @param list the send user list
-	 * @param fileInfo the file that send
-	 */
-	public void doSend(ArrayList<User> list, FileInfo fileInfo){
-		System.out.println("doSend.filepath=" + fileInfo.filePath);
-		Intent intent = new Intent();
-		intent.setAction(DreamConstant.SEND_FILE_ACTION);
-		Bundle bundle = new Bundle();
-		bundle.putParcelable(Extra.SEND_FILE, fileInfo);
-		bundle.putParcelableArrayList(Extra.SEND_USER, list);
-		intent.putExtras(bundle);
-		mContext.sendBroadcast(intent);
 	}
 	
 	public void showRenameDialog(final FileInfo fileInfo, final int position){

@@ -17,8 +17,11 @@ import android.widget.TextView;
 
 import com.dreamlink.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.aidl.User;
+import com.dreamlink.communication.FileReceiverTest;
 import com.dreamlink.communication.FileReceiver.OnReceiveListener;
+import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
+import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListenerTest;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.Notice;
 
@@ -27,7 +30,7 @@ import com.dreamlink.communication.util.Notice;
  * 
  */
 public class FileTransportTestClient extends Activity implements
-		OnCommunicationListenerExternal, OnFileTransportListener,
+		OnCommunicationListenerExternal, OnFileTransportListenerTest,
 		OnReceiveListener {
 	private SocketCommunicationManager mCommunicationManager;
 	private Notice mNotice;
@@ -52,7 +55,7 @@ public class FileTransportTestClient extends Activity implements
 	private static final String KEY_RECEIVE_BYTES = "KEY_RECEIVE_BYTES";
 	private static final String KEY_TOTAL_BYTES = "KEY_TOTAL_BYTES";
 
-	private FileReceiver mFileReceiver;
+	private FileReceiverTest mFileReceiver;
 
 	Handler mHandler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
@@ -93,7 +96,7 @@ public class FileTransportTestClient extends Activity implements
 		initView();
 		mNotice = new Notice(this);
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
-		mCommunicationManager.registerOnFileTransportListener(this, mAppID);
+		mCommunicationManager.registerOnFileTransportListenerTest(this, mAppID);
 
 	}
 
@@ -156,7 +159,7 @@ public class FileTransportTestClient extends Activity implements
 	}
 
 	@Override
-	public void onReceiveFile(FileReceiver receiver) {
+	public void onReceiveFileTest(FileReceiverTest receiver) {
 		Log.d(TAG, "onReceiveFile " + receiver);
 		File file = new File("/sdcard/receivedFile.txt");
 		receiver.receiveFile(file, this);

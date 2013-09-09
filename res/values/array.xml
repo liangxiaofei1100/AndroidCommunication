@@ -67,4 +67,18 @@
         <item>@string/copy_cancel_msg</item>
     </string-array>
     
+    <string-array name="media_menu">
+        <item>@string/menu_play</item>
+        <item>@string/menu_send</item>
+        <item>@string/menu_delete</item>
+        <item>@string/menu_info</item>
+    </string-array>
+    
+    <string-array name="file_menu">
+        <item>@string/menu_open</item>
+        <item>@string/menu_send</item>
+        <item>@string/menu_delete</item>
+        <item>@string/menu_info</item>
+    </string-array>
+    
 </resources>

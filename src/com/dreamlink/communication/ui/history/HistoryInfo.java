@@ -4,8 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.dreamlink.aidl.User;
+import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.file.FileInfo;
 
 public class HistoryInfo implements Parcelable{
 	/**
@@ -24,19 +24,19 @@ public class HistoryInfo implements Parcelable{
 	private String sendUserName;
 	
 	/**send or receive file info*/
-	private FileInfo fileInfo;
+	private FileTransferInfo fileInfo;
 	
-	/***/
-	private double prev = 0;
-	
-	/**progress*/
+	/**current transfer file size(bytes)*/
 	private double progress = 0;
 	private double max = 0;
+	
+	/**this file's status:sending,receiving,send ok,send fail and so on*/
+	private int status;
 	
 	public HistoryInfo(){
 	}
 	
-	public HistoryInfo(int  msgType, long date, User user, FileInfo fileInfo){
+	public HistoryInfo(int  msgType, long date, User user, FileTransferInfo fileInfo){
 		this.msgType = msgType;
 		this.date = date;
 		this.receiveUser = user;
@@ -79,16 +79,16 @@ public class HistoryInfo implements Parcelable{
 		this.sendUserName = name;
 	}
 	
-	public FileInfo getFileInfo(){
+	public FileTransferInfo getFileInfo(){
 		return fileInfo;
 	}
 	
-	public void setFileInfo(FileInfo fileInfo){
+	public void setFileInfo(FileTransferInfo fileInfo){
 		this.fileInfo = fileInfo;
 	}
 	
 	public double getMax(){
-		return fileInfo.fileSize;
+		return fileInfo.getFileSize();
 	}
 	
 	public double getProgress(){
@@ -99,12 +99,12 @@ public class HistoryInfo implements Parcelable{
 		this.progress = progress;
 	}
 	
-	public double getPrev(){
-		return prev;
+	public int getStatus(){
+		return status;
 	}
-
-	public void setPrev(double prev){
-		this.prev = prev;
+	
+	public void setStatus(int status){
+		this.status = status;
 	}
 	
 	@Override
