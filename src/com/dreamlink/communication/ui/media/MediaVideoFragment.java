@@ -6,17 +6,15 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.protocol.FileTransferInfo;
+import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.image.ImageFragmentActivity;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.Notice;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -26,26 +24,19 @@ import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 
-public class MediaVideoFragment extends Fragment implements OnItemClickListener, OnItemLongClickListener {
+public class MediaVideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
 	private static final String TAG = "MediaVideoFragment";
 	private GridView mGridView;
 	
 	private MediaVideoAdapter mAdapter;
-	private Notice mNotice;
 	private List<MediaInfo> mVideoLists = new ArrayList<MediaInfo>();
 	
 	private MediaInfoManager mScan;
@@ -81,7 +72,6 @@ public class MediaVideoFragment extends Fragment implements OnItemClickListener,
 		mGridView.setOnItemLongClickListener(this);
 		
 		mScan = new MediaInfoManager(mContext);
-		mNotice = new Notice(mContext);
 		
 		GetVideosTask getVideosTask = new GetVideosTask();
 		getVideosTask.execute();

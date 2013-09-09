@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.lib.util.Notice;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class BaseFragment extends Fragment{

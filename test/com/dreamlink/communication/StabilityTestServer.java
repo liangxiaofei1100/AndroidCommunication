@@ -11,8 +11,8 @@ import android.os.Message;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.dreamlink.aidl.OnCommunicationListenerExternal;
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.util.Log;
 
 /**

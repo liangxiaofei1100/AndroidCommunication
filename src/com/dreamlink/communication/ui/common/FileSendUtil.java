@@ -3,13 +3,13 @@ package com.dreamlink.communication.ui.common;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.lib.util.Notice;
 
 import android.app.AlertDialog;
 import android.content.Context;

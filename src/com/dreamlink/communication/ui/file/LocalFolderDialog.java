@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MountManager;
-import com.dreamlink.communication.util.Notice;
 
 import android.app.Activity;
 import android.content.Intent;

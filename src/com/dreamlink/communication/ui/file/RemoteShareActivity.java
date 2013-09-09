@@ -11,10 +11,12 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.dreamlink.aidl.OnCommunicationListenerExternal;
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.lib.util.AppUtil;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.Command;
 import com.dreamlink.communication.ui.DreamConstant.Cmd;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
@@ -23,10 +25,8 @@ import com.dreamlink.communication.ui.dialog.FileExistDialog;
 import com.dreamlink.communication.ui.dialog.FileExistDialog.onMenuItemClickListener;
 import com.dreamlink.communication.ui.dialog.FileTransferDialog;
 import com.dreamlink.communication.ui.dialog.FileTransferDialog.FileTransferOnClickListener;
-import com.dreamlink.communication.util.AppUtil;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.LogFile;
-import com.dreamlink.communication.util.Notice;
 
 import android.app.Activity;
 import android.app.AlertDialog;

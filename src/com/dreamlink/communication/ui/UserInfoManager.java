@@ -3,7 +3,7 @@ package com.dreamlink.communication.ui;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 
 public class UserInfoManager {
 	private List<UserRecord> userList = new LinkedList<UserInfoManager.UserRecord>();

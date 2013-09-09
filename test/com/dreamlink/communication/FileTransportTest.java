@@ -10,7 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.dreamlink.communication.util.AppUtil;
+import com.dreamlink.communication.lib.util.AppUtil;
 
 public class FileTransportTest extends Activity {
 	private static final String TAG = "FileTransportTest";

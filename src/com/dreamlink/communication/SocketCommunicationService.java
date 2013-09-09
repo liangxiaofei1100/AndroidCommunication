@@ -11,9 +11,9 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.dreamlink.aidl.Communication;
-import com.dreamlink.aidl.OnCommunicationListenerExternal;
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.Communication;
+import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.User;
 
 public class SocketCommunicationService extends Service {
 	SocketCommunicationManager socketCommunicationManager;
@@ -77,9 +77,10 @@ public class SocketCommunicationService extends Service {
 		}
 
 		@Override
-		public User setLocalUser() throws RemoteException {
+		public void sendMessageToAll(byte[] msg, int appID)
+				throws RemoteException {
 			// TODO Auto-generated method stub
-			return null;
+			
 		}
 
 	}

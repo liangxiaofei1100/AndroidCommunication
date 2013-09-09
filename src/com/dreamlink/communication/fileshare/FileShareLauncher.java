@@ -1,8 +1,8 @@
 package com.dreamlink.communication.fileshare;
 
 import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.ui.file.RemoteShareService;
-import com.dreamlink.communication.util.AppUtil;
 
 import android.app.Activity;
 import android.app.AlertDialog;

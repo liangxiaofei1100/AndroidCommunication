@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 import android.util.Log;
 
-import com.dreamlink.aidl.User;
-import com.dreamlink.communication.util.ArrayUtil;
+import com.dreamlink.communication.aidl.User;
+import com.dreamlink.communication.lib.util.ArrayUtil;
 
 /**
  * This class is used for encode and decode send message.

@@ -11,7 +11,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.io.IOException;
 
-import com.dreamlink.communication.util.ArrayUtil;
+import com.dreamlink.communication.lib.util.ArrayUtil;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -336,14 +336,18 @@ public class SocketCommunication extends Thread {
 	 */
 	public void stopComunication() {
 		try {
-			mSocket.close();
 			if (mDataInputStream != null && mDataOutputStream != null) {
 				mDataInputStream.close();
 				mDataOutputStream.close();
 				mListener.OnCommunicationLost(this);
 			}
+			mSocket.close();
 		} catch (IOException e) {
 			Log.e(TAG, "stopComunication fail." + e);
+		} catch (Exception e) {
+			// TODO: handle exception
+			Log.e(TAG, "stopComunication fail." + e);
+			e.printStackTrace();
 		}
 	}
 

@@ -1,6 +1,6 @@
 package com.dreamlink.communication;
 
-import com.dreamlink.communication.util.AppUtil;
+import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.util.Log;
 
 import android.app.Activity;

@@ -2,7 +2,7 @@ package com.dreamlink.communication.protocol;
 
 import java.util.Arrays;
 
-import com.dreamlink.communication.util.ArrayUtil;
+import com.dreamlink.communication.lib.util.ArrayUtil;
 
 public class FileTransportProtocol {
 

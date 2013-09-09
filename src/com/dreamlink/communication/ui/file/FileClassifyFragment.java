@@ -11,7 +11,7 @@ import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.lib.util.Notice;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;

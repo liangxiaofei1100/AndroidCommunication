@@ -7,8 +7,8 @@ import java.util.Arrays;
 import android.annotation.TargetApi;
 import android.os.Build;
 import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.lib.util.ArrayUtil;
 import com.dreamlink.communication.server.service.ServerInfo;
-import com.dreamlink.communication.util.ArrayUtil;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 

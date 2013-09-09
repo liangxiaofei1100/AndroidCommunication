@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.util.Notice;
+import com.dreamlink.communication.lib.util.Notice;
 
 /**
  * This class is use for show config client dialog. It can be used in manual

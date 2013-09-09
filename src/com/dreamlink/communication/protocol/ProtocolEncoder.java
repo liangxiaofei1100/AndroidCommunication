@@ -2,7 +2,7 @@ package com.dreamlink.communication.protocol;
 
 import java.io.File;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.UserManager;
 
 /**

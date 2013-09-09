@@ -29,7 +29,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.AllowLoginDialog;
 import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
 import com.dreamlink.communication.AppListActivity;
@@ -40,6 +41,7 @@ import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.search.Search;
 import com.dreamlink.communication.search.SearchClient;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
@@ -47,7 +49,6 @@ import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
-import com.dreamlink.communication.util.Notice;
 import com.dreamlink.communication.wifip2p.WifiDirectManager;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver;
 
@@ -61,7 +62,7 @@ import com.dreamlink.communication.wifip2p.WifiDirectReciver;
  */
 public class ClientListActivity extends Activity implements OnSearchListener,
 		OnClickListener, OnCommunicationListener, ILoginRequestCallBack,
-		com.dreamlink.aidl.OnCommunicationListenerExternal {
+		OnCommunicationListenerExternal {
 	private static final String TAG = "ClientListActivity";
 	private Context mContext;
 

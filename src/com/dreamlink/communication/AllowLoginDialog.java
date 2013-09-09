@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 
 /**
  * Show Login request.

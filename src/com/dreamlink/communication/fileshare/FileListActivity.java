@@ -8,12 +8,12 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.Command;
 import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.file.FileListAdapter;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
-import com.dreamlink.communication.util.Notice;
 
 import android.app.ListActivity;
 import android.content.Context;

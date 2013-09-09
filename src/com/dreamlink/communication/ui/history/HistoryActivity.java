@@ -6,22 +6,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.FileReceiver;
 import com.dreamlink.communication.FileReceiver.OnReceiveListener;
 import com.dreamlink.communication.FileSender.OnFileSendListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
+import com.dreamlink.communication.lib.util.AppUtil;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.file.FileInfo;
-import com.dreamlink.communication.util.AppUtil;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.Notice;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

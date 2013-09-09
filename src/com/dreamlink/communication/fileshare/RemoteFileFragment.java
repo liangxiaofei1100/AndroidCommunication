@@ -11,17 +11,17 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.dreamlink.aidl.OnCommunicationListenerExternal;
-import com.dreamlink.aidl.User;
+import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.Command;
 import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.file.FileListAdapter;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.Notice;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;

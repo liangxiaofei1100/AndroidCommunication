@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.file.FileListAdapter;
-import com.dreamlink.communication.util.Notice;
 
 import android.content.Context;
 import android.os.Bundle;
