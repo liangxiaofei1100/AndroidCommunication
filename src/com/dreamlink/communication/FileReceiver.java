@@ -172,18 +172,16 @@ public class FileReceiver {
 		double receiveBytes = 0;
 		double totalBytes = mFileTransferInfo.getFileSize();
 		long start = System.currentTimeMillis();
-		double lastProgress = 0;
-		double currentProgress = 0;
+		int lastProgress = 0;
+		int currentProgress = 0;
 		
 		try {
 			while ((len = inputStream.read(buf)) != -1) {
 				out.write(buf, 0, len);
 				receiveBytes += len;
 				currentProgress = (int) (((double) receiveBytes / totalBytes) * 100);
-//				currentProgress = (receiveBytes / totalBytes) * 100;
 				if (lastProgress != currentProgress) {
 					lastProgress = currentProgress;
-//					notifyProgress(receiveBytes, totalBytes);
 					mReceivedHistoryInfo.setProgress(receiveBytes);
 					notifyProgress();
 				}

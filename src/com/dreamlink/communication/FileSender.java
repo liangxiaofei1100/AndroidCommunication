@@ -171,17 +171,13 @@ public class FileSender {
 		int len;
 		double sendBytes = 0;
 		long start = System.currentTimeMillis();
-//		long totalBytes = mSendFile.length();
 		double totalBytes = historyInfo.getMax();
-//		int lastProgress = 0;
-//		int currentProgress = 0;
-		double lastProgress = 0;
-		double currentProgress = 0;
+		int lastProgress = 0;
+		int currentProgress = 0;
 		try {
 			while ((len = inputStream.read(buf)) != -1) {
 				out.write(buf, 0, len);
 				sendBytes += len;
-//				currentProgress = (sendBytes / totalBytes) * 100;
 				currentProgress = (int) (((double) sendBytes / totalBytes) * 100);
 				if (lastProgress != currentProgress) {
 					lastProgress = currentProgress;
