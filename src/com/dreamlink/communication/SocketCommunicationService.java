@@ -9,16 +9,15 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.dreamlink.communication.aidl.Communication;
 import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.communication.aidl.User;
 
 public class SocketCommunicationService extends Service {
-	SocketCommunicationManager socketCommunicationManager;
-	SocketCommunicationMananerRemote remote = new SocketCommunicationMananerRemote();
-	public static RemoteCallbackList<OnCommunicationListenerExternal> callBackList = new RemoteCallbackList<OnCommunicationListenerExternal>();
+	private SocketCommunicationManager mSocketCommunicationManager;
+	private SocketCommunicationMananerRemote mRemote = new SocketCommunicationMananerRemote();
+	public static RemoteCallbackList<OnCommunicationListenerExternal> mCallBackList = new RemoteCallbackList<OnCommunicationListenerExternal>();
 
 	private class SocketCommunicationMananerRemote extends Communication.Stub {
 
@@ -27,10 +26,10 @@ public class SocketCommunicationService extends Service {
 		 * client
 		 * */
 		@Override
-		public void registListenr(OnCommunicationListenerExternal lis, int appid)
-				throws RemoteException {
+		public void registListener(OnCommunicationListenerExternal lis,
+				int appid) throws RemoteException {
 			if (lis != null)
-				callBackList.register(lis, appid);
+				mCallBackList.register(lis, appid);
 			// socketCommunicationManager.registerOnCommunicationListenerExternal(
 			// lis, appid);
 		}
@@ -39,18 +38,16 @@ public class SocketCommunicationService extends Service {
 		@Override
 		public void sendMessage(byte[] msg, int appID, User user)
 				throws RemoteException {
-			// TODO Auto-generated method stub
 			if (user == null) {
-				socketCommunicationManager.sendMessageToAll(msg, appID);
+				mSocketCommunicationManager.sendMessageToAll(msg, appID);
 			} else {
-				socketCommunicationManager
-						.sendMessageToSingle(msg, user, appID);
+				mSocketCommunicationManager.sendMessageToSingle(msg, user,
+						appID);
 			}
 		}
 
 		@Override
 		public List<User> getAllUser() throws RemoteException {
-			// TODO Auto-generated method stub
 			UserManager userManager = UserManager.getInstance();
 			ArrayList<User> list = new ArrayList<User>();
 			Map<Integer, User> map = userManager.getAllUser();
@@ -61,35 +58,32 @@ public class SocketCommunicationService extends Service {
 		}
 
 		@Override
-		public void unRegistListenr(OnCommunicationListenerExternal lis)
+		public void unRegistListener(OnCommunicationListenerExternal lis)
 				throws RemoteException {
-			// TODO Auto-generated method stub
 			if (lis != null)
-				callBackList.unregister(lis);
+				mCallBackList.unregister(lis);
 			// socketCommunicationManager
 			// .unregisterOnCommunicationListenerExternal(lis);
 		}
 
 		@Override
 		public User getLocalUser() throws RemoteException {
-			// TODO Auto-generated method stub
 			return UserManager.getInstance().getLocalUser();
 		}
 
 		@Override
 		public void sendMessageToAll(byte[] msg, int appID)
 				throws RemoteException {
-			// TODO Auto-generated method stub
-			
+			mSocketCommunicationManager.sendMessageToAll(msg, appID);
 		}
 
 	}
 
 	@Override
 	public IBinder onBind(Intent arg0) {
-		socketCommunicationManager = SocketCommunicationManager
+		mSocketCommunicationManager = SocketCommunicationManager
 				.getInstance(this);
-		return remote;
+		return mRemote;
 	}
 
 	@Override

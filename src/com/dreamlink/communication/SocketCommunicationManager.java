@@ -623,12 +623,12 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * @param data
 	 */
 	public void notifyReceiveListeners(int sendUserID, int appID, byte[] data) {
-		int index = SocketCommunicationService.callBackList.beginBroadcast();
+		int index = SocketCommunicationService.mCallBackList.beginBroadcast();
 		for (int i = 0; i < index; i++) {
-			int app_ip = (Integer) SocketCommunicationService.callBackList
+			int app_ip = (Integer) SocketCommunicationService.mCallBackList
 					.getBroadcastCookie(i);
 			if (app_ip == appID) {
-				OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.callBackList
+				OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.mCallBackList
 						.getBroadcastItem(i);
 				try {
 					l.onReceiveMessage(data,
@@ -638,7 +638,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 				}
 			}
 		}
-		SocketCommunicationService.callBackList.finishBroadcast();
+		SocketCommunicationService.mCallBackList.finishBroadcast();
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
 			if (entry.getValue() == appID) {
@@ -655,9 +655,9 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	@Override
 	public void onUserConnected(User user) {
 
-		int index = SocketCommunicationService.callBackList.beginBroadcast();
+		int index = SocketCommunicationService.mCallBackList.beginBroadcast();
 		for (int i = 0; i < index; i++) {
-			OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.callBackList
+			OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.mCallBackList
 					.getBroadcastItem(i);
 			try {
 				l.onUserConnected(user);
@@ -665,7 +665,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 				e.printStackTrace();
 			}
 		}
-		SocketCommunicationService.callBackList.finishBroadcast();
+		SocketCommunicationService.mCallBackList.finishBroadcast();
 
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
@@ -680,9 +680,9 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	@Override
 	public void onUserDisconnected(User user) {
 
-		int index = SocketCommunicationService.callBackList.beginBroadcast();
+		int index = SocketCommunicationService.mCallBackList.beginBroadcast();
 		for (int i = 0; i < index; i++) {
-			OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.callBackList
+			OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.mCallBackList
 					.getBroadcastItem(i);
 			try {
 				l.onUserDisconnected(user);
@@ -690,7 +690,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 				e.printStackTrace();
 			}
 		}
-		SocketCommunicationService.callBackList.finishBroadcast();
+		SocketCommunicationService.mCallBackList.finishBroadcast();
 
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
