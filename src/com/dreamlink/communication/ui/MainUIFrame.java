@@ -24,6 +24,7 @@ import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.notification.NotificationMgr;
+import com.dreamlink.communication.server.service.ConnectHelper;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.app.AppFragmentActivity;
 import com.dreamlink.communication.ui.db.MetaData;
@@ -699,6 +700,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 							if (mIsServer) {
 								mIsServer = false;
 							}
+							ConnectHelper.getInstance(getApplicationContext()).stopSearch();
 							mSocketComMgr.closeAllCommunication();
 							// Disable wifi AP.
 							NetWorkUtil.setWifiAPEnabled(mContext, null, false);
@@ -847,6 +849,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		NetWorkUtil.setWifiAPEnabled(mContext, null, false);
 		// Clear wifi connect history.
 		NetWorkUtil.clearWifiConnectHistory(mContext);
+		// Stop record log and close log file.
+		Log.stopAndSave();
 		
 //		System.exit(0);
 	}

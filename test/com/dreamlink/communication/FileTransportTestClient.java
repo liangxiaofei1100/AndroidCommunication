@@ -15,25 +15,15 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-<<<<<<< HEAD
-import com.dreamlink.aidl.OnCommunicationListenerExternal;
-import com.dreamlink.aidl.User;
-=======
 import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.communication.aidl.User;
->>>>>>> 459abb04c66ec02b6adc6bd0905ff7a7436eb078
 import com.dreamlink.communication.FileReceiverTest;
 import com.dreamlink.communication.FileReceiver.OnReceiveListener;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
-<<<<<<< HEAD
-import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListenerTest;
-=======
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.protocol.FileTransferInfo;
-import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListenerTest;
 import com.dreamlink.communication.ui.history.HistoryInfo;
->>>>>>> 459abb04c66ec02b6adc6bd0905ff7a7436eb078
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -41,7 +31,7 @@ import com.dreamlink.communication.util.Log;
  * 
  */
 public class FileTransportTestClient extends Activity implements
-		OnCommunicationListenerExternal, OnFileTransportListenerTest,
+		OnCommunicationListenerExternal, OnFileTransportListener,
 		OnReceiveListener {
 	private SocketCommunicationManager mCommunicationManager;
 	private Notice mNotice;
@@ -66,7 +56,7 @@ public class FileTransportTestClient extends Activity implements
 	private static final String KEY_RECEIVE_BYTES = "KEY_RECEIVE_BYTES";
 	private static final String KEY_TOTAL_BYTES = "KEY_TOTAL_BYTES";
 
-	private FileReceiverTest mFileReceiver;
+	private FileReceiver mFileReceiver;
 
 	Handler mHandler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
@@ -85,10 +75,16 @@ public class FileTransportTestClient extends Activity implements
 						+ ", totalBytes = " + totalBytes + "progress = "
 						+ progress);
 				mSpeedTextView.setText(FileTransportTest.getSpeedText(
-						(long)receivedBytes, mStartTime));
+						(long) receivedBytes, mStartTime));
 				break;
 			case MSG_FINISHED:
-				mStatusTextView.setText("Send Finished.");
+				boolean result = false;
+				if (msg.arg1 == 0) {
+					result = true;
+				} else {
+					result = false;
+				}
+				mStatusTextView.setText("Send Finished. result = " + result);
 				break;
 			default:
 				break;
@@ -107,7 +103,7 @@ public class FileTransportTestClient extends Activity implements
 		initView();
 		mNotice = new Notice(this);
 		mCommunicationManager = SocketCommunicationManager.getInstance(this);
-		mCommunicationManager.registerOnFileTransportListenerTest(this, mAppID);
+		mCommunicationManager.registerOnFileTransportListener(this, mAppID);
 
 	}
 
@@ -170,27 +166,19 @@ public class FileTransportTestClient extends Activity implements
 	}
 
 	@Override
-<<<<<<< HEAD
-	public void onReceiveFileTest(FileReceiverTest receiver) {
-		Log.d(TAG, "onReceiveFile " + receiver);
-		File file = new File("/sdcard/receivedFile.txt");
-		receiver.receiveFile(file, this);
-		mFileReceiver = receiver;
-		mStartTime = System.currentTimeMillis();
-
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_STATUS;
-		message.obj = "Receiving file " + receiver.getFileInfo().mFileName;
-		mHandler.sendMessage(message);
-=======
 	public void onReceiveFinished(boolean success) {
-		mHandler.sendEmptyMessage(MSG_FINISHED);
->>>>>>> 459abb04c66ec02b6adc6bd0905ff7a7436eb078
+		Message message = mHandler.obtainMessage(MSG_FINISHED);
+		if (success) {
+			message.arg1 = 0;
+		} else {
+			message.arg1 = 1;
+		}
+		mHandler.sendMessage(message);
 	}
 
 	@Override
 	public void onReceiveProgress(HistoryInfo historyInfo) {
-		
+
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_UPDATE_RECEIVE_PROGRESS;
 		Bundle data = new Bundle();
@@ -204,7 +192,6 @@ public class FileTransportTestClient extends Activity implements
 	public void onReceiveFile(FileReceiver fileReceiver) {
 		Log.d(TAG, "onReceiveFile " + fileReceiver);
 		File file = new File("/sdcard/receivedFile.txt");
-		// TODO 
 		HistoryInfo historyInfo = new HistoryInfo();
 		FileTransferInfo fileInfo = new FileTransferInfo(file);
 		historyInfo.setFileInfo(fileInfo);
@@ -214,8 +201,9 @@ public class FileTransportTestClient extends Activity implements
 
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_UPDATE_STATUS;
-		message.obj = "Receiving file " + fileReceiver.getFileTransferInfo().mFileName;
+		message.obj = "Receiving file "
+				+ fileReceiver.getFileTransferInfo().mFileName;
 		mHandler.sendMessage(message);
-		
+
 	}
 }
