@@ -17,7 +17,6 @@
             android:layout_height="wrap_content"
             android:background="#bfbfbf"
             android:padding="2dp"
-            android:text="2013-09-03"
             android:textColor="#ffffff"
             android:textSize="12sp" />
     </LinearLayout>
@@ -59,7 +58,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
-                    android:text="已发送给samsung"
                      />
                 <ProgressBar 
                     android:id="@+id/bar_send_title"
@@ -96,7 +94,6 @@
                     	android:id="@+id/tv_send_file_name"
                    	 	android:layout_width="wrap_content"
                     	android:layout_height="wrap_content"
-                    	android:text="mytests"
                      />
                      
                      <ProgressBar
@@ -113,7 +110,6 @@
                     	android:id="@+id/tv_send_file_size"
                     	android:layout_width="wrap_content"
                     	android:layout_height="wrap_content"
-                    	android:text="1.23M"
                      />
                 </LinearLayout>
                 
@@ -127,6 +123,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_below="@+id/iv_userhead"
+            android:layout_toRightOf="@+id/layout_chatcontent"
+            android:singleLine="true"
+            android:ellipsize="end"
             android:gravity="center"
             android:text="ME"
             android:textColor="#818181"

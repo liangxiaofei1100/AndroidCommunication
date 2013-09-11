@@ -3,6 +3,12 @@ package com.dreamlink.communication.ui.history;
 import java.text.NumberFormat;
 import java.util.Comparator;
 
+import com.dreamlink.communication.ui.db.MetaData;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.net.Uri;
+
 public class HistoryManager {
 		//status
 		public static final int STATUS_DEFAULT = 0;
@@ -23,6 +29,8 @@ public class HistoryManager {
 		
 		public static final String ME = "ME";
 		
+		private Context mContext;
+		
 		/**
 	     * Perform alphabetical comparison of application entry objects.
 	     */
@@ -40,4 +48,58 @@ public class HistoryManager {
 				}
 	        }
 	    };
+	    
+	    public HistoryManager(Context context){
+	    	mContext = context;
+	    }
+	    
+	    public  synchronized void insertToDb(HistoryInfo historyInfo){
+	    	InsertThread insertThread = new InsertThread(historyInfo);
+	    	insertThread.start();
+	    }
+	    
+	    public void deleteItemFromDb(int id){
+	    	Uri uri = Uri.parse(MetaData.History.CONTENT_URI + "/" + id);
+			mContext.getContentResolver().delete(uri, null, null);
+	    }
+	    
+	    class InsertThread extends Thread{
+	    	HistoryInfo historyInfo = null;
+	    	
+	    	InsertThread(HistoryInfo historyInfo){
+	    		this.historyInfo = historyInfo;
+	    	}
+	    	
+	    	@Override
+	    	public void run() {
+	    		ContentValues values = new ContentValues();
+	    		values.put(MetaData.History.FILE_PATH, historyInfo.getFileInfo().getFilePath());
+	    		values.put(MetaData.History.FILE_NAME, historyInfo.getFileInfo().getFileName());
+	    		values.put(MetaData.History.FILE_SIZE, historyInfo.getFileInfo().getFileSize());
+	    		values.put(MetaData.History.SEND_USERNAME, historyInfo.getSendUserName());
+	    		values.put(MetaData.History.RECEIVE_USERNAME, historyInfo.getReceiveUser().getUserName());
+	    		values.put(MetaData.History.PROGRESS, historyInfo.getProgress());
+	    		values.put(MetaData.History.DATE, historyInfo.getDate());
+	    		values.put(MetaData.History.STATUS, historyInfo.getStatus());
+	    		values.put(MetaData.History.MSG_TYPE, historyInfo.getMsgType());
+	    		
+	    		mContext.getContentResolver().insert(MetaData.History.CONTENT_URI, values);
+	    	}
+	    }
+	    
+	    public ContentValues getInsertValues(HistoryInfo historyInfo){
+	    	ContentValues values = new ContentValues();
+    		values.put(MetaData.History.FILE_PATH, historyInfo.getFileInfo().getFilePath());
+    		values.put(MetaData.History.FILE_NAME, historyInfo.getFileInfo().getFileName());
+    		values.put(MetaData.History.FILE_SIZE, historyInfo.getFileInfo().getFileSize());
+    		values.put(MetaData.History.SEND_USERNAME, historyInfo.getSendUserName());
+    		values.put(MetaData.History.RECEIVE_USERNAME, historyInfo.getReceiveUser().getUserName());
+    		values.put(MetaData.History.PROGRESS, historyInfo.getProgress());
+    		values.put(MetaData.History.DATE, historyInfo.getDate());
+    		values.put(MetaData.History.STATUS, historyInfo.getStatus());
+    		values.put(MetaData.History.MSG_TYPE, historyInfo.getMsgType());
+    		values.put(MetaData.History.FILE_TYPE, historyInfo.getFileType());
+    		
+    		return values;
+	    }
 }

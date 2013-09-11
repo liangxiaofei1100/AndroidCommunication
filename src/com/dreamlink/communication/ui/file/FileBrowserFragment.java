@@ -293,8 +293,8 @@ public class FileBrowserFragment extends BaseFragment implements
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					String newName = editText.getText().toString().trim();
-					mAllLists.get(position).fileName = newName;
-					mFileInfoManager.rename(new File(fileInfo.filePath), newName);
+					fileInfo.fileName = newName;
+					fileInfo.filePath = mFileInfoManager.rename(new File(fileInfo.filePath), newName);
 					mFileInfoAdapter.notifyDataSetChanged();
 				}
 			})

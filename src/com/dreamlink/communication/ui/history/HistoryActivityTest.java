@@ -14,6 +14,7 @@ import com.dreamlink.communication.FileReceiver.OnReceiveListener;
 import com.dreamlink.communication.FileSender.OnFileSendListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
 import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.lib.util.Notice;
@@ -22,15 +23,22 @@ import com.dreamlink.communication.ui.BaseFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
 
+import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.ContentObserver;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -43,9 +51,9 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class HistoryActivity extends BaseFragmentActivity implements OnFileSendListener,OnFileTransportListener,
+public class HistoryActivityTest extends BaseFragmentActivity implements OnFileSendListener,OnFileTransportListener,
 					OnReceiveListener, OnScrollListener, OnItemClickListener {
-	private static final String TAG = "HistoryActivity";
+	private static final String TAG = "HistoryActivityTest";
 	private int mAppId = -1;
 	private Context mContext;
 	
@@ -54,7 +62,7 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 	private ListView mHistoryMsgLV;
 	
 	//adapter
-	private HistoryMsgAdapter mAdapter;
+	private HistoryCursorAdapter mAdapter;
 	
 	/**the list that send or receive history info*/
 	private List<HistoryInfo> mHistoryList = new ArrayList<HistoryInfo>();
@@ -65,6 +73,7 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 	private SocketCommunicationManager communicationManager;
 	
 	private FileInfoManager mFileInfoManager = null;
+	private UserManager mUserManager = null;
 	
 	//msg
 	private static final int MSG_SEND_FILE = 0;
@@ -76,9 +85,8 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 	private static final int MSG_SEND_FINISHED = 6;
 	private static final int MSG_RECEIVE_FINISHED = 7;
 	
-	private static final String KEY_RECEIVE_BYTES = "KEY_RECEIVE_BYTES";
-	private static final String KEY_SENT_BYTES = "KEY_SENT_BYTES";
-	private static final String KEY_TOTAL_BYTES = "KEY_TOTAL_BYTES";
+	private QueryHandler queryHandler = null;
+	private HistoryManager mHistoryManager = null;
 	
 	public BroadcastReceiver historyReceiver = new BroadcastReceiver() {
 		
@@ -158,11 +166,35 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		
 		mFileInfoManager = new FileInfoManager(mContext);
 		
+		queryHandler = new QueryHandler(getContentResolver());
+		mHistoryManager = new HistoryManager(mContext);
+		mUserManager = UserManager.getInstance();
+		
 		//register broadcast
 		IntentFilter filter = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
 		registerReceiver(historyReceiver, filter);
 		
+//		HistoryContent historyContent = new HistoryContent(new Handler());
+//		getContentResolver().registerContentObserver(MetaData.History.CONTENT_URI, true, historyContent);
+		
 		initView();
+	}
+	
+	private static final String[] PROJECTION = {
+		MetaData.History._ID,MetaData.History.FILE_PATH,MetaData.History.FILE_NAME,
+		MetaData.History.FILE_SIZE,MetaData.History.SEND_USERNAME,MetaData.History.RECEIVE_USERNAME,
+		MetaData.History.PROGRESS,MetaData.History.DATE,
+		MetaData.History.STATUS,MetaData.History.MSG_TYPE,MetaData.History.FILE_TYPE
+	};
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		query();
+	}
+	
+	public void query(){
+		queryHandler.startQuery(11, null, MetaData.History.CONTENT_URI, PROJECTION, null, null, MetaData.History.SORT_ORDER_DEFAULT);
 	}
 	
 	private void initView(){
@@ -175,29 +207,82 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		mHistoryMsgLV.setEmptyView(findViewById(R.id.tv_empty));
 		mHistoryMsgLV.setOnScrollListener(this);
 		mHistoryMsgLV.setOnItemClickListener(this);
-		//test=================
-//		HistoryInfo historyInfo = null;
-//		for (int i = 0; i < 10; i++) {
-//			historyInfo = new HistoryInfo();
-//			FileTransferInfo fileInfo = new FileTransferInfo();
-//			fileInfo.setFileName("test" + i);
-//			historyInfo.setFileInfo(fileInfo);
-//			historyInfo.setDate(System.currentTimeMillis() + i * 1000);
-//			if (i % 2 == 0) {
-//				historyInfo.setSendUserName("name" + i);
-//				historyInfo.setMsgType(HistoryManager.TYPE_RECEIVE);
-//			}else {
-//				historyInfo.setSendUserName(HistoryManager.ME);
-//				historyInfo.setMsgType(HistoryManager.TYPE_SEND);
-//			}
-//			mHistoryList.add(historyInfo);
-//		}
-//		Collections.sort(mHistoryList, HistoryManager.DATE_COMPARATOR);
-		//test=================
-		mAdapter = new HistoryMsgAdapter(mContext, mHistoryList);
-		mAdapter.setStatus(HistoryManager.STATUS_DEFAULT);
+		
+//		mAdapter.setStatus(HistoryManager.STATUS_DEFAULT);
 		mHistoryMsgLV.setAdapter(mAdapter);
 		mHistoryMsgLV.setSelection(0);
+	}
+	
+	public void setAdapter(){
+		Log.d(TAG, "setAdapter()");
+		if (null == mAdapter) {
+			Log.d(TAG, "setAdapter() null");
+			mAdapter = new HistoryCursorAdapter(mContext, mHistoryList);
+			mHistoryMsgLV.setAdapter(mAdapter);
+		}else {
+			Log.d(TAG, "setAdapter() changeCursor.count=" + mCursor.getCount());
+			mAdapter.changeCursor(mCursor);
+		}
+	}
+	
+	private class HistoryContent extends ContentObserver{
+
+		public HistoryContent(Handler handler) {
+			super(handler);
+			// TODO Auto-generated constructor stub
+		}
+		
+		@Override
+		public void onChange(boolean selfChange) {
+			// TODO Auto-generated method stub
+			super.onChange(selfChange);
+			Log.d(TAG, "onChange");
+			mCursor.requery();
+		}
+		
+		
+	}
+	
+	private Cursor mCursor = null;
+	//query db
+	public class QueryHandler extends AsyncQueryHandler{
+
+		public QueryHandler(ContentResolver cr) {
+			super(cr);
+			// TODO Auto-generated constructor stub
+		}
+		
+		@Override
+		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+			// TODO Auto-generated method stub
+//			super.onQueryComplete(token, cookie, cursor);
+			Log.d(TAG, "onQueryComplete");
+			if (null  != cursor) {
+				mCursor = cursor;
+				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
+//				mAdapter.changeCursor(cursor);
+				setAdapter();
+			}
+		}
+		
+		@Override
+		protected void onInsertComplete(int token, Object cookie, Uri uri) {
+			// TODO Auto-generated method stub
+			super.onInsertComplete(token, cookie, uri);
+			HistoryInfo historyInfo = (HistoryInfo) cookie;
+			Log.d(TAG, "onInsertComplete.filename= " + historyInfo.getFileInfo().getFileName());
+			historyInfo.setUri(uri);
+			query();
+		}
+		
+		@Override
+		protected void onUpdateComplete(int token, Object cookie, int result) {
+			// TODO Auto-generated method stub
+			super.onUpdateComplete(token, cookie, result);
+			Log.d(TAG, "onUpdateComplete.result=" + result);
+			query();
+		}
+		
 	}
 	
 	public void sendFile(FileTransferInfo fileInfo, List<User> list){
@@ -227,35 +312,46 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 			historyInfo.setMsgType(HistoryManager.TYPE_SEND);
 			historyInfo.setDate(System.currentTimeMillis());
 			historyInfo.setStatus(HistoryManager.STATUS_PRE_SEND);
+			historyInfo.setProgress(0);
 			historyInfo = mFileInfoManager.getHistoryInfo(historyInfo);
 			
 			mHistoryList.add(historyInfo);
+			ContentValues values = mHistoryManager.getInsertValues(historyInfo);
+			queryHandler.startInsert(11, historyInfo, MetaData.History.CONTENT_URI, values);
 			
-			Message message = mHandler.obtainMessage();
-			message.what = MSG_UPDATE_SEND_STATUS;
-			mHandler.sendMessage(message);
+//			Message message = mHandler.obtainMessage();
+//			message.what = MSG_UPDATE_SEND_STATUS;
+//			mHandler.sendMessage(message);
 			
-			communicationManager.sendFile(historyInfo, HistoryActivity.this, mAppId);
+			communicationManager.sendFile(historyInfo, HistoryActivityTest.this, mAppId);
 			
 		}
 	}
 
 	@Override
 	public void onSendProgress(HistoryInfo historyInfo) {
-		Log.d(TAG, "onSendProgress=" + historyInfo.getProgress());
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_SEND_PROGRESS;
-		message.obj = historyInfo;
-		mHandler.sendMessage(message);
+		Log.d(TAG, "onSendProgress=" + historyInfo.getProgress() +  ",uri=" + historyInfo.getUri());
+		ContentValues values = new ContentValues();
+		values.put(MetaData.History.STATUS, HistoryManager.STATUS_SENDING);
+		values.put(MetaData.History.PROGRESS, historyInfo.getProgress());
+		queryHandler.startUpdate(11, null, historyInfo.getUri(), values, null, null);
+		
+//		Message message = mHandler.obtainMessage();
+//		message.what = MSG_UPDATE_SEND_PROGRESS;
+//		message.obj = historyInfo;
+//		mHandler.sendMessage(message);
 	}
 
 	@Override
 	public void onSendFinished(HistoryInfo historyInfo, boolean success) {
-		Log.d(TAG, "onSendFinished.success" + success);
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_SEND_FINISHED;
-		message.obj = success;
-		mHandler.sendMessage(message);
+		Log.d(TAG, "onSendFinished.success" + success + ",uri=" + historyInfo.getUri());
+		ContentValues values = new ContentValues();
+		values.put(MetaData.History.STATUS, HistoryManager.STATUS_SENDING);
+		queryHandler.startUpdate(11, null, historyInfo.getUri(), values, null, null);
+//		Message message = mHandler.obtainMessage();
+//		message.what = MSG_SEND_FINISHED;
+//		message.obj = success;
+//		mHandler.sendMessage(message);
 	}
 
 	@Override
@@ -295,35 +391,46 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		fileInfo.setFileSize(fileReceiver.getFileTransferInfo().getFileSize());
 		historyInfo.setFileInfo(fileInfo);
 		historyInfo.setSendUserName(sendUserName);
+		historyInfo.setReceiveUser(mUserManager.getLocalUser());
 		historyInfo.setMsgType(HistoryManager.TYPE_RECEIVE);
 		historyInfo.setDate(System.currentTimeMillis());
 		historyInfo.setStatus(HistoryManager.STATUS_PRE_RECEIVE);
 		historyInfo = mFileInfoManager.getHistoryInfo(historyInfo);
 		mHistoryList.add(historyInfo);
 		
+		ContentValues values = mHistoryManager.getInsertValues(historyInfo);
+		queryHandler.startInsert(11, historyInfo, MetaData.History.CONTENT_URI, values);
+		
 		fileReceiver.receiveFile(historyInfo, this)	;
 		
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_RECEIVE_STATUS;
-		mHandler.sendMessage(message);
+//		Message message = mHandler.obtainMessage();
+//		message.what = MSG_UPDATE_RECEIVE_STATUS;
+//		mHandler.sendMessage(message);
 	}
 
 	@Override
 	public void onReceiveProgress(HistoryInfo historyInfo) {
-		Log.d(TAG, "onReceiveProgress.progress" + historyInfo.getProgress());
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_RECEIVE_PROGRESS;
-		message.obj = historyInfo;
-		mHandler.sendMessage(message);
+		Log.d(TAG, "onReceiveProgress.progress" + historyInfo.getUri());
+		ContentValues values = new ContentValues();
+		values.put(MetaData.History.STATUS, HistoryManager.STATUS_RECEIVING);
+		values.put(MetaData.History.PROGRESS, historyInfo.getProgress());
+		queryHandler.startUpdate(11, null, historyInfo.getUri(), values, null, null);
+//		Message message = mHandler.obtainMessage();
+//		message.what = MSG_UPDATE_RECEIVE_PROGRESS;
+//		message.obj = historyInfo;
+//		mHandler.sendMessage(message);
 	}
 
 	@Override
 	public void onReceiveFinished(HistoryInfo historyInfo, boolean success) {
-		Log.d(TAG, "onReceiveFinished.success" + success);
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_RECEIVE_FINISHED;
-		message.obj = success;
-		mHandler.sendMessage(message);
+		Log.d(TAG, "onReceiveFinished.success=" + historyInfo.getUri());
+		ContentValues values = new ContentValues();
+		values.put(MetaData.History.STATUS, HistoryManager.STATUS_SENDING);
+		queryHandler.startUpdate(11, null, historyInfo.getUri(), values, null, null);
+//		Message message = mHandler.obtainMessage();
+//		message.what = MSG_RECEIVE_FINISHED;
+//		message.obj = success;
+//		mHandler.sendMessage(message);
 	}
 
 	@Override
@@ -350,8 +457,8 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		// 注释：firstVisibleItem为第一个可见的Item的position，从0开始，随着拖动会改变
 		// visibleItemCount为当前页面总共可见的Item的项数
 		// totalItemCount为当前总共已经出现的Item的项数
-		recycleBitmapCaches(0, firstVisibleItem);
-		recycleBitmapCaches(firstVisibleItem + visibleItemCount, totalItemCount);
+//		recycleBitmapCaches(0, firstVisibleItem);
+//		recycleBitmapCaches(firstVisibleItem + visibleItemCount, totalItemCount);
 	}
 
 	// release bitmap

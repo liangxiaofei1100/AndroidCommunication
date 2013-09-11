@@ -5,12 +5,12 @@
     android:background="@drawable/loader_back"
     android:orientation="vertical" >
     
-    <TextView 
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:gravity="center"
-        android:text="启动画面\n来点广告，通知什么的"
-        android:textColor="#000"
-        />
+<!--     <TextView  -->
+<!--         android:layout_width="fill_parent" -->
+<!--         android:layout_height="fill_parent" -->
+<!--         android:gravity="center" -->
+<!--         android:text="启动画面\n来点广告，通知什么的" -->
+<!--         android:textColor="#000" -->
+<!--         /> -->
 
 </LinearLayout>

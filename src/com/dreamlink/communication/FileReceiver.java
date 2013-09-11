@@ -141,9 +141,9 @@ public class FileReceiver {
 				copyFile(inputStream);
 				Log.d(TAG, "Client: Data written");
 			} catch (IOException e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, e.toString());
 			} catch (Exception e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, e.toString());
 			} finally {
 				if (mSocket != null) {
 					if (mSocket.isConnected()) {
@@ -166,14 +166,15 @@ public class FileReceiver {
 //	private void copyFile(InputStream inputStream, OutputStream out) throws FileNotFoundException {
 	private void copyFile(InputStream inputStream) throws FileNotFoundException {
 		mReceivedHistoryInfo.setStatus(HistoryManager.STATUS_RECEIVING);
+		mReceivedHistoryInfo.setStartTime(System.currentTimeMillis());
 		OutputStream out = new FileOutputStream(mReceivedHistoryInfo.getFileInfo().getFilePath());
 		byte buf[] = new byte[4096];
 		int len;
-		double receiveBytes = 0;
-		double totalBytes = mFileTransferInfo.getFileSize();
+		long receiveBytes = 0;
+		long totalBytes = mFileTransferInfo.getFileSize();
 		long start = System.currentTimeMillis();
-		double lastProgress = 0;
-		double currentProgress = 0;
+		int lastProgress = 0;
+		int currentProgress = 0;
 		
 		try {
 			while ((len = inputStream.read(buf)) != -1) {
@@ -185,6 +186,7 @@ public class FileReceiver {
 					lastProgress = currentProgress;
 //					notifyProgress(receiveBytes, totalBytes);
 					mReceivedHistoryInfo.setProgress(receiveBytes);
+					mReceivedHistoryInfo.setNowTime(System.currentTimeMillis());
 					notifyProgress();
 				}
 			}
@@ -193,9 +195,9 @@ public class FileReceiver {
 			out.close();
 			inputStream.close();
 		} catch (IOException e) {
+			Log.d(TAG, e.toString());
 			mReceivedHistoryInfo.setStatus(HistoryManager.STATUS_RECEIVE_FAIL);
 			notifyFinish(false);
-			Log.d(TAG, e.toString());
 		}
 		long time = System.currentTimeMillis() - start;
 		Log.d(TAG, "Total size = " + receiveBytes + "bytes time = " + time
@@ -224,9 +226,9 @@ public class FileReceiver {
 			case MSG_FINISH:
 				if (mListener != null) {
 					if (msg.arg1 == FINISH_RESULT_SUCCESS) {
-						mListener.onReceiveFinished(true);
+						mListener.onReceiveFinished(mReceivedHistoryInfo, true);
 					} else {
-						mListener.onReceiveFinished(false);
+						mListener.onReceiveFinished(mReceivedHistoryInfo, false);
 					}
 				}
 				// Quit the HandlerThread.
@@ -297,7 +299,7 @@ public class FileReceiver {
 		 * 
 		 * @param success
 		 */
-		void onReceiveFinished(boolean success);
+		void onReceiveFinished(HistoryInfo historyInfo, boolean success);
 	}
 
 	/*

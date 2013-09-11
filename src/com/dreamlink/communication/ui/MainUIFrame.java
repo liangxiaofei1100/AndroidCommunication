@@ -31,6 +31,7 @@ import com.dreamlink.communication.ui.dialog.ExitActivity;
 import com.dreamlink.communication.ui.file.FileFragmentActivity;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.history.HistoryActivityTest;
 import com.dreamlink.communication.ui.image.ImageFragmentActivity;
 import com.dreamlink.communication.ui.invite.InviteMainActivity;
 import com.dreamlink.communication.ui.media.MediaFragmentActivity;
@@ -847,7 +848,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		// Clear wifi connect history.
 		NetWorkUtil.clearWifiConnectHistory(mContext);
 		
-		System.exit(0);
+//		System.exit(0);
 	}
 	
 	@Override
@@ -935,6 +936,7 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		menu.add(0, 0, 0, "旧入口");
 //		menu.add(0, 1, 0, "Share");
 		menu.add(0, 2, 0, "远程共享");
+		menu.add(0,123,0,"New UI");
 		return true;
 	}
 	
@@ -953,6 +955,10 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 			//如果这个activity已经启动了，就不产生新的activity，而只是把这个activity实例加到栈顶来就可以了。
 			shareIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
 			startActivity(shareIntent);
+			break;
+		case 123:
+			Intent intent2 = new Intent(mContext, MainUIFrame2.class);
+			startActivity(intent2);
 			break;
 		default:
 			break;

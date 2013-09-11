@@ -55,6 +55,8 @@
 <array name="fileEndingPpt">
     <item>.ppt</item>
     <item>.pptx</item>
+    <item>.pps</item>
+    <item>.ppsx</item>
 </array>
 <array name="fileEndingExcel">
     <item>.xls</item>

@@ -25,6 +25,7 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.dialog.DeleteDialog;
+import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 
 public class FileInfoManager {
@@ -285,6 +286,81 @@ public class FileInfoManager {
 		fileInfo.icon = currentIcon;
 		return fileInfo;
 	}
+	
+	// 判断文件类型，根据不同类型设置图标
+		public HistoryInfo getHistoryInfo(HistoryInfo historyInfo) {
+			HistoryInfo info = historyInfo;
+			Drawable currentIcon = null;
+			int fileType = FileInfoManager.TYPE_DEFAULT;
+			// 取得文件路径
+			String filePath = historyInfo.getFileInfo().getFilePath();
+
+			// 根据文件名来判断文件类型，设置不同的图标
+			int result = fileFilter(filePath);
+			switch (result) {
+			case TEXT:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_txt);
+				fileType = FileInfoManager.TYPE_EBOOK;
+				break;
+			// case HTML:
+			// currentIcon = context.getResources().getDrawable(R.drawable.webtext);
+			// break;
+			case IMAGE:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_image);
+				fileType = FileInfoManager.TYPE_IMAGE;
+				break;
+			case AUDIO:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_audio);
+				fileType = FileInfoManager.TYPE_AUDIO;
+				break;
+			case VIDEO:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_video);
+				fileType = FileInfoManager.TYPE_VIDEO;
+				break;
+			case WORD:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_doc);
+				fileType = FileInfoManager.TYPE_DOC;
+				break;
+			case PPT:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_ppt);
+				fileType = FileInfoManager.TYPE_DOC;
+				break;
+			case EXCEL:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_xls);
+				fileType = FileInfoManager.TYPE_DOC;
+				break;
+			case PDF:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_pdf);
+				fileType = FileInfoManager.TYPE_DOC;
+				break;
+			case ZIP:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_rar);
+				fileType = FileInfoManager.TYPE_ZIP;
+				break;
+			case APK:
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_apk);
+				fileType = FileInfoManager.TYPE_APK;
+				break;
+			default:
+				// 默认
+				currentIcon = context.getResources().getDrawable(
+						R.drawable.icon_file);
+				break;
+			}
+			info.setFileType(fileType);
+			info.setIcon(currentIcon);
+			return info;
+		}
 
 	/**
 	 * 未安装的程序通过apk文件获取icon
@@ -487,11 +563,11 @@ public class FileInfoManager {
 				context.startActivity(intent);
 			} catch (ActivityNotFoundException e) {
 				Log.e(TAG, e.toString());
-				Toast.makeText(context, "Can not find app to open this file",
+				Toast.makeText(context, R.string.open_file_fail,
 						Toast.LENGTH_SHORT).show();
 			}
 		} else {
-			Toast.makeText(context, "Can not find app to open this file",
+			Toast.makeText(context, R.string.open_file_fail,
 					Toast.LENGTH_SHORT).show();
 		}
 	}
@@ -571,10 +647,11 @@ public class FileInfoManager {
 	 * @param oldFile
 	 * @param newName
 	 */
-	public void rename(File oldFile, String newName){
+	public String rename(File oldFile, String newName){
 			String parentPath = oldFile.getParent(); // 取得上一级目录
-			File newPath = new File(parentPath + "/" + newName);
-			oldFile.renameTo(newPath);
+			File newFile = new File(parentPath + "/" + newName);
+			oldFile.renameTo(newFile);
+			return newFile.getAbsolutePath();
 	}
 
 	public void showInfoDialog(FileInfo fileInfo) {

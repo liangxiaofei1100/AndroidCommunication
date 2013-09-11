@@ -1,5 +1,7 @@
 package com.dreamlink.communication.ui.history;
 
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -32,6 +34,17 @@ public class HistoryInfo implements Parcelable{
 	
 	/**this file's status:sending,receiving,send ok,send fail and so on*/
 	private int status;
+	
+	/**icon*/
+	private Drawable icon;
+	/**file type,image,apk,video and so on*/
+	private int fileType;
+	
+	/**for speed*/
+	private long startTime;
+	private long nowTime;
+	
+	private Uri uri;
 	
 	public HistoryInfo(){
 	}
@@ -105,6 +118,43 @@ public class HistoryInfo implements Parcelable{
 	
 	public void setStatus(int status){
 		this.status = status;
+	}
+	
+	public Drawable getIcon(){
+		return icon;
+	}
+	
+	public void setIcon(Drawable icon){
+		this.icon = icon;
+	}
+	
+	public int getFileType(){
+		return fileType;
+	}
+	
+	public void setFileType(int type){
+		this.fileType = type;
+	}
+	
+	public void setStartTime(long time){
+		this.startTime = time;
+	}
+	
+	public void setNowTime(long time){
+		this.nowTime = time;
+	}
+	
+	public String getSpeed(){
+		long duration = nowTime  - startTime;
+		return DreamUtil.getFormatSize((progress / (duration / 1000)));
+	}
+	
+	public Uri getUri(){
+		return uri;
+	}
+	
+	public void setUri(Uri uri){
+		this.uri = uri;
 	}
 	
 	@Override

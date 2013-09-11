@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" 
+    android:background="@drawable/main_bg"
+    >
+
+    <!-- title  start-->
+        <LinearLayout
+            android:id="@+id/main_tab_banner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            >
+            <!-- 头像 start -->
+            <RelativeLayout
+                android:id="@+id/title_left_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                >
+                <ImageView
+                    android:id="@+id/user_icon_imageview"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/user_icon_default" />
+
+                <ImageView
+                    android:id="@+id/imageView1"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/phone_frame" />
+            </RelativeLayout>
+            <!-- 头像 end -->
+            <!-- 用户名 & 连接状态 start -->
+            <LinearLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="center_vertical"
+                >
+                <TextView 
+                    android:id="@+id/tv_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:textColor="@color/white"
+                    android:text="用户名"
+                    />
+                
+                <TextView 
+                    android:id="@+id/tv_network_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="网络连接失败"
+                    />
+            </LinearLayout>
+              <!-- 用户名 & 连接状态 end -->
+        </LinearLayout>
+        <!-- title  end-->
+        
+        <!-- content start -->
+        <!-- 左边一个Gridview, 4行2列，要求高度填满屏幕，右边设置，帮助等等 -->
+        <LinearLayout 
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="horizontal"
+            >
+            <!-- menu gridview start -->
+            <GridView 
+                android:id="@+id/gv_main_menu"
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="4"
+                android:horizontalSpacing="2dip"
+                android:cacheColorHint="#00000000"
+   	 			android:numColumns="2"
+    			android:padding="4dip"
+    			android:stretchMode="columnWidth"
+    			android:verticalSpacing="2dip"
+                />
+            <!-- menu gridview end -->
+            <!-- help view start -->
+            <RelativeLayout 
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:layout_marginBottom="15dp"
+                >
+                <ImageView 
+                    android:id="@+id/iv_upload"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_alignParentTop="true"
+                     android:src="@drawable/upload"
+                    />
+                <ImageView 
+                    android:id="@+id/iv_help"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_alignParentBottom="true"
+                    android:src="@drawable/help"
+                    />
+                 <ImageView 
+                    android:id="@+id/iv_setting"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_above="@+id/iv_help"
+                    android:layout_marginBottom="8dp"
+                    android:src="@drawable/setting"
+                    />
+            </RelativeLayout>
+            <!-- help view end -->
+        </LinearLayout>
+        <!-- content end -->
+</LinearLayout>
