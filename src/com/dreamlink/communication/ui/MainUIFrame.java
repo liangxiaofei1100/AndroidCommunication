@@ -848,6 +848,8 @@ public class MainUIFrame extends ActivityGroup implements OnClickListener, ILogi
 		NetWorkUtil.setWifiAPEnabled(mContext, null, false);
 		// Clear wifi connect history.
 		NetWorkUtil.clearWifiConnectHistory(mContext);
+		// Stop record log and close log file.
+		Log.stopAndSave();
 		
 		System.exit(0);
 	}

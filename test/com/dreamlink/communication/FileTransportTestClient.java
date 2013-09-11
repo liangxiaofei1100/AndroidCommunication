@@ -78,7 +78,13 @@ public class FileTransportTestClient extends Activity implements
 						(long) receivedBytes, mStartTime));
 				break;
 			case MSG_FINISHED:
-				mStatusTextView.setText("Send Finished.");
+				boolean result = false;
+				if (msg.arg1 == 0) {
+					result = true;
+				} else {
+					result = false;
+				}
+				mStatusTextView.setText("Send Finished. result = " + result);
 				break;
 			default:
 				break;
@@ -161,7 +167,13 @@ public class FileTransportTestClient extends Activity implements
 
 	@Override
 	public void onReceiveFinished(boolean success) {
-		mHandler.sendEmptyMessage(MSG_FINISHED);
+		Message message = mHandler.obtainMessage(MSG_FINISHED);
+		if (success) {
+			message.arg1 = 0;
+		} else {
+			message.arg1 = 1;
+		}
+		mHandler.sendMessage(message);
 	}
 
 	@Override
