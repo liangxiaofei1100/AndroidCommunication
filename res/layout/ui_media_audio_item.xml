@@ -17,7 +17,7 @@
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_gravity="center"
-            android:src="@drawable/default_audio_iv" 
+            android:src="@drawable/icon_audio" 
             android:layout_margin="10dp"
             />
 

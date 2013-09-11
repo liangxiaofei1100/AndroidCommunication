@@ -131,7 +131,7 @@ public class MediaAudioAdapter extends BaseAdapter {
 		// Log.e("Yuri", "null name:"+ mediaInfo.getDisplayName());
 		// holder.iconView.setImageResource(R.drawable.default_audio_iv);
 		// }
-		holder.iconView.setImageResource(R.drawable.default_audio_iv);
+		holder.iconView.setImageResource(R.drawable.icon_audio);
 
 //		holder.mainLayout
 //				.setOnClickListener(new MainOnClickLinstener(position));
