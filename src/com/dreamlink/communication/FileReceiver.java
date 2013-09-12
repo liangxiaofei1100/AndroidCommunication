@@ -181,10 +181,8 @@ public class FileReceiver {
 				out.write(buf, 0, len);
 				receiveBytes += len;
 				currentProgress = (int) (((double) receiveBytes / totalBytes) * 100);
-//				currentProgress = (receiveBytes / totalBytes) * 100;
 				if (lastProgress != currentProgress) {
 					lastProgress = currentProgress;
-//					notifyProgress(receiveBytes, totalBytes);
 					mReceivedHistoryInfo.setProgress(receiveBytes);
 					mReceivedHistoryInfo.setNowTime(System.currentTimeMillis());
 					notifyProgress();

@@ -27,7 +27,7 @@ public class SearchProtocol {
 		 *            The server IP address.
 		 */
 		void onSearchSuccess(String serverIP, String name);
-		
+
 		void onSearchSuccess(ServerInfo serverInfo);
 
 		/**
@@ -71,7 +71,7 @@ public class SearchProtocol {
 	 * @param data
 	 * @throws UnknownHostException
 	 */
-	@TargetApi(Build.VERSION_CODES.GINGERBREAD) 
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	public static void decodeSearchLan(byte[] data, OnSearchListener listener)
 			throws UnknownHostException {
 
@@ -89,7 +89,6 @@ public class SearchProtocol {
 		byte[] serverIpData = Arrays.copyOfRange(data, start, end);
 		String serverIP = "";
 		serverIP = InetAddress.getByAddress(serverIpData).getHostAddress();
-
 		// server name size.
 		start = end;
 		end += SearchProtocol.SERVER_NAME_HEADER_SIZE;
@@ -106,13 +105,33 @@ public class SearchProtocol {
 					"GetMulticastPacket, Data format error, received data length = "
 							+ data.length + ", server name length = "
 							+ serverNameSize);
-			return;
+			start = 0;
+			end = 16;
+			serverIpData = Arrays.copyOfRange(data, start, end);
+			serverIP = "";
+			serverIP = InetAddress.getByAddress(serverIpData).getHostAddress();
+			// server name size.
+			start = end;
+			end += SearchProtocol.SERVER_NAME_HEADER_SIZE;
+			serveraNameSizeData = Arrays.copyOfRange(data, start, end);
+			serverNameSize = ArrayUtil.byteArray2Int(serveraNameSizeData);
+			Log.e("ArbiterLiu", serverNameSize + "");
+			if (serverNameSize < 0
+					|| data.length < SearchProtocol.IP_ADDRESS_HEADER_SIZE
+							+ SearchProtocol.SERVER_NAME_HEADER_SIZE
+							+ serverNameSize) {
+				// Data format error.
+				Log.e(TAG,
+						"GetMulticastPacket, Data format error, received data length = "
+								+ data.length + ", server name length = "
+								+ serverNameSize);
+				return;
+			}
 		}
 		start = end;
 		end += serverNameSize;
 		byte[] serverNameData = Arrays.copyOfRange(data, start, end);
 		String serverName = new String(serverNameData);
-
 		Log.d(TAG, "Found server ip = " + serverIP + ", name = " + serverName);
 		if (serverIP.equals(NetWorkUtil.getLocalIpAddress())) {
 			// ignore.

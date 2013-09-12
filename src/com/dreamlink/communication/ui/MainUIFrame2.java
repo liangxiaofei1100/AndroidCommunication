@@ -1,8 +1,5 @@
 package com.dreamlink.communication.ui;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import com.dreamlink.communication.R;
 
@@ -16,7 +13,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.SimpleAdapter;
 
 /**
  * Win8 style main ui

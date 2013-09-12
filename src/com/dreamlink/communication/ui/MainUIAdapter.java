@@ -45,7 +45,7 @@ public class MainUIAdapter extends BaseAdapter{
 		imageView.setImageResource(icons[pos]);
 		nameView.setText(menus[pos]);
 		tipView.setText(tips[pos]);
-		tipView.setTextColor(colors[pos]);
+//		tipView.setTextColor(colors[pos]);
 		
 		int row = 4; // 设置GrideView的行数
 		int h = (gridView.getHeight() - 20 * (row - 1)) / row; // 设置GridView每行的高度；

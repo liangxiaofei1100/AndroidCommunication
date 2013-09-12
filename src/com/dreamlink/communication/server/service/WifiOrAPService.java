@@ -254,11 +254,11 @@ public class WifiOrAPService extends Service {
 			unregisterReceiver(mWifiBroadcastReceiver);
 			client_register = false;
 		}
-		mSearchServer = SearchSever.getInstance(this);
-		mSearchServer.setOnSearchListener(onSearchListener);
-		if (mWifiManager.isWifiEnabled()) {
-			mSearchServer.startSearch();
-		}
+//		mSearchServer = SearchSever.getInstance(this);
+//		mSearchServer.setOnSearchListener(onSearchListener);
+//		if (mWifiManager.isWifiEnabled()) {
+//			mSearchServer.startSearch();
+//		}
 		mWiFiFilter = new IntentFilter();
 		mWiFiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		mWiFiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -314,8 +314,8 @@ public class WifiOrAPService extends Service {
 			Log.d(TAG, "WIFI_STATE_ENABLED");
 			Log.d(TAG, "Start WiFi scan.");
 			mWifiManager.startScan();
-			if (mSearchServer != null)
-				mSearchServer.startSearch();
+//			if (mSearchServer != null)
+//				mSearchServer.startSearch();
 			break;
 		case WifiManager.WIFI_STATE_DISABLING:
 			Log.d(TAG, "WIFI_STATE_DISABLING");

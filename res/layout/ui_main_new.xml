@@ -99,7 +99,7 @@
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_alignParentTop="true"
-                     android:src="@drawable/transfer_icon"
+                    android:src="@drawable/transfer_icon"
                     />
                 <ImageView 
                     android:id="@+id/iv_help"

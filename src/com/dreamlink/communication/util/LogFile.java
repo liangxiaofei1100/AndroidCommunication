@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import com.dreamlink.communication.ui.file.FileUtil;
+import android.util.Log;
 
 import android.content.Context;
 import android.os.Environment;
@@ -25,8 +26,19 @@ import android.os.Environment;
  * 
  */
 public class LogFile {
+	private static final String TAG = "LogFile";
 	private File mFile;
 	private FileWriter mWriter;
+	private static final String LOG_FOLDER_NAME = "DreamlinkLog";
+
+	/**
+	 * Create log file use the file name.
+	 * 
+	 * @param fileName
+	 */
+	public LogFile(String fileName) {
+		this(null, fileName);
+	}
 
 	/**
 	 * Create log file use the file name.
@@ -36,30 +48,50 @@ public class LogFile {
 	 *            file name.
 	 */
 	public LogFile(Context context, String fileName) {
-		String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-		String filePath = path + "/" + fileName;
-//		String filePath = context.getFilesDir().getAbsolutePath() + "/"
-//				+ fileName;
+		createFile(fileName);
+	}
+
+	private void createFile(String fileName) {
+		String path = Environment.getExternalStorageDirectory()
+				.getAbsolutePath()
+				+ File.separator
+				+ LOG_FOLDER_NAME
+				+ File.separator + TimeUtil.getDate();
+		String filePath = path + File.separator + fileName;
 		mFile = new File(filePath);
 		if (!mFile.exists()) {
 			try {
+				mFile.getParentFile().mkdirs();
 				mFile.createNewFile();
 			} catch (IOException e) {
+				Log.e(TAG, "Creat file error. File is " + filePath + ". " + e);
 				e.printStackTrace();
 			}
 		}
-
 	}
 
 	/**
 	 * Before write, we need to open the file to prepare writing.
 	 */
-	public void open() {
+	public boolean open() {
+		if (mFile != null && !mFile.exists()) {
+			try {
+				mFile.getParentFile().mkdirs();
+				mFile.createNewFile();
+			} catch (IOException e) {
+				Log.e(TAG,
+						"Creat file error. File is " + mFile.getAbsolutePath()
+								+ ". " + e);
+				e.printStackTrace();
+				return false;
+			}
+		}
 		try {
 			mWriter = new FileWriter(mFile);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, "Open file error. " + e);
 		}
+		return mWriter != null;
 	}
 
 	/**
@@ -70,6 +102,13 @@ public class LogFile {
 	 * @param log
 	 */
 	public void writeLog(String log) {
+		if (mWriter == null) {
+			if (!open()) {
+				Log.e(TAG, "writeLog error. open() file error.");
+				return;
+			}
+		}
+
 		try {
 			mWriter.write(log);
 			mWriter.flush();
@@ -77,8 +116,14 @@ public class LogFile {
 			e.printStackTrace();
 		}
 	}
-	
-	public void writeLog(byte[] logs){
+
+	public void writeLog(byte[] logs) {
+		if (mWriter == null) {
+			if (!open()) {
+				Log.e(TAG, "writeLog error. open() file error.");
+				return;
+			}
+		}
 		char[] log = FileUtil.getChars(logs);
 		try {
 			mWriter.write(log);
@@ -92,6 +137,9 @@ public class LogFile {
 	 * After finish all writing, do not forget to close the file.
 	 */
 	public void close() {
+		if (mWriter == null) {
+			return;
+		}
 		try {
 			mWriter.close();
 		} catch (IOException e) {
