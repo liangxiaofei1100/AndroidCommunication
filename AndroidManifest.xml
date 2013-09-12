@@ -20,7 +20,7 @@
     <application
         android:name="com.dreamlink.communication.AppApplication"
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/app_logo"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <meta-data
@@ -45,9 +45,17 @@
                 android:value="113" />
         </activity>
         <activity
+            android:name="com.dreamlink.communication.ui.MainUIFrame2"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.MainActivity"
             android:label="@string/app_name" >
         </activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.MainFragmentActivity"
+            android:screenOrientation="portrait"
+            ></activity>
         <activity
             android:name="com.dreamlink.communication.server.ClientListActivity"
             android:label="Client List"
@@ -227,6 +235,10 @@
             >
         </activity>
         <activity
+            android:name="com.dreamlink.communication.ui.history.HistoryActivityTest"
+            >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.ui.dialog.FileTransferActivity"
             android:screenOrientation="portrait"
             android:theme="@style/MyDialogStyle" >
@@ -243,7 +255,8 @@
 
         <provider
             android:name="com.dreamlink.communication.ui.db.DreamProvider"
-            android:authorities="com.dreamlink.communication.db.comprovider" />
+            android:authorities="com.dreamlink.communication.db.comprovider">
+        </provider>
 
         <service android:name="com.dreamlink.communication.server.service.DirectService" />
         <service android:name="com.dreamlink.communication.server.service.WifiOrAPService" />

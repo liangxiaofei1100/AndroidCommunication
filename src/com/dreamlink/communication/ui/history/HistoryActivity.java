@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.FileReceiver;
@@ -21,20 +23,28 @@ import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.file.FileInfo;
+import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class HistoryActivity extends BaseFragmentActivity implements OnFileSendListener,OnFileTransportListener, OnReceiveListener {
+public class HistoryActivity extends BaseFragmentActivity implements OnFileSendListener,OnFileTransportListener,
+					OnReceiveListener, OnScrollListener, OnItemClickListener {
 	private static final String TAG = "HistoryActivity";
 	private int mAppId = -1;
 	private Context mContext;
@@ -48,9 +58,13 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 	
 	/**the list that send or receive history info*/
 	private List<HistoryInfo> mHistoryList = new ArrayList<HistoryInfo>();
+	// 用来保存ListView中每个Item的图片，以便释放
+	public static Map<String, Bitmap> bitmapCaches = new HashMap<String, Bitmap>();
 	
 	private Notice mNotice;
 	private SocketCommunicationManager communicationManager;
+	
+	private FileInfoManager mFileInfoManager = null;
 	
 	//msg
 	private static final int MSG_SEND_FILE = 0;
@@ -85,20 +99,12 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		}
 	};
 	
-	double len  = 0;
 	 Handler mHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_SEND_FILE:
 				break;
 			case MSG_UPDATE_UI:
-				HistoryInfo historyInfo1 = (HistoryInfo) msg.obj;
-				Collections.sort(mHistoryList, HistoryManager.DATE_COMPARATOR);
-				int position = mHistoryList.indexOf(historyInfo1);
-				mHistoryList.get(position).setProgress(len);
-				Log.i(TAG, "position=" + position);
-				mHistoryMsgLV.setSelection(0);
-				mAdapter.notifyDataSetChanged();
 				break;
 				
 			case MSG_UPDATE_SEND_PROGRESS:
@@ -125,6 +131,8 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 				int status = msg.arg1;
 				mAdapter.setStatus(status);
 				mAdapter.notifyDataSetChanged();
+				
+				//tell mainui update ui
 				break;
 			case MSG_SEND_FINISHED:
 				boolean success = (Boolean) msg.obj;
@@ -148,6 +156,8 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		communicationManager = SocketCommunicationManager.getInstance(mContext);
 		communicationManager.registerOnFileTransportListener(this, mAppId);
 		
+		mFileInfoManager = new FileInfoManager(mContext);
+		
 		//register broadcast
 		IntentFilter filter = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
 		registerReceiver(historyReceiver, filter);
@@ -163,6 +173,8 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		mStorageTV.setText(space);
 		mHistoryMsgLV = (ListView) findViewById(R.id.lv_history_msg);
 		mHistoryMsgLV.setEmptyView(findViewById(R.id.tv_empty));
+		mHistoryMsgLV.setOnScrollListener(this);
+		mHistoryMsgLV.setOnItemClickListener(this);
 		//test=================
 //		HistoryInfo historyInfo = null;
 //		for (int i = 0; i < 10; i++) {
@@ -211,10 +223,11 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 			HistoryInfo historyInfo = new HistoryInfo();
 			historyInfo.setFileInfo(fileInfo);
 			historyInfo.setReceiveUser(receiveUser);
-			historyInfo.setSendUserName(HistoryManager.ME);
+			historyInfo.setSendUserName(getResources().getString(R.string.me));
 			historyInfo.setMsgType(HistoryManager.TYPE_SEND);
 			historyInfo.setDate(System.currentTimeMillis());
 			historyInfo.setStatus(HistoryManager.STATUS_PRE_SEND);
+			historyInfo = mFileInfoManager.getHistoryInfo(historyInfo);
 			
 			mHistoryList.add(historyInfo);
 			
@@ -229,7 +242,6 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 
 	@Override
 	public void onSendProgress(HistoryInfo historyInfo) {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "onSendProgress=" + historyInfo.getProgress());
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_UPDATE_SEND_PROGRESS;
@@ -238,8 +250,7 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 	}
 
 	@Override
-	public void onSendFinished(boolean success) {
-		// TODO Auto-generated method stub
+	public void onSendFinished(HistoryInfo historyInfo, boolean success) {
 		Log.d(TAG, "onSendFinished.success" + success);
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_SEND_FINISHED;
@@ -249,7 +260,6 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 
 	@Override
 	public void onReceiveFile(FileReceiver fileReceiver) {
-		// TODO Auto-generated method stub
 		String fileName = fileReceiver.getFileTransferInfo().getFileName();
 		String sendUserName = fileReceiver.getSendUser().getUserName();
 		Log.d(TAG, "onReceiveFile:" + fileName + "," + sendUserName);
@@ -259,19 +269,28 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 			fileDir.mkdirs();
 		}
 		
-		File file = new File(DreamConstant.DEFAULT_SAVE_FOLDER + File.separator +fileName);
-		if (file.exists()) {
+		String filePath = DreamConstant.DEFAULT_SAVE_FOLDER + File.separator +fileName;
+		File file = new File(filePath);
+		if (!file.exists()) {
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(TAG, "create file error:" + e.toString());
+				mNotice.showToast("can not create the file:" + fileName);
+				return;
 			}
+		}else {
+			//if file is exist,auto rename
+			fileName  = FileInfoManager.autoRename(fileName);
+			while(new File(DreamConstant.DEFAULT_SAVE_FOLDER + File.separator +fileName).exists()) {
+				fileName = FileInfoManager.autoRename(fileName);
+			}
+			filePath = DreamConstant.DEFAULT_SAVE_FOLDER + File.separator +fileName;
 		}
 		
 		HistoryInfo historyInfo = new HistoryInfo();
 		FileTransferInfo fileInfo = new FileTransferInfo();
-		fileInfo.setFilePath(file.getAbsolutePath());
+		fileInfo.setFilePath(filePath);
 		fileInfo.setFileName(fileName);
 		fileInfo.setFileSize(fileReceiver.getFileTransferInfo().getFileSize());
 		historyInfo.setFileInfo(fileInfo);
@@ -279,6 +298,7 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		historyInfo.setMsgType(HistoryManager.TYPE_RECEIVE);
 		historyInfo.setDate(System.currentTimeMillis());
 		historyInfo.setStatus(HistoryManager.STATUS_PRE_RECEIVE);
+		historyInfo = mFileInfoManager.getHistoryInfo(historyInfo);
 		mHistoryList.add(historyInfo);
 		
 		fileReceiver.receiveFile(historyInfo, this)	;
@@ -290,7 +310,6 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 
 	@Override
 	public void onReceiveProgress(HistoryInfo historyInfo) {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "onReceiveProgress.progress" + historyInfo.getProgress());
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_UPDATE_RECEIVE_PROGRESS;
@@ -299,8 +318,7 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 	}
 
 	@Override
-	public void onReceiveFinished(boolean success) {
-		// TODO Auto-generated method stub
+	public void onReceiveFinished(HistoryInfo historyInfo, boolean success) {
 		Log.d(TAG, "onReceiveFinished.success" + success);
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_RECEIVE_FINISHED;
@@ -308,5 +326,53 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		mHandler.sendMessage(message);
 	}
 
-	
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		switch (scrollState) {
+		case OnScrollListener.SCROLL_STATE_FLING:
+			mAdapter.setFlag(false);
+			break;
+		case OnScrollListener.SCROLL_STATE_IDLE:
+			mAdapter.setFlag(true);
+			break;
+		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+			mAdapter.setFlag(false);
+			break;
+
+		default:
+			break;
+		}
+		mAdapter.notifyDataSetChanged();
+	}
+
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+		// 注释：firstVisibleItem为第一个可见的Item的position，从0开始，随着拖动会改变
+		// visibleItemCount为当前页面总共可见的Item的项数
+		// totalItemCount为当前总共已经出现的Item的项数
+		recycleBitmapCaches(0, firstVisibleItem);
+		recycleBitmapCaches(firstVisibleItem + visibleItemCount, totalItemCount);
+	}
+
+	// release bitmap
+	private void recycleBitmapCaches(int fromPosition, int toPosition) {
+		Bitmap delBitmap = null;
+		for (int del = fromPosition; del < toPosition; del++) {
+			delBitmap = bitmapCaches.get(mHistoryList.get(del));
+			if (delBitmap != null) {
+				// 如果非空则表示有缓存的bitmap，需要清理
+				Log.d(TAG, "release position:" + del);
+				// 从缓存中移除该del->bitmap的映射
+				bitmapCaches.remove(mHistoryList.get(del));
+				delBitmap.recycle();
+				delBitmap = null;
+			}
+		}
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		// TODO Auto-generated method stub
+		mNotice.showToast(position+"");
+	}
 }

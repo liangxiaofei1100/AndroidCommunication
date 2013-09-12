@@ -30,16 +30,20 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-public class MediaAudioFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
+public class MediaAudioFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	private static final String TAG = "MediaAudioFragment";
 	private ListView mListView;
 	private MediaAudioAdapter mAdapter;
@@ -49,6 +53,13 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 	private FileInfoManager mFileInfoManager = null;
 	
 	private Context mContext;
+	
+	//title views
+		private ImageView mTitleIcon;
+		private TextView mTitleView;
+		private TextView mTitleNum;
+		private ImageView mRefreshView;
+		private ImageView mHistoryView;
 	
 	class AudioContent extends ContentObserver{
 		public AudioContent(Handler handler) {
@@ -77,6 +88,8 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		mListView.setOnItemClickListener(this);
 		mListView.setOnItemLongClickListener(this);
 		
+		getTitleVIews(rootView);
+		
 		mFileInfoManager = new FileInfoManager(mContext);
 		
 		mScan = new MediaInfoManager(mContext);
@@ -88,6 +101,20 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		getActivity().getContentResolver().registerContentObserver(mScan.audioUri, true, audioContent);
 		Log.d(TAG, "onCreate end");
 		return rootView;
+	}
+	
+	private void getTitleVIews(View view){
+		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
+		mTitleIcon.setImageResource(R.drawable.title_audio);
+		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
+		mTitleView.setText("音频");
+		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
+		mTitleNum.setText("(N)");
+		mRefreshView.setOnClickListener(this)	;
+		mHistoryView.setOnClickListener(this);
 	}
 	
 	public  class GetAudiosTask extends AsyncTask<Void, String, String>{
@@ -219,4 +246,10 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 					+ "修改日期:" + mediaInfo.getFormatDate();
 			return result;
 	    }
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		
+	}
 }

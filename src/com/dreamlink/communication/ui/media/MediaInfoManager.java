@@ -233,10 +233,10 @@ public class MediaInfoManager {
 		opts.inPreferredConfig = Bitmap.Config.RGB_565;
 		if (small) { // 返回小图片
 			return BitmapFactory.decodeStream(context.getResources()
-					.openRawResource(R.drawable.default_audio_iv), null, opts);
+					.openRawResource(R.drawable.icon_audio), null, opts);
 		}
 		return BitmapFactory.decodeStream(context.getResources()
-				.openRawResource(R.drawable.default_audio_iv), null, opts);
+				.openRawResource(R.drawable.icon_audio), null, opts);
 	}
 
 	/**

@@ -34,7 +34,7 @@ public class AllowLoginDialog {
 			final AllowLoginCallBack callBack) {
 		AlertDialog.Builder alertConfig = new AlertDialog.Builder(mContext);
 		alertConfig.setIcon(mContext.getResources().getDrawable(
-				R.drawable.ic_launcher));
+				R.drawable.app_logo));
 		alertConfig.setTitle("Login request");
 		alertConfig.setMessage("User: " + user.getUserName()
 				+ " request to login.");

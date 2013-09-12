@@ -24,7 +24,7 @@ public class ClientStatus {
 	public void show() {
 		AlertDialog.Builder alertConfig = new AlertDialog.Builder(mContext);
 		alertConfig.setIcon(mContext.getResources().getDrawable(
-				R.drawable.ic_launcher));
+				R.drawable.app_logo));
 		alertConfig.setTitle("Client status");
 		alertConfig.setMessage(getStatus());
 

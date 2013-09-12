@@ -26,13 +26,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 
-public class MediaVideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
+public class MediaVideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	private static final String TAG = "MediaVideoFragment";
 	private GridView mGridView;
 	
@@ -46,6 +50,13 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 	private FileInfoManager mFileInfoManager;
 	private Context mContext;
 	
+	//title views
+		private ImageView mTitleIcon;
+		private TextView mTitleView;
+		private TextView mTitleNum;
+		private ImageView mRefreshView;
+		private ImageView mHistoryView;
+		
 	//video contentObserver listener
 	class VideoContent extends ContentObserver{
 		public VideoContent(Handler handler) {
@@ -71,6 +82,8 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
 		
+		getTitleVIews(rootView);
+		
 		mScan = new MediaInfoManager(mContext);
 		
 		GetVideosTask getVideosTask = new GetVideosTask();
@@ -82,6 +95,20 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		getActivity().getContentResolver().registerContentObserver(mScan.videoUri, true, videoContent);
 		Log.d(TAG, "onCreate end");
 		return rootView;
+	}
+	
+	private void getTitleVIews(View view){
+		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
+		mTitleIcon.setImageResource(R.drawable.title_video);
+		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
+		mTitleView.setText("视频");
+		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
+		mTitleNum.setText("(N)");
+		mRefreshView.setOnClickListener(this)	;
+		mHistoryView.setOnClickListener(this);
 	}
 	
 	public  class GetVideosTask extends AsyncTask<Void, String, String>{
@@ -194,5 +221,11 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 				+ "修改日期:" + mediaInfo.getFormatDate();
 		return result;
     }
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

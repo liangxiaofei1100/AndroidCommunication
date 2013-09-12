@@ -24,7 +24,7 @@ import com.dreamlink.communication.util.Log;
  * 
  */
 public class FileSender {
-	private static final String TAG = "FileSenderByYuri";
+	private static final String TAG = "FileSender";
 	/** 3 minutes time out. */
 	private static final int SEND_SOCKET_TIMEOUT = 3 * 60 * 1000;
 
@@ -112,9 +112,8 @@ public class FileSender {
 				Log.d(TAG, "server: copying files " + mSendHistoryInfo.getFileInfo().getFilePath());
 				copyFile(mSendHistoryInfo, outputStream);
 				mServerSocket.close();
-			} catch (IOException e) {
-				Log.e(TAG, "FileSenderThread " + e.toString());
-			} catch (Exception e) {
+			}  catch (Exception e) {
+				mSendHistoryInfo.setStatus(HistoryManager.STATUS_SEND_FAIL);
 				Log.e(TAG, "FileSenderThread " + e.toString());
 			}
 			Log.d(TAG, "FileSenderThread file: [" + mSendHistoryInfo.getFileInfo().getFileName()
@@ -146,9 +145,9 @@ public class FileSender {
 			case MSG_FINISH:
 				if (mListener != null) {
 					if (msg.arg1 == FINISH_RESULT_SUCCESS) {
-						mListener.onSendFinished(true);
+						mListener.onSendFinished(mSendHistoryInfo, true);
 					} else {
-						mListener.onSendFinished(false);
+						mListener.onSendFinished(mSendHistoryInfo, false);
 					}
 				}
 
@@ -166,6 +165,7 @@ public class FileSender {
 	private void copyFile(HistoryInfo historyInfo, OutputStream out) throws FileNotFoundException {
 		//set status
 		historyInfo.setStatus(HistoryManager.STATUS_SENDING);
+		historyInfo.setStartTime(System.currentTimeMillis());
 		InputStream inputStream = new FileInputStream(historyInfo.getFileInfo().getFilePath());
 		byte buf[] = new byte[4096];
 		int len;
@@ -173,10 +173,8 @@ public class FileSender {
 		long start = System.currentTimeMillis();
 //		long totalBytes = mSendFile.length();
 		double totalBytes = historyInfo.getMax();
-//		int lastProgress = 0;
-//		int currentProgress = 0;
-		double lastProgress = 0;
-		double currentProgress = 0;
+		int lastProgress = 0;
+		int currentProgress = 0;
 		try {
 			while ((len = inputStream.read(buf)) != -1) {
 				out.write(buf, 0, len);
@@ -186,6 +184,7 @@ public class FileSender {
 				if (lastProgress != currentProgress) {
 					lastProgress = currentProgress;
 					mSendHistoryInfo.setProgress(sendBytes);
+					mSendHistoryInfo.setNowTime(System.currentTimeMillis());
 					notifiyProgress();
 				}
 			}
@@ -247,6 +246,6 @@ public class FileSender {
 		 * 
 		 * @param success
 		 */
-		void onSendFinished(boolean success);
+		void onSendFinished(HistoryInfo historyInfo, boolean success);
 	}
 }

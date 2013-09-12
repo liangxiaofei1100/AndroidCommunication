@@ -8,6 +8,7 @@
     <color name="gray2">#A1A1A1</color>
     <color name="white">#ffffff</color>
     <color name="green1">#ff228B22</color>
+     <color name="main_title">#1fadff</color>
     
     <drawable name="list_item_press">#ff5b544d</drawable>
     <drawable name="list_item_normal">#ff787470</drawable>

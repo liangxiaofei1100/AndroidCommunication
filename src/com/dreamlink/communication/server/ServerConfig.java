@@ -33,7 +33,7 @@ public class ServerConfig {
 	public void showConfigDialog() {
 		AlertDialog.Builder alertConfig = new AlertDialog.Builder(mContext);
 		alertConfig.setIcon(mContext.getResources().getDrawable(
-				R.drawable.ic_launcher));
+				R.drawable.app_logo));
 		alertConfig.setTitle("Server");
 
 		final EditText editText = new EditText(mContext);

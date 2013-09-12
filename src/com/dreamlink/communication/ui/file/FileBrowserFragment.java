@@ -48,6 +48,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 public class FileBrowserFragment extends BaseFragment implements
 		OnClickListener, OnItemClickListener,PopupViewClickListener, OnScrollListener {
@@ -98,12 +100,19 @@ public class FileBrowserFragment extends BaseFragment implements
 	// save current sdcard type path
 	private String current_root_path;
 
+	//title views
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.ui_file_all, container, false);
-		Log.d(TAG, "onCreate begin");
+		Log.d(TAG, "onCreateView");
 		mContext = getActivity();
+		getTitleVIews(rootView);
 
 		mFileListView = (ListView) rootView.findViewById(R.id.file_listview);
 		if (mFileListView != null) {
@@ -146,7 +155,27 @@ public class FileBrowserFragment extends BaseFragment implements
 		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
+	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onActivityCreated(savedInstanceState);
+	}
 
+	private void getTitleVIews(View view){
+		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
+		mTitleIcon.setImageResource(R.drawable.transfer_icon);
+		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
+		mTitleView.setText("批量传输");
+		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
+		mTitleNum.setText("(N)");
+		mRefreshView.setOnClickListener(this)	;
+		mHistoryView.setOnClickListener(this);
+	}
+	
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
@@ -293,8 +322,8 @@ public class FileBrowserFragment extends BaseFragment implements
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					String newName = editText.getText().toString().trim();
-					mAllLists.get(position).fileName = newName;
-					mFileInfoManager.rename(new File(fileInfo.filePath), newName);
+					fileInfo.fileName = newName;
+					fileInfo.filePath = mFileInfoManager.rename(new File(fileInfo.filePath), newName);
 					mFileInfoAdapter.notifyDataSetChanged();
 				}
 			})

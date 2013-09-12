@@ -2,7 +2,7 @@
 
     <item
         android:id="@+id/wifip2p_on"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/app_logo"
         android:orderInCategory="101"
         android:showAsAction="ifRoom"
         android:title="@string/wifiP2p_on"/>

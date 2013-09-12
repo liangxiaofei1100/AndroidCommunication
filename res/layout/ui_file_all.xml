@@ -5,6 +5,11 @@
     android:orientation="vertical"
      >
     
+      <include 
+        android:id="@+id/layout_title"
+        layout="@layout/ui_title"
+        />
+      
     <!-- 路径导航布局 -->
     <LinearLayout 
         android:id="@+id/navigation_bar"

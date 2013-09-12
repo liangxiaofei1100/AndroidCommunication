@@ -17,7 +17,6 @@
             android:layout_height="wrap_content"
             android:background="#bfbfbf"
             android:padding="2dp"
-            android:text="2013-09-03"
             android:textColor="#ffffff"
             android:textSize="12sp" />
     </LinearLayout>
@@ -32,6 +31,8 @@
             android:id="@+id/iv_userhead"
             android:layout_width="52dp"
             android:layout_height="52dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="5dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:background="@drawable/user_icon_default"
@@ -62,7 +63,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
-                    android:text="已发送给samsung"
                      />
                 <ProgressBar 
                     android:id="@+id/bar_send_title"
@@ -98,7 +98,7 @@
                         android:id="@+id/tv_send_file_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="test.apk" />
+                        />
 
                     <ProgressBar
                         android:id="@+id/bar_progressing"
@@ -114,7 +114,7 @@
                         android:id="@+id/tv_send_file_size"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1.23M" />
+                        />
                 </LinearLayout>
             </LinearLayout>
 
@@ -126,10 +126,13 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/iv_userhead"
+            android:layout_toLeftOf="@+id/layout_chatcontent"
+            android:singleLine="true"
+            android:ellipsize="end"
             android:gravity="center"
             android:text="Samsung"
             android:textColor="#818181"
-            android:textSize="15sp" />
+            android:textSize="14sp" />
 
     </RelativeLayout>
 

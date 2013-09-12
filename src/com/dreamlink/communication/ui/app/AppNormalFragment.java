@@ -31,8 +31,12 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ProgressBar;
 import android.widget.AdapterView.OnItemClickListener;
@@ -41,7 +45,7 @@ import android.widget.GridView;
 /**
  * use this to load app
  */
-public class AppNormalFragment extends Fragment implements OnItemClickListener, OnItemLongClickListener {
+public class AppNormalFragment extends Fragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	private static final String TAG = "AppNormalFragment";
 	private GridView mGridView;
 	private ProgressBar mProgressBar;
@@ -60,9 +64,15 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 	private AppReceiver mAppReceiver;
 	private Notice mNotice = null;
 	
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Log.d(TAG, "onCreate begin");
+		Log.d(TAG, "onCreateView");
 		View rootView = inflater.inflate(R.layout.ui_app_normal, container, false);
 
 		mContext = getActivity();
@@ -71,6 +81,8 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 		
 		mGridView = (GridView) rootView.findViewById(R.id.app_normal_gridview);
 		mProgressBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
+		
+		getTitleVIews(rootView);
 		
 		//register broadcast
 		mAppReceiver = new AppReceiver();
@@ -93,6 +105,20 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 		
 		Log.d(TAG, "onCreate end");
 		return rootView;
+	}
+	
+	private void getTitleVIews(View view){
+		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
+		mTitleIcon.setImageResource(R.drawable.title_tuijian);
+		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
+		mTitleView.setText("应用");
+		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
+		mTitleNum.setText("(N)");
+		mRefreshView.setOnClickListener(this)	;
+		mHistoryView.setOnClickListener(this);
 	}
 
 	@Override
@@ -342,5 +368,11 @@ public class AppNormalFragment extends Fragment implements OnItemClickListener, 
 	public void onDestroy() {
 		super.onDestroy();
 		mContext.unregisterReceiver(mAppReceiver);
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		
 	}
 }

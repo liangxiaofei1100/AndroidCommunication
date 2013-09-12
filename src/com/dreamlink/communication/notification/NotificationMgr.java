@@ -41,7 +41,7 @@ public class NotificationMgr {
 			 title = runningString + connected;
 			break;
 		}
-		Notification notification = new Notification(R.drawable.ic_launcher, title, System.currentTimeMillis());
+		Notification notification = new Notification(R.drawable.logo, title, System.currentTimeMillis());
 		notification.flags |= Notification.FLAG_NO_CLEAR; 
 		notification.flags |= Notification.FLAG_ONGOING_EVENT; 
 		

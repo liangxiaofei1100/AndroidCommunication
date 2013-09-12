@@ -81,4 +81,10 @@
         <item>@string/menu_info</item>
     </string-array>
     
+    <string-array name="history_menu">
+        <item>@string/menu_send</item>
+         <item>@string/menu_open</item>
+         <item>@string/menu_delete</item>
+    </string-array>
+    
 </resources>
