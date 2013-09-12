@@ -221,11 +221,6 @@ public class FileTransportTestServer extends Activity implements
 		return null;
 	}
 
-	@Override
-	public void onSendFinished(boolean success) {
-		mHandler.sendEmptyMessage(MSG_FINISHED);
-	}
-
 	class CreateFileThread extends Thread {
 		@Override
 		public void run() {
@@ -266,5 +261,11 @@ public class FileTransportTestServer extends Activity implements
 		message.setData(data);
 		mHandler.sendMessage(message);
 
+	}
+
+	@Override
+	public void onSendFinished(HistoryInfo historyInfo, boolean success) {
+		mHandler.sendEmptyMessage(MSG_FINISHED);
+		
 	}
 }

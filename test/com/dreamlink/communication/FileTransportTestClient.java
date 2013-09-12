@@ -165,16 +165,6 @@ public class FileTransportTestClient extends Activity implements
 		return null;
 	}
 
-	@Override
-	public void onReceiveFinished(boolean success) {
-		Message message = mHandler.obtainMessage(MSG_FINISHED);
-		if (success) {
-			message.arg1 = 0;
-		} else {
-			message.arg1 = 1;
-		}
-		mHandler.sendMessage(message);
-	}
 
 	@Override
 	public void onReceiveProgress(HistoryInfo historyInfo) {
@@ -205,5 +195,17 @@ public class FileTransportTestClient extends Activity implements
 				+ fileReceiver.getFileTransferInfo().mFileName;
 		mHandler.sendMessage(message);
 
+	}
+
+	@Override
+	public void onReceiveFinished(HistoryInfo historyInfo, boolean success) {
+		Message message = mHandler.obtainMessage(MSG_FINISHED);
+		if (success) {
+			message.arg1 = 0;
+		} else {
+			message.arg1 = 1;
+		}
+		mHandler.sendMessage(message);
+		
 	}
 }
