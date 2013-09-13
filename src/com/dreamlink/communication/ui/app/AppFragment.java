@@ -278,12 +278,16 @@ public class AppFragment extends Fragment implements OnItemClickListener, OnItem
     }
     
     public void setAdapter(List<AppEntry> list){
-		if (null == mAdapter) {
-			mAdapter = new AppBrowserAdapter(mContext, list);
-			mGridView.setAdapter(mAdapter);
-		}else {
-			mAdapter.notifyDataSetChanged();
-		}
+//		if (null == mAdapter) {
+//			mAdapter = new AppBrowserAdapter(mContext, list);
+//			mGridView.setAdapter(mAdapter);
+//		}else {
+//			mAdapter.notifyDataSetChanged();
+//		}
+		
+		//使用上面的方法，再次刷新时无法显示数据
+		mAdapter = new AppBrowserAdapter(mContext, list);
+		mGridView.setAdapter(mAdapter);
 	}
     
     public class AppListTask extends AsyncTask<String, String, List<AppEntry>>{

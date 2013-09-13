@@ -25,6 +25,7 @@ import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -75,6 +76,20 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 			getAudiosTask.execute();
 		}
 	}
+	
+	private static final int MSG_UPDATE_UI = 0;
+	Handler mHandler = new Handler(){
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			case MSG_UPDATE_UI:
+				int size = msg.arg1;
+				mTitleNum.setText("(" + size + ")");
+				break;
+			default:
+				break;
+			}
+		};
+	};
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -141,6 +156,11 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 			Intent intent = new Intent(DreamConstant.MEDIA_AUDIO_ACTION);
 			intent.putExtra(Extra.AUDIO_SIZE, mAudioLists.size());
 			mContext.sendBroadcast(intent);
+			
+			Message message = mHandler.obtainMessage();
+			message.arg1 = mAudioLists.size();
+			message.what = MSG_UPDATE_UI;
+			message.sendToTarget();
 		}
 		
 	}

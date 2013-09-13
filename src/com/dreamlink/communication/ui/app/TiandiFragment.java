@@ -72,7 +72,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener {
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText("朝颜天地");
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("(N)");
+		mTitleNum.setText("");
 		mRefreshView.setOnClickListener(this)	;
 		mHistoryView.setOnClickListener(this);
 	}

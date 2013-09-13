@@ -28,12 +28,12 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:src="@drawable/logo" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:gravity="center_vertical"
             android:text="朝财宝"
             android:textColor="@color/white" />
@@ -101,7 +101,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:gravity="center_vertical"
             android:text="朝颜对战"
             android:textColor="@color/white" />

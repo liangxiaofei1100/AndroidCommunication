@@ -68,7 +68,7 @@ public class StartLoader extends Activity{
 	
 	public void launchMain(){
 		Intent intent = new Intent();
-		intent.setClass(StartLoader.this, MainUIFrame.class);
+		intent.setClass(StartLoader.this, MainUIFrame2.class);
 		startActivity(intent);
 	}
 }

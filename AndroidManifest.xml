@@ -30,7 +30,7 @@
         <activity
             android:name="com.dreamlink.communication.ui.StartLoader"
             android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+            android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -188,6 +188,9 @@
             android:windowSoftInputMode="adjustResize"
             >
         </activity>
+        <activity 
+            android:name="com.dreamlink.communication.ui.file.FileTransferActivity"
+            ></activity>
         <activity 
             android:name="com.dreamlink.communication.ui.app.AppFragmentActivity"
             ></activity>

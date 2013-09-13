@@ -24,6 +24,7 @@ import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -71,6 +72,20 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 //			getVideosTask.execute();
 		}
 	}
+	
+	private static final int MSG_UPDATE_UI = 0;
+	Handler mHandler = new Handler(){
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			case MSG_UPDATE_UI:
+				int size = msg.arg1;
+				mTitleNum.setText("(" + size + ")");
+				break;
+			default:
+				break;
+			}
+		};
+	};
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -128,6 +143,11 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 			Intent intent = new Intent(DreamConstant.MEDIA_VIDEO_ACTION);
 			intent.putExtra(Extra.VIDEO_SIZE, mVideoLists.size());
 			mContext.sendBroadcast(intent);
+			
+			Message message = mHandler.obtainMessage();
+			message.arg1 = mVideoLists.size();
+			message.what = MSG_UPDATE_UI;
+			message.sendToTarget();
 		}
 		
 	}

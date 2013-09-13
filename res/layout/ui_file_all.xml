@@ -9,14 +9,17 @@
         android:id="@+id/layout_title"
         layout="@layout/ui_title"
         />
-      
+          <View 
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/divider_iv"
+        />
     <!-- 路径导航布局 -->
     <LinearLayout 
         android:id="@+id/navigation_bar"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="#dddddd"
         >
         <!-- 点击该按钮，选择SD卡或手机内部存储 -->
         <ImageView 
@@ -39,12 +42,15 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="6"
-            android:fillViewport="true" >
+            android:fillViewport="true" 
+             android:background="@color/main_title"
+            >
              <LinearLayout
                 android:id="@+id/tabs_holder"
                 android:layout_width="match_parent"
                 android:layout_height="fill_parent"
-                android:orientation="horizontal" />
+                android:orientation="horizontal" 
+                />
             </com.dreamlink.communication.ui.SlowHorizontalScrollView>
     </LinearLayout>
     
@@ -59,11 +65,15 @@
         android:id="@+id/filelist_layout"
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/main_bg"
         >
         <ListView 
             android:id="@+id/file_listview"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:cacheColorHint="#00000000"
+            android:background="@drawable/main_bg"
+            android:listSelector="@drawable/blue_bg_selector"
             ></ListView>
         
         <TextView 

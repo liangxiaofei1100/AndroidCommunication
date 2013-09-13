@@ -6,7 +6,6 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import com.dreamlink.communication.R;
@@ -14,7 +13,6 @@ import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.app.AppNormalFragment.AppListTask;
 import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.util.Log;
@@ -78,7 +76,6 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 				int size = msg.arg1;
 				mTitleNum.setText("(" + size + ")");
 				break;
-
 			default:
 				break;
 			}
@@ -134,12 +131,16 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 	}
 	
 	public void setAdapter(List<AppEntry> list){
-		if (null == mGameAdapter) {
-			mGameAdapter = new AppBrowserAdapter(mContext, list);
-			mGridView.setAdapter(mGameAdapter);
-		}else {
-			mGameAdapter.notifyDataSetChanged();
-		}
+//		if (null == mGameAdapter) {
+//			mGameAdapter = new AppBrowserAdapter(mContext, list);
+//			mGridView.setAdapter(mGameAdapter);
+//		}else {
+//			mGameAdapter.notifyDataSetChanged();
+//		}
+		
+		//使用上面的方法，再次刷新时无法显示数据
+		mGameAdapter = new AppBrowserAdapter(mContext, list);
+		mGridView.setAdapter(mGameAdapter);
 	}
 	
 	public class AppListTask extends AsyncTask<String, String, List<AppEntry>> {

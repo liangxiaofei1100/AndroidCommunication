@@ -77,6 +77,8 @@ public class SocketCommunicationService extends Service {
 			mSocketCommunicationManager.sendMessageToAll(msg, appID);
 		}
 
+		
+
 	}
 
 	@Override
