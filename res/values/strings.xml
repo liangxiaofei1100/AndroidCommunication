@@ -50,5 +50,14 @@
     <!-- speed test end -->
     <string name="btn_test_apps">Test apps</string>
     <string name="readme_file_transport_test">File Transport test.</string>
-
+    <string name="network_neighborhood">网上邻居</string>
+    <string name="bluetooth_invite">蓝牙邀请</string>
+    <string name="bluetooth_invite_tips">蓝牙邀请，请打开蓝牙功能并配对外部设备</string>
+    <string name="create_network">创建网络</string>
+    <string name="create_network_tips">用户需要打开移动网络连接，保持网络通畅</string>
+    <string name="join_network">加入网络</string>
+    <string name="join_network_tips">用户需要打开移动网络连接</string>
+    <string name="network_share">远程共享</string>
+    <string name="network_share_tips">远程共享您的文件或最爱</string>
+	
 </resources>

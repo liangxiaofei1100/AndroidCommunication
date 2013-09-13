@@ -1,4 +1,4 @@
-package com.dreamlink.communication.ui.invite;
+package com.dreamlink.communication.ui.network;
 
 import java.io.File;
 
@@ -15,27 +15,52 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.RelativeLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 public class InviteBluetoothActivity extends Activity implements
 		OnClickListener {
 	private static final String TAG = "InviteBluetoothActivity";
-	private RelativeLayout mBackLayout;
+	// Title
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
+	
 	private Button mSendBtn;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-
 		setContentView(R.layout.ui_invite_bluetooth);
+		
+		initTitle();
+		initView();
+	}
+	
+	private void initTitle() {
+		// Title icon
+		mTitleIcon = (ImageView) findViewById(R.id.iv_title_icon);
+		mTitleIcon.setImageResource(R.drawable.network_neighborhood_bluetooth);
+		// Title text
+		mTitleView = (TextView) findViewById(R.id.tv_title_name);
+		mTitleView.setText(R.string.bluetooth_invite);
+		// Title number
+		mTitleNum = (TextView) findViewById(R.id.tv_title_num);
+		mTitleNum.setVisibility(View.GONE);
+		// Refresh icon
+		mRefreshView = (ImageView) findViewById(R.id.iv_refresh);
+		mRefreshView.setVisibility(View.GONE);
+		// History icon
+		mHistoryView = (ImageView) findViewById(R.id.iv_history);
+		mHistoryView.setVisibility(View.GONE);
+	}
 
-		mBackLayout = (RelativeLayout) findViewById(R.id.title_back_layout);
+	private void initView() {
 		mSendBtn = (Button) findViewById(R.id.bluetooth_send_btn);
-
-		mBackLayout.setOnClickListener(this);
 		mSendBtn.setOnClickListener(this);
-
 	}
 
 	@Override
@@ -80,16 +105,6 @@ public class InviteBluetoothActivity extends Activity implements
 	}
 
 	public void exitActivity() {
-		Intent intent = new Intent(InviteBluetoothActivity.this,
-				InviteMainActivity.class);
-		startActivity(intent);
-		overridePendingTransition(R.anim.push_right_in, R.anim.push_right_out);
 		finish();
-	}
-
-	@Override
-	public void onBackPressed() {
-		super.onBackPressed();
-		exitActivity();
 	}
 }

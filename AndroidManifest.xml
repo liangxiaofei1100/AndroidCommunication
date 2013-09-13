@@ -54,8 +54,8 @@
         </activity>
         <activity 
             android:name="com.dreamlink.communication.ui.MainFragmentActivity"
-            android:screenOrientation="portrait"
-            ></activity>
+            android:screenOrientation="portrait">
+        </activity>
         <activity
             android:name="com.dreamlink.communication.server.ClientListActivity"
             android:label="Client List"
@@ -252,6 +252,18 @@
             android:screenOrientation="portrait" >
         </activity>
         <!-- main ui end -->
+        <activity
+            android:name="com.dreamlink.communication.ui.network.InviteBluetoothActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.ui.network.CreateNetworkActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.ui.network.JoinNetworkActivity"
+            android:screenOrientation="portrait" >
+        </activity>
 
         <provider
             android:name="com.dreamlink.communication.ui.db.DreamProvider"
