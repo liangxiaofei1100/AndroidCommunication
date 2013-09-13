@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@drawable/main_bg"
     >
     
     <include 
@@ -29,7 +30,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="empty" />
+        android:background="@drawable/no_item_bg"
+        android:visibility="gone"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:text="@string/gallery_content_null" />
+    
+    <ProgressBar
+        android:id="@+id/bar_loading_image"
+        style="@android:style/Widget.ProgressBar.Inverse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
     
 </RelativeLayout>
 

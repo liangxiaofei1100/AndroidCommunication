@@ -1,5 +1,6 @@
 package com.dreamlink.communication.ui.image;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,24 +8,30 @@ import java.util.List;
 import java.util.Map;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
+import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.common.FileSendUtil;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.history.HistoryManager;
 import com.dreamlink.communication.ui.image.BaseImageFragment.GalleryReceiver;
-import com.dreamlink.communication.ui.image.ImageFragmentActivity.GetImagesTask;
 import com.dreamlink.communication.ui.media.MediaInfoManager;
 import com.dreamlink.communication.util.Log;
 
-import android.R.integer;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -36,6 +43,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -43,6 +51,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	private static final String TAG = "ImageFragment";
 	protected GridView mGridview;
 	private TextView mEmptyView;
+	private ProgressBar mLoadingBar;
 
 	// title views
 	private ImageView mTitleIcon;
@@ -59,11 +68,10 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	public static Map<String, Bitmap> bitmapCaches = new HashMap<String, Bitmap>();
 
 	private FileInfoManager mFileInfoManager;
-	private List<ImageInfo> mList = new ArrayList<ImageInfo>();
 
 	public static List<ImageInfo> mCamearLists = new ArrayList<ImageInfo>();
 	public static List<ImageInfo> mGalleryLists = new ArrayList<ImageInfo>();
-	public static List<ImageInfo> mImageInfos = new ArrayList<ImageInfo>();
+	public static List<ImageInfo> mImageList = new ArrayList<ImageInfo>();
 
 	private static final String CAMERA_FOLDER = "Camera";
 	private int mNum;
@@ -100,7 +108,6 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		mNum = getArguments() != null ? getArguments().getInt("num") : 1;
 	}
@@ -112,21 +119,20 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
 		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText("图库");
+		mTitleView.setText(R.string.gallery);
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("(N)");
+		mTitleNum.setText("");
 		mRefreshView.setOnClickListener(this);
 		mHistoryView.setOnClickListener(this);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "onCreateView");
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
 		mEmptyView = (TextView) rootView.findViewById(R.id.picture_empty_textview);
 		mGridview = (GridView) rootView.findViewById(R.id.picture_gridview);
-		mGridview.setEmptyView(mEmptyView);
+		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_loading_image);
 
 		getTitleVIews(rootView);
 		return rootView;
@@ -134,15 +140,10 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onActivityCreated(savedInstanceState);
 		Log.d(TAG, "onActivityCreated");
 		mContext = getActivity();
 
-		// mGalleryReceiver = new GalleryReceiver();
-		// IntentFilter filter = new IntentFilter();
-		// filter.addAction(ImageFragmentActivity.PICTURE_ACTION);
-		// mContext.registerReceiver(mGalleryReceiver, filter);
 		if (task != null && task.getStatus() == AsyncTask.Status.RUNNING) {
 			return;
 		}
@@ -168,7 +169,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 		// }
 
 		// 使用上面的方法，再次刷新时无法显示数据
-		mAdapter = new ImageAdapter(mContext, mImageInfos);
+		mAdapter = new ImageAdapter(mContext, mImageList);
 		mGridview.setAdapter(mAdapter);
 	}
 
@@ -180,47 +181,31 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 
 		@Override
 		protected Integer doInBackground(Void... params) {
-			mImageInfos.clear();
-			mCamearLists.clear();
-			mGalleryLists.clear();
-
-			mImageInfos = mediaScan.getImageInfo();
-			// mImageInfos = mediaScan.getImageThumbnail();
+			mImageList.clear();
+			mImageList = mediaScan.getImageInfo();
 			// sort
-			Collections.sort(mImageInfos, ImageFragmentActivity.DATE_COMPARATOR);
-			// if (mImageInfos.size() <= 0) {
-			// return 0;
-			// } else {
-			// for (int i = 0; i < mImageInfos.size(); i++) {
-			// String folder = mImageInfos.get(i).getBucketDisplayName();
-			// if (CAMERA_FOLDER.equals(folder)) {
-			// mCamearLists.add(mImageInfos.get(i));
-			// } else {
-			// mGalleryLists.add(mImageInfos.get(i));
-			// }
-			// }
-			// Log.d(TAG, mCamearLists.size() + "");
-			// Log.d(TAG, mGalleryLists.size() + "");
-			// return 1;
-			// }
-			return mImageInfos.size();
+			Collections.sort(mImageList, ImageFragmentActivity.DATE_COMPARATOR);
+			return mImageList.size();
 		}
 
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
+			mLoadingBar.setVisibility(View.VISIBLE);
 		}
 
 		@Override
 		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
 			Log.d(TAG, "onPostExecute.size=" + result);
-			setAdapter();
+			mLoadingBar.setVisibility(View.GONE);
+			if (result <= 0) {
+				mEmptyView.setVisibility(View.VISIBLE);
+			}else {
+				setAdapter();
+			}
 			
-			Message message = mHandler.obtainMessage();
-			message.arg1 = mImageInfos.size();
-			message.what = MSG_UPDATE_UI;
-			message.sendToTarget();
+			updateUI(result);
 		}
 
 	}
@@ -246,7 +231,6 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-		// TODO Auto-generated method stub
 		// 注释：firstVisibleItem为第一个可见的Item的position，从0开始，随着拖动会改变
 		// visibleItemCount为当前页面总共可见的Item的项数
 		// totalItemCount为当前总共已经出现的Item的项数
@@ -255,27 +239,128 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	}
 
 	@Override
-	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+		final ImageInfo imageInfo = mImageList.get(position);
+		new AlertDialog.Builder(mContext)
+			.setTitle(imageInfo.getName())
+			.setItems(R.array.picture_menu, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case 0:
+						//open
+						startPagerActivityByPosition(position, mImageList);
+						break;
+					case 1:
+						//send
+						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(imageInfo.getPath()));
+						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+						fileSendUtil.sendFile(fileTransferInfo);
+						break;
+					case 2:
+						//delete
+						showDeleteDialog(position, imageInfo.getPath());
+						break;
+					case 3:
+						//info
+						String info = getImageInfo(imageInfo);
+						DreamUtil.showInfoDialog(mContext, info);
+						break;
+
+					default:
+						break;
+					}
+				}
+			}).create().show();
+		return true;
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		// TODO Auto-generated method stub
-
+		startPagerActivityByPosition(position, mImageList);
+	}
+	
+	private String getImageInfo(ImageInfo imageInfo){
+		String result = "";
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			result = "名称:" + imageInfo.getName() + DreamConstant.ENTER
+					+ "类型:" + "图片" + DreamConstant.ENTER
+					+ "位置:" + imageInfo.getPath() + DreamConstant.ENTER
+					+ "大小:" + imageInfo.getFormatSize()+ DreamConstant.ENTER
+					+ "宽度:" +  imageInfo.getWidth() + DreamConstant.ENTER
+					+ "高度:" + imageInfo.getHeight() + DreamConstant.ENTER
+					+ "修改日期:" + imageInfo.getFormatDate();
+		}else {
+			result = "名称:" + imageInfo.getName() + DreamConstant.ENTER
+					+ "类型:" + "图片" + DreamConstant.ENTER
+					+ "位置:" + imageInfo.getPath() + DreamConstant.ENTER
+					+ "大小:" + imageInfo.getFormatSize()+ DreamConstant.ENTER
+					+ "修改日期:" + imageInfo.getFormatDate();
+		}
+		return result;
+	}
+	
+	private void startPagerActivityByPosition(int position, List<ImageInfo> list){
+		Intent intent = new Intent(mContext, ImagePagerActivity.class);
+		intent.putExtra(Extra.IMAGE_POSITION, position);
+		intent.putParcelableArrayListExtra(Extra.IMAGE_INFO, (ArrayList<? extends Parcelable>) list);
+		startActivity(intent);
+	}
+	
+	/**
+     * show confrim dialog
+     * @param path file path
+     */
+    public void showDeleteDialog(final int pos, final String path) {
+    	//do not use dialogfragment
+		final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
+		deleteDialog.setOnClickListener(new OnDelClickListener() {
+			@Override
+			public void onClick(View view, String path) {
+				switch (view.getId()) {
+				case R.id.left_button:
+					doDelete(pos, path);
+					break;
+				default:
+					break;
+				}
+			}
+		});
+		deleteDialog.show();
+    }
+    
+	private void doDelete(int position, String path) {
+		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, path);
+		if (!ret) {
+			mNotice.showToast(R.string.delete_fail);
+			Log.e(TAG, path + " delete failed");
+		}else {
+			mImageList.remove(position);
+			mAdapter.notifyDataSetChanged();
+			updateUI(mImageList.size());
+		}
+		
+		Intent intent = new Intent(ImageFragmentActivity.PICTURE_ACTION);
+		mContext.sendBroadcast(intent);
+	}
+	
+	public void updateUI(int num){
+		Message message = mHandler.obtainMessage();
+		message.arg1 = num;
+		message.what = MSG_UPDATE_UI;
+		message.sendToTarget();
 	}
 
 	// 释放图片
 	private void recycleBitmapCaches(int fromPosition, int toPosition) {
 		Bitmap delBitmap = null;
 		for (int del = fromPosition; del < toPosition; del++) {
-			delBitmap = bitmapCaches.get(mImageInfos.get(del));
+			delBitmap = bitmapCaches.get(mImageList.get(del));
 			if (delBitmap != null) {
 				// 如果非空则表示有缓存的bitmap，需要清理
 				Log.d(TAG, "release position:" + del);
 				// 从缓存中移除该del->bitmap的映射
-				bitmapCaches.remove(mImageInfos.get(del));
+				bitmapCaches.remove(mImageList.get(del));
 				delBitmap.recycle();
 				delBitmap = null;
 			}

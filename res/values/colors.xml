@@ -19,5 +19,8 @@
     <drawable name="list_item_press2">#ff00eeee</drawable><!-- 淡蓝色 -->
     <drawable name="list_item_normal2">#ffffff</drawable>
     
+    <!-- 主界面提示语颜色值 -->
+    <color  name="text_color_orange">#4e0000</color>
+    <!-- 主界面提示语颜色值 -->
     
 </resources>
