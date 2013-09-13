@@ -6,16 +6,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.dreamlink.communication.MainActivity;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.notification.NotificationMgr;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileTransferActivity;
+import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.util.Log;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -129,6 +133,34 @@ public class MainUIFrame2 extends Activity implements OnClickListener, OnItemCli
 		Intent intent = new Intent(MainUIFrame2.this, MainFragmentActivity.class);
 		intent.putExtra("position", position);
 		startActivity(intent);
+	}
+	
+	/**options menu*/
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		Log.d(TAG, "onCreateOptionsMenu");
+		menu.add(0, 0, 0, "旧入口");
+		menu.add(0, 2, 0, "远程共享");
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case 0:
+			Intent intent = new Intent(MainUIFrame2.this, MainActivity.class);
+			startActivity(intent);
+			break;
+		case 2:
+			Intent shareIntent = new Intent(MainUIFrame2.this, RemoteShareActivity.class);
+			//如果这个activity已经启动了，就不产生新的activity，而只是把这个activity实例加到栈顶来就可以了。
+			shareIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
+			startActivity(shareIntent);
+			break;
+		default:
+			break;
+		}
+		return true;
 	}
 	
 }
