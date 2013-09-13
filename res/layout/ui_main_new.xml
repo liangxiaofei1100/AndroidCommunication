@@ -99,14 +99,14 @@
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_alignParentTop="true"
-                    android:src="@drawable/transfer_icon"
+                    android:src="@drawable/icon_transfer"
                     />
                 <ImageView 
                     android:id="@+id/iv_help"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_alignParentBottom="true"
-                    android:src="@drawable/help"
+                    android:src="@drawable/icon_help"
                     />
                  <ImageView 
                     android:id="@+id/iv_setting"
@@ -114,7 +114,7 @@
                     android:layout_height="45dp"
                     android:layout_above="@+id/iv_help"
                     android:layout_marginBottom="8dp"
-                    android:src="@drawable/setting"
+                    android:src="@drawable/icon_setting"
                     />
             </RelativeLayout>
             <!-- help view end -->
