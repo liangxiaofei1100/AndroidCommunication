@@ -1,4 +1,4 @@
-package com.dreamlink.communication.ui.invite;
+package com.dreamlink.communication.ui.network;
 
 import com.dreamlink.communication.R;
 

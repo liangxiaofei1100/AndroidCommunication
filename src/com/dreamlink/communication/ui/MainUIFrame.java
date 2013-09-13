@@ -35,7 +35,7 @@ import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.history.HistoryActivityTest;
 import com.dreamlink.communication.ui.image.ImageFragment;
 import com.dreamlink.communication.ui.image.ImageFragmentActivity;
-import com.dreamlink.communication.ui.invite.InviteMainActivity;
+import com.dreamlink.communication.ui.network.InviteMainActivity;
 import com.dreamlink.communication.ui.media.MediaFragmentActivity;
 import com.dreamlink.communication.ui.service.FileManagerService;
 import com.dreamlink.communication.ui.service.FileManagerService.ServiceBinder;

@@ -43,14 +43,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 /**
  * access remote server
@@ -75,6 +78,13 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	private RemoteShareAdapter mShareAdapter = null;
 	private List<User> mRemoteShareList = new ArrayList<User>();
 	//show remote share server list
+	
+	// Title
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
 	
 	private Context mContext = null;
 	private SocketCommunicationManager mSocketMgr = null;
@@ -150,12 +160,16 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	
 	private int mAppId=0;
 	LogFile logFile = null;
+	
+	
 	@Override
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
 		Log.d(TAG, "onCreate begin");
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_remote_share);
-		setTitle("未连接");
+		
+		initTitle();
 		
 		mContext = this;
 		mSocketMgr = SocketCommunicationManager.getInstance(mContext);
@@ -220,6 +234,24 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		
 		mNotice = new Notice(mContext);
 		Log.d(TAG, "onCreate end");
+	}
+	
+	private void initTitle() {
+		// Title icon
+		mTitleIcon = (ImageView) findViewById(R.id.iv_title_icon);
+		mTitleIcon.setImageResource(R.drawable.network_neighborhood_share);
+		// Title text
+		mTitleView = (TextView) findViewById(R.id.tv_title_name);
+		mTitleView.setText(R.string.network_share);
+		// Title number
+		mTitleNum = (TextView) findViewById(R.id.tv_title_num);
+		mTitleNum.setVisibility(View.GONE);
+		// Refresh icon
+		mRefreshView = (ImageView) findViewById(R.id.iv_refresh);
+		mRefreshView.setVisibility(View.GONE);
+		// History icon
+		mHistoryView = (ImageView) findViewById(R.id.iv_history);
+		mHistoryView.setVisibility(View.GONE);
 	}
 	
 	/**

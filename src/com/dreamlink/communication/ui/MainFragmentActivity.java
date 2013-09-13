@@ -21,6 +21,7 @@ import com.dreamlink.communication.ui.image.ImageFragmentActivity;
 import com.dreamlink.communication.ui.media.MediaAudioFragment;
 import com.dreamlink.communication.ui.media.MediaFragmentActivity;
 import com.dreamlink.communication.ui.media.MediaVideoFragment;
+import com.dreamlink.communication.ui.network.NetworkFragment;
 import com.dreamlink.communication.util.Log;
 
 import android.app.LocalActivityManager;
@@ -57,7 +58,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		List<Fragment> fragments = new ArrayList<Fragment>();
 		
 		fragments.add(new TiandiFragment());//朝颜天地
-		//network
+		fragments.add(new NetworkFragment());//网上邻居
 		fragments.add(new RecommendFragment());//精品推荐
 		fragments.add(ImageFragment.newInstance(3));//图库
 		fragments.add(new MediaAudioFragment());//音频

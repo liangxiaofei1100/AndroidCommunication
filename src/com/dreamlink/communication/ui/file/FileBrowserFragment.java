@@ -165,7 +165,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	private void getTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.transfer_icon);
+		mTitleIcon.setImageResource(R.drawable.icon_transfer_history);
 		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
 		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);

@@ -2,53 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#eee"
+    android:background="@drawable/main_bg"
     android:orientation="vertical" >
 
     <!-- main ui title -->
 
-    <RelativeLayout
-        android:id="@+id/main_tab_banner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/title_main_bg"
-            android:gravity="center"
-            android:text="@string/invite_install"
-            android:textSize="20sp"
-            android:textColor="@color/white" />
-
-        <!-- 标题 -->
-
-        <RelativeLayout
-            android:id="@+id/title_back_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:background="@drawable/title_left_bg" >
-
-            <ImageView
-                android:id="@+id/complete_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="20dp"
-                android:src="@drawable/title_back_normal" />
-
-            <TextView
-                android:id="@+id/two_saved_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/complete_view"
-                android:layout_centerHorizontal="true"
-                android:text="@string/back"
-                android:textColor="@color/white" />
-        </RelativeLayout>
-    </RelativeLayout>
+    <include layout="@layout/ui_title" />
 
     <ScrollView
         android:layout_width="fill_parent"
@@ -60,67 +19,60 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" >
 
-            <TextView 
+            <TextView
                 android:layout_width="75dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:padding="5dp"
-                 android:text="@string/invite_bluetooth_first_step"
-                android:textColor="@color/white"
-                android:textSize="15sp"
                 android:background="@drawable/invite_ways"
-                />
-            
-            <TextView 
+                android:padding="5dp"
+                android:text="@string/invite_bluetooth_first_step"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="14dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
-                android:text="@string/invite_bluetooth_first_step_tip"
-                />
-            
-            <ImageView 
+                android:layout_marginTop="14dp"
+                android:text="@string/invite_bluetooth_first_step_tip" />
+
+            <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/bluetooth_invite_iv"
-                />
-            
-            <TextView 
+                android:src="@drawable/bluetooth_invite_iv" />
+
+            <TextView
                 android:layout_width="75dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
+                android:background="@drawable/invite_ways"
                 android:padding="5dp"
                 android:text="@string/invite_bluetooth_second_step"
                 android:textColor="@color/white"
-                android:textSize="15sp"
-                android:background="@drawable/invite_ways"
-                />
-            
-            <TextView 
+                android:textSize="15sp" />
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="14dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
-                android:text="@string/invite_bluetooth_second_step_tip"
-                />
-            
-            <Button 
+                android:layout_marginTop="14dp"
+                android:text="@string/invite_bluetooth_second_step_tip" />
+
+            <Button
                 android:id="@+id/bluetooth_send_btn"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/button_bg"
                 android:text="@string/invite_bluetooth_send"
-                android:textColor="@color/white"
-                android:background="@drawable/button_ok"
-                />
-
+                android:textColor="@color/white" />
         </LinearLayout>
     </ScrollView>
 

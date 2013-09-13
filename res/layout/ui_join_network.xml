@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_bg"
+    android:orientation="vertical" >
+
+    <!-- title -->
+
+    <include
+        android:id="@+id/title"
+        layout="@layout/ui_title" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/title" >
+
+        <!-- 1 -->
+
+        <RelativeLayout
+            android:id="@+id/one"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true" >
+
+            <TextView
+                android:id="@+id/keyonglianjie"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/connectable" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="2dp"
+                android:layout_below="@+id/keyonglianjie"
+                android:background="@drawable/gray_divide" />
+
+            <ProgressBar
+                android:id="@+id/searching_bar"
+                style="@android:style/Widget.ProgressBar.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true" />
+        </RelativeLayout>
+        <!-- 1 -->
+
+
+        <!-- 3 -->
+
+        <TextView
+            android:id="@+id/search_view"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/one"
+            android:background="@drawable/button_bg"
+            android:clickable="true"
+            android:gravity="center"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:text="@string/searching_sever"
+            android:textSize="20sp" />
+        <!-- 3 -->
+
+
+        <!-- 2 -->
+
+        <RelativeLayout
+            android:id="@+id/two"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/search_view" >
+
+            <!-- show server list -->
+
+            <ListView
+                android:id="@+id/server_listview"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:fadeScrollbars="true" />
+
+            <TextView
+                android:id="@+id/no_server_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="15dp"
+                android:text="@string/server_not_found" />
+        </RelativeLayout>
+        <!-- 2 -->
+    </RelativeLayout>
+
+</RelativeLayout>
