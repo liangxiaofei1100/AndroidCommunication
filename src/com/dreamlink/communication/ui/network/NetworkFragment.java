@@ -98,9 +98,6 @@ public class NetworkFragment extends BaseFragment implements
 		connectHelper = ConnectHelper.getInstance(mContext
 				.getApplicationContext());
 		mUserManager = UserManager.getInstance();
-		UserHelper userHelper = new UserHelper(mContext);
-		User localUser = userHelper.loadUser();
-		mUserManager.setLocalUser(localUser);
 		mUserManager.registerOnUserChangedListener(this);
 
 		mFilter.addAction(DreamConstant.SERVER_CREATED_ACTION);
@@ -158,6 +155,7 @@ public class NetworkFragment extends BaseFragment implements
 
 	private void updateNetworkStatus() {
 		if (mSocketComMgr.isServerAndCreated()) {
+			Log.d(TAG, "isServerAndCreated true");
 			if (mSocketComMgr.isConnected()) {
 				mCreateNetworkTipsTextView
 						.setText(R.string.create_network_tips_connected);
@@ -165,13 +163,16 @@ public class NetworkFragment extends BaseFragment implements
 				mCreateNetworkTipsTextView.setText(R.string.create_ok);
 			}
 		} else {
+			Log.d(TAG, "isServerAndCreated false");
 			mCreateNetworkTipsTextView.setText(R.string.create_network_tips);
 		}
 
 		if (mSocketComMgr.isConnected()) {
+			Log.d(TAG, "isConnected true");
 			mJoinNetworkTipsTextView
 					.setText(R.string.join_network_tips_connected);
 		} else {
+			Log.d(TAG, "isConnected false");
 			mJoinNetworkTipsTextView.setText(R.string.join_network_tips);
 		}
 	}
@@ -213,7 +214,10 @@ public class NetworkFragment extends BaseFragment implements
 		if (NetWorkUtil.isWifiApEnabled(mContext)) {
 			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
 		}
-
+		UserHelper userHelper = new UserHelper(mContext);
+		User localUser = userHelper.loadUser();
+		mUserManager.setLocalUser(localUser);
+		
 		LayoutInflater inflater = LayoutInflater.from(mContext);
 		View view = inflater.inflate(R.layout.ui_create_server, null);
 		final RadioButton wifiButton = (RadioButton) view

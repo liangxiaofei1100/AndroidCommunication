@@ -41,7 +41,7 @@ public class UserManager {
 	private static UserManager mInstance;
 	private Vector<OnUserChangedListener> mOnUserChangedListeners = new Vector<OnUserChangedListener>();
 
-	private User mLocalUser;
+	private User mLocalUser = new User();
 
 	public User getLocalUser() {
 		return mLocalUser;

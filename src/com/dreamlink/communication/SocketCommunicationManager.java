@@ -584,11 +584,23 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 
 	public boolean isConnected() {
 		User localUser = mUserManager.getLocalUser();
-		if (!mCommunications.isEmpty() && localUser != null
-				&& localUser.getUserID() != 0) {
-			return true;
+		if (localUser == null) {
+			return false;
 		}
-		return false;
+
+		if (localUser.getUserID() == 0) {
+			return false;
+		} else if (localUser.getUserID() == -1) {
+			if (mCommunications.isEmpty()) {
+				return false;
+			}
+		} else {
+			if (mCommunications.isEmpty()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public boolean isServerAndCreated() {
