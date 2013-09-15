@@ -1,5 +1,6 @@
 package com.dreamlink.communication.ui.app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,8 @@ import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.history.HistoryActivity;
 
 public class RecommendFragment extends BaseFragment implements OnClickListener {
 	private ImageView mTitleIcon;
@@ -18,6 +21,27 @@ public class RecommendFragment extends BaseFragment implements OnClickListener {
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
+	private int mAppId = -1;
+	
+	/**
+	 * Create a new instance of AppFragment, providing "appid" as an
+	 * argument.
+	 */
+	public static RecommendFragment newInstance(int appid) {
+		RecommendFragment f = new RecommendFragment();
+
+		Bundle args = new Bundle();
+		args.putInt(Extra.APP_ID, appid);
+		f.setArguments(args);
+
+		return f;
+	}
+	
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+	};
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -43,6 +67,20 @@ public class RecommendFragment extends BaseFragment implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		
+		switch (v.getId()) {
+		case R.id.iv_refresh:
+			
+			break;
+			
+		case R.id.iv_history:
+			Intent intent = new Intent();
+			intent.putExtra(Extra.APP_ID, mAppId);
+			intent.setClass(getActivity(), HistoryActivity.class);
+			startActivity(intent);
+			break;
+
+		default:
+			break;
+		}
 	}
 }

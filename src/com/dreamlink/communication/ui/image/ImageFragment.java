@@ -17,6 +17,7 @@ import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
+import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.image.BaseImageFragment.GalleryReceiver;
 import com.dreamlink.communication.ui.media.MediaInfoManager;
 import com.dreamlink.communication.util.Log;
@@ -74,19 +75,18 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	public static List<ImageInfo> mImageList = new ArrayList<ImageInfo>();
 
 	private static final String CAMERA_FOLDER = "Camera";
-	private int mNum;
+	private int mAppId;
 	private GetImagesTask task = null;
 
 	/**
-	 * Create a new instance of CountingFragment, providing "num" as an
+	 * Create a new instance of ImageFragment, providing "appid" as an
 	 * argument.
 	 */
-	public static ImageFragment newInstance(int num) {
+	public static ImageFragment newInstance(int appid) {
 		ImageFragment f = new ImageFragment();
 
-		// Supply num input as an argument.
 		Bundle args = new Bundle();
-		args.putInt("num", num);
+		args.putInt(Extra.APP_ID, appid);
 		f.setArguments(args);
 
 		return f;
@@ -109,7 +109,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mNum = getArguments() != null ? getArguments().getInt("num") : 1;
+		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
 	}
 
 	private void getTitleVIews(View view) {
@@ -370,6 +370,20 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.iv_refresh:
+			
+			break;
+			
+		case R.id.iv_history:
+			Intent intent = new Intent();
+			intent.putExtra(Extra.APP_ID, mAppId);
+			intent.setClass(getActivity(), HistoryActivity.class);
+			startActivity(intent);
+			break;
 
+		default:
+			break;
+		}
 	}
 }

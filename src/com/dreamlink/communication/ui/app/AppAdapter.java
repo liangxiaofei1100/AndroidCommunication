@@ -13,13 +13,13 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class AppBrowserAdapter2 extends BaseAdapter {
+public class AppAdapter extends BaseAdapter {
 	private static final String TAG = "AppBrowserAdapter";
 	private LayoutInflater mInflater = null;
 	private List<AppInfo> mList = new ArrayList<AppInfo>();
 	
 	
-	public AppBrowserAdapter2(Context context, List<AppInfo> list){
+	public AppAdapter(Context context, List<AppInfo> list){
 		mInflater = LayoutInflater.from(context);
 		mList = list;
 	}
@@ -49,8 +49,8 @@ public class AppBrowserAdapter2 extends BaseAdapter {
 		
 		AppInfo item = mList.get(position);
 		holder.iconView.setImageDrawable(item.getAppIcon());
-		holder.nameView.setText(item.getAppLabel());
-//		holder.sizeView.setText(item.getFormatSize());
+		holder.nameView.setText(item.getLabel());
+		holder.sizeView.setText(item.getFormatSize());
 		
 		return view;
 	}

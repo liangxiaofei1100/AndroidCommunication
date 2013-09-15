@@ -46,7 +46,6 @@ public class UserHelper {
 		SharedPreferences sharedPreferences = mContext.getSharedPreferences(
 				SHAREPREFERENCE_NAME, Context.MODE_PRIVATE);
 		String name = sharedPreferences.getString(KEY_NAME, KEY_NAME_DEFAULT);
-
 		User user = new User();
 		user.setUserName(name);
 		user.setSystemInfo(new SystemInfo().getLocalSystemInfo());

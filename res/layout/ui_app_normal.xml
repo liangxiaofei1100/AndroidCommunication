@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@drawable/main_bg"
     >
       <include 
         android:id="@+id/layout_title"
@@ -9,19 +10,17 @@
         layout="@layout/ui_title"
         />
       
-    <GridView 
-    android:id="@+id/app_normal_gridview"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:gravity="center"
-    android:horizontalSpacing="4dip"
-    android:numColumns="4"
-    android:padding="4dip"
-    android:stretchMode="columnWidth"
-    android:verticalSpacing="4dip" 
-    android:layout_below="@+id/layout_title"
-    android:background="@drawable/main_bg"
-    />
+      <GridView
+        android:id="@+id/app_normal_gridview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/layout_title"
+        android:gravity="center"
+        android:horizontalSpacing="4dip"
+        android:numColumns="4"
+        android:padding="4dip"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="4dip" />
     
     <ProgressBar 
         android:id="@+id/app_progressbar"

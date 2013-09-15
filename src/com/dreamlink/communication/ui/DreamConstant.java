@@ -15,6 +15,8 @@ public class DreamConstant {
 	public static final int ACTION_MENU_MORE = 0x05;
 	public static final int ACTION_MENU_PLAY = 0x06;
 	public static final int ACTION_MENU_RENAME = 0x07;
+	
+	public static final int REQUEST_FOR_MODIFY_NAME = 0x12;
 
 	// context action menu id
 
@@ -40,6 +42,8 @@ public class DreamConstant {
 		
 		public static final String SHARED_PERFERENCE_NAME = "my_shared";
 		public static final String DEFAULT_SAVE_PATH = "DEFAULT_SAVE_PATH";
+		
+		public static final String APP_ID = "app_id";
 		
 	}
 	

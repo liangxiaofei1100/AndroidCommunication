@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.util.Log;
 
@@ -30,6 +32,27 @@ public class NetworkFragment extends BaseFragment implements
 	private View mCreateNetworkView;
 	private View mJoinNetworkView;
 	private View mShareView;
+	
+	private int mAppId = -1;
+	
+	/**
+	 * Create a new instance of AppFragment, providing "appid" as an
+	 * argument.
+	 */
+	public static NetworkFragment newInstance(int appid) {
+		NetworkFragment f = new NetworkFragment();
+
+		Bundle args = new Bundle();
+		args.putInt(Extra.APP_ID, appid);
+		f.setArguments(args);
+
+		return f;
+	}
+	
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+	};
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,

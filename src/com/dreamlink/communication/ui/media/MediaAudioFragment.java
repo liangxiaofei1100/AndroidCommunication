@@ -15,6 +15,8 @@ import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
+import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.network.NetworkFragment;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -89,6 +91,27 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 				break;
 			}
 		};
+	};
+	
+	private int mAppId = -1;
+	
+	/**
+	 * Create a new instance of AppFragment, providing "appid" as an
+	 * argument.
+	 */
+	public static MediaAudioFragment newInstance(int appid) {
+		MediaAudioFragment f = new MediaAudioFragment();
+
+		Bundle args = new Bundle();
+		args.putInt(Extra.APP_ID, appid);
+		f.setArguments(args);
+
+		return f;
+	}
+	
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
 	};
 	
 	@Override
@@ -270,6 +293,20 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		
+		switch (v.getId()) {
+		case R.id.iv_refresh:
+			
+			break;
+			
+		case R.id.iv_history:
+			Intent intent = new Intent();
+			intent.putExtra(Extra.APP_ID, mAppId);
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
+			break;
+
+		default:
+			break;
+		}
 	}
 }

@@ -17,7 +17,6 @@ import com.dreamlink.communication.server.SocketServer;
 import com.dreamlink.communication.server.service.ConnectHelper;
 import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.ui.ConnectFriendActivity;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.ServerAdapter;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -141,7 +140,7 @@ public class CreateNetworkActivity extends Activity implements OnClickListener,
 				if (!info.getServer_type().equals("wifi-ap")) {
 					//connecting
 					Intent intent = new Intent();
-					intent.putExtra("status", MainUIFrame.CONNECTING);
+//					intent.putExtra("status", MainUIFrame.CONNECTING);
 					setResult(RESULT_OK, intent);
 					finish();
 				}
@@ -443,7 +442,7 @@ public class CreateNetworkActivity extends Activity implements OnClickListener,
 											msg, Toast.LENGTH_SHORT).show();
 									Intent intent = new Intent();
 									// data
-									intent.putExtra("status", MainUIFrame.CREATING);
+//									intent.putExtra("status", MainUIFrame.CREATING);
 									setResult(RESULT_OK, intent);
 									sever_flag = true;
 									if(null != mTimeoutTimer){

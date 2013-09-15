@@ -8,6 +8,9 @@ import java.io.InputStream;
 
 import com.dreamlink.communication.MainActivity;
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.aidl.User;
+import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.notification.NotificationMgr;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileTransferActivity;
@@ -27,6 +30,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 /**
  * Win8 style main ui
@@ -43,13 +47,21 @@ public class MainUIFrame2 extends Activity implements OnClickListener, OnItemCli
 			+ "/com.dreamlink.communication" + "/databases";
 	private NotificationMgr mNotificationMgr = null;
 	
-	private ImageView mUpLoadView,mSettingView, mHelpView;
+	private ImageView mTransferView,mSettingView, mHelpView;
+	private ImageView mUserIconView;
+	private TextView mUserNameView;
+	
+	private UserManager mUserManager = null;
+	private User mLocalUser;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_main_new);
+		
+		UserHelper userHelper = new UserHelper(this);
+		mLocalUser = userHelper.loadUser();
 		
 		initView();
 		
@@ -61,13 +73,19 @@ public class MainUIFrame2 extends Activity implements OnClickListener, OnItemCli
 		//get sdcards
 		MountManager mountManager = new MountManager();
 		mountManager.init();
+		
+		mUserManager = UserManager.getInstance();
 	}
 	
 	public void initView(){
-		mUpLoadView = (ImageView) findViewById(R.id.iv_filetransfer);
+		mUserIconView = (ImageView) findViewById(R.id.iv_usericon);
+		mTransferView = (ImageView) findViewById(R.id.iv_filetransfer);
 		mSettingView = (ImageView) findViewById(R.id.iv_setting);
 		mHelpView = (ImageView) findViewById(R.id.iv_help);
-		mUpLoadView.setOnClickListener(this);
+		mUserNameView = (TextView) findViewById(R.id.tv_username);
+		mUserNameView.setText(mLocalUser.getUserName());
+		mUserIconView.setOnClickListener(this);
+		mTransferView.setOnClickListener(this);
 		mSettingView.setOnClickListener(this);
 		mHelpView.setOnClickListener(this);
 		
@@ -114,6 +132,11 @@ public class MainUIFrame2 extends Activity implements OnClickListener, OnItemCli
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
+		case R.id.iv_usericon:
+			Intent userSetIntent = new Intent();
+			userSetIntent.setClass(MainUIFrame2.this, UserInfoSetting.class);
+			startActivityForResult(userSetIntent, DreamConstant.REQUEST_FOR_MODIFY_NAME);
+			break;
 		case R.id.iv_filetransfer:
 			Intent intent = new Intent(MainUIFrame2.this, FileTransferActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -133,6 +156,18 @@ public class MainUIFrame2 extends Activity implements OnClickListener, OnItemCli
 		Intent intent = new Intent(MainUIFrame2.this, MainFragmentActivity.class);
 		intent.putExtra("position", position);
 		startActivity(intent);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.d(TAG, "onActivityResult");
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == RESULT_OK) {// when create server ,set result ok
+			if (DreamConstant.REQUEST_FOR_MODIFY_NAME == requestCode) {
+				String name = data.getStringExtra("user");
+				mUserNameView.setText(name);
+			}
+		}
 	}
 	
 	/**options menu*/

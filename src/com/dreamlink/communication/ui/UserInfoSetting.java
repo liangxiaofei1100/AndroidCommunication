@@ -93,7 +93,7 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 			mNotice.showToast("Name saved");
 			Intent intent = new Intent();
 			if (mIsFirstStart) {
-				intent.setClass(this, MainUIFrame.class);
+				intent.setClass(this, MainUIFrame2.class);
 				startActivity(intent);
 			}else {
 				intent.putExtra("user", name);

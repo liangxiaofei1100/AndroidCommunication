@@ -14,6 +14,7 @@ import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
+import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -31,6 +32,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -40,6 +42,8 @@ import android.widget.GridView;
 public class MediaVideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	private static final String TAG = "MediaVideoFragment";
 	private GridView mGridView;
+	private TextView mEmptyView;
+	private ProgressBar mLoadingBar;
 	
 	private MediaVideoAdapter mAdapter;
 	private List<MediaInfo> mVideoLists = new ArrayList<MediaInfo>();
@@ -87,15 +91,37 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		};
 	};
 	
+	private int mAppId = -1;
+	
+	/**
+	 * Create a new instance of AppFragment, providing "appid" as an
+	 * argument.
+	 */
+	public static MediaVideoFragment newInstance(int appid) {
+		MediaVideoFragment f = new MediaVideoFragment();
+
+		Bundle args = new Bundle();
+		args.putInt(Extra.APP_ID, appid);
+		f.setArguments(args);
+
+		return f;
+	}
+	
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+	};
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.d(TAG, "onCreate begin");
 		mContext = getActivity();
 		View rootView = inflater.inflate(R.layout.ui_media_video, container, false);
 		mGridView = (GridView) rootView.findViewById(R.id.video_gridview);
-		mGridView.setEmptyView(rootView.findViewById(R.id.video_empty));
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
+		mEmptyView = (TextView) rootView.findViewById(R.id.tv_video_empty);
+		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_video_loading);
 		
 		getTitleVIews(rootView);
 		
@@ -135,8 +161,22 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		}
 		
 		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			mLoadingBar.setVisibility(View.VISIBLE);
+		}
+		
+		@Override
 		protected void onPostExecute(String result) {
 			super.onPostExecute(result);
+			mLoadingBar.setVisibility(View.GONE);
+			if (mVideoLists.size() <= 0) {
+				mEmptyView.setVisibility(View.VISIBLE);
+				return;
+			}
+			mEmptyView.setVisibility(View.GONE);
+			
 			mAdapter = new MediaVideoAdapter(mContext, mVideoLists);
 			mGridView.setAdapter(mAdapter);
 			
@@ -245,7 +285,21 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		
+		switch (v.getId()) {
+		case R.id.iv_refresh:
+			
+			break;
+			
+		case R.id.iv_history:
+			Intent intent = new Intent();
+			intent.putExtra(Extra.APP_ID, mAppId);
+			intent.setClass(getActivity(), HistoryActivity.class);
+			startActivity(intent);
+			break;
+
+		default:
+			break;
+		}
 	}
 	
 }

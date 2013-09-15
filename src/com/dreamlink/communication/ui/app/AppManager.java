@@ -37,8 +37,14 @@ public class AppManager {
 	public static final int ERROR_APP = -1;
 	
 	public static final String ACTION_REFRESH_APP = "intent.aciton.refresh.app";
+	public static final String ACTION_SEND_TO_APP = "intent.aciton.send.to.app";
+	public static final String ACTION_ADD_MYGAME = "intent.cation.add.mygame";
+	public static final String ACTION_REMOVE_MYGAME = "intent.action.remove.mygame";
+	public static final String ACTION_SEND_TO_GAME = "intent.aciton.send.to.game";
 	public static final String NORMAL_APP_SIZE = "normal_app_size";
 	public static final String GAME_APP_SIZE = "game_app_size";
+	
+	public static final String EXTRA_INFO = "info";
 	
 	public static final int NORMAL_APP_MENU = 0x00;
 	public static final int GAME_APP_MENU_XX = 0x01;
@@ -48,6 +54,7 @@ public class AppManager {
 	public static final int MENU_SHARE = 0x11;
 	public static final int MENU_UNINSTALL = 0x12;
 	public static final int MENU_MOVE = 0x13;
+	
 
 	public AppManager(Context context) {
 		mContext = context;
@@ -105,12 +112,12 @@ public class AppManager {
      * </br>
      * 	int[1]:(the position in the list)
      */
-    public int[] getAppEntry(String packageName, List<AppEntry> normalAppList, List<AppEntry> gameAppList, List<AppEntry> myAppList){
+    public int[] getAppInfo(String packageName, List<AppInfo> normalAppList, List<AppInfo> gameAppList, List<AppInfo> myAppList){
     	int[] result = new int[2];
     	
     	for (int i = 0; i < normalAppList.size(); i++) {
-			AppEntry appEntry = normalAppList.get(i);
-			if (packageName.equals(appEntry.getPackageName())) {
+			AppInfo appInfo = normalAppList.get(i);
+			if (packageName.equals(appInfo.getPackageName())) {
 				//is normal app
 				result[0] = AppManager.NORMAL_APP;
 				result[1] = i;
@@ -119,8 +126,8 @@ public class AppManager {
 		}
     	
     	for (int i = 0; i < gameAppList.size(); i++) {
-			AppEntry appEntry = gameAppList.get(i);
-			if (packageName.equals(appEntry.getPackageName())) {
+			AppInfo appInfo = gameAppList.get(i);
+			if (packageName.equals(appInfo.getPackageName())) {
 				//is game app
 				result[0] = AppManager.GAME_APP;
 				result[1] = i;
@@ -129,8 +136,8 @@ public class AppManager {
 		}
     	
     	for (int i = 0; i < myAppList.size(); i++) {
-			AppEntry appEntry = myAppList.get(i);
-			if (packageName.equals(appEntry.getPackageName())) {
+			AppInfo appInfo = myAppList.get(i);
+			if (packageName.equals(appInfo.getPackageName())) {
 				//is my app
 				result[0] = AppManager.MY_APP;
 				result[1] = i;
@@ -143,16 +150,22 @@ public class AppManager {
     
     /**
      * send broad cast to update app ui
-     * @param normalAppList
-     * @param gameAppList
      */
     public void updateAppUI(){
     	//send broadcast & update ui
 		Intent intent = new Intent(ACTION_REFRESH_APP);
-		intent.putExtra(NORMAL_APP_SIZE, AppNormalFragment.mNormalAppLists.size());
-		intent.putExtra(GAME_APP_SIZE, AppNormalFragment.mGameAppList.size() + 
-				AppNormalFragment.mMyAppList.size());
 		mContext.sendBroadcast(intent);
+    }
+    
+    /**return the position according to packagename*/
+    public int getAppPosition(String packageName, List<AppInfo> list){
+    	for (int i = 0; i < list.size(); i++) {
+			AppInfo appInfo = list.get(i);
+			if (packageName.equals(appInfo.getPackageName())) {
+				return i;
+			}
+		}
+    	return -1;
     }
     
 	public void installApk(String apkFilePath) {
@@ -178,20 +191,20 @@ public class AppManager {
 		mContext.startActivity(deleteIntent);
 	}
 	
-	public void showInfoDialog(AppEntry appEntry){
-		String info  = getAppInfo(appEntry);
+	public void showInfoDialog(AppInfo appInfo){
+		String info  = getAppInfo(appInfo);
 		DreamUtil.showInfoDialog(mContext, info);
 	}
 	
-	private String getAppInfo(AppEntry appEntry){
+	private String getAppInfo(AppInfo appInfo){
 		String result = "";
-		result = "名称:" + appEntry.getLabel() + DreamConstant.ENTER
-				+ "类型:" + (appEntry.isGameApp() ? "游戏" : "应用") + DreamConstant.ENTER
-				+ "版本:" + appEntry.getVersion() + DreamConstant.ENTER
-				+ "包名:" + appEntry.getPackageName() + DreamConstant.ENTER
-				+ "位置:" + appEntry.getInstallPath() + DreamConstant.ENTER
-				+ "大小:" + appEntry.getFormatSize() + DreamConstant.ENTER
-				+ "修改日期:" + appEntry.getDate();
+		result = "名称:" + appInfo.getLabel() + DreamConstant.ENTER
+				+ "类型:" + (appInfo.isGameApp() ? "游戏" : "应用") + DreamConstant.ENTER
+				+ "版本:" + appInfo.getVersion() + DreamConstant.ENTER
+				+ "包名:" + appInfo.getPackageName() + DreamConstant.ENTER
+				+ "位置:" + appInfo.getInstallPath() + DreamConstant.ENTER
+				+ "大小:" + appInfo.getFormatSize() + DreamConstant.ENTER
+				+ "修改日期:" + appInfo.getDate();
 		return result;
 	}
 

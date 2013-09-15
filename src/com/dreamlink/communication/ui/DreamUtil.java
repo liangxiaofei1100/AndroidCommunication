@@ -15,7 +15,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.ui.app.AppEntry;
+import com.dreamlink.communication.ui.app.AppInfo;
 
 public class DreamUtil {
 	
@@ -27,7 +27,7 @@ public class DreamUtil {
 	 * @param appEntry 要插入的数据
 	 * @return 将要插入的位置
 	 */
-	public static int getInsertIndex(List<AppEntry> list, AppEntry appEntry){
+	public static int getInsertIndex(List<AppInfo> list, AppInfo appEntry){
 		Collator sCollator = Collator.getInstance();
 		for (int i = 0; i < list.size(); i++) {
 			int ret = sCollator.compare(appEntry.getLabel(), list.get(i).getLabel());

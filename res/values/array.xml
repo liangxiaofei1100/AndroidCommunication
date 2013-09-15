@@ -47,8 +47,13 @@
         <item>@string/menu_move_to_app</item>
     </string-array>
     
-        <string-array name="app_menu_game1">
-         <item>@string/menu_start</item>
+    <string-array name="app_menu_game1">
+        <item>@string/menu_start</item>
+        <item>@string/menu_app_info</item>
+    </string-array>
+    
+    <string-array name="zy_game_menu">
+        <item>@string/menu_send</item>
         <item>@string/menu_app_info</item>
     </string-array>
     

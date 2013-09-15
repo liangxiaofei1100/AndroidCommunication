@@ -1,7 +1,7 @@
 package com.dreamlink.communication.ui.dialog;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.ui.app.AppEntry;
+import com.dreamlink.communication.ui.app.AppInfo;
 import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.image.ImageInfo;
 import com.dreamlink.communication.ui.media.MediaInfo;
@@ -69,7 +69,7 @@ public class FileInfoDialog extends DialogFragment {
 		String result = "";
 		switch (type) {
 		case APP_INFO:
-			AppEntry appEntry = (AppEntry) object;
+			AppInfo appEntry = (AppInfo) object;
 			result = "名称:" + appEntry.getLabel() + ENTER + "类型:"
 					+ (appEntry.isGameApp() ? "游戏" : "应用") + ENTER + "版本:"
 					+ appEntry.getVersion() + ENTER + "包名:"

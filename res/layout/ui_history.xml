@@ -2,15 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/history_bg_default"
-    android:orientation="vertical" >
+    android:background="@drawable/main_bg"
+    android:orientation="vertical" 
+    >
     
-    <TextView 
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="传输记录"
-        />
+    <include
+        android:id="@+id/layout_title"
+        android:layout_alignParentTop="true"
+        layout="@layout/ui_title" />s
     
     <View 
         android:layout_width="fill_parent"

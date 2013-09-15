@@ -5,9 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.ui.app.AppFragment;
-import com.dreamlink.communication.ui.app.AppFragmentActivity;
-import com.dreamlink.communication.ui.app.AppNormalFragment;
 import com.dreamlink.communication.ui.app.GameFragment;
 import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.app.TiandiFragment;
@@ -55,16 +54,18 @@ public class MainFragmentActivity extends FragmentActivity {
 		setContentView(R.layout.ui_main_fragment);
 		int position = getIntent().getIntExtra("position", 0);
 		viewPager = (ViewPager) findViewById(R.id.vp_main_frame);
+		
+		int appid = AppUtil.getAppID(MainFragmentActivity.this);
 		List<Fragment> fragments = new ArrayList<Fragment>();
 		
-		fragments.add(new TiandiFragment());//朝颜天地
-		fragments.add(new NetworkFragment());//网上邻居
-		fragments.add(new RecommendFragment());//精品推荐
+		fragments.add(TiandiFragment.newInstance(appid));//朝颜天地
+		fragments.add(NetworkFragment.newInstance(appid));//网上邻居
+		fragments.add(RecommendFragment.newInstance(appid));//精品推荐
 		fragments.add(ImageFragment.newInstance(3));//图库
-		fragments.add(new MediaAudioFragment());//音频
-		fragments.add(new MediaVideoFragment());//视频
-		fragments.add(new AppFragment());//应用
-		fragments.add(new GameFragment());//游戏
+		fragments.add(MediaAudioFragment.newInstance(appid));//音频
+		fragments.add(MediaVideoFragment.newInstance(appid));//视频
+		fragments.add(AppFragment.newInstance(appid));//应用
+		fragments.add(GameFragment.newInstance(appid));//游戏
 		mAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragments);
 		viewPager.setAdapter(mAdapter);
 		viewPager.setCurrentItem(position);

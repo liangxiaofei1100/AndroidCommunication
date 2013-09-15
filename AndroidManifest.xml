@@ -55,6 +55,9 @@
         <activity 
             android:name="com.dreamlink.communication.ui.MainFragmentActivity"
             android:screenOrientation="portrait">
+            <meta-data
+                android:name="app_id"
+                android:value="113" />
         </activity>
         <activity
             android:name="com.dreamlink.communication.server.ClientListActivity"

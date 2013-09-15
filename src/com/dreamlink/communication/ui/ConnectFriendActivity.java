@@ -135,13 +135,13 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 				updateUI(CONNECTING);
 				ServerInfo info = (ServerInfo) msg.obj;
 				connectHelper.connenctToServer(info);
-				if (!info.getServer_type().equals("wifi-ap")) {
-					//connecting
-					Intent intent = new Intent();
-					intent.putExtra("status", MainUIFrame.CONNECTING);
-					setResult(RESULT_OK, intent);
-					finish();
-				}
+//				if (!info.getServer_type().equals("wifi-ap")) {
+//					//connecting
+//					Intent intent = new Intent();
+//					intent.putExtra("status", MainUIFrame.CONNECTING);
+//					setResult(RESULT_OK, intent);
+//					finish();
+//				}
 				break;
 			case MSG_SEARCH_WIFI_DIRECT_FOUND:
 				break;
@@ -440,7 +440,7 @@ public class ConnectFriendActivity extends Activity implements OnClickListener,
 											msg, Toast.LENGTH_SHORT).show();
 									Intent intent = new Intent();
 									// data
-									intent.putExtra("status", MainUIFrame.CREATING);
+//									intent.putExtra("status", MainUIFrame.CREATING);
 									setResult(RESULT_OK, intent);
 									sever_flag = true;
 									if(null != mTimeoutTimer){

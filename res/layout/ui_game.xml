@@ -2,7 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical" 
+    android:background="@drawable/main_bg"
+    >
     
       <include 
         android:id="@+id/layout_title"
@@ -26,15 +28,16 @@
             android:numColumns="4"
             android:padding="4dip"
             android:stretchMode="columnWidth"
-            android:background="@drawable/main_bg"
             android:verticalSpacing="4dip" >
         </GridView>
 
         <TextView
-            android:id="@+id/game_empty_textview"
+            android:id="@+id/tv_no_game"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
+            android:background="@drawable/no_item_bg"
+            android:visibility="gone"
             android:text="@string/dream_app_content_null" />
         
         <ProgressBar

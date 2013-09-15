@@ -13,8 +13,11 @@ import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.db.MetaData;
+import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.media.MediaAudioFragment;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -47,8 +50,9 @@ import android.widget.GridView;
 public class GameFragment extends Fragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	private static final String TAG = "AppGameFragment";
 	private GridView mGridView;
+	private TextView mEmptyView;
 	private ProgressBar mProgressBar;
-	private AppBrowserAdapter mGameAdapter;
+	private AppAdapter mGameAdapter;
 	
 	private AppReceiver mAppReceiver;
 	private AppManager mAppManager = null;
@@ -66,7 +70,7 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
 	//title views
-	private static List<AppEntry> mGameAppList = new ArrayList<AppEntry>();
+	public static List<AppInfo> mGameAppList = new ArrayList<AppInfo>();
 	
 	private static final int MSG_UPDATE_UI = 0;
 	Handler mHandler = new Handler(){
@@ -82,14 +86,35 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 		};
 	};
 	
+	private int mAppId = -1;
+
+	/**
+	 * Create a new instance of AppFragment, providing "appid" as an
+	 * argument.
+	 */
+	public static GameFragment newInstance(int appid) {
+		GameFragment f = new GameFragment();
+
+		Bundle args = new Bundle();
+		args.putInt(Extra.APP_ID, appid);
+		f.setArguments(args);
+
+		return f;
+	}
+	
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+	};
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.d(TAG, "onCreate begin");
 		mContext = getActivity();
 		
 		View rootView = inflater.inflate(R.layout.ui_game, container, false);
+		mEmptyView = (TextView) rootView.findViewById(R.id.tv_no_game);
 		mGridView = (GridView) rootView.findViewById(R.id.gv_game);
-		mGridView.setEmptyView(rootView.findViewById(R.id.game_empty_textview));
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
 		mProgressBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
@@ -109,9 +134,6 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 		AppListTask appListTask = new AppListTask();
 		appListTask.execute("");
 		
-		mGameAdapter = new AppBrowserAdapter(mContext, AppNormalFragment.mGameAppList);
-		mGridView.setAdapter(mGameAdapter);
-		
 		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
@@ -125,12 +147,12 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText("游戏");
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("(N)");
+		mTitleNum.setText("");
 		mRefreshView.setOnClickListener(this)	;
 		mHistoryView.setOnClickListener(this);
 	}
 	
-	public void setAdapter(List<AppEntry> list){
+	public void setAdapter(List<AppInfo> list){
 //		if (null == mGameAdapter) {
 //			mGameAdapter = new AppBrowserAdapter(mContext, list);
 //			mGridView.setAdapter(mGameAdapter);
@@ -139,14 +161,14 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 //		}
 		
 		//使用上面的方法，再次刷新时无法显示数据
-		mGameAdapter = new AppBrowserAdapter(mContext, list);
+		mGameAdapter = new AppAdapter(mContext, list);
 		mGridView.setAdapter(mGameAdapter);
 	}
 	
-	public class AppListTask extends AsyncTask<String, String, List<AppEntry>> {
+	public class AppListTask extends AsyncTask<String, String, List<AppInfo>> {
 
 		@Override
-		protected List<AppEntry> doInBackground(String... params) {
+		protected List<AppInfo> doInBackground(String... params) {
 			mGameAppList.clear();
 
 			// Retrieve all known applications.
@@ -155,24 +177,25 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 				apps = new ArrayList<ApplicationInfo>();
 			}
 			for (int i = 0; i < apps.size(); i++) {
-				ApplicationInfo appInfo = apps.get(i);
+				ApplicationInfo applicationInfo = apps.get(i);
 				// 获取非系统应用
-				int flag1 = appInfo.flags & ApplicationInfo.FLAG_SYSTEM;
+				int flag1 = applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM;
 				// 本来是系统程序，被用户手动更新后，该系统程序也成为第三方应用程序了
-				int flag2 = appInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
+				int flag2 = applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
 				if ((flag1 <= 0) || flag2 != 0) {
-					AppEntry entry = new AppEntry(mContext, apps.get(i));
-					entry.setPackageName(appInfo.packageName);
+					AppInfo entry = new AppInfo(mContext, apps.get(i));
+					entry.setPackageName(applicationInfo.packageName);
+					entry.setAppIcon(applicationInfo.loadIcon(pm));
 					entry.loadLabel();
 					entry.loadVersion();
-					boolean is_game_app = mAppManager.isGameApp(appInfo.packageName);
+					boolean is_game_app = mAppManager.isGameApp(applicationInfo.packageName);
 					entry.setIsGameApp(is_game_app);
 					if (is_game_app) {
 						mGameAppList.add(entry);
 					}
 					
-					if (DreamConstant.PACKAGE_NAME.equals(appInfo.packageName)) {
-						DreamUtil.package_source_dir = appInfo.sourceDir;
+					if (DreamConstant.PACKAGE_NAME.equals(applicationInfo.packageName)) {
+						DreamUtil.package_source_dir = applicationInfo.sourceDir;
 					}
 					publishProgress("");
 				} else {
@@ -194,9 +217,14 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 		}
 
 		@Override
-		protected void onPostExecute(List<AppEntry> result) {
+		protected void onPostExecute(List<AppInfo> result) {
 			super.onPostExecute(result);
 			mProgressBar.setVisibility(View.GONE);
+			if (mGameAppList.size() <= 0) {
+				mEmptyView.setVisibility(View.VISIBLE);
+			}else {
+				mEmptyView.setVisibility(View.GONE);
+			}
 //			mAdapter1 = new AppBrowserAdapter(mContext, mGameAppList);
 //			mGridView.setAdapter(mAdapter1);
 			
@@ -219,10 +247,10 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 	/**
      * Perform alphabetical comparison of application entry objects.
      */
-    public static final Comparator<AppEntry> ALPHA_COMPARATOR = new Comparator<AppEntry>() {
+    public static final Comparator<AppInfo> ALPHA_COMPARATOR = new Comparator<AppInfo>() {
         private final Collator sCollator = Collator.getInstance();
         @Override
-        public int compare(AppEntry object1, AppEntry object2) {
+        public int compare(AppInfo object1, AppInfo object2) {
             return sCollator.compare(object1.getLabel(), object2.getLabel());
         }
     };
@@ -230,16 +258,7 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		ApplicationInfo applicationInfo = null;
-		switch (parent.getId()) {
-		case R.id.game_gridview_1:
-			applicationInfo = (ApplicationInfo) AppNormalFragment.mMyAppList.get(position).getApplicationInfo();
-			break;
-		case R.id.game_gridview_2:
-			applicationInfo = (ApplicationInfo) AppNormalFragment.mGameAppList.get(position).getApplicationInfo();
-			break;
-		default:
-			break;
-		}
+		applicationInfo = (ApplicationInfo) mGameAppList.get(position).getApplicationInfo();
 		String packageName = applicationInfo.packageName;
 		if (DreamConstant.PACKAGE_NAME.equals(packageName)) {
 			mNotice.showToast(R.string.app_has_started);
@@ -257,16 +276,15 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-		final List<AppEntry> appList2 = AppNormalFragment.mGameAppList;
-		final AppEntry appEntry2 = appList2.get(position);
-		new AlertDialog.Builder(mContext).setIcon(appEntry2.getIcon()).setTitle(appEntry2.getLabel())
+		final AppInfo appInfo = mGameAppList.get(position);
+		new AlertDialog.Builder(mContext).setIcon(appInfo.getAppIcon()).setTitle(appInfo.getLabel())
 				.setItems(R.array.app_menu_game, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						switch (which) {
 						case 0:
 							// open
-							Intent intent = pm.getLaunchIntentForPackage(appEntry2.getPackageName());
+							Intent intent = pm.getLaunchIntentForPackage(appInfo.getPackageName());
 							if (null != intent) {
 								startActivity(intent);
 							} else {
@@ -276,35 +294,34 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 							break;
 						case 1:
 							// send
-							FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appEntry2.getInstallPath()));
+							FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
 
 							FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
 							fileSendUtil.sendFile(fileTransferInfo);
 							break;
 						case 2:
 							// uninstall
-							mAppManager.uninstallApp(appEntry2.getPackageName());
+							mAppManager.uninstallApp(appInfo.getPackageName());
 							break;
 						case 3:
 							// app info
-							mAppManager.showInfoDialog(appEntry2);
+							mAppManager.showInfoDialog(appInfo);
 							break;
 						case 4:
 							// move to app
-							appList2.remove(position);
-
-							int index = DreamUtil.getInsertIndex(AppNormalFragment.mNormalAppLists, appEntry2);
-							if (AppNormalFragment.mNormalAppLists.size() == index) {
-								AppNormalFragment.mNormalAppLists.add(appEntry2);
+							mGameAppList.remove(position);
+							int index = DreamUtil.getInsertIndex(AppFragment.mAppLists, appInfo);
+							if (AppFragment.mAppLists.size() == index) {
+								AppFragment.mAppLists.add(appInfo);
 							} else {
-								AppNormalFragment.mNormalAppLists.add(index, appEntry2);
+								AppFragment.mAppLists.add(index, appInfo);
 							}
-
-							// delete from db
-							Uri uri = Uri.parse(MetaData.Game.CONTENT_URI + "/" + appEntry2.getPackageName());
+//							// delete from db
+							Uri uri = Uri.parse(MetaData.Game.CONTENT_URI + "/" + appInfo.getPackageName());
 							mContext.getContentResolver().delete(uri, null, null);
 
-							mGameAdapter.notifyDataSetChanged();
+							notifyUpdateUI();
+							
 							mAppManager.updateAppUI();
 							break;
 
@@ -315,6 +332,14 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 				}).create().show();
 		return true;
 	}
+	
+	public void notifyUpdateUI(){
+		mGameAdapter.notifyDataSetChanged();
+		Message message = mHandler.obtainMessage();
+		message.arg1 = mGameAppList.size();
+		message.what = MSG_UPDATE_UI;
+		message.sendToTarget();
+	}
 
 	
 	//recevier that can update ui
@@ -324,7 +349,9 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 			String action = intent.getAction();
 			Log.d(TAG, "get receiver:" + action);
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
-				mGameAdapter.notifyDataSetChanged();
+				notifyUpdateUI();
+			}else if (AppManager.ACTION_SEND_TO_GAME.equals(action)) {
+				
 			}
 		}
     }
@@ -338,7 +365,21 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		
+		switch (v.getId()) {
+		case R.id.iv_refresh:
+			
+			break;
+			
+		case R.id.iv_history:
+			Intent intent = new Intent();
+			intent.putExtra(Extra.APP_ID, mAppId);
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
+			break;
+
+		default:
+			break;
+		}
 	}
 	
 }

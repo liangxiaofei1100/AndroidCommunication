@@ -20,7 +20,7 @@ import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.Command;
 import com.dreamlink.communication.ui.DreamConstant.Cmd;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.MainUIFrame2;
 import com.dreamlink.communication.ui.dialog.FileExistDialog;
 import com.dreamlink.communication.ui.dialog.FileExistDialog.onMenuItemClickListener;
 import com.dreamlink.communication.ui.dialog.FileTransferDialog;
@@ -825,7 +825,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		if (null == mCurrentConnectUser) {
 			this.finish();
 		}else {
-			Intent intent = new Intent(RemoteShareActivity.this, MainUIFrame.class);
+			Intent intent = new Intent(RemoteShareActivity.this, MainUIFrame2.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
 			startActivity(intent);
 		}

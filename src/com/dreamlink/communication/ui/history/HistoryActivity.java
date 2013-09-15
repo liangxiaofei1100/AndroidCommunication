@@ -26,6 +26,7 @@ import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
 
+import android.R.integer;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,15 +36,19 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
+import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class HistoryActivity extends BaseFragmentActivity implements OnFileSendListener,OnFileTransportListener,
+public class HistoryActivity extends FragmentActivity implements OnFileSendListener,OnFileTransportListener,
 					OnReceiveListener, OnScrollListener, OnItemClickListener {
 	private static final String TAG = "HistoryActivity";
 	private int mAppId = -1;
@@ -52,6 +57,13 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 	//view
 	private TextView mStorageTV;
 	private ListView mHistoryMsgLV;
+	
+	//title views
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
 	
 	//adapter
 	private HistoryMsgAdapter mAdapter;
@@ -149,9 +161,10 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_history);
 		mContext = this;
-		mAppId = AppUtil.getAppID(getParent());
+		mAppId = getIntent().getIntExtra(Extra.APP_ID, -1);
 		mNotice = new Notice(mContext);
 		communicationManager = SocketCommunicationManager.getInstance(mContext);
 		communicationManager.registerOnFileTransportListener(this, mAppId);
@@ -162,6 +175,7 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		IntentFilter filter = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
 		registerReceiver(historyReceiver, filter);
 		
+		initTitleVIews();
 		initView();
 	}
 	
@@ -198,6 +212,20 @@ public class HistoryActivity extends BaseFragmentActivity implements OnFileSendL
 		mAdapter.setStatus(HistoryManager.STATUS_DEFAULT);
 		mHistoryMsgLV.setAdapter(mAdapter);
 		mHistoryMsgLV.setSelection(0);
+	}
+	
+	private void initTitleVIews(){
+		RelativeLayout titleLayout = (RelativeLayout)findViewById(R.id.layout_title);
+		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
+		mTitleIcon.setImageResource(R.drawable.title_tiandi);
+		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
+		mTitleView.setText("传输记录");
+		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
+		mTitleNum.setText("");
+		mRefreshView.setVisibility(View.GONE);
+		mHistoryView.setVisibility(View.GONE);
 	}
 	
 	public void sendFile(FileTransferInfo fileInfo, List<User> list){
