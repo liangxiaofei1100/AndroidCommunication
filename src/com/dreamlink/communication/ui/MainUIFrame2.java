@@ -70,6 +70,7 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 	private ImageView mTransferView,mSettingView, mHelpView;
 	private ImageView mUserIconView;
 	private TextView mUserNameView;
+	private TextView mNetWorkStatusView;
 	
 	private UserManager mUserManager = null;
 	private User mLocalUser;
@@ -97,6 +98,17 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
 	}
 	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Log.d(TAG, "onResume");
+		if (mSocketComMgr.getCommunications().isEmpty()) {
+			mNetWorkStatusView.setText("未连接");
+		}else {
+			mNetWorkStatusView.setText("已连接");
+		}
+	}
+	
 	public void initView(){
 		mUserIconView = (ImageView) findViewById(R.id.iv_usericon);
 		mTransferView = (ImageView) findViewById(R.id.iv_filetransfer);
@@ -104,6 +116,7 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 		mHelpView = (ImageView) findViewById(R.id.iv_help);
 		mUserNameView = (TextView) findViewById(R.id.tv_username);
 		mUserNameView.setText(mLocalUser.getUserName());
+		mNetWorkStatusView = (TextView) findViewById(R.id.tv_network_status);
 		mUserIconView.setOnClickListener(this);
 		mTransferView.setOnClickListener(this);
 		mSettingView.setOnClickListener(this);
