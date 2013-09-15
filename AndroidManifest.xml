@@ -240,6 +240,14 @@
             android:name="com.dreamlink.communication.ui.history.HistoryActivity"
             >
         </activity>
+<!--         <receiver  -->
+<!--             android:name="com.dreamlink.communication.ui.history.HistoryActivity$HistoryReceiver" -->
+<!--             > -->
+<!--             <intent-filter> -->
+<!--                 <action android:name="com.dreamlink.communication.sendfile"/> -->
+<!--             </intent-filter> -->
+<!--         </receiver> -->
+        
         <activity
             android:name="com.dreamlink.communication.ui.history.HistoryActivityTest"
             >

@@ -13,6 +13,7 @@ import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.ListContextMenu;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.PopupView;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
@@ -182,6 +183,11 @@ public class FileBrowserFragment extends BaseFragment implements
 		case R.id.ram_select_imageview:
 			mPopupView.showAsDropDown(v);
 			break;
+		case R.id.iv_refresh:
+			break;
+		case R.id.iv_history:
+			MainFragmentActivity.instance.goToHistory();
+			break;
 		default:
 			mTabManager.updateNavigationBar(v.getId(), storge_type);
 			break;
@@ -192,7 +198,6 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		FileInfo fileInfo = mAllLists.get(position);
-		System.out.println("fileino.type=" + fileInfo.type);
 		int top = view.getTop();
 		if (fileInfo.isDir) {
 			addToNavigationList(mCurrentPath, top, fileInfo);

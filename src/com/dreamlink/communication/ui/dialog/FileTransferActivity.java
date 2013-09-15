@@ -118,7 +118,6 @@ public class FileTransferActivity extends Activity implements OnClickListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		System.out.println("oncreate start");
 		setContentView(R.layout.ui_filetransfer_dialog);
 		
 		mInstance = this;
@@ -144,7 +143,6 @@ public class FileTransferActivity extends Activity implements OnClickListener{
 		onProgressChanged();
 		
 //		setResult(RESULT_OK);
-		System.out.println("oncreate end");
 	}
 	
 	private void onProgressChanged(){
