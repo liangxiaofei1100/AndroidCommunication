@@ -261,13 +261,16 @@
         </activity>
         <activity
             android:name="com.dreamlink.communication.ui.network.CreateNetworkActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait" android:theme="@style/MyDialogStyle">
         </activity>
         <activity
             android:name="com.dreamlink.communication.ui.network.JoinNetworkActivity"
             android:screenOrientation="portrait" >
         </activity>
-
+        <activity
+            android:name="com.dreamlink.communication.ui.LoginActivity"
+            android:screenOrientation="portrait" >
+		</activity>
         <provider
             android:name="com.dreamlink.communication.ui.db.DreamProvider"
             android:authorities="com.dreamlink.communication.db.comprovider">

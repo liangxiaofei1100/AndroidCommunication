@@ -59,6 +59,10 @@ public class StartLoader extends Activity{
 		};
 	};
 	
+	public void launchLogin(){
+		
+	}
+	
 	public void launchInfo(){
 		Intent intent = new Intent();
 		intent.putExtra(Extra.IS_FIRST_START, true);
