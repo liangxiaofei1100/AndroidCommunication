@@ -29,6 +29,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -191,4 +192,41 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 		// Stop record log and close log file.
 		Log.stopAndSave();
 	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			showExitDialog();
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
+	private void showExitDialog() {
+		new AlertDialog.Builder(this)
+				.setTitle(R.string.exit_app)
+				.setMessage(R.string.confirm_exit)
+				.setPositiveButton(android.R.string.ok,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								mNotificationMgr.cancelNotification();
+
+								MainUIFrame2.this.finish();
+							}
+						})
+				.setNeutralButton(R.string.hide,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								moveTaskToBack(true);
+								mNotificationMgr
+										.updateNotification(NotificationMgr.STATUS_DEFAULT);
+							}
+						}).setNegativeButton(android.R.string.cancel, null)
+				.create().show();
+	}
+	
 }
