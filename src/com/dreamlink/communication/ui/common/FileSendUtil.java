@@ -9,6 +9,7 @@ import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.lib.util.Notice;
 
 import android.app.AlertDialog;
@@ -19,6 +20,7 @@ import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.os.Bundle;
 
 public class FileSendUtil {
+	private static final String TAG = "FileSendUtil";
 	private Context context;
 	
 	public static final int TYPE_APK = 0;
@@ -49,7 +51,7 @@ public class FileSendUtil {
 			ArrayList<User> userList = new ArrayList<User>();
 			User user = mUserManager.getUser(userNameList.get(0));
 			userList.add(user);
-			System.out.println("before send.fileinfo.filepath=" + fileTransferInfo.getFilePath());
+			Log.d(TAG, "before send.fileinfo.filepath=" + fileTransferInfo.getFilePath());
 			doSend(userList, fileTransferInfo);
 		}else {
 			//if there are two or more user,need show dialog for user choose

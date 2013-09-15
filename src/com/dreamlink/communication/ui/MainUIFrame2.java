@@ -12,6 +12,7 @@ import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.AllowLoginDialog;
 import com.dreamlink.communication.MainActivity;
+import com.dreamlink.communication.NetworkStatus;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
@@ -39,6 +40,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -118,6 +120,18 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 		mUserNameView.setText(mLocalUser.getUserName());
 		mNetWorkStatusView = (TextView) findViewById(R.id.tv_network_status);
 		mUserIconView.setOnClickListener(this);
+		//for test
+		mUserIconView.setOnLongClickListener(new OnLongClickListener() {
+			
+			@Override
+			public boolean onLongClick(View v) {
+				// TODO Auto-generated method stub
+				NetworkStatus status = new NetworkStatus(mContext);
+				status.show();
+				return true;
+			}
+		});
+		//for test
 		mTransferView.setOnClickListener(this);
 		mSettingView.setOnClickListener(this);
 		mHelpView.setOnClickListener(this);
