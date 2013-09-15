@@ -116,7 +116,6 @@
             android:id="@+id/gv_game"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_below="@+id/ll_game_title"
             android:gravity="center"
             android:horizontalSpacing="4dip"
             android:numColumns="4"
