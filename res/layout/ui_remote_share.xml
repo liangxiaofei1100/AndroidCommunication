@@ -3,85 +3,66 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/main_bg"
-     >
+    android:background="@drawable/main_bg" >
 
-    <include 
+    <include
         android:id="@+id/title"
-        layout="@layout/ui_title"/>
-    
-    <LinearLayout
-        android:id="@+id/unconnect_layout"
+        layout="@layout/ui_title" />
+
+    <TextView
+        android:id="@+id/tv_no_connection_tips"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:gravity="center"
-        android:orientation="vertical" 
-        android:visibility="gone"
-        >
-
-        <TextView
-            android:id="@+id/tip_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/no_connect"
-            />
-        
-        <Button 
-            android:id="@+id/access_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_ok"
-            android:text="@string/connect_access"
-            />
-    </LinearLayout>
+        android:text="@string/no_connect"
+        android:textSize="20sp" />
 
     <!-- show remote file list -->
+
     <RelativeLayout
         android:id="@+id/list_layout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true" >
+        android:layout_below="@id/title" >
 
         <LinearLayout
             android:id="@+id/menu_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" 
+            android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:orientation="horizontal"
-            android:weightSum="3"
-            >
-            <ImageButton 
+            android:weightSum="3" >
+
+            <ImageButton
                 android:id="@+id/root_view"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:src="@drawable/ic_home"
-                />
-            <ImageButton 
+                android:src="@drawable/ic_home" />
+
+            <ImageButton
                 android:id="@+id/up_view"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:src="@drawable/title_back_pressed"
-                />
-            <ImageButton 
+                android:src="@drawable/title_back_pressed" />
+
+            <ImageButton
                 android:id="@+id/refresh_view"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:src="@drawable/menu_refresh"
-                />
+                android:src="@drawable/menu_refresh" />
         </LinearLayout>
 
         <ListView
             android:id="@+id/file_listview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fastScrollEnabled="true"
-            android:layout_below="@+id/menu_layout" >
+            android:layout_below="@+id/menu_layout"
+            android:fastScrollEnabled="true" >
         </ListView>
-        
+
         <LinearLayout
             android:id="@+id/loading_layout"
             android:layout_width="wrap_content"
@@ -94,70 +75,69 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
-
     </RelativeLayout>
-    
+
     <!-- Remote file share server list -->
-    <RelativeLayout 
+
+    <RelativeLayout
         android:id="@+id/remote_share_server_list"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:visibility="invisible"
-        >
-        <TextView 
+        android:layout_below="@id/title"
+        android:visibility="invisible" >
+
+        <TextView
             android:id="@+id/serverlist_text"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="@color/black"
-            android:textColor="@color/white"
-            android:text="@string/remote_share_server_list_msg"
             android:layout_alignParentTop="true"
-            />
-        
-        <LinearLayout 
+            android:background="@color/black"
+            android:text="@string/remote_share_server_list_msg"
+            android:textColor="@color/white" />
+
+        <LinearLayout
             android:id="@+id/create_remote_share_layout"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_alignParentBottom="true"
             android:gravity="center"
-            >
-            
-            <Button 
+            android:orientation="vertical" >
+
+            <Button
                 android:id="@+id/search_share"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text="@string/search_remote_share"
-                />
-            
-            <Button 
+                android:text="@string/search_remote_share" 
+                android:background="@drawable/button_bg"
+                android:visibility="gone"/>
+
+            <Button
                 android:id="@+id/create_share"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:text="@string/create_remote_share"
-                />
-            
+                android:background="@drawable/button_bg" />
         </LinearLayout>
-        
-        <ListView 
+
+        <ListView
             android:id="@+id/server_listview"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/serverlist_text"
             android:layout_above="@+id/create_remote_share_layout"
-            ></ListView>
-        
+            android:layout_below="@+id/serverlist_text" >
+        </ListView>
     </RelativeLayout>
-    
+
     <!-- server ui -->
-    <Button 
+
+    <Button
         android:id="@+id/stop_server_button"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Server starting...,Click to stop it."
         android:layout_centerInParent="true"
-        />
+        android:text="@string/stop_file_share" 
+        android:background="@drawable/button_bg"/>
 
 </RelativeLayout>

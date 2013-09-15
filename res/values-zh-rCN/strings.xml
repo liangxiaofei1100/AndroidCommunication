@@ -5,7 +5,7 @@
     >
     <string name="fileshare_label">远程服务器共享</string>
     <string name="access_server">访问远程服务器</string>
-    <string name="no_connect">未连接</string>
+    <string name="no_connect">未连接，请先建立连接</string>
     
     <string name="section_remote">远程服务器</string>
     <string name="section_local">本地文件</string>

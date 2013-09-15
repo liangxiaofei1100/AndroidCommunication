@@ -22,8 +22,11 @@ public class MainUIAdapter extends BaseAdapter{
 			R.drawable.music_normal, R.drawable.video_normal,
 			R.drawable.app_normal, R.drawable.game_normal
 	};
-	private int[] colors = {0x4e0000,0x1f0068,0x004900,0x000,0x000,0x000,0x000,0x000};
-	
+	private int[] colors = { R.color.text_color_orange,
+			R.color.text_color_blue, R.color.text_color_green,
+			R.color.transparent, R.color.transparent, R.color.transparent,
+			R.color.transparent, R.color.transparent };
+
 	private GridView gridView;
 	
 	public MainUIAdapter(Context context, GridView gridView){
@@ -45,7 +48,7 @@ public class MainUIAdapter extends BaseAdapter{
 		imageView.setImageResource(icons[pos]);
 		nameView.setText(menus[pos]);
 		tipView.setText(tips[pos]);
-		tipView.setTextColor(0x4e0000);
+		tipView.setTextColor(colors[pos]);
 		
 		int row = 4; // 设置GrideView的行数
 		int h = (gridView.getHeight() - 20 * (row - 1)) / row; // 设置GridView每行的高度；

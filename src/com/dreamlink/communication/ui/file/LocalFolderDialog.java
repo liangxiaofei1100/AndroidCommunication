@@ -13,11 +13,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -50,12 +52,20 @@ public class LocalFolderDialog extends Activity implements OnItemClickListener, 
 	private boolean isFirst = true;
 
 	public static String mCurrentPath;
+	// Title
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_localfolder);
-		setTitle("文件拷贝");
 
+		initTitle();
+		
 		mNotice = new Notice(getApplicationContext());
 
 		mListView = (ListView) findViewById(R.id.listview);
@@ -91,6 +101,24 @@ public class LocalFolderDialog extends Activity implements OnItemClickListener, 
 			mMenuLayout.setVisibility(View.VISIBLE);
 		}
 	};
+	
+	private void initTitle() {
+		// Title icon
+		mTitleIcon = (ImageView) findViewById(R.id.iv_title_icon);
+		mTitleIcon.setImageResource(R.drawable.network_neighborhood_share);
+		// Title text
+		mTitleView = (TextView) findViewById(R.id.tv_title_name);
+		mTitleView.setText(R.string.network_share);
+		// Title number
+		mTitleNum = (TextView) findViewById(R.id.tv_title_num);
+		mTitleNum.setVisibility(View.GONE);
+		// Refresh icon
+		mRefreshView = (ImageView) findViewById(R.id.iv_refresh);
+		mRefreshView.setVisibility(View.GONE);
+		// History icon
+		mHistoryView = (ImageView) findViewById(R.id.iv_history);
+		mHistoryView.setVisibility(View.GONE);
+	}
 
 	public void browserTo(File file) {
 		if (file.isDirectory()) {

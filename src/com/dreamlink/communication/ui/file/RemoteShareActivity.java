@@ -68,8 +68,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	private RelativeLayout mListLayout;
 	private LinearLayout mLoadingLayout;
 	//show tip msg
-	private LinearLayout mUnconnectLayout = null;
-	private Button mAccessBtn;
+	private TextView mNoConnectionTips = null;
 	private Button mStopServerBtn;
 	//show remote share server list
 	private RelativeLayout mServerListLayout;
@@ -143,7 +142,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 				mAdapter.notifyDataSetChanged();
 				break;
 			case USER_DISCONNECTED:
-				mUnconnectLayout.setVisibility(View.VISIBLE);
+				mNoConnectionTips.setVisibility(View.VISIBLE);
 				mServerListLayout.setVisibility(View.INVISIBLE);
 				mListLayout.setVisibility(View.INVISIBLE);
 				mStopServerBtn.setVisibility(View.INVISIBLE);
@@ -184,10 +183,8 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		mListView = (ListView) findViewById(R.id.file_listview);
 		mListLayout = (RelativeLayout) findViewById(R.id.list_layout);
 		mLoadingLayout = (LinearLayout) findViewById(R.id.loading_layout);
-		mUnconnectLayout = (LinearLayout) findViewById(R.id.unconnect_layout);
-		mAccessBtn = (Button) findViewById(R.id.access_button);
+		mNoConnectionTips = (TextView) findViewById(R.id.tv_no_connection_tips);
 		mStopServerBtn = (Button) findViewById(R.id.stop_server_button);
-		mAccessBtn.setOnClickListener(this);
 		mStopServerBtn.setOnClickListener(this);
 		
 		mServerListLayout = (RelativeLayout) findViewById(R.id.remote_share_server_list);
@@ -210,14 +207,14 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		
 		// is connected to server
 		if (mSocketMgr.getCommunications().isEmpty()) {
-			mUnconnectLayout.setVisibility(View.VISIBLE);
+			mNoConnectionTips.setVisibility(View.VISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.INVISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
 		} else {
 			mSocketMgr.registerOnCommunicationListenerExternal(this, mAppId);
 			
-			mUnconnectLayout.setVisibility(View.INVISIBLE);
+			mNoConnectionTips.setVisibility(View.INVISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.VISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
@@ -291,7 +288,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			setTitle("已连接到" + mCurrentConnectUser.getUserName());
 			sendMsgToSingle(cmdMsg);
 			
-			mUnconnectLayout.setVisibility(View.INVISIBLE);
+			mNoConnectionTips.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.INVISIBLE);
 			mListLayout.setVisibility(View.VISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
@@ -347,7 +344,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
-		case R.id.access_button:
+		case R.id.iv_refresh:
 			// tell server that i want look u sdcard files
 			if (mSocketMgr.getCommunications().isEmpty()) {
 				new AlertDialog.Builder(mContext)
@@ -355,7 +352,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 					.setPositiveButton(android.R.string.ok, null)
 					.create().show();
 			}else {
-				mUnconnectLayout.setVisibility(View.INVISIBLE);
+				mNoConnectionTips.setVisibility(View.INVISIBLE);
 				mServerListLayout.setVisibility(View.VISIBLE);
 				mListLayout.setVisibility(View.INVISIBLE);
 				mStopServerBtn.setVisibility(View.INVISIBLE);
@@ -367,7 +364,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			intent2.putExtra("app_id", mAppId);
 			startService(intent2);
 			
-			mUnconnectLayout.setVisibility(View.INVISIBLE);
+			mNoConnectionTips.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.INVISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
 			mStopServerBtn.setVisibility(View.VISIBLE);
@@ -379,7 +376,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			Intent stopIntent = new Intent(mContext, RemoteShareService.class);
 			stopService(stopIntent);
 			
-			mUnconnectLayout.setVisibility(View.INVISIBLE);
+			mNoConnectionTips.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.VISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
@@ -796,7 +793,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 			
 			setTitle("未连接");
 			
-			mUnconnectLayout.setVisibility(View.INVISIBLE);
+			mNoConnectionTips.setVisibility(View.INVISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.VISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
@@ -813,22 +810,9 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	}
 	
 	private void updateUI(int status){
-		mUnconnectLayout.setVisibility(View.INVISIBLE);
+		mNoConnectionTips.setVisibility(View.INVISIBLE);
 		mServerListLayout.setVisibility(View.INVISIBLE);
 		mListLayout.setVisibility(View.INVISIBLE);
 		mStopServerBtn.setVisibility(View.VISIBLE);
 	}
-	
-	@Override
-	public void onBackPressed() {
-		Log.d(TAG, "onBackPressed");
-		if (null == mCurrentConnectUser) {
-			this.finish();
-		}else {
-			Intent intent = new Intent(RemoteShareActivity.this, MainUIFrame2.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
-			startActivity(intent);
-		}
-	}
-	
 }
