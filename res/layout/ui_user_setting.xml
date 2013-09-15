@@ -2,59 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical" 
+    android:background="@drawable/main_bg">
 
-    <!-- main ui title -->
-    <RelativeLayout
-        android:id="@+id/main_tab_banner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center" >
-
-        <!-- 标题 -->
-        <RelativeLayout
-            android:id="@+id/title_banner_two"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" 
-            android:layout_alignParentRight="true"
-            >
-            <TextView 
-                android:id="@+id/show_info"
-                android:layout_width="wrap_content"
-            	android:layout_height="wrap_content" 
-            	android:gravity="center"
-            	android:text="@string/name_setting"
-            	android:textColor="@color/white"
-            	android:background="@drawable/title_main_bg"
-                />
-            
-            <RelativeLayout 
-                android:id="@+id/title_right_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/title_right_bg"
-                android:layout_alignParentRight="true"
-                >
-                <ImageView
-                    android:id="@+id/complete_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginTop="20dp"
-                    android:src="@drawable/title_complete_normal" />
-                
-                <TextView
-                    android:id="@+id/two_saved_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/complete_view"
-                    android:layout_centerHorizontal="true"
-                    android:text="@string/save"
-                    android:textColor="@color/white" />
-
-            </RelativeLayout>
-        </RelativeLayout>
-    </RelativeLayout>
+    <!-- title -->
+    <include layout="@layout/ui_title"/>
     
     <ScrollView 
         android:layout_width="fill_parent"
@@ -165,7 +117,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/save_setting"
-                android:background="@drawable/button_cancel"
+                android:background="@drawable/button_bg"
                 />
         </LinearLayout>
     </ScrollView>

@@ -16,6 +16,7 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -30,8 +31,7 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 	private EditText mUserName_Edit;
 	private Button mSaveButton;
 	private TextView mIpVersionView;
-	//title save layout
-	private RelativeLayout mRightLayout;
+	
 	private String mUserName;
 	
 	private UserHelper mUserHelper;
@@ -41,11 +41,20 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 	
 	private boolean mIsFirstStart = false;
 	
+	// Title
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_user_setting);
+		
+		initTitle();
 		
 		mUserName_Edit = (EditText) findViewById(R.id.name_editview);
 		mSaveButton = (Button) findViewById(R.id.save_button);
@@ -53,9 +62,6 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 		
 		mUserName = android.os.Build.MANUFACTURER;
 		
-		mRightLayout = (RelativeLayout) findViewById(R.id.title_right_layout);
-		
-		mRightLayout.setOnClickListener(this);
 		mSaveButton.setOnClickListener(this);
 		
 		mUserHelper = new UserHelper(this);
@@ -76,6 +82,24 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 						mUser.getSystemInfo().mAndroidVersionCode));
 		
 		mIsFirstStart = getIntent().getBooleanExtra(Extra.IS_FIRST_START, false);
+	}
+	
+	private void initTitle() {
+		// Title icon
+		mTitleIcon = (ImageView) findViewById(R.id.iv_title_icon);
+		mTitleIcon.setImageResource(R.drawable.user_icon_default);
+		// Title text
+		mTitleView = (TextView) findViewById(R.id.tv_title_name);
+		mTitleView.setText(R.string.user_info_setting);
+		// Title number
+		mTitleNum = (TextView) findViewById(R.id.tv_title_num);
+		mTitleNum.setVisibility(View.GONE);
+		// Refresh icon
+		mRefreshView = (ImageView) findViewById(R.id.iv_refresh);
+		mRefreshView.setVisibility(View.GONE);
+		// History icon
+		mHistoryView = (ImageView) findViewById(R.id.iv_history);
+		mHistoryView.setVisibility(View.GONE);
 	}
 
 	@Override

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_bg"
+    android:orientation="vertical" >
+
+    <!-- title -->
+
+    <include
+        android:id="@+id/title"
+        layout="@layout/ui_title" />
+
+    <RadioGroup
+        android:id="@+id/radionGroup"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+
+        <RadioButton
+            android:id="@+id/radio_wifi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wifi Server" />
+
+        <RadioButton
+            android:id="@+id/radio_wifi_ap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Wifi Ap Server" />
+
+        <RadioButton
+            android:id="@+id/radio_wifi_direct"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wifi-Direct Server" />
+    </RadioGroup>
+
+</RelativeLayout>
