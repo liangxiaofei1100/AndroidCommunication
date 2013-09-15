@@ -108,14 +108,17 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text="@string/search_remote_share" />
+                android:text="@string/search_remote_share" 
+                android:background="@drawable/button_bg"
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/create_share"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text="@string/create_remote_share" />
+                android:text="@string/create_remote_share"
+                android:background="@drawable/button_bg" />
         </LinearLayout>
 
         <ListView
@@ -134,6 +137,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="Server starting...,Click to stop it." />
+        android:text="@string/stop_file_share" 
+        android:background="@drawable/button_bg"/>
 
 </RelativeLayout>

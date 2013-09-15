@@ -344,7 +344,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
-		case R.id.access_button:
+		case R.id.iv_refresh:
 			// tell server that i want look u sdcard files
 			if (mSocketMgr.getCommunications().isEmpty()) {
 				new AlertDialog.Builder(mContext)
@@ -815,17 +815,4 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		mListLayout.setVisibility(View.INVISIBLE);
 		mStopServerBtn.setVisibility(View.VISIBLE);
 	}
-	
-	@Override
-	public void onBackPressed() {
-		Log.d(TAG, "onBackPressed");
-		if (null == mCurrentConnectUser) {
-			this.finish();
-		}else {
-			Intent intent = new Intent(RemoteShareActivity.this, MainUIFrame2.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
-			startActivity(intent);
-		}
-	}
-	
 }

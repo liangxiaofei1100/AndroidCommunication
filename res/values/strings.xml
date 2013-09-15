@@ -64,4 +64,5 @@
     <string name="join_network_tips_connected">已连接</string>
     <string name="network_share">远程共享</string>
     <string name="network_share_tips">远程共享您的文件或最爱</string>
+    <string name="stop_file_share">文件共享已开启，点击停止共享</string>
 </resources>
