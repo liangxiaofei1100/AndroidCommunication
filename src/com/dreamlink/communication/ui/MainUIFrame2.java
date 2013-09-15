@@ -234,10 +234,13 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 		return true;
 	}
 
+	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		// when finish，cloase all connect
+		User tem=UserManager.getInstance().getLocalUser();
+		tem.setUserID(0);
 		mSocketComMgr.closeAllCommunication();
 		// Disable wifi AP.
 		NetWorkUtil.setWifiAPEnabled(mContext, null, false);
