@@ -1,31 +1,25 @@
 package com.dreamlink.communication.ui;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 public class LoginActivity extends Activity implements View.OnClickListener {
 	private Button mLoginButton;
 
-	// Title
-	private ImageView mTitleIcon;
-	private TextView mTitleView;
-	private TextView mTitleNum;
-	private ImageView mRefreshView;
-	private ImageView mHistoryView;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_login);
 
-		initTitle();
 		initView();
 	}
 
@@ -34,35 +28,33 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 		mLoginButton.setOnClickListener(this);
 	}
 
-	private void initTitle() {
-		// Title icon
-		mTitleIcon = (ImageView) findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.user_icon_default);
-		// Title text
-		mTitleView = (TextView) findViewById(R.id.tv_title_name);
-		mTitleView.setText(R.string.user_info_setting);
-		// Title number
-		mTitleNum = (TextView) findViewById(R.id.tv_title_num);
-		mTitleNum.setVisibility(View.GONE);
-		// Refresh icon
-		mRefreshView = (ImageView) findViewById(R.id.iv_refresh);
-		mRefreshView.setVisibility(View.GONE);
-		// History icon
-		mHistoryView = (ImageView) findViewById(R.id.iv_history);
-		mHistoryView.setVisibility(View.GONE);
-	}
-
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.btn_login:
-			Intent intent = new Intent();
-			intent.setClass(this, UserInfoSetting.class);
-			
+			if (UserHelper.getUserName(getApplicationContext()) == null) {
+				launchInfo();
+			} else {
+				launchMain();
+			}
+			finish();
 			break;
 
 		default:
 			break;
 		}
+	}
+
+	public void launchInfo() {
+		Intent intent = new Intent();
+		intent.putExtra(Extra.IS_FIRST_START, true);
+		intent.setClass(this, UserInfoSetting.class);
+		startActivity(intent);
+	}
+
+	public void launchMain() {
+		Intent intent = new Intent();
+		intent.setClass(this, MainUIFrame2.class);
+		startActivity(intent);
 	}
 }
