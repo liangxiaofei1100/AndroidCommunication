@@ -72,14 +72,14 @@
     
     <string name="item_msg">第<xliff:g id="item">%1$d</xliff:g>项</string>
     
-    <string name="folder_content_null">"&#060;空文件夹&#062;"</string>
-    <string name="camera_content_null">"&#060;没有发现照片&#062;"</string>
-    <string name="gallery_content_null">"&#060;没有发现图片&#062;"</string>
-    <string name="audio_content_null">"&#060;没有发现音频&#062;"</string>
-    <string name="video_content_null">"&#060;没有发现视频&#062;"</string>
-    <string name="apk_content_null">"&#060;没有发现用户应用程序&#062;"</string>
-    <string name="game_app_content_null">"&#060;我还没安装游戏&#062;"</string>
-    <string name="dream_app_content_null">"&#060;还没游戏,去下载一个&#062;"</string>
+    <string name="folder_content_null">"空文件夹"</string>
+    <string name="camera_content_null">"没有发现照片"</string>
+    <string name="gallery_content_null">"没有发现图片"</string>
+    <string name="audio_content_null">"没有发现音频"</string>
+    <string name="video_content_null">"没有发现视频"</string>
+    <string name="apk_content_null">"没有发现用户应用程序"</string>
+    <string name="game_app_content_null">"我还没安装游戏"</string>
+    <string name="dream_app_content_null">"还没游戏,去下载一个"</string>
     
     <string name="cannot_start_app">无法从这里启动该程序</string>
     <string name="app_has_started">该程序已经启动</string>
