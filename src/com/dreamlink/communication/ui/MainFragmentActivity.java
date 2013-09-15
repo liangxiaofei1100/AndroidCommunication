@@ -15,6 +15,7 @@ import com.dreamlink.communication.ui.file.FileBrowserFragment;
 import com.dreamlink.communication.ui.file.FileClassifyFragment;
 import com.dreamlink.communication.ui.file.FileFragmentActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.history.HistoryFragment;
 import com.dreamlink.communication.ui.image.ImageFragment;
 import com.dreamlink.communication.ui.image.ImageFragmentActivity;
 import com.dreamlink.communication.ui.media.MediaAudioFragment;
@@ -34,6 +35,7 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.Window;
+import android.widget.SimpleAdapter.ViewBinder;
 
 public class MainFragmentActivity extends FragmentActivity {
 	private static final String TAG = "MainFragmentActivity";
@@ -45,6 +47,7 @@ public class MainFragmentActivity extends FragmentActivity {
 	private static final String MEDIA = "MEDIA";
 	private static final String FILE = "FILE";
 	private static final String SHARE = "SHARE";
+	public static MainFragmentActivity instance;
 	
 	@Override
 	protected void onCreate(Bundle arg0) {
@@ -52,8 +55,11 @@ public class MainFragmentActivity extends FragmentActivity {
 		super.onCreate(arg0);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_main_fragment);
+		instance = this;
+		
 		int position = getIntent().getIntExtra("position", 0);
 		viewPager = (ViewPager) findViewById(R.id.vp_main_frame);
+		viewPager.setOffscreenPageLimit(8);
 		
 		int appid = AppUtil.getAppID(MainFragmentActivity.this);
 		List<Fragment> fragments = new ArrayList<Fragment>();
@@ -66,6 +72,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		fragments.add(MediaVideoFragment.newInstance(appid));//视频
 		fragments.add(AppFragment.newInstance(appid));//应用
 		fragments.add(GameFragment.newInstance(appid));//游戏
+		fragments.add(HistoryFragment.newInstance(appid));
 		mAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragments);
 		viewPager.setAdapter(mAdapter);
 		viewPager.setCurrentItem(position);
@@ -122,8 +129,10 @@ public class MainFragmentActivity extends FragmentActivity {
 			return fragments.size();
 		}
 		
-		
-		
+	}
+	
+	public void goToHistory(){
+		viewPager.setCurrentItem(9);
 	}
 	
 	public class MyPageAdapter extends PagerAdapter {

@@ -37,6 +37,7 @@
          android:id="@+id/lv_history_msg"
          android:layout_width="fill_parent"
          android:layout_height="wrap_content"
+         android:cacheColorHint="#00000000"
          android:divider="@null"
          android:focusable="false"
          ></ListView>

@@ -8,25 +8,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.FileReceiver;
-import com.dreamlink.communication.FileReceiver.OnReceiveListener;
-import com.dreamlink.communication.FileSender.OnFileSendListener;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.FileReceiver.OnReceiveListener;
+import com.dreamlink.communication.FileSender.OnFileSendListener;
 import com.dreamlink.communication.SocketCommunicationManager.OnFileTransportListener;
-import com.dreamlink.communication.lib.util.AppUtil;
+import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.protocol.FileTransferInfo;
-import com.dreamlink.communication.ui.BaseFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.file.FileInfoManager;
+import com.dreamlink.communication.ui.history.HistoryActivity.SendFileThread;
 import com.dreamlink.communication.util.Log;
 
-import android.R.integer;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -36,49 +33,49 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView.OnItemClickListener;
 
-public class HistoryActivity extends FragmentActivity implements OnFileSendListener,OnFileTransportListener,
-					OnReceiveListener, OnScrollListener, OnItemClickListener {
-	private static final String TAG = "HistoryActivity";
-	private int mAppId = -1;
-	private Context mContext;
+public class HistoryFragment extends Fragment implements OnFileSendListener,OnFileTransportListener,
+					OnReceiveListener, OnScrollListener, OnItemClickListener{
+	private static final String TAG = "HistoryFragment";
+	private int mAppId;
 	
 	//view
 	private TextView mStorageTV;
 	private ListView mHistoryMsgLV;
-	
-	//title views
+
+	// title views
 	private ImageView mTitleIcon;
 	private TextView mTitleView;
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
-	
-	//adapter
+
+	// adapter
 	private HistoryMsgAdapter mAdapter;
-	
-	/**the list that send or receive history info*/
+
+	/** the list that send or receive history info */
 	private List<HistoryInfo> mHistoryList = new ArrayList<HistoryInfo>();
 	// 用来保存ListView中每个Item的图片，以便释放
 	public static Map<String, Bitmap> bitmapCaches = new HashMap<String, Bitmap>();
-	
+
 	private Notice mNotice;
 	private SocketCommunicationManager communicationManager;
-	
+
 	private FileInfoManager mFileInfoManager = null;
-	
-	//msg
+
+	// msg
 	private static final int MSG_SEND_FILE = 0;
 	private static final int MSG_UPDATE_UI = 1;
 	private static final int MSG_UPDATE_SEND_PROGRESS = 2;
@@ -87,10 +84,20 @@ public class HistoryActivity extends FragmentActivity implements OnFileSendListe
 	private static final int MSG_UPDATE_RECEIVE_PROGRESS = 5;
 	private static final int MSG_SEND_FINISHED = 6;
 	private static final int MSG_RECEIVE_FINISHED = 7;
-	
-	private static final String KEY_RECEIVE_BYTES = "KEY_RECEIVE_BYTES";
-	private static final String KEY_SENT_BYTES = "KEY_SENT_BYTES";
-	private static final String KEY_TOTAL_BYTES = "KEY_TOTAL_BYTES";
+		
+	/**
+	 * Create a new instance of ImageFragment, providing "appid" as an
+	 * argument.
+	 */
+	public static HistoryFragment newInstance(int appid) {
+		HistoryFragment f = new HistoryFragment();
+
+		Bundle args = new Bundle();
+		args.putInt(Extra.APP_ID, appid);
+		f.setArguments(args);
+
+		return f;
+	}
 	
 	public BroadcastReceiver historyReceiver = new BroadcastReceiver() {
 		
@@ -111,26 +118,7 @@ public class HistoryActivity extends FragmentActivity implements OnFileSendListe
 		}
 	};
 	
-//	public class HistoryReceiver extends BroadcastReceiver{
-//
-//		@Override
-//		public void onReceive(Context context, Intent intent) {
-//			String action = intent.getAction();
-//			Log.i(TAG, "action = " + action);
-//			Bundle bundle;
-//			if (DreamConstant.SEND_FILE_ACTION.equals(action)) {
-//				bundle = intent.getExtras();
-//				if (null != bundle) {
-////					FileInfo fileInfo = bundle.getParcelable(Extra.SEND_FILE);
-//					FileTransferInfo fileInfo = bundle.getParcelable(Extra.SEND_FILE);
-//					List<User> userList = bundle.getParcelableArrayList(Extra.SEND_USER);
-//					sendFile(fileInfo, userList);
-//				}
-//			}
-//		}
-//	}
-	
-	 Handler mHandler = new Handler(){
+	Handler mHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_SEND_FILE:
@@ -177,35 +165,57 @@ public class HistoryActivity extends FragmentActivity implements OnFileSendListe
 		};
 	};
 	
+	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.ui_history);
-		mContext = this;
-		mAppId = getIntent().getIntExtra(Extra.APP_ID, -1);
-		mNotice = new Notice(mContext);
-		communicationManager = SocketCommunicationManager.getInstance(mContext);
-		communicationManager.registerOnFileTransportListener(this, mAppId);
-		
-		mFileInfoManager = new FileInfoManager(mContext);
-		
-		//register broadcast
-		IntentFilter filter = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
-		registerReceiver(historyReceiver, filter);
-		
-		initTitleVIews();
-		initView();
+		Log.d(TAG, "onCreate");
+		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
 	}
 	
-	private void initView(){
-		mStorageTV = (TextView) findViewById(R.id.tv_storage);
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		View rootView = inflater.inflate(R.layout.ui_history, container, false);
+		Log.d(TAG, "onCreateView");
+		
+		initTitleVIews(rootView);
+		initView(rootView);
+		
+		return rootView;
+	}
+	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onActivityCreated(savedInstanceState);
+		//register broadcast
+		IntentFilter filter = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
+		getActivity().registerReceiver(historyReceiver, filter);
+		
+		mNotice = new Notice(getActivity());
+		communicationManager = SocketCommunicationManager.getInstance(getActivity());
+		communicationManager.registerOnFileTransportListener(this, mAppId);
+		
+		mFileInfoManager = new FileInfoManager(getActivity());
+	}
+	
+	@Override
+	public void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		Log.d(TAG, "onResume");
+	}
+	
+	private void initView(View view){
+		mStorageTV = (TextView) view.findViewById(R.id.tv_storage);
 		String space = getResources().getString(R.string.storage_space, 
 				DreamUtil.getFormatSize(Environment.getExternalStorageDirectory().getTotalSpace()),
 				DreamUtil.getFormatSize(Environment.getExternalStorageDirectory().getFreeSpace()));
 		mStorageTV.setText(space);
-		mHistoryMsgLV = (ListView) findViewById(R.id.lv_history_msg);
-		mHistoryMsgLV.setEmptyView(findViewById(R.id.tv_empty));
+		mHistoryMsgLV = (ListView) view.findViewById(R.id.lv_history_msg);
+		mHistoryMsgLV.setEmptyView(view.findViewById(R.id.tv_empty));
 		mHistoryMsgLV.setOnScrollListener(this);
 		mHistoryMsgLV.setOnItemClickListener(this);
 		//test=================
@@ -227,14 +237,14 @@ public class HistoryActivity extends FragmentActivity implements OnFileSendListe
 //		}
 //		Collections.sort(mHistoryList, HistoryManager.DATE_COMPARATOR);
 		//test=================
-		mAdapter = new HistoryMsgAdapter(mContext, mHistoryList);
+		mAdapter = new HistoryMsgAdapter(getActivity(), mHistoryList);
 		mAdapter.setStatus(HistoryManager.STATUS_DEFAULT);
 		mHistoryMsgLV.setAdapter(mAdapter);
 		mHistoryMsgLV.setSelection(0);
 	}
 	
-	private void initTitleVIews(){
-		RelativeLayout titleLayout = (RelativeLayout)findViewById(R.id.layout_title);
+	private void initTitleVIews(View view){
+		RelativeLayout titleLayout = (RelativeLayout)view.findViewById(R.id.layout_title);
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_tiandi);
 		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
@@ -282,7 +292,7 @@ public class HistoryActivity extends FragmentActivity implements OnFileSendListe
 			message.what = MSG_UPDATE_SEND_STATUS;
 			mHandler.sendMessage(message);
 			
-			communicationManager.sendFile(historyInfo, HistoryActivity.this, mAppId);
+			communicationManager.sendFile(historyInfo, HistoryFragment.this, mAppId);
 			
 		}
 	}
@@ -424,9 +434,9 @@ public class HistoryActivity extends FragmentActivity implements OnFileSendListe
 	}
 	
 	@Override
-	protected void onDestroy() {
+	public void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		unregisterReceiver(historyReceiver);
+		getActivity().unregisterReceiver(historyReceiver);
 	}
 }

@@ -13,6 +13,7 @@ import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.db.MetaData;
@@ -407,7 +408,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		mAdapter.notifyDataSetChanged();
 		Message message = mHandler.obtainMessage();
 		message.arg1 = mAppLists.size();
-		System.out.println("size=" + mAppLists.size());
 		message.what = MSG_UPDATE_UI;
 		message.sendToTarget();
 	}
@@ -438,10 +438,11 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			break;
 			
 		case R.id.iv_history:
-			Intent intent = new Intent();
-			intent.putExtra(Extra.APP_ID, mAppId);
-			intent.setClass(getActivity(), HistoryActivity.class);
-			startActivity(intent);
+			MainFragmentActivity.instance.goToHistory();
+//			Intent intent = new Intent();
+//			intent.putExtra(Extra.APP_ID, mAppId);
+//			intent.setClass(getActivity(), HistoryActivity.class);
+//			startActivity(intent);
 			break;
 
 		default:

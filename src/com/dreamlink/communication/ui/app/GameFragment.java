@@ -13,6 +13,7 @@ import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.db.MetaData;
@@ -371,10 +372,11 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 			break;
 			
 		case R.id.iv_history:
-			Intent intent = new Intent();
-			intent.putExtra(Extra.APP_ID, mAppId);
-			intent.setClass(mContext, HistoryActivity.class);
-			startActivity(intent);
+			MainFragmentActivity.instance.goToHistory();
+//			Intent intent = new Intent();
+//			intent.putExtra(Extra.APP_ID, mAppId);
+//			intent.setClass(mContext, HistoryActivity.class);
+//			startActivity(intent);
 			break;
 
 		default:

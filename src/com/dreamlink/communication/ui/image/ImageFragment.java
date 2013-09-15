@@ -12,6 +12,7 @@ import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
@@ -376,10 +377,11 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 			break;
 			
 		case R.id.iv_history:
-			Intent intent = new Intent();
-			intent.putExtra(Extra.APP_ID, mAppId);
-			intent.setClass(getActivity(), HistoryActivity.class);
-			startActivity(intent);
+			MainFragmentActivity.instance.goToHistory();
+//			Intent intent = new Intent();
+//			intent.putExtra(Extra.APP_ID, mAppId);
+//			intent.setClass(getActivity(), HistoryActivity.class);
+//			startActivity(intent);
 			break;
 
 		default:
