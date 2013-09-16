@@ -54,7 +54,7 @@ import android.widget.TextView;
  * @author yuri
  * @date 2013年9月11日16:50:57
  */
-public class MainUIFrame2 extends Activity implements OnClickListener,
+public class MainUIFrame extends Activity implements OnClickListener,
 		OnItemClickListener {
 	private static final String TAG = "MainUIFrame2";
 	private Context mContext;
@@ -90,7 +90,7 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 
 		importGameKeyDb();
 
-		mNotificationMgr = new NotificationMgr(MainUIFrame2.this);
+		mNotificationMgr = new NotificationMgr(MainUIFrame.this);
 		mNotificationMgr.showNotificaiton(NotificationMgr.STATUS_UNCONNECTED);
 
 		// get sdcards
@@ -181,11 +181,11 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.iv_usericon:
 			Intent userSetIntent = new Intent();
-			userSetIntent.setClass(MainUIFrame2.this, UserInfoSetting.class);
+			userSetIntent.setClass(MainUIFrame.this, UserInfoSetting.class);
 			startActivityForResult(userSetIntent, DreamConstant.REQUEST_FOR_MODIFY_NAME);
 			break;
 		case R.id.iv_filetransfer:
-			Intent intent = new Intent(MainUIFrame2.this,
+			Intent intent = new Intent(MainUIFrame.this,
 					FileTransferActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 			startActivity(intent);
@@ -202,7 +202,7 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		Intent intent = new Intent(MainUIFrame2.this,
+		Intent intent = new Intent(MainUIFrame.this,
 				MainFragmentActivity.class);
 		intent.putExtra("position", position);
 		startActivity(intent);
@@ -233,11 +233,11 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case 0:
-			Intent intent = new Intent(MainUIFrame2.this, MainActivity.class);
+			Intent intent = new Intent(MainUIFrame.this, MainActivity.class);
 			startActivity(intent);
 			break;
 		case 2:
-			Intent shareIntent = new Intent(MainUIFrame2.this, RemoteShareActivity.class);
+			Intent shareIntent = new Intent(MainUIFrame.this, RemoteShareActivity.class);
 			//如果这个activity已经启动了，就不产生新的activity，而只是把这个activity实例加到栈顶来就可以了。
 			shareIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
 			startActivity(shareIntent);
@@ -284,7 +284,7 @@ public class MainUIFrame2 extends Activity implements OnClickListener,
 									int which) {
 								mNotificationMgr.cancelNotification();
 
-								MainUIFrame2.this.finish();
+								MainUIFrame.this.finish();
 							}
 						})
 				.setNeutralButton(R.string.hide,

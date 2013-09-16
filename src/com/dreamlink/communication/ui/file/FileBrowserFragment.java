@@ -23,6 +23,7 @@ import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
+import com.dreamlink.communication.ui.media.MediaVideoFragment;
 import com.dreamlink.communication.util.Log;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
@@ -107,6 +108,28 @@ public class FileBrowserFragment extends BaseFragment implements
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
+	
+	private int mAppId = -1;
+	
+	/**
+	 * Create a new instance of AppFragment, providing "appid" as an
+	 * argument.
+	 */
+	public static FileBrowserFragment newInstance(int appid) {
+		FileBrowserFragment f = new FileBrowserFragment();
+
+		Bundle args = new Bundle();
+		args.putInt(Extra.APP_ID, appid);
+		f.setArguments(args);
+
+		return f;
+	}
+	
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+	};
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {

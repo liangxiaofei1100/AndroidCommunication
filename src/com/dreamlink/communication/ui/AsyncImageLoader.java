@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.image.BaseImageFragment;
 import com.dreamlink.communication.ui.media.MediaInfoManager;
 
 import android.content.Context;
@@ -23,7 +22,7 @@ import android.provider.MediaStore.Images.Thumbnails;
 import android.widget.ImageView;
 
 public class AsyncImageLoader {
-	private static final String TAG = AsyncImageLoader.class.getName();
+	private static final String TAG = "AsyncImageLoader";
 	// SoftReference是软引用，是为了更好的为了系统回收变量
 	public static  HashMap<String, SoftReference<Bitmap>> bitmapCache;
 	private Context context;

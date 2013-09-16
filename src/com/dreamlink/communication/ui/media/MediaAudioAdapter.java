@@ -31,8 +31,6 @@ public class MediaAudioAdapter extends BaseAdapter {
 	private Context mContext;
 	private int current_position = -1;
 	private AsyncImageLoader bitmapLoader;
-	private FileInfoManager mFileInfoManager = null;
-	private Notice mNotice;
 
 	public MediaAudioAdapter(Context context, List<MediaInfo> data) {
 		mInflater = LayoutInflater.from(context);
@@ -40,9 +38,6 @@ public class MediaAudioAdapter extends BaseAdapter {
 
 		mContext = context;
 		// bitmapLoader = new AsyncImageLoader(context);
-
-		mFileInfoManager = new FileInfoManager(context);
-		mNotice = new Notice(context);
 	}
 
 	@Override
@@ -70,11 +65,6 @@ public class MediaAudioAdapter extends BaseAdapter {
 		TextView timeView;
 		TextView artistView;
 		TextView sizeView;
-		LinearLayout mainLayout;
-		LinearLayout menuLayout;
-		LinearLayout playLayout;
-		LinearLayout sendLayout;
-		LinearLayout deleteLayout;
 	}
 
 	@Override
@@ -91,12 +81,6 @@ public class MediaAudioAdapter extends BaseAdapter {
 			holder.artistView = (TextView) view.findViewById(R.id.audio_artist);
 			holder.sizeView = (TextView) view.findViewById(R.id.audio_size);
 
-			//2013-09-09 do not use this expand menu
-//			holder.mainLayout = (LinearLayout) view.findViewById(R.id.audio_layout_main);
-//			holder.menuLayout = (LinearLayout) view.findViewById(R.id.layout_expand);
-//			holder.playLayout = (LinearLayout) view.findViewById(R.id.item_play);
-//			holder.sendLayout = (LinearLayout) view.findViewById(R.id.item_send);
-//			holder.deleteLayout = (LinearLayout) view.findViewById(R.id.item_delete);
 			view.setTag(holder);
 		} else {
 			view = convertView;
@@ -133,153 +117,6 @@ public class MediaAudioAdapter extends BaseAdapter {
 		// }
 		holder.iconView.setImageResource(R.drawable.icon_audio);
 
-//		holder.mainLayout
-//				.setOnClickListener(new MainOnClickLinstener(position));
-//		holder.playLayout.setOnClickListener(new PlayOnClickListener(position));
-//		holder.sendLayout.setOnClickListener(new SendOnClickListener(position));
-//		holder.deleteLayout.setOnClickListener(new DeleteOnClickListener(
-//				position));
-//		if (current_position == position) {
-//			holder.menuLayout.setVisibility(View.VISIBLE);
-//			holder.playLayout.setClickable(true);
-//			holder.sendLayout.setClickable(true);
-//			holder.deleteLayout.setClickable(true);
-//		} else {
-//			holder.menuLayout.setVisibility(View.GONE);
-//			holder.playLayout.setClickable(false);
-//			holder.sendLayout.setClickable(false);
-//			holder.deleteLayout.setClickable(false);
-//		}
-
 		return view;
 	}
-
-	/**
-	 * @unuse
-	 */
-	private class MainOnClickLinstener implements OnClickListener {
-		int position;
-
-		MainOnClickLinstener(int position) {
-			this.position = position;
-		}
-
-		@Override
-		public void onClick(View v) {
-			if (current_position == position) {
-				current_position = -1;
-			} else {
-				current_position = position;
-			}
-			notifyDataSetChanged();
-		}
-
-	}
-
-	private class PlayOnClickListener implements OnClickListener {
-		int position;
-
-		PlayOnClickListener(int position) {
-			this.position = position;
-		}
-
-		@Override
-		public void onClick(View v) {
-			current_position = -1;
-			
-			Intent intent = FileInfoManager.getAudioFileIntent(mList.get(
-					position).getUrl());
-			mContext.startActivity(intent);
-			notifyDataSetChanged();
-		}
-	}
-
-	private class SendOnClickListener implements OnClickListener {
-		int position;
-
-		SendOnClickListener(int position) {
-			this.position = position;
-		}
-
-		@Override
-		public void onClick(View v) {
-			current_position = -1;
-			notifyDataSetChanged();
-		}
-
-	}
-
-	private class DeleteOnClickListener implements OnClickListener {
-		int position;
-
-		DeleteOnClickListener(int position) {
-			this.position = position;
-		}
-
-		@Override
-		public void onClick(View v) {
-			final String path = mList.get(position).getUrl();
-			final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
-			deleteDialog.setOnClickListener(new OnDelClickListener() {
-				@Override
-				public void onClick(View view, String path) {
-					switch (view.getId()) {
-					case R.id.left_button:
-						DeleteTask deleteTask = new DeleteTask();
-						deleteTask.execute(position);
-						break;
-					default:
-						break;
-					}
-				}
-			});
-			deleteDialog.show();
-		}
-
-	}
-
-	private class DeleteTask extends AsyncTask<Integer, Void, Boolean> {
-		ProgressDialog dialog = null;
-		int del_pos;
-
-		@Override
-		protected Boolean doInBackground(Integer... params) {
-			del_pos = params[0];
-			String path = mList.get(del_pos).getUrl();
-			boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI,
-					path);
-			return ret;
-		}
-
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			dialog = new ProgressDialog(mContext);
-			dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			dialog.setCancelable(false);
-			dialog.setMessage("Deleteing...");
-			dialog.show();
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-			super.onPostExecute(result);
-			if (null != dialog) {
-				dialog.cancel();
-			}
-
-			if (result) {
-				mList.remove(del_pos);
-				current_position = -1;
-				notifyDataSetChanged();
-
-				Intent intent = new Intent(DreamConstant.MEDIA_AUDIO_ACTION);
-				intent.putExtra(Extra.AUDIO_SIZE, mList.size());
-				mContext.sendBroadcast(intent);
-			}else {
-				mNotice.showToast(R.string.delete_fail);
-			}
-		}
-	}
-
 }

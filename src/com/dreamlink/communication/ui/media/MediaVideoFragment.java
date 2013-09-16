@@ -57,11 +57,11 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 	private Context mContext;
 	
 	//title views
-		private ImageView mTitleIcon;
-		private TextView mTitleView;
-		private TextView mTitleNum;
-		private ImageView mRefreshView;
-		private ImageView mHistoryView;
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
 		
 	//video contentObserver listener
 	class VideoContent extends ContentObserver{
@@ -157,7 +157,9 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 
 		@Override
 		protected String doInBackground(Void... params) {
+			Log.d(TAG, "start get video src:" + System.currentTimeMillis());
 			mVideoLists = mScan.getVideoInfo();
+			Log.d(TAG, "end get video src:" + System.currentTimeMillis());
 			return null;
 		}
 		

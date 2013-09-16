@@ -26,6 +26,7 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
+/**全屏查看图片*/
 public class ImagePagerActivity extends Activity {
 
 	private static final String STATE_POSITION = "STATE_POSITION";
