@@ -11,7 +11,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import android.net.wifi.WifiConfiguration.Status;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;

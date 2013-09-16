@@ -10,6 +10,10 @@ import com.dreamlink.communication.aidl.User;
 /**
  * Show Login request.
  * 
+ * 
+ * 
+ * @see {@code LoginProtocol}
+ * 
  */
 public class AllowLoginDialog {
 	public interface AllowLoginCallBack {

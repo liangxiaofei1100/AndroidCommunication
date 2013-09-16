@@ -1,10 +1,15 @@
-package com.dreamlink.communication;
+package com.dreamlink.communication.debug;
 
 import java.util.Map;
 
 import android.app.AlertDialog;
 import android.content.Context;
 
+import com.dreamlink.communication.R;
+import com.dreamlink.communication.SocketCommunication;
+import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.R.drawable;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.util.NetWorkUtil;
 

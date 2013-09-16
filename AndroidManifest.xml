@@ -70,7 +70,7 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="com.dreamlink.communication.AppListActivity"
+            android:name="com.dreamlink.communication.debug.AppListActivity"
             android:label="@string/label_applist"
             android:screenOrientation="portrait" >
         </activity>

@@ -41,7 +41,6 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.dreamlink.communication.aidl.User;
-import com.dreamlink.communication.AppListActivity;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
@@ -49,6 +48,7 @@ import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.SocketCommunicationManager.OnCommunicationListener;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.debug.AppListActivity;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.search.Search;
 import com.dreamlink.communication.search.WiFiNameEncryption;

@@ -1,4 +1,4 @@
-package com.dreamlink.communication;
+package com.dreamlink.communication.debug;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -8,6 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.dreamlink.communication.R;
+import com.dreamlink.communication.R.id;
+import com.dreamlink.communication.R.layout;
+import com.dreamlink.communication.R.menu;
 import com.dreamlink.communication.wifip2p.WifiDirectManager;
 import android.app.Activity;
 import android.content.Context;

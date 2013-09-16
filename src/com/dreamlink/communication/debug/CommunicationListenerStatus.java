@@ -1,4 +1,8 @@
-package com.dreamlink.communication;
+package com.dreamlink.communication.debug;
+
+import com.dreamlink.communication.R;
+import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.R.drawable;
 
 import android.app.AlertDialog;
 import android.content.Context;
