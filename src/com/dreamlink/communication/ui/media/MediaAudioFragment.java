@@ -50,6 +50,7 @@ import android.widget.TextView;
 public class MediaAudioFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	private static final String TAG = "MediaAudioFragment";
 	private ListView mListView;
+	private TextView mEmptyView;
 	private MediaAudioAdapter mAdapter;
 	private List<MediaInfo> mAudioLists = new ArrayList<MediaInfo>();
 	private MediaInfoManager mScan;
@@ -122,7 +123,7 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		mContext = getActivity();
 		
 		mListView = (ListView) rootView.findViewById(R.id.audio_listview);
-		mListView.setEmptyView( rootView.findViewById(R.id.audio_list_empty));
+		mEmptyView = (TextView) rootView.findViewById(R.id.tv_audio_empty);
 		mScanBar = (ProgressBar) rootView.findViewById(R.id.audio_progressbar);
 		mListView.setOnItemClickListener(this);
 		mListView.setOnItemLongClickListener(this);
@@ -174,6 +175,11 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		protected void onPostExecute(String result) {
 			super.onPostExecute(result);
 			mScanBar.setVisibility(View.GONE);
+			if (mAudioLists.size() <= 0) {
+				mEmptyView.setVisibility(View.VISIBLE);
+				return;
+			}
+			
 			mAdapter = new MediaAudioAdapter(mContext, mAudioLists);
 			mListView.setAdapter(mAdapter);
 			
@@ -189,20 +195,8 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		
 	}
 
-	private int currentposition = -1;
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		//20130909 do not use expand menu
-		//just single click to open file,double click to open menu
-//		if (currentposition == position) {
-//			currentposition = -1;
-//		}else {
-//			currentposition = position;
-//		}
-//		
-//		mAdapter.setPosition(currentposition);
-//		mAdapter.notifyDataSetChanged();
-		
 		//open audio
 		mFileInfoManager.openFile(mAudioLists.get(position).getUrl());
 	} 
