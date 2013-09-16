@@ -1,6 +1,6 @@
 package com.dreamlink.communication.fileshare;
 
-import com.dreamlink.communication.AppListActivity;
+import com.dreamlink.communication.debug.AppListActivity;
 import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.ui.file.RemoteShareService;
 

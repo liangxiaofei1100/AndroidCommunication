@@ -50,17 +50,7 @@
             android:screenOrientation="portrait">
         </activity>
         <activity
-            android:name="com.dreamlink.communication.server.ClientListActivity"
-            android:label="Client List"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.client.ServerListActivity"
-            android:label="Server List"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.AppListActivity"
+            android:name="com.dreamlink.communication.debug.AppListActivity"
             android:label="@string/label_applist"
             android:screenOrientation="portrait" >
         </activity>
@@ -115,11 +105,6 @@
         <activity
             android:name="com.dreamlink.communication.StabilityTestServer"
             android:label="StabilityTestServer"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.UserInformationActivity"
-            android:label="@string/lable_user_info"
             android:screenOrientation="portrait" >
         </activity>
         <activity
@@ -216,19 +201,6 @@
 
         <service android:name="com.dreamlink.communication.ui.service.FileManagerService" />
 
-        <activity
-            android:name="com.dreamlink.communication.ui.invite.InviteMainActivity"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.ui.invite.InviteBluetoothActivity"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.ui.dialog.ExitActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/MyDialogStyle" >
-        </activity>
         <activity
             android:name="com.dreamlink.communication.ui.history.HistoryActivity"
             >

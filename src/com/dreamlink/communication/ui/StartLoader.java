@@ -1,64 +1,90 @@
 package com.dreamlink.communication.ui;
 
 import java.io.File;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.service.FileTransferService;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
+import android.util.Log;
 
-public class StartLoader extends Activity{
-	
+public class StartLoader extends Activity {
+	private static final String TAG = "StartLoader";
+	/** The minimum time(ms) of loading page. */
+	private static final int MIN_LOADING_TIME = 1500;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui_loader);
+
+		LoadAsyncTask loadAsyncTask = new LoadAsyncTask();
+		loadAsyncTask.execute();
+	}
+
+	/**
+	 * Do application initialize and load resources. This does not run in ui
+	 * thread.
+	 */
+	private void load() {
+		Log.d(TAG, "Load start");
+		createFileSaveFolder();
 		
-		mHandler.sendEmptyMessage(LOADING);
-		File file  = new File(DreamConstant.DEFAULT_SAVE_FOLDER);
+		startService();
+		Log.d(TAG, "Load end");
+	}
+
+	/**
+	 * Load is finished
+	 */
+	private void loadFinished() {
+		launchLogin();
+		finish();
+		overridePendingTransition(R.anim.push_right_in, R.anim.push_left_out);
+	}
+
+	private void createFileSaveFolder() {
+		File file = new File(DreamConstant.DEFAULT_SAVE_FOLDER);
 		if (!file.exists()) {
 			file.mkdirs();
 		}
-		
-		startService();
 	}
-	
-	private static final int LOADING = 0x111;
-	private static final int LOADED = 0x112;
-	private Handler mHandler = new Handler() {
-		Timer mTimer = new Timer();
-		TimerTask mTask = new TimerTask() {
-			@Override
-			public void run() {
-				sendEmptyMessage(LOADED);
-			}
-		};
 
-		public void handleMessage(android.os.Message msg) {
-			switch (msg.what) {
-			case LOADING:
-				mTimer.schedule(mTask, 1500);
-				break;
-			case LOADED:
-				launchLogin();
-				finish();
-				overridePendingTransition(R.anim.push_right_in, R.anim.push_left_out);
-				break;
-			default:
-				break;
+	class LoadAsyncTask extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			long start = System.currentTimeMillis();
+			// Do load.
+			load();
+			long end = System.currentTimeMillis();
+			if (end - start < MIN_LOADING_TIME) {
+				try {
+					Thread.sleep(MIN_LOADING_TIME - (end - start));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
-		};
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			loadFinished();
+		}
 	};
-	
-	public void launchLogin(){
+
+	public void launchLogin() {
 		Intent intent = new Intent();
-		intent.putExtra(Extra.IS_FIRST_START, true);
 		intent.setClass(this, LoginActivity.class);
 		startActivity(intent);
 	}

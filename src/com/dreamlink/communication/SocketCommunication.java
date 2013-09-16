@@ -1,11 +1,7 @@
 package com.dreamlink.communication;
 
-import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Arrays;
@@ -106,17 +102,14 @@ public class SocketCommunication extends Thread {
 			mListener.OnCommunicationEstablished(this);
 			mReceiveBuffer = new byte[RECEIVE_BUFFER_SIZE];
 			while (!mSocket.isClosed()) {
-				long start = System.currentTimeMillis();
 				boolean isContinue = decode(mDataInputStream);
-				long end = System.currentTimeMillis();
-				Log.i(TAG, "decode takes time: " + (end - start));
 				if (!isContinue) {
 					mListener.OnCommunicationLost(this);
 					break;
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, "Read socket error. " + e);
 			mDataInputStream = null;
 			mDataOutputStream = null;
 			mListener.OnCommunicationLost(this);
@@ -150,23 +143,17 @@ public class SocketCommunication extends Thread {
 	private synchronized boolean decode(DataInputStream in) throws IOException {
 		int dataReceivedLength = 0;
 		if (mRemainPacket == null) {
-			Log.d(TAG, "There is no remain packet");
 			// There is no remain packet.
-			// Get the first 4 bit header for packet length.
+			// 1. Get the first 4 bit header for packet length.
 			int packetLength = 0;
 			if (mRemainHeader == null) {
 				// There is no remain head.
-				Log.d(TAG, "There is no remain head");
 				dataReceivedLength = in.read(mHeadBuffer);
 				if (dataReceivedLength == -1) {
 					Log.d(TAG, "Connection lost. dataReceivedLength = -1");
 					return false;
 				}
-				Log.d(TAG, "received header size: " + dataReceivedLength);
 				if (dataReceivedLength < HEAD_SIZE) {
-					Log.d(TAG,
-							"dataReceivedLength < HEAD_SIZE, dataReceivedLength = "
-									+ dataReceivedLength);
 					// Received data is less than one header data, Save it and
 					// return for next read.
 					mRemainHeader = Arrays.copyOfRange(mHeadBuffer, 0,
@@ -178,7 +165,6 @@ public class SocketCommunication extends Thread {
 					mRemainHeader = null;
 				}
 			} else {
-				Log.d(TAG, "There is remain header data left.");
 				// There is remain header data left.
 				// Read the remain header data to get the header data.
 				dataReceivedLength = in.read(mHeadBuffer, 0, HEAD_SIZE
@@ -188,70 +174,50 @@ public class SocketCommunication extends Thread {
 					return false;
 				}
 				if (mRemainHeader.length + dataReceivedLength < HEAD_SIZE) {
-					Log.d(TAG,
-							"remain head + data received < HEAD_SIZE, dataReceivedLength = "
-									+ dataReceivedLength);
 					// remain head + data received less than one header data.
 					// Save the header data and return for next read.
 					mRemainHeader = ArrayUtil.join(mRemainHeader, Arrays
 							.copyOfRange(mHeadBuffer, 0, dataReceivedLength));
 					return true;
 				} else if (mRemainHeader.length + dataReceivedLength == HEAD_SIZE) {
-					Log.d(TAG, "remain head + data received is one header");
 					// remain head + data received is one header
 					mHeadBuffer = ArrayUtil.join(mRemainHeader, Arrays
 							.copyOfRange(mHeadBuffer, 0, dataReceivedLength));
 					packetLength = ArrayUtil.byteArray2Int(mHeadBuffer);
 					mRemainHeader = null;
-				} else {
-					// Should not be here.
-					Log.e(TAG, "Decode header error.");
-					return true;
 				}
 			}
-			Log.d(TAG, "Received package, length = " + packetLength);
 			if (packetLength > RECEIVE_BUFFER_SIZE || packetLength < 1) {
+				// Decode header error.
 				Log.e(TAG,
 						"Decode header error. packageLength is bad number. packageLength = "
 								+ packetLength);
 				return true;
 			}
-			// Read received data.
+			
+			// 2. Read received data.
 			dataReceivedLength = in.read(mReceiveBuffer, 0, packetLength);
 			if (dataReceivedLength == -1) {
 				Log.d(TAG, "Connection lost. dataReceivedLength = -1");
 				return false;
 			}
 			if (dataReceivedLength == packetLength) {
-				Log.d(TAG, "received data is on packet");
-				// received data is ok.
+				// Received data is just one packet. Return for next read.
 				mOnReceiveMessageListener.onReceiveMessage(Arrays.copyOfRange(
 						mReceiveBuffer, 0, dataReceivedLength), this);
 				return true;
 			} else if (dataReceivedLength < packetLength) {
-				Log.d(TAG,
-						"received data is less than on package. packageLength = "
-								+ packetLength + ", dataReceivedLength = "
-								+ dataReceivedLength);
-				// received data is less than on packet.
+				// Received data is less than one packet.
 				// 1. Save last packet length.
 				mLastPacketLength = packetLength;
 				// 2. Save the received data into buff.
 				mRemainPacket = Arrays.copyOfRange(mReceiveBuffer, 0,
 						dataReceivedLength);
-			} else {
-				// should not be here
-				Log.e(TAG, "Decode data error.");
 			}
 		} else {
-			Log.d(TAG, "There is remain packet left");
 			// There is remain packet left.
-			Log.d(TAG, "mLastPacketLength - mRemainPacket.length = "
-					+ (mLastPacketLength - mRemainPacket.length));
 			if (mLastPacketLength > RECEIVE_BUFFER_SIZE) {
-				Log.e(TAG,
-						"Decode header error. packageLength is too long. mLastPacketLength = "
-								+ mLastPacketLength);
+				// Packet length error. drop it.
 				mReceiveBuffer = null;
 				return true;
 			}
@@ -263,9 +229,6 @@ public class SocketCommunication extends Thread {
 				return false;
 			}
 			if (dataReceivedLength + mRemainPacket.length == mLastPacketLength) {
-				Log.d(TAG,
-						"remain packet + received data is one packet.mLastPacketLength = "
-								+ mLastPacketLength);
 				// remain packet + received data is one packet.
 				mOnReceiveMessageListener.onReceiveMessage(ArrayUtil.join(
 						mRemainPacket, Arrays.copyOfRange(mReceiveBuffer, 0,
@@ -273,19 +236,10 @@ public class SocketCommunication extends Thread {
 				mRemainPacket = null;
 				return true;
 			} else if (dataReceivedLength + mRemainPacket.length < mLastPacketLength) {
-				Log.d(TAG,
-						"remain packet + received data is less than one packet. mLastPacketLength = "
-								+ mLastPacketLength);
 				// remain packet + received data is less than one packet.
 				// Save the received data into buff.
-				if (dataReceivedLength < 1) {
-					Log.e(TAG, "data Received Length error.");
-				}
 				mRemainPacket = ArrayUtil.join(mRemainPacket, Arrays
 						.copyOfRange(mReceiveBuffer, 0, dataReceivedLength));
-			} else {
-				// Should not be here.
-				Log.e(TAG, "parse data error.");
 			}
 		}
 		return true;
@@ -315,7 +269,6 @@ public class SocketCommunication extends Thread {
 	 * @return return true if send success, return false if send fail.
 	 */
 	public boolean sendMessage(byte[] msg) {
-		Log.d(TAG, "sendMessage=>" + new String(msg));
 		try {
 			if (mDataOutputStream != null) {
 				mDataOutputStream.write(encode(msg));
@@ -345,9 +298,7 @@ public class SocketCommunication extends Thread {
 		} catch (IOException e) {
 			Log.e(TAG, "stopComunication fail." + e);
 		} catch (Exception e) {
-			// TODO: handle exception
 			Log.e(TAG, "stopComunication fail." + e);
-			e.printStackTrace();
 		}
 	}
 

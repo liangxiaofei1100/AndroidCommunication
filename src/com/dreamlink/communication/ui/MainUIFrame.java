@@ -5,23 +5,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.dreamlink.communication.MainActivity;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.data.UserHelper;
-import com.dreamlink.communication.AllowLoginDialog;
-import com.dreamlink.communication.MainActivity;
-import com.dreamlink.communication.NetworkStatus;
-import com.dreamlink.communication.R;
-import com.dreamlink.communication.SocketCommunication;
+import com.dreamlink.communication.debug.NetworkStatus;
 import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
-import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
-import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
-import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.notification.NotificationMgr;
-import com.dreamlink.communication.ui.db.DreamProvider;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileTransferActivity;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
@@ -30,8 +20,6 @@ import com.dreamlink.communication.util.NetWorkUtil;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.ContentProvider;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -53,6 +41,7 @@ import android.widget.TextView;
 /**
  * Win8 style main ui
  * 
+ * @author yuri
  * @date 2013年9月11日16:50:57
  */
 public class MainUIFrame extends Activity implements OnClickListener,
@@ -89,7 +78,7 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		
 		initView();
 
-//		importGameKeyDb();
+		importGameKeyDb();
 
 		mNotificationMgr = new NotificationMgr(MainUIFrame.this);
 		mNotificationMgr.showNotificaiton(NotificationMgr.STATUS_UNCONNECTED);
@@ -154,11 +143,10 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		}
 
 		String dbstr = DB_PATH + "/" + MetaData.DATABASE_NAME;
-		DreamProvider provider = new DreamProvider();
 		File dbFile = new File(dbstr);
-//		if (dbFile.exists()) {
-//			return;
-//		}
+		if (dbFile.exists()) {
+			return;
+		}
 
 		// import
 		InputStream is;
@@ -226,7 +214,6 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		Log.d(TAG, "onCreateOptionsMenu");
-		menu.add(0, 0, 0, "旧入口");
 		menu.add(0, 2, 0, "远程共享");
 		return true;
 	}
@@ -234,10 +221,6 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case 0:
-			Intent intent = new Intent(MainUIFrame.this, MainActivity.class);
-			startActivity(intent);
-			break;
 		case 2:
 			Intent shareIntent = new Intent(MainUIFrame.this, RemoteShareActivity.class);
 			//如果这个activity已经启动了，就不产生新的activity，而只是把这个activity实例加到栈顶来就可以了。

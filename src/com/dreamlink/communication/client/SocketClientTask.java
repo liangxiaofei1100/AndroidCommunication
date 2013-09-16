@@ -97,7 +97,6 @@ public class SocketClientTask extends AsyncTask<String, Void, Socket> {
 			try {
 				progressDialog.dismiss();
 			} catch (Exception e) {
-				// TODO: handle exception
 				Log.e(TAG, "closeDialog(), " + e);
 				// There is exception sometimes.
 			}
