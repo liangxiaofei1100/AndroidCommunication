@@ -10,14 +10,7 @@ import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.debug.NetworkStatus;
-import com.dreamlink.communication.AllowLoginDialog;
-import com.dreamlink.communication.R;
-import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
-import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
-import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
-import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.notification.NotificationMgr;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileTransferActivity;
@@ -27,7 +20,6 @@ import com.dreamlink.communication.util.NetWorkUtil;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -54,7 +46,7 @@ import android.widget.TextView;
  */
 public class MainUIFrame extends Activity implements OnClickListener,
 		OnItemClickListener {
-	private static final String TAG = "MainUIFrame2";
+	private static final String TAG = "MainUIFrame";
 	private Context mContext;
 
 	private GridView mGridView;
