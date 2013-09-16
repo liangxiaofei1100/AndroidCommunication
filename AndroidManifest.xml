@@ -40,13 +40,6 @@
         <activity
             android:name="com.dreamlink.communication.ui.MainUIFrame"
             android:screenOrientation="portrait" >
-            <meta-data
-                android:name="app_id"
-                android:value="113" />
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.ui.MainUIFrame"
-            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.dreamlink.communication.MainActivity"
@@ -123,11 +116,6 @@
         <activity
             android:name="com.dreamlink.communication.StabilityTestServer"
             android:label="StabilityTestServer"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.UserInformationActivity"
-            android:label="@string/lable_user_info"
             android:screenOrientation="portrait" >
         </activity>
         <activity

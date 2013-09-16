@@ -10,7 +10,7 @@ import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.UserTree;
 
 /**
- * Management user an user's communication.
+ * Management user and user's communication.
  * 
  */
 public class UserManager {
