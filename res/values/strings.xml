@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"
+    >
 
     <string name="app_name">朝颜无限</string>
     <string name="action_settings">Settings</string>
@@ -31,25 +34,13 @@
     <string name="lable_user_info">用户资料</string>
     <string name="menu_user_info">用户资料</string>
 
-    <!-- stability test begin -->
-    <string name="readme_stability_test">Communication stability test.\n
-			Client every 100ms send message to server. \n
-			Server show the received data, then send the received data return to clients.\n
-			Clients show the received data from server.</string>
-    <string name="send_to_all">Send to all</string>
-    <string name="send_to_single">Send to single</string>
-    <string name="message_size">Message size of send</string>
-    <!-- stability test end -->
-
-
-    <!-- speed test begin -->
-    <string name="readme_speed_test">his application is used for communication speed test. \n
-        Operation steps:\n
-        1. One choose SERVER and others choose CLIENT. After choose, it will turn to speed test activity.\n
-        2. Server input test speed and click Start button, Client click Start button. If everything is OK, the speed is shown\n</string>
-    <!-- speed test end -->
     <string name="btn_test_apps">Test apps</string>
     <string name="readme_file_transport_test">File Transport test.</string>
+    
+    <string name="login_dialog_title">用户连接</string>
+    <string name="login_dialog_message">"用户：%s 请求连接。"</string>
+    <string name="login_dialog_allow">"同意"</string>
+    <string name="login_dialog_disallow">"拒绝"</string>
     
     <string name="user_info_setting">用户信息设置</string>
     <string name="login">登录</string>
@@ -65,4 +56,15 @@
     <string name="network_share">远程共享</string>
     <string name="network_share_tips">远程共享您的文件或最爱</string>
     <string name="stop_file_share">文件共享已开启，点击停止共享</string>
+        <string name="fileshare_label">远程服务器共享</string>
+    <string name="access_server">访问远程服务器</string>
+    <string name="no_connect">未连接，请先建立连接</string>
+    
+    <string name="section_remote">远程服务器</string>
+    <string name="section_local">本地文件</string>
+    <string name="menu_paste">粘贴</string>
+    
+    <string name="operitor_title">操作</string>
+    <string name="confirm_msg">确认删除 <xliff:g id="delete">%1$s</xliff:g> ?</string>
+    
 </resources>

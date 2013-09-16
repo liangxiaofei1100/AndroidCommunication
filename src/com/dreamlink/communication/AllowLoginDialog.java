@@ -35,17 +35,16 @@ public class AllowLoginDialog {
 		AlertDialog.Builder alertConfig = new AlertDialog.Builder(mContext);
 		alertConfig.setIcon(mContext.getResources().getDrawable(
 				R.drawable.app_logo));
-		alertConfig.setTitle("Login request");
-		alertConfig.setMessage("User: " + user.getUserName()
-				+ " request to login.");
-		alertConfig.setPositiveButton("Allow", new OnClickListener() {
+		alertConfig.setTitle(R.string.login_dialog_title);
+		alertConfig.setMessage(mContext.getString(R.string.login_dialog_message, user.getUserName()));
+		alertConfig.setPositiveButton(R.string.login_dialog_allow, new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				callBack.onLoginComfirmed(user, communication, true);
 			}
 		});
-		alertConfig.setNegativeButton("Disallow", new OnClickListener() {
+		alertConfig.setNegativeButton(R.string.login_dialog_disallow, new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
