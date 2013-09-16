@@ -40,13 +40,6 @@
         <activity
             android:name="com.dreamlink.communication.ui.MainUIFrame"
             android:screenOrientation="portrait" >
-            <meta-data
-                android:name="app_id"
-                android:value="113" />
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.ui.MainUIFrame2"
-            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.dreamlink.communication.MainActivity"
@@ -55,9 +48,6 @@
         <activity 
             android:name="com.dreamlink.communication.ui.MainFragmentActivity"
             android:screenOrientation="portrait">
-            <meta-data
-                android:name="app_id"
-                android:value="113" />
         </activity>
         <activity
             android:name="com.dreamlink.communication.server.ClientListActivity"
@@ -99,6 +89,8 @@
         </activity>
 
         <service android:name="com.dreamlink.communication.ui.file.RemoteShareService" >
+        </service>
+         <service android:name="com.dreamlink.communication.ui.service.FileTransferService" >
         </service>
 
         <activity
@@ -239,18 +231,6 @@
         </activity>
         <activity
             android:name="com.dreamlink.communication.ui.history.HistoryActivity"
-            >
-        </activity>
-<!--         <receiver  -->
-<!--             android:name="com.dreamlink.communication.ui.history.HistoryActivity$HistoryReceiver" -->
-<!--             > -->
-<!--             <intent-filter> -->
-<!--                 <action android:name="com.dreamlink.communication.sendfile"/> -->
-<!--             </intent-filter> -->
-<!--         </receiver> -->
-        
-        <activity
-            android:name="com.dreamlink.communication.ui.history.HistoryActivityTest"
             >
         </activity>
         <activity

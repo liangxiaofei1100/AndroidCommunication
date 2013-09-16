@@ -76,7 +76,7 @@ public class ImageAdapter extends BaseAdapter{
 				holder.imageView.setImageResource(R.drawable.zapya_data_photo_l);
 			}
 		}else {
-			Bitmap bitmap = asyncImageLoader.loadImage(imageUrl, FileInfoManager.TYPE_IMAGE, BaseImageFragment.bitmapCaches, 
+			Bitmap bitmap = asyncImageLoader.loadImage(imageUrl, FileInfoManager.TYPE_IMAGE, ImageFragment.bitmapCaches, 
 					holder.imageView, 
 					new ILoadImageCallback() {
 						@Override

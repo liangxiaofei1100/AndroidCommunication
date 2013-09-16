@@ -1,5 +1,7 @@
 package com.dreamlink.communication.ui.history;
 
+import java.io.File;
+
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Parcel;
@@ -26,7 +28,8 @@ public class HistoryInfo implements Parcelable{
 	private String sendUserName;
 	
 	/**send or receive file info*/
-	private FileTransferInfo fileInfo;
+	private File file;
+	private long fileSize;
 	
 	/**current transfer file size(bytes)*/
 	private double progress = 0;
@@ -49,11 +52,11 @@ public class HistoryInfo implements Parcelable{
 	public HistoryInfo(){
 	}
 	
-	public HistoryInfo(int  msgType, long date, User user, FileTransferInfo fileInfo){
+	public HistoryInfo(int  msgType, long date, User user, File file){
 		this.msgType = msgType;
 		this.date = date;
 		this.receiveUser = user;
-		this.fileInfo = fileInfo;
+		this.file = file;
 	}
 	
 	public int getMsgType(){
@@ -92,16 +95,24 @@ public class HistoryInfo implements Parcelable{
 		this.sendUserName = name;
 	}
 	
-	public FileTransferInfo getFileInfo(){
-		return fileInfo;
+	public File getFile(){
+		return file;
 	}
 	
-	public void setFileInfo(FileTransferInfo fileInfo){
-		this.fileInfo = fileInfo;
+	public void setFile(File file){
+		this.file = file;
+	}
+	
+	public long getFileSize(){
+		return fileSize;
+	}
+	
+	public void setFileSize(long size){
+		this.fileSize = size;
 	}
 	
 	public double getMax(){
-		return fileInfo.getFileSize();
+		return fileSize;
 	}
 	
 	public double getProgress(){

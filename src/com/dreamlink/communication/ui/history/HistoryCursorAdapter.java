@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.DreamUtil;
@@ -15,6 +16,7 @@ import com.dreamlink.communication.ui.file.FileBrowserFragment;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.util.Log;
 
+import android.R.integer;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,6 +38,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 	private LayoutInflater inflater = null;
 	private List<HistoryInfo> list = new ArrayList<HistoryInfo>();
 	private int status = -1;
+	private Notice mNotice = null;
 	private Context mContext;
 	private AsyncImageLoader bitmapLoader = null;
 	private boolean scrollFlag = true;
@@ -44,6 +47,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		super(context, null, true);
 		
 		this.mContext = context;
+		mNotice  = new Notice(context);
 		inflater = LayoutInflater.from(context);
 		this.list = list;
 		
@@ -88,6 +92,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		Log.d(TAG, "bindView.count=" + cursor.getCount());
 		// TODO Auto-generated method stub
 		ViewHolder holder = (ViewHolder) view.getTag();
+		holder.position = cursor.getPosition();
 		
 		int id = cursor.getInt(cursor.getColumnIndex(MetaData.History._ID));
 		long time = cursor.getLong(cursor.getColumnIndex(MetaData.History.DATE));
@@ -211,7 +216,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 			holder.fileSizeView.setText(HistoryManager.nf.format(percent2) + " | " + DreamUtil.getFormatSize(fileSize));
 		case HistoryManager.STATUS_RECEIVE_FAIL:
 			holder.fileSizeView.setText(R.string.receive_fail);
-			holder.fileSizeView.setText(Color.RED);
+			holder.fileSizeView.setTextColor(Color.RED);
 			break;
 
 		default:
@@ -242,10 +247,13 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		holder.fileNameView = (TextView) view.findViewById(R.id.tv_send_file_name);
 		holder.fileSizeView = (TextView) view.findViewById(R.id.tv_send_file_size);
 		holder.msgLayout = (LinearLayout) view.findViewById(R.id.layout_chatcontent);
-		
+		holder.msgLayout.setTag(cursor.getPosition());
+		holder.msgLayout.setOnClickListener(mClickListener);
 		view.setTag(holder);
+		
 		return view;
 	}
+	MsgOnClickListener mClickListener = new MsgOnClickListener();
 	
 	class ViewHolder{
 		ProgressBar titleBar;
@@ -258,38 +266,36 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		ImageView iconView;
 		//msg layout
 		LinearLayout msgLayout;
+		int position;
 	}
 	
 	class MsgOnClickListener implements OnClickListener{
-		int position = -1;
-		MsgOnClickListener(int position){
-			this.position = position;	
-		}
 		
 		@Override
 		public void onClick(View v) {
-			final HistoryInfo historyInfo = list.get(position);
+			final Cursor cursor = getCursor();
+			cursor.moveToPosition((Integer) v.getTag());
+			final String filePath = cursor.getString(cursor.getColumnIndex(MetaData.History.FILE_PATH));
+			String fileName = cursor.getString(cursor.getColumnIndex(MetaData.History.FILE_NAME));
 			new AlertDialog.Builder(mContext)
-				.setTitle(historyInfo.getFileInfo().getFileName())
+				.setTitle(fileName)
 				.setItems(R.array.history_menu, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 							switch (which) {
 							case 0:
 								//send
-								FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(historyInfo.getFileInfo().getFilePath()));
-
 								FileSendUtil fileSendUtil = new FileSendUtil(mContext);
-								fileSendUtil.sendFile(fileTransferInfo);
+								fileSendUtil.sendFile(filePath);
 								break;
 							case 1:
 								//open
 								FileInfoManager fileInfoManager = new FileInfoManager(mContext);
-								fileInfoManager.openFile(historyInfo.getFileInfo().getFilePath());
+								fileInfoManager.openFile(filePath);
 								break;
 							case 2:
 								//delete
-								
+								mNotice.showToast("尚不可用");
 								break;
 							}
 					}

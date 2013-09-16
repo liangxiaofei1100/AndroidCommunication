@@ -57,11 +57,11 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 	private Context mContext;
 	
 	//title views
-		private ImageView mTitleIcon;
-		private TextView mTitleView;
-		private TextView mTitleNum;
-		private ImageView mRefreshView;
-		private ImageView mHistoryView;
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
 		
 	//video contentObserver listener
 	class VideoContent extends ContentObserver{
@@ -157,7 +157,9 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 
 		@Override
 		protected String doInBackground(Void... params) {
+			Log.d(TAG, "start get video src:" + System.currentTimeMillis());
 			mVideoLists = mScan.getVideoInfo();
+			Log.d(TAG, "end get video src:" + System.currentTimeMillis());
 			return null;
 		}
 		
@@ -214,10 +216,10 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 						break;
 					case 1:
 						//send
-						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(mediaInfo.getUrl()));
+//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(mediaInfo.getUrl()));
 
 						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
-						fileSendUtil.sendFile(fileTransferInfo);
+						fileSendUtil.sendFile(mediaInfo.getUrl());
 						break;
 					case 2:
 						//delete
@@ -292,11 +294,9 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 			break;
 			
 		case R.id.iv_history:
-			MainFragmentActivity.instance.goToHistory();
-//			Intent intent = new Intent();
-//			intent.putExtra(Extra.APP_ID, mAppId);
-//			intent.setClass(getActivity(), HistoryActivity.class);
-//			startActivity(intent);
+			Intent intent = new Intent();
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
 			break;
 
 		default:

@@ -1,5 +1,6 @@
 package com.dreamlink.communication.ui.common;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,9 +40,18 @@ public class FileSendUtil {
 	
 	/**
 	 * send file to others
-	 * @param fileTransferInfo
+	 * @param path file path
 	 */
-	public void sendFile(FileTransferInfo fileTransferInfo){
+	public void sendFile(String path){
+		File file = new File(path);
+		sendFile(file);
+	}
+	
+	/**
+	 * send file to others
+	 * @param file file
+	 */
+	public void sendFile(File file){
 		ArrayList<String> userNameList = mUserManager.getAllUserNameList();
 		if (userNameList.size() == 0) {
 			mNotice.showToast(R.string.connect_first);
@@ -51,15 +61,15 @@ public class FileSendUtil {
 			ArrayList<User> userList = new ArrayList<User>();
 			User user = mUserManager.getUser(userNameList.get(0));
 			userList.add(user);
-			Log.d(TAG, "before send.fileinfo.filepath=" + fileTransferInfo.getFilePath());
-			doSend(userList, fileTransferInfo);
+			Log.d(TAG, "before send.fileinfo.filepath=" + file.getPath());
+			doSend(userList, file);
 		}else {
 			//if there are two or more user,need show dialog for user choose
-			showUserChooseDialog(userNameList, fileTransferInfo);
+			showUserChooseDialog(userNameList, file);
 		}
 	}
 	
-	public void showUserChooseDialog(List<String> data, final FileTransferInfo fileInfo){
+	public void showUserChooseDialog(List<String> data, final File file){
 		final String[] items = new String[data.size()];
 		final boolean[] checkes = new boolean[data.size()];
 		for (int i = 0; i < data.size(); i++) {
@@ -84,7 +94,7 @@ public class FileSendUtil {
 							userList.add(user);
 						}
 					}
-					doSend(userList, fileInfo);
+					doSend(userList, file);
 				}
 			})
 			.setNegativeButton(android.R.string.cancel, null)
@@ -96,11 +106,11 @@ public class FileSendUtil {
 	 * @param list the send user list
 	 * @param fileInfo the file that send
 	 */
-	public void doSend(ArrayList<User> list, FileTransferInfo fileTransferInfo){
+	public void doSend(ArrayList<User> list, File file){
 		Intent intent = new Intent();
 		intent.setAction(DreamConstant.SEND_FILE_ACTION);
 		Bundle bundle = new Bundle();
-		bundle.putParcelable(Extra.SEND_FILE, fileTransferInfo);
+		bundle.putSerializable(Extra.SEND_FILE, file);
 		bundle.putParcelableArrayList(Extra.SEND_USER, list);
 		intent.putExtras(bundle);
 		context.sendBroadcast(intent);

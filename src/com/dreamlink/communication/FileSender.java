@@ -30,7 +30,6 @@ public class FileSender {
 
 	private OnFileSendListener mListener;
 	private File mSendFile;
-	private HistoryInfo mSendHistoryInfo;
 	private ServerSocket mServerSocket;
 
 	private SendHandlerThread mHandlerThread;
@@ -44,7 +43,14 @@ public class FileSender {
 
 	private static final int FINISH_RESULT_SUCCESS = 1;
 	private static final int FINISH_RESULT_FAIL = 2;
+	private Object mKey;
 
+	public FileSender(){};
+	
+	public FileSender(Object key){
+		mKey = key;
+	}
+	
 	/**
 	 * Create file send server and send file to the first connected client.
 	 * After the file is sent, the server is closed.
@@ -53,14 +59,13 @@ public class FileSender {
 	 * @param listener
 	 * @return The server socket port.
 	 */
-	public int sendFile(HistoryInfo historyInfo, OnFileSendListener listener) {
+	public int sendFile(File file, OnFileSendListener listener) {
 		mListener = listener;
-//		mSendFile = file;
-		mSendHistoryInfo = historyInfo;
-
+		mSendFile = file;
+		
 		mServerSocket = createServerSocket();
 		if (mServerSocket == null) {
-			Log.e(TAG, "sendFile() file: " + historyInfo.getFileInfo().getFilePath()
+			Log.e(TAG, "sendFile() file: " + file
 					+ ", fail. Create server socket error");
 			return -1;
 		}
@@ -72,7 +77,6 @@ public class FileSender {
 		mHandlerThread.start();
 
 		mHandler = new Handler(mHandlerThread.getLooper(), mHandlerThread);
-
 		return mServerSocket.getLocalPort();
 	}
 
@@ -109,14 +113,14 @@ public class FileSender {
 						+ client.getInetAddress().getHostAddress());
 				Log.d(TAG, "Server: connection done");
 				OutputStream outputStream = client.getOutputStream();
-				Log.d(TAG, "server: copying files " + mSendHistoryInfo.getFileInfo().getFilePath());
-				copyFile(mSendHistoryInfo, outputStream);
+				Log.d(TAG, "server: copying files " + mSendFile.toString());
+				copyFile(new FileInputStream(mSendFile), outputStream);
 				mServerSocket.close();
 			}  catch (Exception e) {
-				mSendHistoryInfo.setStatus(HistoryManager.STATUS_SEND_FAIL);
 				Log.e(TAG, "FileSenderThread " + e.toString());
+				notifyFinish(false);
 			}
-			Log.d(TAG, "FileSenderThread file: [" + mSendHistoryInfo.getFileInfo().getFileName()
+			Log.d(TAG, "FileSenderThread file: [" + mSendFile.getName()
 					+ "] finished");
 		}
 	}
@@ -132,22 +136,19 @@ public class FileSender {
 
 			switch (msg.what) {
 			case MSG_UPDATE_PROGRESS:
-//				Bundle data = msg.getData();
-//				long sentBytes = data.getLong(KEY_SENT_BYTES);
-//				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
-//				if (mListener != null) {
-//					mListener.onSendProgress(sentBytes, totalBytes);
-//				}
+				Bundle data = msg.getData();
+				double sentBytes = data.getDouble(KEY_SENT_BYTES);
+				double totalBytes = data.getDouble(KEY_TOTAL_BYTES);
 				if (mListener != null) {
-					mListener.onSendProgress(mSendHistoryInfo);
+					mListener.onSendProgress(sentBytes, mSendFile, mKey);
 				}
 				break;
 			case MSG_FINISH:
 				if (mListener != null) {
 					if (msg.arg1 == FINISH_RESULT_SUCCESS) {
-						mListener.onSendFinished(mSendHistoryInfo, true);
+						mListener.onSendFinished(true, mSendFile, mKey);
 					} else {
-						mListener.onSendFinished(mSendHistoryInfo, false);
+						mListener.onSendFinished(false, mSendFile,mKey);
 					}
 				}
 
@@ -162,16 +163,12 @@ public class FileSender {
 
 	}
 
-	private void copyFile(HistoryInfo historyInfo, OutputStream out) throws FileNotFoundException {
-		//set status
-		historyInfo.setStatus(HistoryManager.STATUS_SENDING);
-		historyInfo.setStartTime(System.currentTimeMillis());
-		InputStream inputStream = new FileInputStream(historyInfo.getFileInfo().getFilePath());
+	private void copyFile(InputStream inputStream, OutputStream out) {
 		byte buf[] = new byte[4096];
 		int len;
 		double sendBytes = 0;
 		long start = System.currentTimeMillis();
-		double totalBytes = historyInfo.getMax();
+		double totalBytes = mSendFile.length();
 		int lastProgress = 0;
 		int currentProgress = 0;
 		try {
@@ -181,19 +178,15 @@ public class FileSender {
 				currentProgress = (int) (((double) sendBytes / totalBytes) * 100);
 				if (lastProgress != currentProgress) {
 					lastProgress = currentProgress;
-					mSendHistoryInfo.setProgress(sendBytes);
-					mSendHistoryInfo.setNowTime(System.currentTimeMillis());
-					notifiyProgress();
+					notifyProgress(sendBytes, totalBytes);
 				}
 			}
 
-			historyInfo.setStatus(HistoryManager.STATUS_SEND_SUCCESS);
 			notifyFinish(true);
 
 			out.close();
 			inputStream.close();
 		} catch (IOException e) {
-			historyInfo.setStatus(HistoryManager.STATUS_SEND_FAIL);
 			notifyFinish(false);
 			Log.d(TAG, e.toString());
 		}
@@ -201,19 +194,15 @@ public class FileSender {
 		Log.d(TAG, "Total size = " + sendBytes + "bytes time = " + time
 				+ ", speed = " + (sendBytes / time) + "KB/s");
 	}
-	
-	private void notifiyProgress(){
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_PROGRESS;
-		mHandler.sendMessage(message);
-	}
 
-	private void notifyProgress(long sentBytes, long totalBytes) {
+	private void notifyProgress(double sentBytes, double totalBytes) {
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_UPDATE_PROGRESS;
 		Bundle data = new Bundle();
-		data.putLong(KEY_SENT_BYTES, sentBytes);
-		data.putLong(KEY_TOTAL_BYTES, totalBytes);
+//		data.putLong(KEY_SENT_BYTES, sentBytes);
+//		data.putLong(KEY_TOTAL_BYTES, totalBytes);
+		data.putDouble(KEY_SENT_BYTES, sentBytes);
+		data.putDouble(KEY_TOTAL_BYTES, totalBytes);
 		message.setData(data);
 		mHandler.sendMessage(message);
 	}
@@ -236,14 +225,18 @@ public class FileSender {
 	public interface OnFileSendListener {
 		/**
 		 * Every send 1 percent of file, this method is invoked.
+		 * 
+		 * @param sentBytes
+		 * @param file
 		 */
-		void onSendProgress(HistoryInfo historyInfo);
+		void onSendProgress(double sentBytes, File file, Object key);
 
 		/**
 		 * The file is sent.
 		 * 
 		 * @param success
 		 */
-		void onSendFinished(HistoryInfo historyInfo, boolean success);
+		void onSendFinished(boolean success, File file, Object key);
 	}
+	
 }

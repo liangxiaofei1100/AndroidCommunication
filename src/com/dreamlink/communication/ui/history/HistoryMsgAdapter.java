@@ -118,7 +118,7 @@ public class HistoryMsgAdapter extends BaseAdapter {
 		
 		
 		String time = historyInfo.getFormatDate();
-		String fileName = historyInfo.getFileInfo().getFileName();
+//		String fileName = historyInfo.getFileInfo().getFileName();
 		String userName = historyInfo.getSendUserName();
 		double max = historyInfo.getMax();
 		double progress = historyInfo.getProgress();
@@ -127,64 +127,64 @@ public class HistoryMsgAdapter extends BaseAdapter {
 //		
 		holder.dateView.setText(time);
 		holder.userNameView.setText(userName);
-		holder.fileNameView.setText(fileName);
+//		holder.fileNameView.setText(fileName);
 		holder.fileSizeView.setTextColor(Color.BLACK);
 		
 		/*****use async thread loader bitmap start*********/
 		//just load image,video,apk file icon;others use default icon
 		if (!scrollFlag) {
-			if (AsyncImageLoader.bitmapCache.size() > 0
-					&& AsyncImageLoader.bitmapCache.get(historyInfo.getFileInfo().getFilePath()) != null) {
-				holder.iconView.setImageBitmap(AsyncImageLoader.bitmapCache.get(historyInfo.getFileInfo().getFilePath()).get());
-			} else {
-				holder.iconView.setImageDrawable(historyInfo.getIcon());
-			}
+//			if (AsyncImageLoader.bitmapCache.size() > 0
+//					&& AsyncImageLoader.bitmapCache.get(historyInfo.getFileInfo().getFilePath()) != null) {
+//				holder.iconView.setImageBitmap(AsyncImageLoader.bitmapCache.get(historyInfo.getFileInfo().getFilePath()).get());
+//			} else {
+//				holder.iconView.setImageDrawable(historyInfo.getIcon());
+//			}
 		}else {
 			if (FileInfoManager.TYPE_IMAGE == historyInfo.getFileType()) {
-				Bitmap bitmap = bitmapLoader.loadImage(historyInfo.getFileInfo().getFilePath(), historyInfo.getFileType(),
-						FileBrowserFragment.bitmapCaches, holder.iconView, new ILoadImageCallback() {
-							@Override
-							public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
-								imageView.setImageBitmap(bitmap);
-							}
-						});
-				if (null != bitmap) {
-					holder.iconView.setImageBitmap(bitmap);
-				} else {
-					holder.iconView.setImageDrawable(historyInfo.getIcon());
-				}
+//				Bitmap bitmap = bitmapLoader.loadImage(historyInfo.getFileInfo().getFilePath(), historyInfo.getFileType(),
+//						FileBrowserFragment.bitmapCaches, holder.iconView, new ILoadImageCallback() {
+//							@Override
+//							public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
+//								imageView.setImageBitmap(bitmap);
+//							}
+//						});
+//				if (null != bitmap) {
+//					holder.iconView.setImageBitmap(bitmap);
+//				} else {
+//					holder.iconView.setImageDrawable(historyInfo.getIcon());
+//				}
 			} else if (FileInfoManager.TYPE_APK == historyInfo.getFileType()) {
-				Bitmap cacheDrawable = bitmapLoader.loadImage(historyInfo.getFileInfo().getFilePath(), historyInfo.getFileType(),
-						holder.iconView, new ILoadImageCallback() {
-							@Override
-							public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
-								if (null != bitmap) {
-									imageView.setImageBitmap(bitmap);
-								}
-							}
-						});
+//				Bitmap cacheDrawable = bitmapLoader.loadImage(historyInfo.getFileInfo().getFilePath(), historyInfo.getFileType(),
+//						holder.iconView, new ILoadImageCallback() {
+//							@Override
+//							public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
+//								if (null != bitmap) {
+//									imageView.setImageBitmap(bitmap);
+//								}
+//							}
+//						});
 
-				if (null != cacheDrawable) {
-					holder.iconView.setImageBitmap(cacheDrawable);
-				} else {
-					holder.iconView.setImageDrawable(historyInfo.getIcon());
-				}
+//				if (null != cacheDrawable) {
+//					holder.iconView.setImageBitmap(cacheDrawable);
+//				} else {
+//					holder.iconView.setImageDrawable(historyInfo.getIcon());
+//				}
 			} else if (FileInfoManager.TYPE_VIDEO == historyInfo.getFileType()) {
-				Bitmap videoBitmap = bitmapLoader.loadImage(historyInfo.getFileInfo().getFilePath(), historyInfo.getFileType(),
-						holder.iconView, new ILoadImageCallback() {
-							@Override
-							public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
-								if (null != bitmap) {
-									imageView.setImageBitmap(bitmap);
-								}
-							}
-						});
-
-				if (null != videoBitmap) {
-					holder.iconView.setImageBitmap(videoBitmap);
-				} else {
-					holder.iconView.setImageDrawable(historyInfo.getIcon());
-				}
+//				Bitmap videoBitmap = bitmapLoader.loadImage(historyInfo.getFileInfo().getFilePath(), historyInfo.getFileType(),
+//						holder.iconView, new ILoadImageCallback() {
+//							@Override
+//							public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
+//								if (null != bitmap) {
+//									imageView.setImageBitmap(bitmap);
+//								}
+//							}
+//						});
+//
+//				if (null != videoBitmap) {
+//					holder.iconView.setImageBitmap(videoBitmap);
+//				} else {
+//					holder.iconView.setImageDrawable(historyInfo.getIcon());
+//				}
 			} else {
 				holder.iconView.setImageDrawable(historyInfo.getIcon());
 			}
@@ -267,22 +267,22 @@ public class HistoryMsgAdapter extends BaseAdapter {
 		public void onClick(View v) {
 			final HistoryInfo historyInfo = list.get(position);
 			new AlertDialog.Builder(mContext)
-				.setTitle(historyInfo.getFileInfo().getFileName())
+				.setTitle(historyInfo.getFile().getName())
 				.setItems(R.array.history_menu, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 							switch (which) {
 							case 0:
 								//send
-								FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(historyInfo.getFileInfo().getFilePath()));
+//								FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(historyInfo.getFileInfo().getFilePath()));
 
 								FileSendUtil fileSendUtil = new FileSendUtil(mContext);
-								fileSendUtil.sendFile(fileTransferInfo);
+								fileSendUtil.sendFile(historyInfo.getFile());
 								break;
 							case 1:
 								//open
 								FileInfoManager fileInfoManager = new FileInfoManager(mContext);
-								fileInfoManager.openFile(historyInfo.getFileInfo().getFilePath());
+								fileInfoManager.openFile(historyInfo.getFile().getAbsolutePath());
 								break;
 							case 2:
 								//delete

@@ -1,6 +1,5 @@
 package com.dreamlink.communication.ui;
 
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,22 +9,13 @@ import com.dreamlink.communication.ui.app.AppFragment;
 import com.dreamlink.communication.ui.app.GameFragment;
 import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.app.TiandiFragment;
-import com.dreamlink.communication.ui.common.FragmentPagerSupport;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
-import com.dreamlink.communication.ui.file.FileClassifyFragment;
-import com.dreamlink.communication.ui.file.FileFragmentActivity;
-import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.history.HistoryFragment;
 import com.dreamlink.communication.ui.image.ImageFragment;
-import com.dreamlink.communication.ui.image.ImageFragmentActivity;
 import com.dreamlink.communication.ui.media.MediaAudioFragment;
-import com.dreamlink.communication.ui.media.MediaFragmentActivity;
 import com.dreamlink.communication.ui.media.MediaVideoFragment;
 import com.dreamlink.communication.ui.network.NetworkFragment;
 import com.dreamlink.communication.util.Log;
 
-import android.app.LocalActivityManager;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -35,18 +25,12 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.Window;
-import android.widget.SimpleAdapter.ViewBinder;
 
 public class MainFragmentActivity extends FragmentActivity {
 	private static final String TAG = "MainFragmentActivity";
 	ViewPager viewPager;
 	MyFragmentPagerAdapter mAdapter;
 	MyPageAdapter myPageAdapter;
-	private static final String APP = "APP";
-	private static final String PICTURE = "PICTURE";
-	private static final String MEDIA = "MEDIA";
-	private static final String FILE = "FILE";
-	private static final String SHARE = "SHARE";
 	public static MainFragmentActivity instance;
 	
 	@Override
@@ -59,9 +43,10 @@ public class MainFragmentActivity extends FragmentActivity {
 		
 		int position = getIntent().getIntExtra("position", 0);
 		viewPager = (ViewPager) findViewById(R.id.vp_main_frame);
-		viewPager.setOffscreenPageLimit(8);
+		//考虑到内存消耗问题，缓存页面不应该设置这么大
+		viewPager.setOffscreenPageLimit(1);
 		
-		int appid = AppUtil.getAppID(MainFragmentActivity.this);
+		int appid = AppUtil.getAppID(getApplication());
 		List<Fragment> fragments = new ArrayList<Fragment>();
 		
 		fragments.add(TiandiFragment.newInstance(appid));//朝颜天地
@@ -72,7 +57,10 @@ public class MainFragmentActivity extends FragmentActivity {
 		fragments.add(MediaVideoFragment.newInstance(appid));//视频
 		fragments.add(AppFragment.newInstance(appid));//应用
 		fragments.add(GameFragment.newInstance(appid));//游戏
-		fragments.add(HistoryFragment.newInstance(appid));
+		fragments.add(FileBrowserFragment.newInstance(appid));//批量传输
+		//设置
+		//帮助
+//		fragments.add(HistoryFragment.newInstance(appid));//传输记录
 		mAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragments);
 		viewPager.setAdapter(mAdapter);
 		viewPager.setCurrentItem(position);
@@ -83,40 +71,11 @@ public class MainFragmentActivity extends FragmentActivity {
 		public MyFragmentPagerAdapter(FragmentManager fm, List<Fragment> list) {
 			super(fm);
 			this.fragments = list;
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public Fragment getItem(int position) {
-			// TODO Auto-generated method stub
-//			Fragment fragment = null;
 			return fragments.get(position);
-//			switch (position) {
-//			case 0:
-////				fragment= new AppNormalFragment();
-//				fragment = FragmentPagerSupport.ArrayListFragment.newInstance(position);
-//				break;
-//			case 1:
-////				fragment = new FileBrowserFragment();
-//				fragment = FragmentPagerSupport.ArrayListFragment.newInstance(position);
-//				break;
-//			case 2:
-////				fragment = new FileClassifyFragment();
-//				fragment = FragmentPagerSupport.ArrayListFragment.newInstance(position);
-//				break;
-//			case 3:
-//				fragment = ImageFragment.newInstance(position);
-////				fragment = FragmentPagerSupport.ArrayListFragment.newInstance(position);
-//				break;
-////			case 4:
-//////				fragment = FragmentPagerSupport.ArrayListFragment.newInstance(position);
-////				fragment = ImageFragment.newInstance(position);
-////				break;
-//			default:
-//				break;
-//			}
-			
-//			return fragment;
 		}
 		
 		public void addItem(Fragment fragment){
@@ -125,8 +84,7 @@ public class MainFragmentActivity extends FragmentActivity {
 
 		@Override
 		public int getCount() {
-			// TODO Auto-generated method stub
-			return fragments.size();
+			return fragments.size()  ;
 		}
 		
 	}

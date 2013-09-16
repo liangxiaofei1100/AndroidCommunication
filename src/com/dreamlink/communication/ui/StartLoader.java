@@ -6,6 +6,7 @@ import java.util.TimerTask;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.service.FileTransferService;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -24,6 +25,8 @@ public class StartLoader extends Activity{
 		if (!file.exists()) {
 			file.mkdirs();
 		}
+		
+		startService();
 	}
 	
 	private static final int LOADING = 0x111;
@@ -58,5 +61,11 @@ public class StartLoader extends Activity{
 		intent.putExtra(Extra.IS_FIRST_START, true);
 		intent.setClass(this, LoginActivity.class);
 		startActivity(intent);
+	}
+	
+	public void startService(){
+		Intent intent = new Intent();
+		intent.setClass(this, FileTransferService.class);
+		startService(intent);
 	}
 }

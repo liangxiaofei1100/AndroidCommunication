@@ -208,10 +208,10 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 						}
 					}else if (normal_menus[1].equals(currentMenu)) {
 						//send
-						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
-
+//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
+//
 						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
-						fileSendUtil.sendFile(fileTransferInfo);
+						fileSendUtil.sendFile(appInfo.getInstallPath());
 					}else if (normal_menus[2].equals(currentMenu)) {
 						//uninstall
 						mAppManager.uninstallApp(appInfo.getPackageName());
@@ -333,7 +333,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		@Override
 		protected List<AppInfo> doInBackground(String... params) {
 			mAppLists.clear();
-			
+			Log.d(TAG, "app start=" + System.currentTimeMillis());
 			// Retrieve all known applications.
             List<ApplicationInfo> apps = mAppManager.getAllApps();
             if (apps == null) {
@@ -372,7 +372,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 
             // Sort the list.
             Collections.sort(mAppLists, ALPHA_COMPARATOR);
-
+            Log.d(TAG, "app end=" + System.currentTimeMillis());
             // Done!
 			return null;
 		}
@@ -438,11 +438,9 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			break;
 			
 		case R.id.iv_history:
-			MainFragmentActivity.instance.goToHistory();
-//			Intent intent = new Intent();
-//			intent.putExtra(Extra.APP_ID, mAppId);
-//			intent.setClass(getActivity(), HistoryActivity.class);
-//			startActivity(intent);
+			Intent intent = new Intent();
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
 			break;
 
 		default:

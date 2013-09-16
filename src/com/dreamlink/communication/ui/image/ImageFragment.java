@@ -3,6 +3,7 @@ package com.dreamlink.communication.ui.image;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,14 +13,12 @@ import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.image.BaseImageFragment.GalleryReceiver;
 import com.dreamlink.communication.ui.media.MediaInfoManager;
 import com.dreamlink.communication.util.Log;
 
@@ -62,7 +61,6 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
 
-	private GalleryReceiver mGalleryReceiver;
 	private ImageAdapter mAdapter;
 
 	private Context mContext;
@@ -76,6 +74,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	public static List<ImageInfo> mImageList = new ArrayList<ImageInfo>();
 
 	private static final String CAMERA_FOLDER = "Camera";
+	public static final String PICTURE_ACTION = "picture.action";
 	private int mAppId;
 	private GetImagesTask task = null;
 
@@ -185,7 +184,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 			mImageList.clear();
 			mImageList = mediaScan.getImageInfo();
 			// sort
-			Collections.sort(mImageList, ImageFragmentActivity.DATE_COMPARATOR);
+			Collections.sort(mImageList, DATE_COMPARATOR);
 			return mImageList.size();
 		}
 
@@ -238,6 +237,24 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 		recycleBitmapCaches(0, firstVisibleItem);
 		recycleBitmapCaches(firstVisibleItem + visibleItemCount, totalItemCount);
 	}
+	
+	/**
+	 * 按修改日期排序
+	 */
+	public static final Comparator<ImageInfo> DATE_COMPARATOR = new Comparator<ImageInfo>() {
+		@Override
+		public int compare(ImageInfo object1, ImageInfo object2) {
+			long date1 = object1.getDate();
+			long date2 = object2.getDate();
+			if (date1 > date2) {
+				return -1;
+			} else if (date1 == date2) {
+				return 0;
+			} else {
+				return 1;
+			}
+		}
+	};
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
@@ -254,9 +271,9 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 						break;
 					case 1:
 						//send
-						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(imageInfo.getPath()));
+//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(imageInfo.getPath()));
 						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
-						fileSendUtil.sendFile(fileTransferInfo);
+						fileSendUtil.sendFile(imageInfo.getPath());
 						break;
 					case 2:
 						//delete
@@ -341,7 +358,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 			updateUI(mImageList.size());
 		}
 		
-		Intent intent = new Intent(ImageFragmentActivity.PICTURE_ACTION);
+		Intent intent = new Intent(PICTURE_ACTION);
 		mContext.sendBroadcast(intent);
 	}
 	
@@ -377,11 +394,9 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 			break;
 			
 		case R.id.iv_history:
-			MainFragmentActivity.instance.goToHistory();
-//			Intent intent = new Intent();
-//			intent.putExtra(Extra.APP_ID, mAppId);
-//			intent.setClass(getActivity(), HistoryActivity.class);
-//			startActivity(intent);
+			Intent intent = new Intent();
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
 			break;
 
 		default:
