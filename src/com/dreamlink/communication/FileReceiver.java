@@ -1,7 +1,6 @@
 package com.dreamlink.communication;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,11 +16,8 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Handler.Callback;
 
-import com.dreamlink.communication.FileReceiverTest.OnReceiveListener;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.protocol.FileTransferInfo;
-import com.dreamlink.communication.ui.history.HistoryInfo;
-import com.dreamlink.communication.ui.history.HistoryManager;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -46,7 +42,6 @@ public class FileReceiver {
 	private Handler mHandler;
 
 	private static final String KEY_RECEIVE_BYTES = "KEY_RECEIVE_BYTES";
-	private static final String KEY_TOTAL_BYTES = "KEY_TOTAL_BYTES";
 
 	private static final int FINISH_RESULT_SUCCESS = 1;
 	private static final int FINISH_RESULT_FAIL = 2;
@@ -205,7 +200,6 @@ public class FileReceiver {
 			case MSG_UPDATE_PROGRESS:
 				Bundle data = msg.getData();
 				long receiveBytes = data.getLong(KEY_RECEIVE_BYTES);
-				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
 				if (mListener != null) {
 					mListener.onReceiveProgress(receiveBytes, mReceivedFile, mKey);
 				}
@@ -246,7 +240,6 @@ public class FileReceiver {
 		message.what = MSG_UPDATE_PROGRESS;
 		Bundle data = new Bundle();
 		data.putLong(KEY_RECEIVE_BYTES, sentBytes);
-		data.putLong(KEY_TOTAL_BYTES, totalBytes);
 		message.setData(data);
 		mHandler.sendMessage(message);
 	}

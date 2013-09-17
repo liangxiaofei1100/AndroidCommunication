@@ -66,11 +66,21 @@ public class FileTransportProtocol {
 		}
 	}
 
+	/**
+	 * This interface is used by {@code ProtocolDecoder}.
+	 *
+	 */
 	public interface OnReceiveFileCallback {
-		//for test
-		void onReceiveFileTest(int sendUserID, int receiveUserID, int appID,
-				byte[] serverAddress, int serverPort, FileTransferInfo fileInfo);
-		//for test
+		/**
+		 * Received a file which is sent by the user with id of sendUserID.
+		 * 
+		 * @param sendUserID
+		 * @param receiveUserID
+		 * @param appID
+		 * @param serverAddress
+		 * @param serverPort
+		 * @param fileInfo
+		 */
 		void onReceiveFile(int sendUserID, int receiveUserID, int appID,
 				byte[] serverAddress, int serverPort, FileTransferInfo fileInfo);
 	}

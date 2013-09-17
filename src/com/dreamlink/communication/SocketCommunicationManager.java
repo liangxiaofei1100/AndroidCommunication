@@ -18,7 +18,6 @@ import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.FileSender.OnFileSendListener;
-import com.dreamlink.communication.FileSenderTest.OnFileSendListenerTest;
 import com.dreamlink.communication.SocketCommunication.OnReceiveMessageListener;
 import com.dreamlink.communication.SocketCommunication.OnCommunicationChangedListener;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
@@ -85,15 +84,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 
 	}
 
-	public interface OnFileTransportListenerTest {
-		/**
-		 * Receive a file. Use fileReciver to receive file.
-		 * 
-		 * @param fileReceiver
-		 */
-		void onReceiveFileTest(FileReceiverTest fileReceiver);
-	}
-
 	public interface OnFileTransportListener {
 		void onReceiveFile(FileReceiver fileReceiver);
 	}
@@ -131,7 +121,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * 
 	 * key: listener, value: app ID.
 	 */
-	private ConcurrentHashMap<OnFileTransportListenerTest, Integer> mOnFileTransportListenerTest = new ConcurrentHashMap<OnFileTransportListenerTest, Integer>();
 	private ConcurrentHashMap<OnFileTransportListener, Integer> mOnFileTransportListener = new ConcurrentHashMap<SocketCommunicationManager.OnFileTransportListener, Integer>();
 	private UserManager mUserManager = UserManager.getInstance();
 	private ProtocolDecoder mProtocolDecoder;
@@ -187,12 +176,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		}
 	}
 
-	public void registerOnFileTransportListenerTest(
-			OnFileTransportListenerTest listener, int appID) {
-		Log.d(TAG, "registerOnFileTransportListenerTest() appID = " + appID);
-		mOnFileTransportListenerTest.put(listener, appID);
-	}
-
 	public void registerOnFileTransportListener(
 			OnFileTransportListener listener, int appID) {
 		Log.d(TAG, "registerOnFileTransportListener() appID = " + appID);
@@ -214,20 +197,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	}
 
 	// test by yuri
-
-	public void unregisterOnFileTransportListenerTest(
-			OnFileTransportListenerTest listener) {
-		if (listener == null) {
-			Log.e(TAG, "the params listener is null");
-		} else {
-			if (mOnFileTransportListenerTest.containsKey(listener)) {
-				int appID = mOnFileTransportListenerTest.remove(listener);
-				Log.d(TAG, "mOnFileTransportListenerTest() appID = " + appID);
-			} else {
-				Log.e(TAG, "there is no this listener in the map");
-			}
-		}
-	}
 
 	public void setLoginRequestCallBack(ILoginRequestCallBack callback) {
 		mLoginRequestCallBack = callback;
@@ -256,45 +225,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		}
 	}
 
-	/**
-	 * Send file to the receiveUser.
-	 * 
-	 * @param file
-	 * @param receiveUser
-	 * @param appID
-	 */
-	public void sendFileTest(File file, OnFileSendListenerTest listener,
-			User receiveUser, int appID) {
-		Log.d(TAG, "sendFile() file = " + file.getName() + ", receive user = "
-				+ receiveUser.getUserName() + ", appID = " + appID);
-		FileSenderTest fileSender = new FileSenderTest();
-		int serverPort = fileSender.sendFile(file, listener);
-		if (serverPort == -1) {
-			Log.e(TAG, "sendFile error, create socket server fail. file = "
-					+ file.getName());
-			return;
-		}
-		InetAddress inetAddress = NetWorkUtil.getLocalInetAddress();
-		if (inetAddress == null) {
-			Log.e(TAG,
-					"sendFile error, get inet address fail. file = "
-							+ file.getName());
-			return;
-		}
-		int userID = receiveUser.getUserID();
-		byte[] inetAddressData = inetAddress.getAddress();
-		byte[] data = ProtocolEncoder.encodeSendFile(mUserManager
-				.getLocalUser().getUserID(), receiveUser.getUserID(), appID,
-				inetAddressData, serverPort, new FileTransferInfo(file));
-		SocketCommunication communication = mUserManager
-				.getSocketCommunication(userID);
-		if (communication != null) {
-			communication.sendMessage(data);
-		} else {
-			Log.e(TAG, "sendFile fail. can not connect with the receiver: "
-					+ receiveUser);
-		}
-	}
 
 	public void sendFile(File file, OnFileSendListener listener, User receiveUser, 
 			int appID){
@@ -337,20 +267,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		} else {
 			Log.e(TAG, "sendFile fail. can not connect with the receiver: "
 					+ receiveUser);
-		}
-	}
-
-	public void notifyFileReceiveListenersTest(int sendUserID, int appID,
-			byte[] serverAddress, int serverPort,
-			FileTransferInfo fileTransferInfo) {
-		for (Map.Entry<OnFileTransportListenerTest, Integer> entry : mOnFileTransportListenerTest
-				.entrySet()) {
-			if (entry.getValue() == appID) {
-				FileReceiverTest fileReceiver = new FileReceiverTest(
-						mUserManager.getAllUser().get(sendUserID),
-						serverAddress, serverPort, fileTransferInfo);
-				entry.getKey().onReceiveFileTest(fileReceiver);
-			}
 		}
 	}
 
