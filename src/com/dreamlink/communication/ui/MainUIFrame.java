@@ -1,10 +1,5 @@
 package com.dreamlink.communication.ui;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.aidl.User;
@@ -12,8 +7,6 @@ import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.debug.NetworkStatus;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.notification.NotificationMgr;
-import com.dreamlink.communication.ui.db.MetaData;
-import com.dreamlink.communication.ui.file.FileTransferActivity;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -24,7 +17,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,26 +44,27 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	private GridView mGridView;
 	private MainUIAdapter mAdapter;
 	private NotificationMgr mNotificationMgr = null;
-	
+
 	private SocketCommunicationManager mSocketComMgr;
-	
-	private ImageView mTransferView,mSettingView, mHelpView;
+
+	private ImageView mTransferView, mSettingView, mHelpView;
 	private ImageView mUserIconView;
 	private TextView mUserNameView;
 	private TextView mNetWorkStatusView;
-	
+
 	private UserManager mUserManager = null;
 	private User mLocalUser;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mContext = this;
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_main_new);
-		
+
 		UserHelper userHelper = new UserHelper(this);
 		mLocalUser = userHelper.loadUser();
-		
+
 		initView();
 
 		mNotificationMgr = new NotificationMgr(MainUIFrame.this);
@@ -79,19 +72,19 @@ public class MainUIFrame extends Activity implements OnClickListener,
 
 		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
 		Log.d(TAG, "onResume");
 		if (mSocketComMgr.getCommunications().isEmpty()) {
 			mNetWorkStatusView.setText("未连接");
-		}else {
+		} else {
 			mNetWorkStatusView.setText("已连接");
 		}
 	}
-	
-	public void initView(){
+
+	public void initView() {
 		mUserIconView = (ImageView) findViewById(R.id.iv_usericon);
 		mTransferView = (ImageView) findViewById(R.id.iv_filetransfer);
 		mSettingView = (ImageView) findViewById(R.id.iv_setting);
@@ -100,18 +93,17 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mUserNameView.setText(mLocalUser.getUserName());
 		mNetWorkStatusView = (TextView) findViewById(R.id.tv_network_status);
 		mUserIconView.setOnClickListener(this);
-		//for test
+		// for test
 		mUserIconView.setOnLongClickListener(new OnLongClickListener() {
-			
+
 			@Override
 			public boolean onLongClick(View v) {
-				// TODO Auto-generated method stub
 				NetworkStatus status = new NetworkStatus(mContext);
 				status.show();
 				return true;
 			}
 		});
-		//for test
+		// for test
 		mTransferView.setOnClickListener(this);
 		mSettingView.setOnClickListener(this);
 		mHelpView.setOnClickListener(this);
@@ -124,22 +116,28 @@ public class MainUIFrame extends Activity implements OnClickListener,
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
+		Intent intent = new Intent();
+		intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		switch (v.getId()) {
 		case R.id.iv_usericon:
-			Intent userSetIntent = new Intent();
-			userSetIntent.setClass(MainUIFrame.this, UserInfoSetting.class);
-			startActivityForResult(userSetIntent, DreamConstant.REQUEST_FOR_MODIFY_NAME);
+			intent.setClass(MainUIFrame.this, UserInfoSetting.class);
+			startActivityForResult(intent,
+					DreamConstant.REQUEST_FOR_MODIFY_NAME);
 			break;
 		case R.id.iv_filetransfer:
-			Intent intent = new Intent(MainUIFrame.this,
-					FileTransferActivity.class);
-			intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+			intent.setClass(this, MainFragmentActivity.class);
+			intent.putExtra("position", 8);
 			startActivity(intent);
 			break;
 		case R.id.iv_setting:
+			intent.setClass(this, MainFragmentActivity.class);
+			intent.putExtra("position", 9);
+			startActivity(intent);
 			break;
 		case R.id.iv_help:
+			intent.setClass(this, MainFragmentActivity.class);
+			intent.putExtra("position", 10);
+			startActivity(intent);
 			break;
 		default:
 			break;
@@ -149,12 +147,11 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		Intent intent = new Intent(MainUIFrame.this,
-				MainFragmentActivity.class);
+		Intent intent = new Intent(MainUIFrame.this, MainFragmentActivity.class);
 		intent.putExtra("position", position);
 		startActivity(intent);
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		Log.d(TAG, "onActivityResult");
@@ -166,22 +163,23 @@ public class MainUIFrame extends Activity implements OnClickListener,
 			}
 		}
 	}
-	
-	/**options menu*/
+
+	/** options menu */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		Log.d(TAG, "onCreateOptionsMenu");
 		menu.add(0, 2, 0, "远程共享");
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case 2:
-			Intent shareIntent = new Intent(MainUIFrame.this, RemoteShareActivity.class);
-			//如果这个activity已经启动了，就不产生新的activity，而只是把这个activity实例加到栈顶来就可以了。
-			shareIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);  
+			Intent shareIntent = new Intent(MainUIFrame.this,
+					RemoteShareActivity.class);
+			// 如果这个activity已经启动了，就不产生新的activity，而只是把这个activity实例加到栈顶来就可以了。
+			shareIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 			startActivity(shareIntent);
 			break;
 		default:
@@ -190,12 +188,11 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		return true;
 	}
 
-	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		// when finish，cloase all connect
-		User tem=UserManager.getInstance().getLocalUser();
+		User tem = UserManager.getInstance().getLocalUser();
 		tem.setUserID(0);
 		mSocketComMgr.closeAllCommunication();
 		// Disable wifi AP.
@@ -208,9 +205,9 @@ public class MainUIFrame extends Activity implements OnClickListener,
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		// TODO Auto-generated method stub
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			showExitDialog();
+			return true;
 		}
 		return super.onKeyDown(keyCode, event);
 	}
@@ -241,5 +238,5 @@ public class MainUIFrame extends Activity implements OnClickListener,
 						}).setNegativeButton(android.R.string.cancel, null)
 				.create().show();
 	}
-	
+
 }

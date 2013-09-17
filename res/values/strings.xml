@@ -70,4 +70,8 @@
     <string name="operitor_title">操作</string>
     <string name="confirm_msg">确认删除 <xliff:g id="delete">%1$s</xliff:g> ?</string>
     
+    <string name="help_title">帮助</string>
+    
+    <string name="settings_title">设置</string>
+    
 </resources>
