@@ -1,6 +1,8 @@
 package com.dreamlink.communication.ui.network;
 
-import java.util.Timer;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -9,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -16,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,14 +35,12 @@ import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.data.UserHelper;
-import com.dreamlink.communication.notification.NotificationMgr;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.server.service.ConnectHelper;
 import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -60,12 +62,25 @@ public class NetworkFragment extends BaseFragment implements
 	private View mCreateNetworkView;
 	private View mJoinNetworkView;
 	private View mShareView;
-	
+	private View mUsersView;
+
+	private View mDisconnectView;
+	private ListView mUserListView;
+	private UserListAdapter mUserListAdapter;
+	private ArrayList<UserInfo> mUserInfos = new ArrayList<UserInfo>();
+
 	private int mAppId = -1;
-	
+	private UserManager mUserManager;
+	private ConnectHelper mConnectHelper;
+
+	IntentFilter mFilter = new IntentFilter();
+
+	private static final int MSG_SHOW_LOGIN_DIALOG = 1;
+	private static final int MSG_UPDATE_NETWORK_STATUS = 2;
+	private static final int MSG_UPDATE_USER = 3;
+
 	/**
-	 * Create a new instance of AppFragment, providing "appid" as an
-	 * argument.
+	 * Create a new instance of AppFragment, providing "appid" as an argument.
 	 */
 	public static NetworkFragment newInstance(int appid) {
 		NetworkFragment f = new NetworkFragment();
@@ -76,37 +91,20 @@ public class NetworkFragment extends BaseFragment implements
 
 		return f;
 	}
-	
+
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID)
+				: 1;
 	};
-
-	private TextView mCreateNetworkTipsTextView;
-	private TextView mJoinNetworkTipsTextView;
 
 	private SocketCommunicationManager mSocketComMgr;
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		mContext = getActivity();
-		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
-		mSocketComMgr.setLoginRequestCallBack(this);
-		mSocketComMgr.setLoginRespondCallback(this);
-
-		connectHelper = ConnectHelper.getInstance(mContext
-				.getApplicationContext());
-		mUserManager = UserManager.getInstance();
-		mUserManager.registerOnUserChangedListener(this);
-
-		mFilter.addAction(DreamConstant.SERVER_CREATED_ACTION);
-		mContext.registerReceiver(mReceiver, mFilter);
-	}
-
-	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		mContext = getActivity();
 		View rootView = inflater.inflate(R.layout.ui_network_neighborhood,
 				container, false);
 
@@ -115,6 +113,23 @@ public class NetworkFragment extends BaseFragment implements
 
 		Log.d(TAG, "onCreate end");
 		return rootView;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
+		mSocketComMgr.setLoginRequestCallBack(this);
+		mSocketComMgr.setLoginRespondCallback(this);
+
+		mConnectHelper = ConnectHelper.getInstance(mContext
+				.getApplicationContext());
+		mUserManager = UserManager.getInstance();
+		mUserManager.registerOnUserChangedListener(this);
+
+		mFilter.addAction(DreamConstant.SERVER_CREATED_ACTION);
+		mContext.registerReceiver(mReceiver, mFilter);
 	}
 
 	private void initTitle(View view) {
@@ -137,43 +152,37 @@ public class NetworkFragment extends BaseFragment implements
 
 	private void initView(View view) {
 		mBluetoothInviteView = view
-				.findViewById(R.id.lv_network_neighborhood_bluetooth);
+				.findViewById(R.id.ll_network_neighborhood_bluetooth);
 		mBluetoothInviteView.setOnClickListener(this);
 		mCreateNetworkView = view
-				.findViewById(R.id.lv_network_neighborhood_create);
+				.findViewById(R.id.ll_network_neighborhood_create);
 		mCreateNetworkView.setOnClickListener(this);
-		mJoinNetworkView = view.findViewById(R.id.lv_network_neighborhood_join);
+		mJoinNetworkView = view.findViewById(R.id.ll_network_neighborhood_join);
 		mJoinNetworkView.setOnClickListener(this);
-		mShareView = view.findViewById(R.id.lv_network_neighborhood_share);
+		mShareView = view.findViewById(R.id.ll_network_neighborhood_share);
 		mShareView.setOnClickListener(this);
 
-		mCreateNetworkTipsTextView = (TextView) view
-				.findViewById(R.id.tv_network_create_tips);
-		mJoinNetworkTipsTextView = (TextView) view
-				.findViewById(R.id.tv_network_join_tips);
+		mUsersView = view.findViewById(R.id.rl_network_neighborhood_users);
+		mDisconnectView = view.findViewById(R.id.ll_network_disconnect);
+		mDisconnectView.setOnClickListener(this);
+
+		mUserListView = (ListView) view
+				.findViewById(R.id.lv_network_neighborhood_users);
+		mUserListAdapter = new UserListAdapter(mContext, mUserInfos);
+		mUserListView.setAdapter(mUserListAdapter);
 	}
 
 	private void updateNetworkStatus() {
-		if (mSocketComMgr.isServerAndCreated()) {
-			Log.d(TAG, "isServerAndCreated true");
-			if (mSocketComMgr.isConnected()) {
-				mCreateNetworkTipsTextView
-						.setText(R.string.create_network_tips_connected);
-			} else {
-				mCreateNetworkTipsTextView.setText(R.string.create_ok);
-			}
+		if (mSocketComMgr.isServerAndCreated() || mSocketComMgr.isConnected()) {
+			mCreateNetworkView.setVisibility(View.GONE);
+			mJoinNetworkView.setVisibility(View.GONE);
+			mShareView.setVisibility(View.VISIBLE);
+			mUsersView.setVisibility(View.VISIBLE);
 		} else {
-			Log.d(TAG, "isServerAndCreated false");
-			mCreateNetworkTipsTextView.setText(R.string.create_network_tips);
-		}
-
-		if (mSocketComMgr.isConnected()) {
-			Log.d(TAG, "isConnected true");
-			mJoinNetworkTipsTextView
-					.setText(R.string.join_network_tips_connected);
-		} else {
-			Log.d(TAG, "isConnected false");
-			mJoinNetworkTipsTextView.setText(R.string.join_network_tips);
+			mCreateNetworkView.setVisibility(View.VISIBLE);
+			mJoinNetworkView.setVisibility(View.VISIBLE);
+			mShareView.setVisibility(View.GONE);
+			mUsersView.setVisibility(View.GONE);
 		}
 	}
 
@@ -182,34 +191,53 @@ public class NetworkFragment extends BaseFragment implements
 		Intent intent = new Intent();
 		intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		switch (v.getId()) {
-		case R.id.lv_network_neighborhood_bluetooth:
+		case R.id.ll_network_neighborhood_bluetooth:
 			intent.setClass(mContext, InviteBluetoothActivity.class);
 			startActivity(intent);
 			break;
-		case R.id.lv_network_neighborhood_create:
+		case R.id.ll_network_neighborhood_create:
 			// intent.setClass(mContext, CreateNetworkActivity.class);
 			// startActivity(intent);
 			createServer();
 			break;
-		case R.id.lv_network_neighborhood_join:
+		case R.id.ll_network_neighborhood_join:
 			intent.setClass(mContext, JoinNetworkActivity.class);
 			startActivity(intent);
 			break;
-		case R.id.lv_network_neighborhood_share:
+		case R.id.ll_network_neighborhood_share:
 			intent.setClass(mContext, RemoteShareActivity.class);
 			startActivity(intent);
+			break;
+		case R.id.ll_network_disconnect:
+			disconnect();
+			updateNetworkStatus();
+			break;
 		default:
 			break;
 		}
 
 	}
 
-	private UserManager mUserManager;
-	private ConnectHelper connectHelper;
-	private boolean sever_flag = false;
+	private void disconnect() {
+		// 1. clear user list.
+		mUserInfos.clear();
+		mUserListAdapter.notifyDataSetChanged();
+		// 2. stop search if this is server.
+		mConnectHelper.stopSearch();
+		// 3. close all communications.
+		mSocketComMgr.closeAllCommunication();
+		// 4. reset local user.
+		mUserManager.resetLocalUserID();
+		// 5. close WiFi AP if WiFi AP is enabled.
+		if (NetWorkUtil.isWifiApEnabled(mContext)) {
+			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
+		}
+		// 6. disconnect current network if connected to the WiFi AP created by
+		// our application.
+		NetWorkUtil.clearWifiConnectHistory(mContext);
+	}
 
 	public void createServer() {
-		// TODO
 		// Disable wifi AP first to avoid wifi AP name is not the newest.
 		if (NetWorkUtil.isWifiApEnabled(mContext)) {
 			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
@@ -217,7 +245,7 @@ public class NetworkFragment extends BaseFragment implements
 		UserHelper userHelper = new UserHelper(mContext);
 		User localUser = userHelper.loadUser();
 		mUserManager.setLocalUser(localUser);
-		
+
 		LayoutInflater inflater = LayoutInflater.from(mContext);
 		View view = inflater.inflate(R.layout.ui_create_server, null);
 		final RadioButton wifiButton = (RadioButton) view
@@ -233,33 +261,29 @@ public class NetworkFragment extends BaseFragment implements
 		final OnSearchListener listener = NetworkFragment.this;
 
 		new AlertDialog.Builder(mContext)
-				.setTitle("Please choose the server type")
+				.setTitle(R.string.choose_network_type_title)
 				.setView(view)
 				.setPositiveButton(android.R.string.ok,
 						new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog,
 									int which) {
-								String msg = "";
+								String networkType = "";
 								if (wifiButton.isChecked()) {
-									msg = "To Create Wifi Server";
-									connectHelper
-											.createServer("wifi", listener);
+									networkType = "Wi-Fi";
+									mConnectHelper.createServer("wifi",
+											listener);
 								} else if (wifiApButton.isChecked()) {
-									msg = "To Create Wifi AP Server";
-									connectHelper.createServer("wifi-ap",
+									networkType = "Wi-Fi AP";
+									mConnectHelper.createServer("wifi-ap",
 											listener);
 								} else {
-									connectHelper.createServer("wifi-direct",
+									networkType = "Wi-Fi Direct";
+									mConnectHelper.createServer("wifi-direct",
 											listener);
-									msg = "To Create Wifi Direct Server";
 								}
-								Toast.makeText(mContext, msg,
+								Toast.makeText(mContext, getString(R.string.creating_network, networkType),
 										Toast.LENGTH_SHORT).show();
-								sever_flag = true;
-
-								mCreateNetworkTipsTextView
-										.setText(R.string.creating);
 							}
 						})
 				.setNegativeButton(android.R.string.cancel,
@@ -267,8 +291,7 @@ public class NetworkFragment extends BaseFragment implements
 							@Override
 							public void onClick(DialogInterface dialog,
 									int which) {
-								sever_flag = false;
-								connectHelper.stopSearch();
+								mConnectHelper.stopSearch();
 							}
 						}).create().show();
 	}
@@ -291,8 +314,6 @@ public class NetworkFragment extends BaseFragment implements
 
 	}
 
-	IntentFilter mFilter = new IntentFilter();
-
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
 		@Override
@@ -300,6 +321,7 @@ public class NetworkFragment extends BaseFragment implements
 			String action = intent.getAction();
 			if (DreamConstant.SERVER_CREATED_ACTION.equals(action)) {
 				updateNetworkStatus();
+				updateUserList();
 			}
 		}
 	};
@@ -328,11 +350,6 @@ public class NetworkFragment extends BaseFragment implements
 		}
 	}
 
-	private class LoginRequestData {
-		User user;
-		SocketCommunication communication;
-	}
-
 	private void showAllowLoginDialog(User user,
 			SocketCommunication communication) {
 		AllowLoginDialog dialog = new AllowLoginDialog(mContext);
@@ -352,6 +369,7 @@ public class NetworkFragment extends BaseFragment implements
 	public void onResume() {
 		super.onResume();
 		updateNetworkStatus();
+		updateUserList();
 	}
 
 	@Override
@@ -374,9 +392,6 @@ public class NetworkFragment extends BaseFragment implements
 		}
 	}
 
-	private static final int MSG_SHOW_LOGIN_DIALOG = 1;
-	private static final int MSG_UPDATE_NETWORK_STATUS = 2;
-
 	private Handler mHandler = new Handler() {
 
 		@Override
@@ -389,22 +404,59 @@ public class NetworkFragment extends BaseFragment implements
 			case MSG_UPDATE_NETWORK_STATUS:
 				updateNetworkStatus();
 				break;
-
+			case MSG_UPDATE_USER:
+				updateUserList();
+				break;
 			default:
 				break;
 			}
 		}
 	};
 
+	private class LoginRequestData {
+		User user;
+		SocketCommunication communication;
+	}
+
+	private void updateUserList() {
+		if (mUsersView.getVisibility() != View.VISIBLE) {
+			return;
+		}
+		mUserInfos.clear();
+
+		Map<Integer, User> users = mUserManager.getAllUser();
+		UserInfo userInfo = null;
+		// TODO User icon is not implement.
+		Drawable userIcon = mContext.getResources().getDrawable(
+				R.drawable.user_icon_default);
+		for (Entry<Integer, User> entry : users.entrySet()) {
+			if (UserManager.isManagerServer(entry.getValue())) {
+				userInfo = new UserInfo(userIcon, entry.getValue()
+						.getUserName(), mContext.getResources().getString(
+						R.string.network_creator));
+			} else {
+				userInfo = new UserInfo(userIcon, entry.getValue()
+						.getUserName(), mContext.getResources().getString(
+						R.string.connected));
+			}
+
+			mUserInfos.add(userInfo);
+		}
+		mUserListAdapter.notifyDataSetChanged();
+	}
+
 	@Override
 	public void onUserConnected(User user) {
+		Log.d(TAG, "onUserConnected " + user);
 		mHandler.sendEmptyMessage(MSG_UPDATE_NETWORK_STATUS);
-
+		mHandler.sendEmptyMessage(MSG_UPDATE_USER);
 	}
 
 	@Override
 	public void onUserDisconnected(User user) {
+		Log.d(TAG, "onUserDisconnected " + user);
 		mHandler.sendEmptyMessage(MSG_UPDATE_NETWORK_STATUS);
+		mHandler.sendEmptyMessage(MSG_UPDATE_USER);
 	}
 
 }

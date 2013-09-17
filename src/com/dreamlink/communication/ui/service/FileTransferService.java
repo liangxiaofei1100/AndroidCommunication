@@ -236,8 +236,8 @@ public class FileTransferService extends Service implements OnFileTransportListe
 	}
 
 	@Override
-	public void onSendProgress(double sentBytes, File file, Object key) {
-		Log.d(TAG, "onSendProgress.name=" + file.getName());
+	public void onSendProgress(long sentBytes, File file, Object key) {
+		Log.v(TAG, "onSendProgress.name=" + file.getName());
 		ContentValues values = new ContentValues();
 		values.put(MetaData.History.STATUS, HistoryManager.STATUS_SENDING);
 		values.put(MetaData.History.PROGRESS, sentBytes);
@@ -271,7 +271,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 
 	@Override
 	public void onReceiveProgress(long receivedBytes, File file, Object key) {
-		Log.d(TAG, "onReceiveProgress.name=" + file.getName());
+		Log.v(TAG, "onReceiveProgress.name=" + file.getName());
 		ContentValues values = new ContentValues();
 		values.put(MetaData.History.STATUS, HistoryManager.STATUS_SENDING);
 		values.put(MetaData.History.PROGRESS, receivedBytes);

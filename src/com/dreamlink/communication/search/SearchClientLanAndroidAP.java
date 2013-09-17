@@ -74,7 +74,7 @@ public class SearchClientLanAndroidAP implements Runnable {
 			try {
 				mSendToClientSocket = new DatagramSocket();
 			} catch (SocketException e) {
-				e.printStackTrace();
+				Log.e(TAG, "Create SendToClientSocket error." + e);
 			}
 
 			new Thread(new SendSearchPacket()).start();
@@ -226,7 +226,6 @@ public class SearchClientLanAndroidAP implements Runnable {
 					Log.d(TAG, "sendSearchRequest ok, data = "
 							+ new String(mSearchPacket.getData()));
 				} catch (IOException e) {
-					e.printStackTrace();
 					Log.e(TAG, "sendSearchRequest, data = "
 							+ new String(mSearchPacket.getData()) + " " + e);
 				}
@@ -244,7 +243,7 @@ public class SearchClientLanAndroidAP implements Runnable {
 				try {
 					Thread.sleep(Search.ANDROID_AP_SEARCH_DELAY);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					Log.e(TAG, "InterruptedException " + e);
 				}
 			}
 		}

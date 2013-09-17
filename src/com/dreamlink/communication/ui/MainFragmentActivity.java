@@ -14,6 +14,7 @@ import com.dreamlink.communication.ui.image.ImageFragment;
 import com.dreamlink.communication.ui.media.MediaAudioFragment;
 import com.dreamlink.communication.ui.media.MediaVideoFragment;
 import com.dreamlink.communication.ui.network.NetworkFragment;
+import com.dreamlink.communication.ui.settings.SettingsFragment;
 import com.dreamlink.communication.util.Log;
 
 import android.os.Bundle;
@@ -58,8 +59,8 @@ public class MainFragmentActivity extends FragmentActivity {
 		fragments.add(AppFragment.newInstance(appid));//应用
 		fragments.add(GameFragment.newInstance(appid));//游戏
 		fragments.add(FileBrowserFragment.newInstance(appid));//批量传输
-		//设置
-		//帮助
+		fragments.add(SettingsFragment.newInstance(appid));//设置
+		fragments.add(HelpFragment.newInstance(appid));//帮助
 //		fragments.add(HistoryFragment.newInstance(appid));//传输记录
 		mAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragments);
 		viewPager.setAdapter(mAdapter);

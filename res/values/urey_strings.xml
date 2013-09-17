@@ -133,8 +133,8 @@
      <string name="exit_app">退出程序</string>
      <string name="confirm_exit">确定要退出？</string>
      <string name="running">正在运行&#8230;</string>
-     <string name="unconnected">未连接</string>
-     <string name="connected">已连接</string>
+     <string name="unconnected">未连接局域网</string>
+     <string name="connected">已连接局域网</string>
      <string name="connect_first">请先连接！</string>
      
      <string name="storage_space">存储空间:共<xliff:g id="total">%1$s</xliff:g>,<xliff:g id="free">%2$s</xliff:g>可用</string>

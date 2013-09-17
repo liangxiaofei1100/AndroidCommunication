@@ -2,7 +2,6 @@ package com.dreamlink.communication;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,8 +14,6 @@ import android.os.Handler.Callback;
 import android.os.HandlerThread;
 import android.os.Message;
 
-import com.dreamlink.communication.ui.history.HistoryInfo;
-import com.dreamlink.communication.ui.history.HistoryManager;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -137,8 +134,8 @@ public class FileSender {
 			switch (msg.what) {
 			case MSG_UPDATE_PROGRESS:
 				Bundle data = msg.getData();
-				double sentBytes = data.getDouble(KEY_SENT_BYTES);
-				double totalBytes = data.getDouble(KEY_TOTAL_BYTES);
+				long sentBytes = data.getLong(KEY_SENT_BYTES);
+				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
 				if (mListener != null) {
 					mListener.onSendProgress(sentBytes, mSendFile, mKey);
 				}
@@ -166,9 +163,9 @@ public class FileSender {
 	private void copyFile(InputStream inputStream, OutputStream out) {
 		byte buf[] = new byte[4096];
 		int len;
-		double sendBytes = 0;
+		long sendBytes = 0;
 		long start = System.currentTimeMillis();
-		double totalBytes = mSendFile.length();
+		long totalBytes = mSendFile.length();
 		int lastProgress = 0;
 		int currentProgress = 0;
 		try {
@@ -195,14 +192,12 @@ public class FileSender {
 				+ ", speed = " + (sendBytes / time) + "KB/s");
 	}
 
-	private void notifyProgress(double sentBytes, double totalBytes) {
+	private void notifyProgress(long sentBytes, long totalBytes) {
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_UPDATE_PROGRESS;
 		Bundle data = new Bundle();
-//		data.putLong(KEY_SENT_BYTES, sentBytes);
-//		data.putLong(KEY_TOTAL_BYTES, totalBytes);
-		data.putDouble(KEY_SENT_BYTES, sentBytes);
-		data.putDouble(KEY_TOTAL_BYTES, totalBytes);
+		data.putLong(KEY_SENT_BYTES, sentBytes);
+		data.putLong(KEY_TOTAL_BYTES, totalBytes);
 		message.setData(data);
 		mHandler.sendMessage(message);
 	}
@@ -229,7 +224,7 @@ public class FileSender {
 		 * @param sentBytes
 		 * @param file
 		 */
-		void onSendProgress(double sentBytes, File file, Object key);
+		void onSendProgress(long sentBytes, File file, Object key);
 
 		/**
 		 * The file is sent.

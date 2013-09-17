@@ -8,6 +8,11 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.app.AppInfo;
 import com.dreamlink.communication.ui.app.AppManager;
 import com.dreamlink.communication.ui.db.AppData;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.service.FileTransferService;
 
 import android.app.Activity;
@@ -18,15 +23,23 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.PowerManager;
+import android.os.Environment;
 import android.util.Log;
 
+/**
+ * This is the first ui to show logo, initialize application and load resource.
+ *
+ */
 public class StartLoader extends Activity {
 	private static final String TAG = "StartLoader";
 	/** The minimum time(ms) of loading page. */
 	private static final int MIN_LOADING_TIME = 1500;
 	private PackageManager pm = null;
 	private AppManager appManager = null;
+	
+	private static final String DB_PATH = "/data"
+			+ Environment.getDataDirectory().getAbsolutePath()
+			+ "/com.dreamlink.communication" + "/databases";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +60,10 @@ public class StartLoader extends Activity {
 	private void load() {
 		Log.d(TAG, "Load start");
 		createFileSaveFolder();
+		initMountManager();
+		// Do not use game DB now.
+		// importGameKeyDb();
+		
 		startService();
 		List<AppInfo> zyAppInfos = loadZYAppToDb();
 		loadAppToDb(zyAppInfos);
@@ -61,12 +78,51 @@ public class StartLoader extends Activity {
 		finish();
 		overridePendingTransition(R.anim.push_right_in, R.anim.push_left_out);
 	}
+	
+	// import game key db
+	private void importGameKeyDb() {
+		// copy game_app.db to database
+		if (!new File(DB_PATH).exists()) {
+			if (new File(DB_PATH).mkdirs()) {
+			} else {
+				Log.e(TAG, "can not create " + DB_PATH);
+			}
+		}
+
+		String dbstr = DB_PATH + "/" + MetaData.DATABASE_NAME;
+		File dbFile = new File(dbstr);
+		if (dbFile.exists()) {
+			return;
+		}
+
+		// import
+		InputStream is;
+		try {
+			is = getResources().openRawResource(R.raw.game_app);
+			FileOutputStream fos = new FileOutputStream(dbFile);
+			byte[] buffer = new byte[4 * 1024];
+			int count = 0;
+			while ((count = is.read(buffer)) > 0) {
+				fos.write(buffer, 0, count);
+			}
+			fos.close();// 关闭输出流
+			is.close();// 关闭输入流
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void createFileSaveFolder() {
 		File file = new File(DreamConstant.DEFAULT_SAVE_FOLDER);
 		if (!file.exists()) {
 			file.mkdirs();
 		}
+	}
+	
+	private void initMountManager(){
+		// get sdcards
+		MountManager mountManager = new MountManager();
+		mountManager.init();
 	}
 
 	class LoadAsyncTask extends AsyncTask<Void, Void, Void> {

@@ -337,7 +337,7 @@ public class LoginProtocol {
 			byteArrayInputStream.close();
 			objectInputStream.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e(TAG, "decodeAllUser error." + e);
 		}
 		return result;
 	}

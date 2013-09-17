@@ -47,18 +47,23 @@
     <string name="network_neighborhood">网上邻居</string>
     <string name="bluetooth_invite">蓝牙邀请</string>
     <string name="bluetooth_invite_tips">将本应用程序通过蓝牙发送给附近的好友</string>
-    <string name="create_network">创建网络</string>
+    <string name="create_network">创建局域网络</string>
     <string name="create_network_tips">通过Wi-Fi创建一个网络连接</string>
     <string name="create_network_tips_connected">已连接</string>
-    <string name="join_network">加入网络</string>
+    <string name="join_network">加入局域网络</string>
     <string name="join_network_tips">通过Wi-Fi加入一个已经创建的连接</string>
     <string name="join_network_tips_connected">已连接</string>
-    <string name="network_share">远程共享</string>
-    <string name="network_share_tips">远程共享您的文件或最爱</string>
+    <string name="network_share">局域网文件共享</string>
+    <string name="network_share_tips">局域网共享您的文件或最爱</string>
     <string name="stop_file_share">文件共享已开启，点击停止共享</string>
-        <string name="fileshare_label">远程服务器共享</string>
+    <string name="fileshare_label">远程服务器共享</string>
     <string name="access_server">访问远程服务器</string>
     <string name="no_connect">未连接，请先建立连接</string>
+    <string name="network_users">局域网用户组</string>
+    <string name="disconnect">退出局域网</string>
+    <string name="network_creator">局域网创建者</string>
+    <string name="creating_network">正在创建%s局域网络</string>
+    <string name="choose_network_type_title">请选择网络类型</string>
     
     <string name="section_remote">远程服务器</string>
     <string name="section_local">本地文件</string>
@@ -66,5 +71,9 @@
     
     <string name="operitor_title">操作</string>
     <string name="confirm_msg">确认删除 <xliff:g id="delete">%1$s</xliff:g> ?</string>
+    
+    <string name="help_title">帮助</string>
+    
+    <string name="settings_title">设置</string>
     
 </resources>

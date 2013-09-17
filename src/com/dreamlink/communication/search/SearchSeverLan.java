@@ -65,7 +65,7 @@ public class SearchSeverLan implements Runnable {
 			mReceiveSocket.setSoTimeout(Search.TIME_OUT);
 			mMulticastAddress = InetAddress.getByName(Search.MULTICAST_IP);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e(TAG, "Create mReceiveSocket fail." + e);
 		}
 
 		join(mMulticastAddress);
