@@ -56,9 +56,12 @@
     <string name="network_share">远程共享</string>
     <string name="network_share_tips">远程共享您的文件或最爱</string>
     <string name="stop_file_share">文件共享已开启，点击停止共享</string>
-        <string name="fileshare_label">远程服务器共享</string>
+    <string name="fileshare_label">远程服务器共享</string>
     <string name="access_server">访问远程服务器</string>
     <string name="no_connect">未连接，请先建立连接</string>
+    <string name="network_users">局域网用户组</string>
+    <string name="disconnect">断开连接</string>
+    <string name="network_creator">网络创建者</string>
     
     <string name="section_remote">远程服务器</string>
     <string name="section_local">本地文件</string>

@@ -225,14 +225,13 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		}
 	}
 
-
-	public void sendFile(File file, OnFileSendListener listener, User receiveUser, 
-			int appID){
+	public void sendFile(File file, OnFileSendListener listener,
+			User receiveUser, int appID) {
 		sendFile(file, listener, receiveUser, appID, null);
 	}
-	
-	public void sendFile(File file, OnFileSendListener listener, User receiveUser, 
-			int appID, Object key) {
+
+	public void sendFile(File file, OnFileSendListener listener,
+			User receiveUser, int appID, Object key) {
 		Log.d(TAG, "sendFile() file = " + file.getName() + ", receive user = "
 				+ receiveUser.getUserName() + ", appID = " + appID);
 		FileSender fileSender = null;
@@ -241,7 +240,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		} else {
 			fileSender = new FileSender(key);
 		}
-		
+
 		int serverPort = fileSender.sendFile(file, listener);
 		if (serverPort == -1) {
 			Log.e(TAG, "sendFile error, create socket server fail. file = "
@@ -512,7 +511,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 
 		if (localUser.getUserID() == 0) {
 			return false;
-		} else if (localUser.getUserID() == -1) {
+		} else if (UserManager.isManagerServer(localUser)) {
 			if (mCommunications.isEmpty()) {
 				return false;
 			}
@@ -527,7 +526,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 
 	public boolean isServerAndCreated() {
 		User localUser = mUserManager.getLocalUser();
-		if (localUser != null && localUser.getUserID() == -1) {
+		if (localUser != null && UserManager.isManagerServer(localUser)) {
 			return true;
 		} else {
 			return false;
@@ -610,9 +609,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 					entry.getKey().onReceiveMessage(data,
 							mUserManager.getAllUser().get(sendUserID));
 				} catch (RemoteException e) {
-					Log.e(TAG,
-							"notifyReceiveListeners error."
-									+ e);
+					Log.e(TAG, "notifyReceiveListeners error." + e);
 				}
 			}
 		}
@@ -628,7 +625,8 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				l.onUserConnected(user);
 			} catch (RemoteException e) {
-				Log.e(TAG, "onUserConnected SocketCommunicationService error." + e);
+				Log.e(TAG, "onUserConnected SocketCommunicationService error."
+						+ e);
 			}
 		}
 		SocketCommunicationService.mCallBackList.finishBroadcast();
@@ -653,7 +651,9 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				l.onUserDisconnected(user);
 			} catch (RemoteException e) {
-				Log.e(TAG, "onUserDisconnected SocketCommunicationService error." + e);
+				Log.e(TAG,
+						"onUserDisconnected SocketCommunicationService error."
+								+ e);
 			}
 		}
 		SocketCommunicationService.mCallBackList.finishBroadcast();

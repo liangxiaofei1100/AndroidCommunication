@@ -14,6 +14,9 @@ import com.dreamlink.communication.util.UserTree;
  * 
  */
 public class UserManager {
+	public static final int SERVER_USER_ID = -1;
+	private static final int DEFAULT_USER_ID = 0;
+
 	/**
 	 * Interface for monitor the user changes.
 	 * 
@@ -49,6 +52,13 @@ public class UserManager {
 
 	public void setLocalUser(User localUser) {
 		mLocalUser = localUser;
+	}
+
+	public void resetLocalUserID() {
+		if (mLocalUser == null) {
+			mLocalUser = new User();
+		}
+		mLocalUser.setUserID(DEFAULT_USER_ID);
 	}
 
 	private UserManager() {
@@ -139,7 +149,7 @@ public class UserManager {
 	}
 
 	public synchronized boolean addLocalServerUser() {
-		mLocalUser.setUserID(-1);
+		mLocalUser.setUserID(SERVER_USER_ID);
 		UserTree.getInstance().setHead(mLocalUser);
 		if (isUserExist(mLocalUser)) {
 			return false;
@@ -151,7 +161,7 @@ public class UserManager {
 	}
 
 	public static synchronized boolean isManagerServer(User user) {
-		if (-1 == user.getUserID()) {
+		if (SERVER_USER_ID == user.getUserID()) {
 			return true;
 		}
 		return false;
@@ -273,16 +283,16 @@ public class UserManager {
 		}
 		return false;
 	}
-	
+
 	/**
-	 *Get connected all user
+	 * Get connected all user
+	 * 
 	 * @return the user list
 	 */
 	public ArrayList<String> getAllUserNameList() {
 		ArrayList<String> allUsers = new ArrayList<String>();
 		User localUser = getLocalUser();
-		for (Map.Entry<Integer, User> entry : getAllUser()
-				.entrySet()) {
+		for (Map.Entry<Integer, User> entry : getAllUser().entrySet()) {
 			if (localUser.getUserID() != (int) entry.getKey()) {
 				allUsers.add(entry.getValue().getUserName());
 			}
@@ -292,12 +302,12 @@ public class UserManager {
 
 	/**
 	 * accord the username to get the user info
+	 * 
 	 * @param userName
 	 * @return user
 	 */
 	public User getUser(String userName) {
-		for (Map.Entry<Integer, User> entry : getAllUser()
-				.entrySet()) {
+		for (Map.Entry<Integer, User> entry : getAllUser().entrySet()) {
 			if (entry.getValue().getUserName().equals(userName)) {
 				return entry.getValue();
 			}

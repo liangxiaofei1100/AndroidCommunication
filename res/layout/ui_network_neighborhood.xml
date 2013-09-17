@@ -10,7 +10,7 @@
     <include layout="@layout/ui_title" />
 
     <LinearLayout
-        android:id="@+id/lv_network_neighborhood_bluetooth"
+        android:id="@+id/ll_network_neighborhood_bluetooth"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -51,129 +51,208 @@
         </LinearLayout>
     </LinearLayout>
 
-    <include layout="@layout/ui_network_neighborhood_dividerline" />
-
     <LinearLayout
-        android:id="@+id/lv_network_neighborhood_create"
+        android:id="@+id/ll_network_neighborhood_create"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="@drawable/blue_bg_selector"
-        android:clickable="true" >
+        android:clickable="true"
+        android:orientation="vertical" >
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="20dp"
-            android:src="@drawable/network_neighborhood_create" />
+        <include layout="@layout/ui_network_neighborhood_dividerline" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="10dp"
-            android:orientation="vertical" >
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
 
-            <TextView
+            <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/create_network"
-                android:textColor="@color/text_black"
-                android:textSize="14sp" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="20dp"
+                android:src="@drawable/network_neighborhood_create" />
 
-            <TextView
-                android:id="@+id/tv_network_create_tips"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="@string/create_network_tips"
-                android:textColor="@color/text_blue"
-                android:textSize="12sp" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/create_network"
+                    android:textColor="@color/text_black"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tv_network_create_tips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="@string/create_network_tips"
+                    android:textColor="@color/text_blue"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
-    <include layout="@layout/ui_network_neighborhood_dividerline" />
-
     <LinearLayout
-        android:id="@+id/lv_network_neighborhood_join"
+        android:id="@+id/ll_network_neighborhood_join"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="@drawable/blue_bg_selector"
-        android:clickable="true" >
+        android:clickable="true"
+        android:orientation="vertical" >
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="20dp"
-            android:src="@drawable/network_neighborhood_join" />
+        <include layout="@layout/ui_network_neighborhood_dividerline" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="10dp"
-            android:orientation="vertical" >
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
 
-            <TextView
+            <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/join_network"
-                android:textColor="@color/text_black"
-                android:textSize="14sp" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="20dp"
+                android:src="@drawable/network_neighborhood_join" />
 
-            <TextView
-                android:id="@+id/tv_network_join_tips"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="@string/join_network_tips"
-                android:textColor="@color/text_blue"
-                android:textSize="12sp" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/join_network"
+                    android:textColor="@color/text_black"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tv_network_join_tips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="@string/join_network_tips"
+                    android:textColor="@color/text_blue"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
-    <include layout="@layout/ui_network_neighborhood_dividerline" />
-
     <LinearLayout
-        android:id="@+id/lv_network_neighborhood_share"
+        android:id="@+id/ll_network_neighborhood_share"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="@drawable/blue_bg_selector"
-        android:clickable="true" >
+        android:clickable="true"
+        android:orientation="vertical" >
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="20dp"
-            android:src="@drawable/network_neighborhood_share" />
+        <include layout="@layout/ui_network_neighborhood_dividerline" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="10dp"
-            android:orientation="vertical" >
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
 
-            <TextView
+            <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/network_share"
-                android:textColor="@color/text_black"
-                android:textSize="14sp" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="20dp"
+                android:src="@drawable/network_neighborhood_share" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="@string/network_share_tips"
-                android:textColor="@color/text_blue"
-                android:textSize="12sp" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/network_share"
+                    android:textColor="@color/text_black"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="@string/network_share_tips"
+                    android:textColor="@color/text_blue"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_network_neighborhood_users"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:background="@drawable/blue_bg_selector"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/ll_users_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:background="@color/main_title"
+            android:gravity="center_vertical" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:src="@drawable/logo" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="@string/network_users"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_network_disconnect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/button_bg"
+            android:clickable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/network_neighborhood_disconnect" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/disconnect"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/lv_network_neighborhood_users"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/ll_network_disconnect"
+            android:layout_below="@id/ll_users_title" />
+    </RelativeLayout>
 
 </LinearLayout>
