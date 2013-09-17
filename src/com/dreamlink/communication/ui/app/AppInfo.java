@@ -22,11 +22,12 @@ public class AppInfo implements Parcelable{
 	private Drawable mIcon;
 	private boolean mMounted;
 	/**
-	 * if ture ,it is a game app
-	 * </br>
-	 * if flase ,it is a normal app
+	 * App Type</br>
+	 * 0:normal app
+	 * 1:game app
+	 * 2:zhaoyan app
 	 * */
-	private boolean isGameApp;
+	private int type;
 	/**app package name*/
 	private String packageName;
 	/**app version*/
@@ -65,7 +66,7 @@ public class AppInfo implements Parcelable{
 		return mLabel;
 	}
 
-	void loadLabel() {
+	public void loadLabel() {
 		if (mLabel == null || !mMounted) {
 			if (!mApkFile.exists()) {
 				mMounted = false;
@@ -110,6 +111,10 @@ public class AppInfo implements Parcelable{
 		return this.version;
 	}
 	
+	public long getAppSize(){
+		return mApkFile.length();
+	}
+	
 	public String getFormatSize(){
 		long appSize = mApkFile.length();
 		return DreamUtil.getFormatSize(appSize);
@@ -123,13 +128,14 @@ public class AppInfo implements Parcelable{
 		return this.packageName;
 	}
 	
-	public void setIsGameApp(boolean flag){
-		this.isGameApp = flag;
+	public void setType(int type){
+		this.type = type;
 	}
 	
-	public boolean isGameApp(){
-		return isGameApp;
+	public int getType(){
+		return type;
 	}
+	
 	
 	/**get app installed path
 	 * </br>
@@ -140,9 +146,17 @@ public class AppInfo implements Parcelable{
 	}
 	
 	/**get app install date*/
-	public String getDate(){
+	public String getFormatDate(){
 		long date = mApkFile.lastModified();
 		return DreamUtil.getFormatDate(date);
+	}
+	
+	public long getDate(){
+		return mApkFile.lastModified();
+	}
+	
+	public byte[] getIconBlob(){
+		return DreamUtil.drawableToByte(mIcon);
 	}
 	
 	public static final Parcelable.Creator<AppInfo> CREATOR  = new Parcelable.Creator<AppInfo>() {

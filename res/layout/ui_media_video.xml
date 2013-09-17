@@ -23,17 +23,6 @@
         android:layout_below="@+id/layout_title"
         android:verticalSpacing="4dip"
          />
-
-    <TextView
-        android:id="@+id/tv_video_empty"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/no_item_bg"
-        android:visibility="gone"
-        android:gravity="center"
-        android:textColor="@color/white"
-        android:text="@string/video_content_null" />
     
     <ProgressBar 
        android:id="@+id/bar_video_loading"

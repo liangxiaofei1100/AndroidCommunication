@@ -10,7 +10,7 @@ import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
-import com.dreamlink.communication.ui.common.FileSendUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
 import com.dreamlink.communication.ui.file.FileInfoManager;
@@ -124,7 +124,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		}else {
 			if (FileInfoManager.TYPE_IMAGE == fileType) {
 				Bitmap bitmap = bitmapLoader.loadImage(filePath, fileType,
-						FileBrowserFragment.bitmapCaches, holder.iconView, new ILoadImageCallback() {
+						holder.iconView, new ILoadImageCallback() {
 							@Override
 							public void onObtainBitmap(Bitmap bitmap, ImageView imageView) {
 								imageView.setImageBitmap(bitmap);
@@ -215,6 +215,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 			holder.transferBar.setProgress((int)(percent2 * 100));
 			holder.fileSizeView.setText(HistoryManager.nf.format(percent2) + " | " + DreamUtil.getFormatSize(fileSize));
 		case HistoryManager.STATUS_RECEIVE_FAIL:
+			holder.titleBar.setVisibility(View.GONE);
 			holder.fileSizeView.setText(R.string.receive_fail);
 			holder.fileSizeView.setTextColor(Color.RED);
 			break;
@@ -285,7 +286,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 							switch (which) {
 							case 0:
 								//send
-								FileSendUtil fileSendUtil = new FileSendUtil(mContext);
+								FileTransferUtil fileSendUtil = new FileTransferUtil(mContext);
 								fileSendUtil.sendFile(filePath);
 								break;
 							case 1:

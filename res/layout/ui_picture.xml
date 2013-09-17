@@ -24,17 +24,6 @@
     	android:verticalSpacing="4dip"
      />
     
-    <TextView
-        android:id="@+id/picture_empty_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/no_item_bg"
-        android:visibility="gone"
-        android:gravity="center"
-        android:textColor="@color/white"
-        android:text="@string/gallery_content_null" />
-    
     <ProgressBar
         android:id="@+id/bar_loading_image"
         android:layout_width="wrap_content"

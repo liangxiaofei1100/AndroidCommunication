@@ -9,9 +9,7 @@ import java.util.Map;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.lib.util.Notice;
-import com.dreamlink.communication.ui.BaseFragmentActivity;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileInfoManager;
@@ -20,12 +18,12 @@ import com.dreamlink.communication.util.Log;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.Window;
@@ -35,17 +33,18 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class HistoryActivity extends FragmentActivity implements OnScrollListener, OnItemClickListener {
 	private static final String TAG = "HistoryActivityTest";
-	private int mAppId = -1;
 	private Context mContext;
 	
 	//view
 	private TextView mStorageTV;
 	private ListView mHistoryMsgLV;
+	private ProgressBar mLoadingBar;
 	
 	//adapter
 	private HistoryCursorAdapter mAdapter;
@@ -88,6 +87,8 @@ public class HistoryActivity extends FragmentActivity implements OnScrollListene
 			case MSG_SEND_FILE:
 				break;
 			case MSG_UPDATE_UI:
+				int num = msg.arg1;
+				mTitleNum.setText(getResources().getString(R.string.num_format, num));
 				break;
 				
 			case MSG_UPDATE_SEND_PROGRESS:
@@ -161,6 +162,7 @@ public class HistoryActivity extends FragmentActivity implements OnScrollListene
 	}
 	
 	public void query(){
+		mLoadingBar.setVisibility(View.VISIBLE);
 		queryHandler.startQuery(11, null, MetaData.History.CONTENT_URI, PROJECTION, null, null, MetaData.History.SORT_ORDER_DEFAULT);
 	}
 	
@@ -173,7 +175,7 @@ public class HistoryActivity extends FragmentActivity implements OnScrollListene
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText("传输记录");
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setVisibility(View.GONE);
+		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
 		mRefreshView.setVisibility(View.GONE);
 		mHistoryView.setVisibility(View.GONE);
 	}
@@ -184,8 +186,8 @@ public class HistoryActivity extends FragmentActivity implements OnScrollListene
 				DreamUtil.getFormatSize(Environment.getExternalStorageDirectory().getTotalSpace()),
 				DreamUtil.getFormatSize(Environment.getExternalStorageDirectory().getFreeSpace()));
 		mStorageTV.setText(space);
+		mLoadingBar = (ProgressBar) findViewById(R.id.pb_history_loading);
 		mHistoryMsgLV = (ListView) findViewById(R.id.lv_history_msg);
-		mHistoryMsgLV.setEmptyView(findViewById(R.id.tv_empty));
 		mHistoryMsgLV.setOnScrollListener(this);
 		mHistoryMsgLV.setOnItemClickListener(this);
 		
@@ -206,12 +208,20 @@ public class HistoryActivity extends FragmentActivity implements OnScrollListene
 			// TODO Auto-generated method stub
 //			super.onQueryComplete(token, cookie, cursor);
 			Log.d(TAG, "onQueryComplete");
-			if (null  != cursor) {
+			mLoadingBar.setVisibility(View.INVISIBLE);
+			Message message = mHandler.obtainMessage();
+			if (null  != cursor && cursor.getCount() > 0) {
 				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
 				mAdapter = new HistoryCursorAdapter(mContext, mHistoryList);
 				mAdapter.changeCursor(cursor);
 				mHistoryMsgLV.setAdapter(mAdapter);
+				message.arg1 = cursor.getCount();
+			}else {
+				message.arg1 = 0;
 			}
+			
+			message.what = MSG_UPDATE_UI;
+			message.sendToTarget();
 		}
 		
 	}

@@ -33,23 +33,23 @@
          android:layout_width="fill_parent"
          android:layout_height="match_parent"
          >
-          <ListView 
-         android:id="@+id/lv_history_msg"
-         android:layout_width="fill_parent"
-         android:layout_height="wrap_content"
-         android:cacheColorHint="#00000000"
-         android:divider="@null"
-         android:focusable="false"
-         ></ListView>
+         
+         <ListView
+            android:id="@+id/lv_history_msg"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:cacheColorHint="#00000000"
+            android:divider="@null"
+            android:focusable="false" />
           
-          <TextView 
-              android:id="@+id/tv_empty"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_centerInParent="true"
-              android:text="无记录"
-              android:textSize="20sp"
-              />
+          <ProgressBar
+            android:id="@+id/pb_history_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:indeterminateDrawable="@drawable/loading_progressbar"
+            android:visibility="gone" />
+
      </RelativeLayout>
 
 </LinearLayout>

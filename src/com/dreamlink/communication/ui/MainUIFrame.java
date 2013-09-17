@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.UserManager;
@@ -12,17 +15,28 @@ import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.debug.NetworkStatus;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.notification.NotificationMgr;
+import com.dreamlink.communication.ui.app.AppInfo;
+import com.dreamlink.communication.ui.app.AppManager;
+import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileTransferActivity;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
+import com.dreamlink.communication.ui.history.HistoryManager;
+import com.dreamlink.communication.ui.service.FileTransferService;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.KeyEvent;
@@ -79,7 +93,6 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		initView();
 
 		importGameKeyDb();
-
 		mNotificationMgr = new NotificationMgr(MainUIFrame.this);
 		mNotificationMgr.showNotificaiton(NotificationMgr.STATUS_UNCONNECTED);
 
@@ -237,6 +250,10 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		//stop file transfer service
+		stopTransferService();
+		//modify history db
+		modifyHistoryDb();
 		// when finish，cloase all connect
 		User tem=UserManager.getInstance().getLocalUser();
 		tem.setUserID(0);
@@ -247,6 +264,8 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		NetWorkUtil.clearWifiConnectHistory(mContext);
 		// Stop record log and close log file.
 		Log.stopAndSave();
+		//delete table
+		getContentResolver().delete(AppData.App.CONTENT_URI, null, null);
 	}
 
 	@Override
@@ -283,6 +302,34 @@ public class MainUIFrame extends Activity implements OnClickListener,
 							}
 						}).setNegativeButton(android.R.string.cancel, null)
 				.create().show();
+	}
+	
+	/**
+	 * stop file transfer service
+	 */
+	public void stopTransferService(){
+		Intent intent = new Intent(mContext, FileTransferService.class);
+		stopService(intent);
+	}
+	
+	/**
+	 * when app finish,modfiy all pre(pre_send/pre_receive) status to fail status that file transfer history in history stable
+	 */
+	public void modifyHistoryDb(){
+		try {
+			ContentValues values = new ContentValues();
+			//更新两次，第一次将pre_send,改为send_fail
+			values.put(MetaData.History.STATUS, HistoryManager.STATUS_SEND_FAIL);
+			getContentResolver().update(MetaData.History.CONTENT_URI, values, 
+					MetaData.History.STATUS + "=" + HistoryManager.STATUS_PRE_SEND, null);
+			
+			//第二次，将pre_receive,改为receive_fail
+			values.put(MetaData.History.STATUS, HistoryManager.STATUS_RECEIVE_FAIL);
+			getContentResolver().update(MetaData.History.CONTENT_URI, values, 
+					MetaData.History.STATUS + "=" + HistoryManager.STATUS_PRE_RECEIVE, null);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 	}
 	
 }

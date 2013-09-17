@@ -1,6 +1,5 @@
 package com.dreamlink.communication.ui.image;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -9,12 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.common.FileSendUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
@@ -22,6 +20,7 @@ import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.media.MediaInfoManager;
 import com.dreamlink.communication.util.Log;
 
+import android.R.integer;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -51,7 +50,6 @@ import android.widget.TextView;
 public class ImageFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnScrollListener, OnClickListener {
 	private static final String TAG = "ImageFragment";
 	protected GridView mGridview;
-	private TextView mEmptyView;
 	private ProgressBar mLoadingBar;
 
 	// title views
@@ -76,7 +74,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	private static final String CAMERA_FOLDER = "Camera";
 	public static final String PICTURE_ACTION = "picture.action";
 	private int mAppId;
-	private GetImagesTask task = null;
+	private GetImagesTask mImageTask = null;
 
 	/**
 	 * Create a new instance of ImageFragment, providing "appid" as an
@@ -98,7 +96,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
 				int size = msg.arg1;
-				mTitleNum.setText("(" + size + ")");
+				mTitleNum.setText(getResources().getString(R.string.num_format, size));
 				break;
 			default:
 				break;
@@ -112,16 +110,21 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
 	}
 
-	private void getTitleVIews(View view) {
+	private void initTitleVIews(View view) {
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		//title icon
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_image);
+		// refresh button
 		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		// go to history button
 		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		// title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText(R.string.gallery);
+		mTitleView.setText(R.string.image);
+		// show current page's item num
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("");
+		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
 		mRefreshView.setOnClickListener(this);
 		mHistoryView.setOnClickListener(this);
 	}
@@ -130,11 +133,10 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.d(TAG, "onCreateView");
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
-		mEmptyView = (TextView) rootView.findViewById(R.id.picture_empty_textview);
 		mGridview = (GridView) rootView.findViewById(R.id.picture_gridview);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_loading_image);
 
-		getTitleVIews(rootView);
+		initTitleVIews(rootView);
 		return rootView;
 	}
 
@@ -144,11 +146,11 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 		Log.d(TAG, "onActivityCreated");
 		mContext = getActivity();
 
-		if (task != null && task.getStatus() == AsyncTask.Status.RUNNING) {
+		if (null != mImageTask && mImageTask.getStatus() == AsyncTask.Status.RUNNING) {
 			return;
 		}
-		task = new GetImagesTask();
-		task.execute();
+		mImageTask = new GetImagesTask();
+		mImageTask.execute();
 
 		mGridview.setOnItemClickListener(this);
 		mGridview.setOnItemLongClickListener(this);
@@ -200,11 +202,10 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 			Log.d(TAG, "onPostExecute.size=" + result);
 			mLoadingBar.setVisibility(View.GONE);
 			if (result <= 0) {
-				mEmptyView.setVisibility(View.VISIBLE);
+				result = 0;
 			}else {
 				setAdapter();
 			}
-			
 			updateUI(result);
 		}
 
@@ -271,8 +272,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 						break;
 					case 1:
 						//send
-//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(imageInfo.getPath()));
-						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
 						fileSendUtil.sendFile(imageInfo.getPath());
 						break;
 					case 2:
@@ -357,9 +357,6 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 			mAdapter.notifyDataSetChanged();
 			updateUI(mImageList.size());
 		}
-		
-		Intent intent = new Intent(PICTURE_ACTION);
-		mContext.sendBroadcast(intent);
 	}
 	
 	public void updateUI(int num){

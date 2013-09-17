@@ -147,4 +147,6 @@
      <string name="receive_fail">传输失败</string>
      <string name="open_file_fail">找不到打开该文件的应用</string>
      <string name="me">我</string>
+     
+     <string name="num_format">(<xliff:g id="num">%1$d</xliff:g>)</string>
 </resources>

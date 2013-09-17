@@ -2,6 +2,7 @@ package com.dreamlink.communication.ui.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,11 @@ import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.app.AppInfo;
+import com.dreamlink.communication.ui.app.AppManager;
+import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.history.HistoryInfo;
@@ -30,6 +35,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -49,6 +57,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 	private FileInfoManager mFileInfoManager = null;
 	private HistoryManager mHistoryManager = null;
 	private UserManager mUserManager = null;
+	private PackageManager pm = null;
 	
 	private Map<Object, Uri> mTransferMap = new HashMap<Object, Uri>();
 	private int mAppId = -1;
@@ -74,6 +83,39 @@ public class FileTransferService extends Service implements OnFileTransportListe
 					List<User> userList = bundle.getParcelableArrayList(Extra.SEND_USER);
 					sendFile(file, userList);
 				}
+			}else if (Intent.ACTION_PACKAGE_ADDED.equals(action)) {
+				AppManager appManager = new AppManager(FileTransferService.this);
+				// get install or uninstall app package name
+				String packageName = intent.getData().getSchemeSpecificPart();
+
+				// get installed app
+				AppInfo appInfo = null;
+				try {
+					ApplicationInfo info = pm.getApplicationInfo(
+							packageName, 0);
+					appInfo = new AppInfo(FileTransferService.this, info);
+					appInfo.setPackageName(packageName);
+					appInfo.setAppIcon(info.loadIcon(pm));
+					appInfo.loadLabel();
+					appInfo.loadVersion();
+					if (appManager.isMyApp(packageName)) {
+						appInfo.setType(AppManager.ZHAOYAN_APP);
+					} else if(appManager.isGameApp(packageName)) {
+						appInfo.setType(AppManager.GAME_APP);
+					} else {
+						appInfo.setType(AppManager.NORMAL_APP);
+					}
+					ContentValues values = appManager.getValuesByAppInfo(appInfo);
+					getContentResolver().insert(AppData.App.CONTENT_URI, values);
+				} catch (NameNotFoundException e) {
+					e.printStackTrace();
+				}
+			
+			}else if (Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
+				// get install or uninstall app package name
+				String packageName = intent.getData().getSchemeSpecificPart();
+				Uri uri = Uri.parse(AppData.App.CONTENT_URI + "/" + packageName);
+				getContentResolver().delete(uri, null, null);
 			}
 		}
 	};
@@ -85,6 +127,9 @@ public class FileTransferService extends Service implements OnFileTransportListe
 		
 		//register broadcast
 		IntentFilter filter = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
+		filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+		filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+		filter.addDataScheme("package");
 		registerReceiver(transferReceiver, filter);
 		
 		mNotice = new Notice(this);
@@ -96,6 +141,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 		mSocketMgr.registerOnFileTransportListener(this, mAppId);
 		
 		mUserManager = UserManager.getInstance();
+		pm = getPackageManager();
 		
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -247,6 +293,13 @@ public class FileTransferService extends Service implements OnFileTransportListe
 		getContentResolver().update(getFileUri(key), values, null, null);
 		
 		mTransferMap.remove(key);
+	}
+	
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		unregisterReceiver(transferReceiver);
 	}
 
 }

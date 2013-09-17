@@ -1,17 +1,14 @@
 package com.dreamlink.communication.ui.media;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.common.FileSendUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
@@ -43,15 +40,14 @@ import android.widget.GridView;
 public class MediaVideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	private static final String TAG = "MediaVideoFragment";
 	private GridView mGridView;
-	private TextView mEmptyView;
 	private ProgressBar mLoadingBar;
 	
 	private MediaVideoAdapter mAdapter;
 	private List<MediaInfo> mVideoLists = new ArrayList<MediaInfo>();
 	
+	private GetVideosTask mVideosTask = null;
+	
 	private MediaInfoManager mScan;
-	//save current click position
-	private int mCurrentPosition = -1;
 	
 	private FileInfoManager mFileInfoManager;
 	private Context mContext;
@@ -84,7 +80,7 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
 				int size = msg.arg1;
-				mTitleNum.setText("(" + size + ")");
+				mTitleNum.setText(getResources().getString(R.string.num_format, size));
 				break;
 			default:
 				break;
@@ -121,15 +117,17 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		mGridView = (GridView) rootView.findViewById(R.id.video_gridview);
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
-		mEmptyView = (TextView) rootView.findViewById(R.id.tv_video_empty);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_video_loading);
 		
-		getTitleVIews(rootView);
+		initTitleVIews(rootView);
 		
 		mScan = new MediaInfoManager(mContext);
 		
-		GetVideosTask getVideosTask = new GetVideosTask();
-		getVideosTask.execute();
+		if (null != mVideosTask && mVideosTask.getStatus() == AsyncTask.Status.RUNNING) {
+		}else {
+			mVideosTask = new GetVideosTask();
+			mVideosTask.execute();
+		}
 		
 		mFileInfoManager = new FileInfoManager(mContext);
 				
@@ -139,58 +137,53 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		return rootView;
 	}
 	
-	private void getTitleVIews(View view){
+	private void initTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		//title icon
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_video);
+		//refresh button
 		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		//go to history button
 		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		//title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText("视频");
+		mTitleView.setText(R.string.video);
+		//show current page's item num
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("(N)");
+		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
 		mRefreshView.setOnClickListener(this)	;
 		mHistoryView.setOnClickListener(this);
 	}
 	
-	public  class GetVideosTask extends AsyncTask<Void, String, String>{
+	public  class GetVideosTask extends AsyncTask<Void, String, Integer>{
 
 		@Override
-		protected String doInBackground(Void... params) {
+		protected Integer doInBackground(Void... params) {
 			Log.d(TAG, "start get video src:" + System.currentTimeMillis());
 			mVideoLists = mScan.getVideoInfo();
 			Log.d(TAG, "end get video src:" + System.currentTimeMillis());
-			return null;
+			return mVideoLists.size();
 		}
 		
 		@Override
 		protected void onPreExecute() {
-			// TODO Auto-generated method stub
 			super.onPreExecute();
 			mLoadingBar.setVisibility(View.VISIBLE);
 		}
 		
 		@Override
-		protected void onPostExecute(String result) {
+		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
 			mLoadingBar.setVisibility(View.GONE);
-			if (mVideoLists.size() <= 0) {
-				mEmptyView.setVisibility(View.VISIBLE);
-				return;
+			if (result <= 0) {
+				result= 0;
+			}else {
+				mAdapter = new MediaVideoAdapter(mContext, mVideoLists);
+				mGridView.setAdapter(mAdapter);
 			}
-			mEmptyView.setVisibility(View.GONE);
 			
-			mAdapter = new MediaVideoAdapter(mContext, mVideoLists);
-			mGridView.setAdapter(mAdapter);
-			
-			Intent intent = new Intent(DreamConstant.MEDIA_VIDEO_ACTION);
-			intent.putExtra(Extra.VIDEO_SIZE, mVideoLists.size());
-			mContext.sendBroadcast(intent);
-			
-			Message message = mHandler.obtainMessage();
-			message.arg1 = mVideoLists.size();
-			message.what = MSG_UPDATE_UI;
-			message.sendToTarget();
+			updateUI(result);
 		}
 		
 	}
@@ -216,9 +209,7 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 						break;
 					case 1:
 						//send
-//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(mediaInfo.getUrl()));
-
-						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
 						fileSendUtil.sendFile(mediaInfo.getUrl());
 						break;
 					case 2:
@@ -268,11 +259,12 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		}else {
 			mVideoLists.remove(position);
 			mAdapter.notifyDataSetChanged();
+			
+			Message message = mHandler.obtainMessage();
+			message.arg1 = mVideoLists.size();
+			message.what = MSG_UPDATE_UI;
+			message.sendToTarget();
 		}
-		
-		Intent intent = new Intent(DreamConstant.MEDIA_VIDEO_ACTION);
-		intent.putExtra(Extra.AUDIO_SIZE, mVideoLists.size());
-		mContext.sendBroadcast(intent);
 	}
     
     public String getVideoInfo(MediaInfo mediaInfo){
@@ -284,6 +276,13 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 				+ "修改日期:" + mediaInfo.getFormatDate();
 		return result;
     }
+    
+    public void updateUI(int num){
+		Message message = mHandler.obtainMessage();
+		message.arg1 = num;
+		message.what = MSG_UPDATE_UI;
+		message.sendToTarget();
+	}
 
 	@Override
 	public void onClick(View v) {

@@ -21,18 +21,6 @@
        android:layout_below="@+id/layout_title"
       />
    
-   <TextView 
-       android:id="@+id/tv_audio_empty"
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:layout_centerInParent="true"
-       android:background="@drawable/no_item_bg"
-       android:visibility="gone"
-       android:gravity="center"
-       android:textColor="@color/white"
-       android:text="@string/audio_content_null"
-       />
-   
    <ProgressBar 
        android:id="@+id/audio_progressbar"
        android:layout_width="wrap_content"

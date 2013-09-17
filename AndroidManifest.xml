@@ -239,6 +239,10 @@
             android:name="com.dreamlink.communication.ui.db.DreamProvider"
             android:authorities="com.dreamlink.communication.db.comprovider">
         </provider>
+        <provider
+            android:name="com.dreamlink.communication.ui.db.AppProvider"
+            android:authorities="com.dreamlink.communication.db.app">
+        </provider>
 
         <service android:name="com.dreamlink.communication.server.service.DirectService" />
         <service android:name="com.dreamlink.communication.server.service.WifiOrAPService" />

@@ -60,7 +60,7 @@ public class RecommendFragment extends BaseFragment implements OnClickListener {
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText("精品推荐");
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("");
+		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
 		mRefreshView.setOnClickListener(this)	;
 		mHistoryView.setOnClickListener(this);
 	}

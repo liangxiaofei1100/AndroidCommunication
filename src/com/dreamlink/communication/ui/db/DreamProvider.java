@@ -14,14 +14,10 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
 public class DreamProvider extends ContentProvider {
-	private static final String TAG = "ComProvider";
+	private static final String TAG = "DreamProvider";
 	
 	private SQLiteDatabase mSqLiteDatabase;
 	private DatabaseHelper mDatabaseHelper;
-	
-	public static final int GAME_COLLECTION = 1;
-	public static final int GAME_SINGLE = 2;
-	public static final int GAME_FILTER = 5;
 	
 	public static final int HISTORY_COLLECTION = 10;
 	public static final int HISTORY_SINGLE = 11;
@@ -31,10 +27,6 @@ public class DreamProvider extends ContentProvider {
 	
 	static{
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-		uriMatcher.addURI(MetaData.AUTHORITY, "game", GAME_COLLECTION);
-		uriMatcher.addURI(MetaData.AUTHORITY, "game/*", GAME_SINGLE);
-		uriMatcher.addURI(MetaData.AUTHORITY, "game_filter/*", GAME_FILTER);
-		
 		uriMatcher.addURI(MetaData.AUTHORITY, "history", HISTORY_COLLECTION);
 		uriMatcher.addURI(MetaData.AUTHORITY, "history/*", HISTORY_SINGLE);
 		uriMatcher.addURI(MetaData.AUTHORITY, "history_filter/*", HISTORY_FILTER);
@@ -52,22 +44,6 @@ public class DreamProvider extends ContentProvider {
 		
 		int count = 0;
 		switch (uriMatcher.match(uri)) {
-		case GAME_COLLECTION:
-			count = mSqLiteDatabase.delete(MetaData.Game.TABLE_NAME, selection, selectionArgs);
-			break;
-		case GAME_SINGLE:
-			String segment = uri.getPathSegments().get(1);
-			if (selection != null && segment.length() > 0) {
-				//根据ID删除
-				selection = "_id=" + segment + " AND (" + selection + ")";
-			}else {
-				//由于segment是个string，那么需要给他加个'',如果是int型的就不需要了
-				//根据包名删除
-				selection = "pkg_name='" +  segment + "'";
-			}
-			count = mSqLiteDatabase.delete(MetaData.Game.TABLE_NAME, selection, selectionArgs);
-			break;
-			
 		case HISTORY_COLLECTION:
 			count = mSqLiteDatabase.delete(MetaData.History.TABLE_NAME, selection, selectionArgs);
 			break;
@@ -95,10 +71,10 @@ public class DreamProvider extends ContentProvider {
 	@Override
 	public String getType(Uri uri) {
 		switch (uriMatcher.match(uri)) {
-		case GAME_COLLECTION:
-			return MetaData.Game.CONTENT_TYPE;
-		case GAME_SINGLE:
-			return MetaData.Game.CONTENT_TYPE_ITEM;
+		case HISTORY_COLLECTION:
+			return MetaData.History.CONTENT_TYPE;
+		case HISTORY_SINGLE:
+			return MetaData.History.CONTENT_TYPE_ITEM;
 		default:
 			throw new IllegalArgumentException("Unkonw uri:" + uri);
 		}
@@ -110,16 +86,6 @@ public class DreamProvider extends ContentProvider {
 		mSqLiteDatabase = mDatabaseHelper.getWritableDatabase();
 		long rowId = 0;
 		switch (uriMatcher.match(uri)) {
-		case GAME_COLLECTION:
-		case GAME_SINGLE:
-			rowId = mSqLiteDatabase.insertWithOnConflict(MetaData.Game.TABLE_NAME, "", 
-					values, SQLiteDatabase.CONFLICT_REPLACE);
-			if (rowId > 0) {
-				Uri rowUri = ContentUris.withAppendedId(MetaData.Game.CONTENT_URI, rowId);
-				getContext().getContentResolver().notifyChange(uri, null);
-				return rowUri;
-			}
-			throw new IllegalArgumentException("Cannot insert into uri:" + uri);
 		case HISTORY_COLLECTION:
 		case HISTORY_SINGLE:
 			rowId = mSqLiteDatabase.insertWithOnConflict(MetaData.History.TABLE_NAME, "", 
@@ -141,20 +107,6 @@ public class DreamProvider extends ContentProvider {
 		SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 		
 		switch (uriMatcher.match(uri)) {
-		case GAME_COLLECTION:
-			qb.setTables(MetaData.Game.TABLE_NAME);
-			break;
-		case GAME_SINGLE:
-			qb.setTables(MetaData.Game.TABLE_NAME);
-			qb.appendWhere("_id=");
-			qb.appendWhere(uri.getPathSegments().get(1));
-			break;
-		case GAME_FILTER:
-			qb.setTables(MetaData.Game.TABLE_NAME);
-			qb.appendWhere(MetaData.Game.PKG_NAME + " like \'%"
-					+ uri.getPathSegments().get(1) + "%\'");
-			break;
-			
 		case HISTORY_COLLECTION:
 			qb.setTables(MetaData.History.TABLE_NAME);
 			break;
@@ -188,15 +140,6 @@ public class DreamProvider extends ContentProvider {
 		
 		
 		switch (match) {
-		case GAME_SINGLE:
-			String segment1 = uri.getPathSegments().get(1);
-			rowId = Long.parseLong(segment1);
-			count = mSqLiteDatabase.update(MetaData.Game.TABLE_NAME, values, "_id=" + rowId, null);
-			break;
-		case GAME_COLLECTION:
-			count = mSqLiteDatabase.update(MetaData.Game.TABLE_NAME, values, selection, null);
-			break;
-			
 		case HISTORY_SINGLE:
 			String segment2 = uri.getPathSegments().get(1);
 			rowId = Long.parseLong(segment2);
@@ -225,11 +168,6 @@ public class DreamProvider extends ContentProvider {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			Log.d(TAG, "DatabaseHelper.onCreate");
-			//create game table
-			db.execSQL("create table " + MetaData.Game.TABLE_NAME
-					+ " ( _id INTEGER PRIMARY KEY AUTOINCREMENT, "
-					+ MetaData.Game.PKG_NAME + " TEXT);"
-					);
 			
 			//create history table
 			db.execSQL("create table " + MetaData.History.TABLE_NAME
@@ -249,7 +187,6 @@ public class DreamProvider extends ContentProvider {
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			db.execSQL("DROP TABLE IF EXISTS " + MetaData.Game.TABLE_NAME);
 			db.execSQL("DROP TABLE IF EXISTS " + MetaData.History.TABLE_NAME);
 			onCreate(db);
 		}

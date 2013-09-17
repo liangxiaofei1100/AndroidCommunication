@@ -71,12 +71,11 @@ public class FileInfoDialog extends DialogFragment {
 		case APP_INFO:
 			AppInfo appEntry = (AppInfo) object;
 			result = "名称:" + appEntry.getLabel() + ENTER + "类型:"
-					+ (appEntry.isGameApp() ? "游戏" : "应用") + ENTER + "版本:"
 					+ appEntry.getVersion() + ENTER + "包名:"
 					+ appEntry.getPackageName() + ENTER + "位置:"
 					+ appEntry.getInstallPath() + ENTER + "大小:"
 					+ appEntry.getFormatSize() + ENTER + "修改日期:"
-					+ appEntry.getDate();
+					+ appEntry.getFormatDate();
 			break;
 		case FILE_INFO:
 			FileInfo fileInfo = (FileInfo) object;

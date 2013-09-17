@@ -30,18 +30,6 @@
             android:stretchMode="columnWidth"
             android:verticalSpacing="4dip" >
         </GridView>
-
-        <TextView
-            android:id="@+id/tv_no_game"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:visibility="gone"
-            android:background="@drawable/no_item_bg"
-            android:text="@string/game_app_content_null"
-            android:textColor="@color/white"
-             />
         
         <ProgressBar
             android:id="@+id/app_progressbar"

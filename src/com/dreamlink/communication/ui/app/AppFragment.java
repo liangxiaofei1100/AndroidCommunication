@@ -1,6 +1,5 @@
 package com.dreamlink.communication.ui.app;
 
-import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,20 +8,21 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
-import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.common.FileSendUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.image.ImageFragment;
+import com.dreamlink.communication.ui.history.HistoryCursorAdapter;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
+import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -31,6 +31,9 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,21 +55,21 @@ import android.widget.GridView;
  * use this to load app
  */
 public class AppFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
-	private static final String TAG = "AppFragment";
+	private static final String TAG = "AppFragment2";
 	private GridView mGridView;
-	private ProgressBar mProgressBar;
+	private ProgressBar mLoadingBar;
 
-	private AppAdapter mAdapter = null;
+	private AppCursorAdapter mAdapter = null;
 	private AppManager mAppManager = null;
 	private PackageManager pm = null;
 	
 	public static List<AppInfo> mAppLists = new ArrayList<AppInfo>();
 	
-	private static int mCurrentPosition = -1;
 	private Context mContext;
 	
 	private AppReceiver mAppReceiver;
 	private Notice mNotice = null;
+	private QueryHandler mQueryHandler;
 	
 	//title views
 	private ImageView mTitleIcon;
@@ -75,6 +78,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
 	private int mAppId = -1;
+	private Cursor mCursor;
 	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
@@ -96,7 +100,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
 				int size = msg.arg1;
-				mTitleNum.setText("(" + size + ")");
+				mTitleNum.setText(getResources().getString(R.string.num_format, size));
 				break;
 
 			default:
@@ -120,9 +124,9 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		mNotice = new Notice(mContext);
 		
 		mGridView = (GridView) rootView.findViewById(R.id.app_normal_gridview);
-		mProgressBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
+		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
 		
-		getTitleVIews(rootView);
+		initTitleVIews(rootView);
 		
 		//register broadcast
 		mAppReceiver = new AppReceiver();
@@ -135,10 +139,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		
 		mAppManager = new AppManager(mContext);
 		pm = mContext.getPackageManager();
-
-		//get user app
-		AppListTask appListTask = new AppListTask();
-		appListTask.execute("");
+		mQueryHandler = new QueryHandler(getActivity().getContentResolver());
 
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
@@ -147,30 +148,87 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		return rootView;
 	}
 	
-	private void getTitleVIews(View view){
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		query();
+		super.onActivityCreated(savedInstanceState);
+	}
+	
+	private void initTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		//title icon
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_app);
+		// refresh button
 		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		// go to history button
 		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		// title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText("应用");
+		mTitleView.setText(R.string.app);
+		// show current page's item num
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("");
-		mRefreshView.setOnClickListener(this)	;
+		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
+		mRefreshView.setOnClickListener(this);
 		mHistoryView.setOnClickListener(this);
+	}
+	
+	private static final String[] PROJECTION = {
+		AppData.App._ID,AppData.App.PKG_NAME,AppData.App.LABEL,
+		AppData.App.APP_SIZE,AppData.App.VERSION,AppData.App.DATE,
+		AppData.App.TYPE,AppData.App.ICON,AppData.App.PATH
+	};
+	
+	public void query(){
+		mLoadingBar.setVisibility(View.VISIBLE);
+		//查询类型为应用的所有数据
+		String selectionString = AppData.App.TYPE + "=?" ;
+    	String args[] = {"" + AppManager.NORMAL_APP};
+		mQueryHandler.startQuery(11, null, AppData.App.CONTENT_URI, PROJECTION, selectionString, args, AppData.App.SORT_ORDER_DEFAULT);
+	}
+	
+	//query db
+	public class QueryHandler extends AsyncQueryHandler {
+
+		public QueryHandler(ContentResolver cr) {
+			super(cr);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+			// super.onQueryComplete(token, cookie, cursor);
+			Log.d(TAG, "onQueryComplete");
+			mLoadingBar.setVisibility(View.INVISIBLE);
+			Message message = mHandler.obtainMessage();
+			if (null != cursor && cursor.getCount() > 0) {
+				mCursor = cursor;
+				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
+				mAdapter = new AppCursorAdapter(mContext);
+				mAdapter.changeCursor(cursor);
+				mGridView.setAdapter(mAdapter);
+				message.arg1 = cursor.getCount();
+			} else {
+				message.arg1 = 0;
+			}
+
+			message.what = MSG_UPDATE_UI;
+			message.sendToTarget();
+		}
+
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		final ApplicationInfo applicationInfo = (ApplicationInfo) mAppLists.get(position).getApplicationInfo();
-		String packageName = applicationInfo.packageName;
-		if (DreamConstant.PACKAGE_NAME.equals(packageName)) {
+		mCursor.moveToPosition(position);
+		String packagename = mCursor.getString(mCursor.getColumnIndex(AppData.App.PKG_NAME));
+		if (DreamConstant.PACKAGE_NAME.equals(packagename)) {
 			mNotice.showToast(R.string.app_has_started);
 			return;
 		}
 		
-		Intent intent = pm.getLaunchIntentForPackage(packageName);
+		Intent intent = pm.getLaunchIntentForPackage(packagename);
 		if (null != intent) {
 			startActivity(intent);
 		}else {
@@ -181,9 +239,15 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-		final AppInfo appInfo = mAppLists.get(position);
+		mCursor.moveToPosition(position);
+		final String packagename = mCursor.getString(mCursor.getColumnIndex(AppData.App.PKG_NAME));
+		final String path = mCursor.getString(mCursor.getColumnIndex(AppData.App.PATH));
+		String label = mCursor.getString(mCursor.getColumnIndex(AppData.App.LABEL));
+//		byte[] iconBlob = mCursor.getBlob(mCursor.getColumnIndex(AppData.App.ICON));
+//		Bitmap bitmap = BitmapFactory.decodeByteArray(iconBlob, 0, iconBlob.length);
+//		final AppInfo appInfo = mAppLists.get(position);
 		int resId = R.array.app_menu_normal;
-		if (DreamConstant.PACKAGE_NAME.equals(appInfo.getPackageName())) {
+		if (DreamConstant.PACKAGE_NAME.equals(packagename)) {
 			//本身这个程序不允许卸载，不允许移动到游戏，已经打开了，所以没有打开选项
 			//总之，菜单要不一样
 			resId = R.array.app_menu_myself;
@@ -191,15 +255,15 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		final String[] current_menus = getResources().getStringArray(resId);
 		final String[] normal_menus = getResources().getStringArray(R.array.app_menu_normal);
 		new AlertDialog.Builder(mContext)
-			.setIcon(appInfo.getAppIcon())
-			.setTitle(appInfo.getLabel())
+//			.setIcon(bitmap)
+			.setTitle(label)
 			.setItems(resId, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					String currentMenu = current_menus[which];
 					if (normal_menus[0].equals(currentMenu)) {
 						//open
-						Intent intent = pm.getLaunchIntentForPackage(appInfo.getPackageName());
+						Intent intent = pm.getLaunchIntentForPackage(packagename);
 						if (null != intent) {
 							startActivity(intent);
 						}else {
@@ -208,36 +272,37 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 						}
 					}else if (normal_menus[1].equals(currentMenu)) {
 						//send
-//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
-//
-						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
-						fileSendUtil.sendFile(appInfo.getInstallPath());
+						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
+						fileSendUtil.sendFile(path);
 					}else if (normal_menus[2].equals(currentMenu)) {
 						//uninstall
-						mAppManager.uninstallApp(appInfo.getPackageName());
+						mAppManager.uninstallApp(packagename);
 					}else if (normal_menus[3].equals(currentMenu)) {
 						//app info
-						mAppManager.showInfoDialog(appInfo);
+//						mAppManager.showInfoDialog(appInfo);
+						mNotice.showToast("尚未完成");
 					}else if (normal_menus[4].equals(currentMenu)) {
 						//move to game
-						mAppLists.remove(position);
+//						mAppLists.remove(position);
 						
-						int index = DreamUtil.getInsertIndex(GameFragment.mGameAppList, appInfo);
-						if (GameFragment.mGameAppList.size() == index) {
-							GameFragment.mGameAppList.add(appInfo);
-						} else {
-							GameFragment.mGameAppList.add(index, appInfo);
-						}
+//						int index = DreamUtil.getInsertIndex(GameFragment.mGameAppList, appInfo);
+//						if (GameFragment.mGameAppList.size() == index) {
+//							GameFragment.mGameAppList.add(appInfo);
+//						} else {
+//							GameFragment.mGameAppList.add(index, appInfo);
+//						}
 						
 						//insert to db
-						ContentValues values = new ContentValues();
-						values.put(MetaData.Game.PKG_NAME, appInfo.getPackageName());
-						mContext.getContentResolver().insert(MetaData.Game.CONTENT_URI, values);
+//						ContentValues values = new ContentValues();
+//						values.put(MetaData.Game.PKG_NAME, appInfo.getPackageName());
+//						mContext.getContentResolver().insert(MetaData.Game.CONTENT_URI, values);
 						
 						//update myself
-						notifyUpdateUI();
-						
-						mAppManager.updateAppUI();
+//						mAdapter.notifyDataSetChanged();
+//						notifyUpdateUI(mAppLists.size());
+//						
+//						mAppManager.updateAppUI();
+						mNotice.showToast("尚未完成");
 					}
 				}
 			}).create().show();
@@ -251,163 +316,15 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			String action = intent.getAction();
 			Log.d(TAG, "get receiver:" + action);
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
-				notifyUpdateUI();
-			} else {
-				// get install or uninstall app package name
-				String packageName = intent.getData().getSchemeSpecificPart();
-
-				if (Intent.ACTION_PACKAGE_ADDED.equals(action)) {
-					// get installed app
-					AppInfo appInfo = null;
-					List<AppInfo> appList = new ArrayList<AppInfo>();
-					try {
-						ApplicationInfo info = pm.getApplicationInfo(
-								packageName, 0);
-						appInfo = new AppInfo(mContext, info);
-						appInfo.setPackageName(packageName);
-						appInfo.setAppIcon(info.loadIcon(pm));
-						appInfo.loadLabel();
-						appInfo.loadVersion();
-						if (mAppManager.isMyApp(packageName)) {
-							Intent addIntent =new Intent(AppManager.ACTION_ADD_MYGAME);
-							mContext.sendBroadcast(addIntent);
-						} else {
-							boolean is_game_app = mAppManager
-									.isGameApp(packageName);
-							appInfo.setIsGameApp(is_game_app);
-							if (!is_game_app) {
-								appList = mAppLists;
-							} else {
-								appList = GameFragment.mGameAppList;
-							}
-						}
-
-						int index = DreamUtil.getInsertIndex(appList, appInfo);
-						if (appList.size() == index) {
-							appList.add(appInfo);
-						} else {
-							appList.add(index, appInfo);
-						}
-
-					} catch (NameNotFoundException e) {
-						e.printStackTrace();
-					}
-				} else if (Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
-					if (mAppManager.isMyApp(packageName)) {
-						System.out.println("is   my  apppppp");
-						Intent removeIntent =new Intent(AppManager.ACTION_REMOVE_MYGAME);
-						mContext.sendBroadcast(removeIntent);
-					}else {
-						boolean is_game_app = mAppManager.isGameApp(packageName);
-						if (!is_game_app) {
-							int position = mAppManager.getAppPosition(packageName,
-									mAppLists);
-							mAppLists.remove(position);
-						} else {
-							int position2 = mAppManager.getAppPosition(packageName,
-									GameFragment.mGameAppList);
-							GameFragment.mGameAppList.remove(position2);
-						}
-					}
-				}
-				notifyUpdateUI();
+				mAdapter.notifyDataSetChanged();
+				notifyUpdateUI(mAppLists.size());
 			}
 		}
 	}
     
-    public void setAdapter(List<AppInfo> list){
-//		if (null == mAdapter) {
-//			mAdapter = new AppBrowserAdapter(mContext, list);
-//			mGridView.setAdapter(mAdapter);
-//		}else {
-//			mAdapter.notifyDataSetChanged();
-//		}
-		
-		//使用上面的方法，再次刷新时无法显示数据
-		mAdapter = new AppAdapter(mContext, list);
-		mGridView.setAdapter(mAdapter);
-	}
-    
-    public class AppListTask extends AsyncTask<String, String, List<AppInfo>>{
-
-		@Override
-		protected List<AppInfo> doInBackground(String... params) {
-			mAppLists.clear();
-			Log.d(TAG, "app start=" + System.currentTimeMillis());
-			// Retrieve all known applications.
-            List<ApplicationInfo> apps = mAppManager.getAllApps();
-            if (apps == null) {
-                apps = new ArrayList<ApplicationInfo>();
-            }
-            for (int i=0; i<apps.size(); i++) {
-            	ApplicationInfo appInfo = apps.get(i);
-            	//获取非系统应用
-            	int flag1 = appInfo.flags & ApplicationInfo.FLAG_SYSTEM;
-            	//本来是系统程序，被用户手动更新后，该系统程序也成为第三方应用程序了  
-            	int flag2 = appInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
-            	if ((flag1 <= 0) || flag2 != 0 ) {
-            		String pkgName = appInfo.packageName;
-            		if (!mAppManager.isMyApp(pkgName)) {
-            			AppInfo entry = new AppInfo(mContext, apps.get(i));
-                        entry.setPackageName(appInfo.packageName);
-                        entry.loadLabel();
-                        entry.setAppIcon(appInfo.loadIcon(pm));
-                        entry.loadVersion();
-    					boolean is_game_app = mAppManager.isGameApp(appInfo.packageName);
-    	                entry.setIsGameApp(is_game_app);
-    					if (is_game_app) {
-    					} else {
-    						mAppLists.add(entry);
-    					}
-                        if (DreamConstant.PACKAGE_NAME.equals(appInfo.packageName)) {
-    						DreamUtil.package_source_dir = appInfo.sourceDir;
-    					}
-                        
-                        publishProgress("");
-					}
-				}else {
-					//system app
-				}
-            }
-
-            // Sort the list.
-            Collections.sort(mAppLists, ALPHA_COMPARATOR);
-            Log.d(TAG, "app end=" + System.currentTimeMillis());
-            // Done!
-			return null;
-		}
-		
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			mProgressBar.setVisibility(View.VISIBLE);
-		}
-		
-		@Override
-		protected void onPostExecute(List<AppInfo> result) {
-			super.onPostExecute(result);
-			mProgressBar.setVisibility(View.GONE);
-//			mAdapter = new AppBrowserAdapter(mContext, mAppLists);
-//			mGridView.setAdapter(mAdapter);
-		}
-		
-		@Override
-		protected void onProgressUpdate(String... values) {
-			super.onProgressUpdate(values);
-			setAdapter(mAppLists);
-			
-			Message message = mHandler.obtainMessage();
-			message.arg1 = mAppLists.size();
-			message.what  = MSG_UPDATE_UI;
-			message.sendToTarget();
-		}
-    	
-    }
-    
-    public void notifyUpdateUI(){
-		mAdapter.notifyDataSetChanged();
+    public void notifyUpdateUI(int num){
 		Message message = mHandler.obtainMessage();
-		message.arg1 = mAppLists.size();
+		message.arg1 = num;
 		message.what = MSG_UPDATE_UI;
 		message.sendToTarget();
 	}

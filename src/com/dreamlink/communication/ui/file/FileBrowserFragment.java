@@ -19,7 +19,7 @@ import com.dreamlink.communication.ui.PopupView;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
-import com.dreamlink.communication.ui.common.FileSendUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
@@ -196,7 +196,7 @@ public class FileBrowserFragment extends BaseFragment implements
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText("批量传输");
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("(N)");
+		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
 		mRefreshView.setOnClickListener(this)	;
 		mHistoryView.setOnClickListener(this);
 	}
@@ -321,7 +321,7 @@ public class FileBrowserFragment extends BaseFragment implements
 		case ListContextMenu.MENU_SEND:
 //			FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(fileInfo.filePath));
 
-			FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+			FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
 			fileSendUtil.sendFile(fileInfo.filePath);
 			break;
 		case ListContextMenu.MENU_DELETE:

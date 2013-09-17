@@ -5,19 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.ListContextMenu;
-import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.common.FileSendUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.network.NetworkFragment;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -29,16 +25,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ImageView;
@@ -50,21 +41,22 @@ import android.widget.TextView;
 public class MediaAudioFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	private static final String TAG = "MediaAudioFragment";
 	private ListView mListView;
-	private TextView mEmptyView;
 	private MediaAudioAdapter mAdapter;
 	private List<MediaInfo> mAudioLists = new ArrayList<MediaInfo>();
-	private MediaInfoManager mScan;
-	private ProgressBar mScanBar;
+	private MediaInfoManager mScanMgr;
+	private ProgressBar mLoadingBar;
 	private FileInfoManager mFileInfoManager = null;
 	
 	private Context mContext;
 	
+	private GetAudiosTask mAudiosTask = null;
+	
 	//title views
-		private ImageView mTitleIcon;
-		private TextView mTitleView;
-		private TextView mTitleNum;
-		private ImageView mRefreshView;
-		private ImageView mHistoryView;
+	private ImageView mTitleIcon;
+	private TextView mTitleView;
+	private TextView mTitleNum;
+	private ImageView mRefreshView;
+	private ImageView mHistoryView;
 	
 	class AudioContent extends ContentObserver{
 		public AudioContent(Handler handler) {
@@ -98,7 +90,7 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 	private int mAppId = -1;
 	
 	/**
-	 * Create a new instance of AppFragment, providing "appid" as an
+	 * Create a new instance of MediaAudioFragment, providing "appid" as an
 	 * argument.
 	 */
 	public static MediaAudioFragment newInstance(int appid) {
@@ -123,74 +115,71 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		mContext = getActivity();
 		
 		mListView = (ListView) rootView.findViewById(R.id.audio_listview);
-		mEmptyView = (TextView) rootView.findViewById(R.id.tv_audio_empty);
-		mScanBar = (ProgressBar) rootView.findViewById(R.id.audio_progressbar);
+		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.audio_progressbar);
 		mListView.setOnItemClickListener(this);
 		mListView.setOnItemLongClickListener(this);
 		
-		getTitleVIews(rootView);
+		initTitleVIews(rootView);
 		
 		mFileInfoManager = new FileInfoManager(mContext);
+		mScanMgr = new MediaInfoManager(mContext);
 		
-		mScan = new MediaInfoManager(mContext);
-		
-		GetAudiosTask getAudiosTask = new GetAudiosTask();
-		getAudiosTask.execute();
+		if (null != mAudiosTask && mAudiosTask.getStatus() == AsyncTask.Status.RUNNING) {
+		}else {
+			mAudiosTask = new GetAudiosTask();
+			mAudiosTask.execute();
+		}
 		
 		AudioContent audioContent = new AudioContent(new Handler());
-		getActivity().getContentResolver().registerContentObserver(mScan.audioUri, true, audioContent);
+		getActivity().getContentResolver().registerContentObserver(mScanMgr.audioUri, true, audioContent);
 		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 	
-	private void getTitleVIews(View view){
+	private void initTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		//title icon
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_audio);
+		// refresh button
 		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		// go to history button
 		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		// title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText("音频");
+		mTitleView.setText(R.string.audio);
+		// show current page's item num
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("(N)");
-		mRefreshView.setOnClickListener(this)	;
+		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
+		mRefreshView.setOnClickListener(this);
 		mHistoryView.setOnClickListener(this);
 	}
 	
-	public  class GetAudiosTask extends AsyncTask<Void, String, String>{
+	public  class GetAudiosTask extends AsyncTask<Void, String, Integer>{
 
 		@Override
-		protected String doInBackground(Void... params) {
-			mAudioLists = mScan.getAudioInfo();
-			return null;
+		protected Integer doInBackground(Void... params) {
+			mAudioLists = mScanMgr.getAudioInfo();
+			return mAudioLists.size();
 		}
 		
 		@Override
 		protected void onPreExecute() {
-			mScanBar.setVisibility(View.VISIBLE);
+			mLoadingBar.setVisibility(View.VISIBLE);
 			super.onPreExecute();
 		}
 		
 		@Override
-		protected void onPostExecute(String result) {
+		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
-			mScanBar.setVisibility(View.GONE);
-			if (mAudioLists.size() <= 0) {
-				mEmptyView.setVisibility(View.VISIBLE);
-				return;
+			mLoadingBar.setVisibility(View.GONE);
+			if (result <= 0) {
+				result = 0;
+			}else {
+				mAdapter = new MediaAudioAdapter(mContext, mAudioLists);
+				mListView.setAdapter(mAdapter);
 			}
-			
-			mAdapter = new MediaAudioAdapter(mContext, mAudioLists);
-			mListView.setAdapter(mAdapter);
-			
-			Intent intent = new Intent(DreamConstant.MEDIA_AUDIO_ACTION);
-			intent.putExtra(Extra.AUDIO_SIZE, mAudioLists.size());
-			mContext.sendBroadcast(intent);
-			
-			Message message = mHandler.obtainMessage();
-			message.arg1 = mAudioLists.size();
-			message.what = MSG_UPDATE_UI;
-			message.sendToTarget();
+			updateUI(result);
 		}
 		
 	}
@@ -216,9 +205,7 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 						break;
 					case 1:
 						//send
-//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(mediaInfo.getUrl()));
-
-						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
 						fileSendUtil.sendFile(mediaInfo.getUrl());
 						break;
 					case 2:
@@ -268,11 +255,9 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		}else {
 			mAudioLists.remove(position);
 			mAdapter.notifyDataSetChanged();
+			
+			updateUI(mAudioLists.size());
 		}
-		
-		Intent intent = new Intent(DreamConstant.MEDIA_AUDIO_ACTION);
-		intent.putExtra(Extra.AUDIO_SIZE, mAudioLists.size());
-		mContext.sendBroadcast(intent);
 	}
 	
 	 public String getAudioInfo(MediaInfo mediaInfo){
@@ -284,6 +269,13 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 					+ "修改日期:" + mediaInfo.getFormatDate();
 			return result;
 	    }
+	 
+	 public void updateUI(int num){
+			Message message = mHandler.obtainMessage();
+			message.arg1 = num;
+			message.what = MSG_UPDATE_UI;
+			message.sendToTarget();
+		}
 
 	@Override
 	public void onClick(View v) {

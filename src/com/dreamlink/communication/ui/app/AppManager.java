@@ -6,18 +6,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 
-import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.db.MetaData;
-import com.dreamlink.communication.ui.dialog.FileInfoDialog;
+import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.util.Log;
 
-import android.R.anim;
-import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -33,7 +29,7 @@ public class AppManager {
 	
 	public static final int NORMAL_APP = 0;
 	public static final int GAME_APP = 1;
-	public static final int MY_APP = 2;
+	public static final int ZHAOYAN_APP = 2;
 	public static final int ERROR_APP = -1;
 	
 	public static final String ACTION_REFRESH_APP = "intent.aciton.refresh.app";
@@ -73,21 +69,18 @@ public class AppManager {
      * @return true,is game app </br>false, is normal app
      */
     public boolean  isGameApp(String pkgName){
-    	Cursor cursor = mContext.getContentResolver().query(MetaData.Game.CONTENT_URI, 
-    			new String[]{MetaData.Game.PKG_NAME}, null, null, null);
-    	if (cursor.moveToFirst()) {
-    		do {
-    			String pkg_name = cursor.getString(cursor.getColumnIndex(MetaData.Game.PKG_NAME));
-    			if (pkgName.equals(pkg_name)) {
-    				cursor.close();
-    				return true;
-    			}
-			} while (cursor.moveToNext());
+    	String selectionString = AppData.App.PKG_NAME + "=?" ;
+    	String args[] = {pkgName};
+    	boolean ret = false;
+    	Cursor cursor = mContext.getContentResolver().query(AppData.AppGame.CONTENT_URI, 
+    			null, selectionString, args, null);
+    	if (cursor.getCount() <= 0) {
+			ret = false;
 		}else {
-			Log.e(TAG, "no db????????????");
+			ret = true;
 		}
     	cursor.close();
-    	return false;
+    	return ret;
     }
     
     public boolean isMyApp(String packageName){
@@ -103,6 +96,19 @@ public class AppManager {
 			}
 		}
 		return false;
+    }
+    
+    public ContentValues getValuesByAppInfo(AppInfo appInfo){
+    	ContentValues values = new ContentValues();
+    	values.put(AppData.App.PKG_NAME, appInfo.getPackageName());
+    	values.put(AppData.App.LABEL, appInfo.getLabel());
+    	values.put(AppData.App.VERSION, appInfo.getVersion());
+    	values.put(AppData.App.APP_SIZE, appInfo.getAppSize());
+    	values.put(AppData.App.DATE, appInfo.getDate());
+    	values.put(AppData.App.TYPE, appInfo.getType());
+    	values.put(AppData.App.ICON, appInfo.getIconBlob());
+    	values.put(AppData.App.PATH, appInfo.getInstallPath());
+    	return values;
     }
     
     /**
@@ -139,7 +145,7 @@ public class AppManager {
 			AppInfo appInfo = myAppList.get(i);
 			if (packageName.equals(appInfo.getPackageName())) {
 				//is my app
-				result[0] = AppManager.MY_APP;
+				result[0] = AppManager.ZHAOYAN_APP;
 				result[1] = i;
 				return result;
 			}
@@ -199,12 +205,12 @@ public class AppManager {
 	private String getAppInfo(AppInfo appInfo){
 		String result = "";
 		result = "名称:" + appInfo.getLabel() + DreamConstant.ENTER
-				+ "类型:" + (appInfo.isGameApp() ? "游戏" : "应用") + DreamConstant.ENTER
+				+ "类型:" + (appInfo.getType() == 1 ? "游戏" : "应用") + DreamConstant.ENTER
 				+ "版本:" + appInfo.getVersion() + DreamConstant.ENTER
 				+ "包名:" + appInfo.getPackageName() + DreamConstant.ENTER
 				+ "位置:" + appInfo.getInstallPath() + DreamConstant.ENTER
 				+ "大小:" + appInfo.getFormatSize() + DreamConstant.ENTER
-				+ "修改日期:" + appInfo.getDate();
+				+ "修改日期:" + appInfo.getFormatDate();
 		return result;
 	}
 

@@ -8,8 +8,10 @@ import java.util.Comparator;
 import java.util.List;
 
 import android.app.AlertDialog;
+import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,9 +19,11 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -39,15 +43,18 @@ import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.common.FileSendUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.util.Log;
 
 public class TiandiFragment extends BaseFragment implements OnClickListener, OnItemClickListener, OnItemLongClickListener {
+	private static final String TAG = "TiandiFragment2";
 	private GridView mGridView;
-	private ProgressBar mProgressBar;
+	private ProgressBar mLoadingBar;
 	private Button mRechargeBtn;
 
-	private AppAdapter mAdapter = null;
+	private AppCursorAdapter mAdapter = null;
 	private AppManager mAppManager = null;
 	private PackageManager pm = null;
 	
@@ -56,6 +63,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	private Context mContext;
 	
 	private Notice mNotice = null;
+	private QueryHandler mQueryHandler;
 	
 	//title views
 	private ImageView mTitleIcon;
@@ -85,50 +93,17 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
 	};
 	
-	// recevier that can update ui
-	private BroadcastReceiver myReceiver = new BroadcastReceiver() {
-
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			String action = intent.getAction();
-			if (AppManager.ACTION_ADD_MYGAME.equals(action)) {
-				ApplicationInfo applicationInfo = intent
-						.getParcelableExtra(AppManager.EXTRA_INFO);
-				AppInfo appInfo = new AppInfo(mContext, applicationInfo);
-				appInfo.setPackageName(applicationInfo.packageName);
-				appInfo.setAppIcon(applicationInfo.loadIcon(pm));
-				appInfo.setLaunchIntent(pm.getLaunchIntentForPackage(appInfo
-						.getPackageName()));
-				appInfo.loadLabel();
-
-				mMyAppList.add(appInfo);
-				mAdapter.notifyDataSetChanged();
-			} else if (AppManager.ACTION_REMOVE_MYGAME.equals(action)) {
-				ApplicationInfo applicationInfo = intent
-						.getParcelableExtra(AppManager.EXTRA_INFO);
-				int position = mAppManager.getAppPosition(
-						applicationInfo.packageName, mMyAppList);
-				mMyAppList.remove(position);
-				mAdapter.notifyDataSetChanged();
-			}
-		}
-	};
-	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.ui_zytiandi, container, false);
 		mContext = getActivity();
 		
 		mGridView = (GridView) rootView.findViewById(R.id.gv_game);
-		mProgressBar = (ProgressBar) rootView.findViewById(R.id.bar_progress);
+		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_progress);
 		mRechargeBtn = (Button) rootView.findViewById(R.id.btn_recharge);
 		mRechargeBtn.setOnClickListener(this);
 		
 		initTitleVIews(rootView);
-		
-		IntentFilter filter = new IntentFilter(AppManager.ACTION_ADD_MYGAME);
-		filter.addAction(AppManager.ACTION_REMOVE_MYGAME);
-		mContext.registerReceiver(myReceiver, filter);
 		
 		return rootView;
 	}
@@ -155,80 +130,51 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		mNotice = new Notice(mContext);
 		mAppManager = new AppManager(mContext);
 		pm = mContext.getPackageManager();
-
-		//get user app
-		AppListTask appListTask = new AppListTask();
-		appListTask.execute("");
-
+		
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
+		
+		mQueryHandler = new QueryHandler(getActivity().getContentResolver());
+		query();
 	}
 	
-	 public class AppListTask extends AsyncTask<String, String, List<AppInfo>>{
-			@Override
-			protected List<AppInfo> doInBackground(String... params) {
-				
-				queryAppInfo();
-	            // Done!
-				return null;
-			}
-			
-			@Override
-			protected void onPreExecute() {
-				super.onPreExecute();
-				mProgressBar.setVisibility(View.VISIBLE);
-			}
-			
-			@Override
-			protected void onPostExecute(List<AppInfo> result) {
-				super.onPostExecute(result);
-				mProgressBar.setVisibility(View.GONE);
-				mAdapter = new AppAdapter(mContext, mMyAppList);
-				mGridView.setAdapter(mAdapter);
-			}
-			
-			@Override
-			protected void onProgressUpdate(String... values) {
-				// TODO Auto-generated method stub
-				super.onProgressUpdate(values);
-			}
-	    	
-	    }
-	 
-	// 获得所有启动Activity的信息，类似于 Launch界面
-	public void queryAppInfo() {
-		Intent mainIntent = new Intent();
-		mainIntent.setAction(DreamConstant.APP_ACTION);
-		mainIntent.addCategory(Intent.CATEGORY_DEFAULT);
-		// 通过查询，获得所有ResolveInfo对象.
-		List<ResolveInfo> resolveInfos = pm
-				.queryIntentActivities(mainIntent, 0);
-		// 调用系统排序,根据name排序
-		Collections.sort(resolveInfos,
-				new ResolveInfo.DisplayNameComparator(pm));
-		mMyAppList.clear();
-		for (ResolveInfo reInfo : resolveInfos) {
-			String activityName = reInfo.activityInfo.name; // 获得该应用程序的启动Activity的name
-			String pkgName = reInfo.activityInfo.packageName; // 获得应用程序的包名
-			String appLabel = (String) reInfo.loadLabel(pm); // 获得应用程序的Label
-			Drawable icon = reInfo.loadIcon(pm); // 获得应用程序图标
-			// 为应用程序的启动 Activity 准备Intent
-			Intent launchIntent = new Intent();
-			launchIntent.setComponent(new ComponentName(pkgName, activityName));
-			// 创建一个 AppInfo对象，并赋值
-			AppInfo appInfo = new AppInfo(mContext,
-					reInfo.activityInfo.applicationInfo);
-			appInfo.setLable(appLabel);
-			appInfo.setPackageName(pkgName);
-			appInfo.setAppIcon(icon);
-			appInfo.setLaunchIntent(launchIntent);
+	private static final String[] PROJECTION = {
+		AppData.App._ID,AppData.App.PKG_NAME,AppData.App.LABEL,
+		AppData.App.APP_SIZE,AppData.App.VERSION,AppData.App.DATE,
+		AppData.App.TYPE,AppData.App.ICON,AppData.App.PATH
+	};
+	
+	public void query(){
+		mLoadingBar.setVisibility(View.VISIBLE);
+		//查询类型为游戏的所有数据
+		String selectionString = AppData.App.TYPE + "=?" ;
+    	String args[] = {"" + AppManager.ZHAOYAN_APP};
+		mQueryHandler.startQuery(11, null, AppData.App.CONTENT_URI, PROJECTION, selectionString, args, AppData.App.SORT_ORDER_DEFAULT);
+	}
+	
+	//query db
+		public class QueryHandler extends AsyncQueryHandler {
 
-			mMyAppList.add(appInfo); // 添加至列表中
+			public QueryHandler(ContentResolver cr) {
+				super(cr);
+				// TODO Auto-generated constructor stub
+			}
+
+			@Override
+			protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+				// super.onQueryComplete(token, cookie, cursor);
+				Log.d(TAG, "onQueryComplete");
+				mLoadingBar.setVisibility(View.INVISIBLE);
+				if (null != cursor && cursor.getCount() > 0) {
+					Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
+					mAdapter = new AppCursorAdapter(mContext);
+					mAdapter.changeCursor(cursor);
+					mGridView.setAdapter(mAdapter);
+				} 
+
+			}
+
 		}
-		// Sort the list.
-		Collections.sort(mMyAppList, ALPHA_COMPARATOR);
-	}
-	
 	 
 	/**
 	 * Perform alphabetical comparison of application entry objects.
@@ -249,8 +195,6 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		case R.id.iv_refresh:
 			mNotice.showToast("refresh");
 			//get user app
-			AppListTask appListTask = new AppListTask();
-			appListTask.execute("");
 			break;
 		case R.id.iv_history:
 			Intent intent = new Intent();
@@ -277,7 +221,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 					case 0:
 						//send
 //						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
-						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
+						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
 						fileSendUtil.sendFile(appInfo.getInstallPath());
 						break;
 					case 1:
@@ -305,6 +249,5 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	
 	public void onDestroy() {
 		super.onDestroy();
-		mContext.unregisterReceiver(myReceiver);
 	};
 }
