@@ -337,7 +337,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			mExecutorService.execute(communication);
 		} catch (RejectedExecutionException e) {
 			Log.e(TAG, "addCommunication fail." + e.toString());
-			e.printStackTrace();
 		}
 
 	}
@@ -597,7 +596,9 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 					l.onReceiveMessage(data,
 							mUserManager.getAllUser().get(sendUserID));
 				} catch (RemoteException e) {
-					e.printStackTrace();
+					Log.e(TAG,
+							"notifyReceiveListeners SocketCommunicationService listener error."
+									+ e);
 				}
 			}
 		}
@@ -609,7 +610,9 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 					entry.getKey().onReceiveMessage(data,
 							mUserManager.getAllUser().get(sendUserID));
 				} catch (RemoteException e) {
-					e.printStackTrace();
+					Log.e(TAG,
+							"notifyReceiveListeners error."
+									+ e);
 				}
 			}
 		}
@@ -625,7 +628,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				l.onUserConnected(user);
 			} catch (RemoteException e) {
-				e.printStackTrace();
+				Log.e(TAG, "onUserConnected SocketCommunicationService error." + e);
 			}
 		}
 		SocketCommunicationService.mCallBackList.finishBroadcast();
@@ -635,7 +638,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				entry.getKey().onUserConnected(user);
 			} catch (RemoteException e) {
-				e.printStackTrace();
+				Log.e(TAG, "onUserConnected error." + e);
 			}
 		}
 	}
@@ -650,7 +653,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				l.onUserDisconnected(user);
 			} catch (RemoteException e) {
-				e.printStackTrace();
+				Log.e(TAG, "onUserDisconnected SocketCommunicationService error." + e);
 			}
 		}
 		SocketCommunicationService.mCallBackList.finishBroadcast();
@@ -660,7 +663,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			try {
 				entry.getKey().onUserDisconnected(user);
 			} catch (RemoteException e) {
-				e.printStackTrace();
+				Log.e(TAG, "onUserDisconnected error." + e);
 			}
 		}
 	}

@@ -65,7 +65,6 @@ public class LogFile {
 				mFile.createNewFile();
 			} catch (IOException e) {
 				Log.e(TAG, "Creat file error. File is " + filePath + ". " + e);
-				e.printStackTrace();
 			}
 		}
 	}
@@ -82,7 +81,6 @@ public class LogFile {
 				Log.e(TAG,
 						"Creat file error. File is " + mFile.getAbsolutePath()
 								+ ". " + e);
-				e.printStackTrace();
 				return false;
 			}
 		}
@@ -113,7 +111,7 @@ public class LogFile {
 			mWriter.write(log);
 			mWriter.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, "writeLog write error." + e);
 		}
 	}
 
@@ -129,7 +127,7 @@ public class LogFile {
 			mWriter.write(log);
 			mWriter.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, "writeLog write error." + e);
 		}
 	}
 
@@ -143,7 +141,7 @@ public class LogFile {
 		try {
 			mWriter.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, "close error." + e);
 		}
 	}
 }

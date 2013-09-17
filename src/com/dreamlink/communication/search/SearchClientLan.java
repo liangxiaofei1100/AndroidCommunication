@@ -62,7 +62,7 @@ public class SearchClientLan implements Runnable {
 					Search.MULTICAST_RECEIVE_PORT);
 			mMulticastReceiveSocket.setSoTimeout(Search.TIME_OUT);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e(TAG, "Create multicast socket error. " + e);
 		}
 
 		// Listen other server messages.
@@ -73,7 +73,7 @@ public class SearchClientLan implements Runnable {
 		try {
 			mSendSocket = new DatagramSocket(Search.MULTICAST_SEND_PORT);
 		} catch (SocketException e) {
-			e.printStackTrace();
+			Log.e(TAG, "Create multicast packet error. " + e);
 		}
 		DatagramPacket packet = getSearchPacket();
 
@@ -82,7 +82,7 @@ public class SearchClientLan implements Runnable {
 			try {
 				Thread.sleep(Search.MULTICAST_DELAY_TIME);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Log.e(TAG, "InterruptedException " + e);
 			}
 		}
 	}
@@ -103,7 +103,7 @@ public class SearchClientLan implements Runnable {
 					InetAddress.getByName(Search.MULTICAST_IP),
 					Search.MULTICAST_RECEIVE_PORT);
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			Log.e(TAG, "getSearchPacket error." + e);
 		}
 		return packet;
 	}
@@ -118,7 +118,6 @@ public class SearchClientLan implements Runnable {
 			Log.d(TAG,
 					"Send broadcast ok, data = " + new String(packet.getData()));
 		} catch (IOException e) {
-			e.printStackTrace();
 			Log.e(TAG,
 					"Send broadcast fail, data = "
 							+ new String(packet.getData()) + " " + e);

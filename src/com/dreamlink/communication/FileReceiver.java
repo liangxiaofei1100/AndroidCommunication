@@ -146,7 +146,7 @@ public class FileReceiver {
 							mSocket.close();
 						} catch (IOException e) {
 							// Give up
-							e.printStackTrace();
+							Log.e(TAG, "Close socket error." + e);
 						}
 					}
 				}
@@ -223,7 +223,7 @@ public class FileReceiver {
 					try {
 						mSocket.close();
 					} catch (IOException e) {
-						e.printStackTrace();
+						Log.e(TAG, "Create socket error." + e);
 					}
 				}
 				break;

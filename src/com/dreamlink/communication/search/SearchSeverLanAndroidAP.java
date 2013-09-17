@@ -87,7 +87,7 @@ public class SearchSeverLanAndroidAP implements Runnable {
 				try {
 					Thread.sleep(Search.ANDROID_AP_SEARCH_DELAY);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					Log.e(TAG, "InterruptedException " + e);
 				}
 			}
 		}
@@ -100,7 +100,6 @@ public class SearchSeverLanAndroidAP implements Runnable {
 				Log.d(TAG, "Send broadcast ok, data = "
 						+ new String(mSendRequestPacket.getData()));
 			} catch (IOException e) {
-				e.printStackTrace();
 				Log.e(TAG, "Send broadcast fail, data = "
 						+ new String(mSendRequestPacket.getData()) + " " + e);
 			}
