@@ -51,11 +51,7 @@ public class MainUIFrame extends Activity implements OnClickListener,
 
 	private GridView mGridView;
 	private MainUIAdapter mAdapter;
-	private static final String DB_PATH = "/data"
-			+ Environment.getDataDirectory().getAbsolutePath()
-			+ "/com.dreamlink.communication" + "/databases";
 	private NotificationMgr mNotificationMgr = null;
-
 	
 	private SocketCommunicationManager mSocketComMgr;
 	
@@ -78,15 +74,9 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		
 		initView();
 
-		importGameKeyDb();
-
 		mNotificationMgr = new NotificationMgr(MainUIFrame.this);
 		mNotificationMgr.showNotificaiton(NotificationMgr.STATUS_UNCONNECTED);
 
-		// get sdcards
-		MountManager mountManager = new MountManager();
-		mountManager.init();
-		
 		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
 	}
 	
@@ -130,39 +120,6 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mAdapter = new MainUIAdapter(this, mGridView);
 		mGridView.setAdapter(mAdapter);
 		mGridView.setOnItemClickListener(this);
-	}
-
-	// import game key db
-	private void importGameKeyDb() {
-		// copy game_app.db to database
-		if (!new File(DB_PATH).exists()) {
-			if (new File(DB_PATH).mkdirs()) {
-			} else {
-				Log.e(TAG, "can not create " + DB_PATH);
-			}
-		}
-
-		String dbstr = DB_PATH + "/" + MetaData.DATABASE_NAME;
-		File dbFile = new File(dbstr);
-		if (dbFile.exists()) {
-			return;
-		}
-
-		// import
-		InputStream is;
-		try {
-			is = getResources().openRawResource(R.raw.game_app);
-			FileOutputStream fos = new FileOutputStream(dbFile);
-			byte[] buffer = new byte[4 * 1024];
-			int count = 0;
-			while ((count = is.read(buffer)) > 0) {
-				fos.write(buffer, 0, count);
-			}
-			fos.close();// 关闭输出流
-			is.close();// 关闭输入流
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
