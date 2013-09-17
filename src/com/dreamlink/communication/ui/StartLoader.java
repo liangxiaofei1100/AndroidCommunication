@@ -65,8 +65,11 @@ public class StartLoader extends Activity {
 		// importGameKeyDb();
 		
 		startService();
-		List<AppInfo> zyAppInfos = loadZYAppToDb();
-		loadAppToDb(zyAppInfos);
+//		List<String> zyPkgList = loadZYAppToDb();
+//		loadAppToDb(zyPkgList);
+		//实在太耗时间了，还是开个线程吧，不然一直卡在加载界面，如果应用多的话，待继续优化
+		LoadAppThread thread = new LoadAppThread();
+		thread.start();
 		Log.d(TAG, "Load end");
 	}
 
@@ -167,8 +170,16 @@ public class StartLoader extends Activity {
 		startService(intent);
 	}
 	
-	public List<AppInfo> loadZYAppToDb(){
-		List<AppInfo> zyList = new ArrayList<AppInfo>();
+	public class LoadAppThread extends Thread{
+		@Override
+		public void run() {
+			List<String> zyPkgList = loadZYAppToDb();
+			loadAppToDb(zyPkgList);
+		}
+	}
+	
+	public List<String> loadZYAppToDb(){
+		List<String> zyList = new ArrayList<String>();
 		// get zhaoyan app list
 		Intent appIntent = new Intent(DreamConstant.APP_ACTION);
 		appIntent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -185,14 +196,14 @@ public class StartLoader extends Activity {
 			appInfo.loadVersion();
 			appInfo.setType(AppManager.ZHAOYAN_APP);
 			values[i] = appManager.getValuesByAppInfo(appInfo);
+			zyList.add(resolveInfos.get(i).activityInfo.packageName);
 		}
 		// get zhaoyan app list end
 		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, values);
 		return zyList;
 	}
 	
-	public void loadAppToDb(List<AppInfo> zylist) {
-		List<AppInfo> appList = new ArrayList<AppInfo>();
+	public void loadAppToDb(List<String> zylist) {
 		// Retrieve all known applications.
 		List<ApplicationInfo> apps = appManager.getAllApps();
 		if (apps == null) {
@@ -209,7 +220,7 @@ public class StartLoader extends Activity {
 			int flag2 = info.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
 			if ((flag1 <= 0) || flag2 != 0) {
 				String pkgName = info.packageName;
-				if (!isZyApp(pkgName, zylist)) {// 这里就不处理朝颜对战里的应用
+				if (!zylist.contains(pkgName)) {// 这里就不处理朝颜对战里的应用
 					AppInfo entry = new AppInfo(StartLoader.this, apps.get(i));
 					entry.setPackageName(info.packageName);
 					entry.loadLabel();
@@ -247,12 +258,4 @@ public class StartLoader extends Activity {
 		getContentResolver().insert(AppData.App.CONTENT_URI, values);
 	}
 	
-	public boolean isZyApp(String pkgname, List<AppInfo> zyAppInfos) {
-		for (AppInfo appInfo : zyAppInfos) {
-			if (pkgname.equals(appInfo.getPackageName())) {
-				return true;
-			}
-		}
-		return false;
-	}
 }
