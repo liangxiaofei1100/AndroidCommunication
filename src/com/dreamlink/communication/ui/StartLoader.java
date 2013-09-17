@@ -7,6 +7,7 @@ import java.io.InputStream;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.db.MetaData;
+import com.dreamlink.communication.ui.service.FileTransferService;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -47,6 +48,8 @@ public class StartLoader extends Activity {
 		initMountManager();
 		// Do not use game DB now.
 		// importGameKeyDb();
+		
+		startService();
 		Log.d(TAG, "Load end");
 	}
 
@@ -139,5 +142,11 @@ public class StartLoader extends Activity {
 		Intent intent = new Intent();
 		intent.setClass(this, LoginActivity.class);
 		startActivity(intent);
+	}
+	
+	public void startService(){
+		Intent intent = new Intent();
+		intent.setClass(this, FileTransferService.class);
+		startService(intent);
 	}
 }

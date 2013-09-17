@@ -57,7 +57,7 @@ public class MetaData{
 		 */
 		public static final String RECEIVE_USERNAME = "receive_username";
 		/**
-		 * file transfer bytes,type:double
+		 * current file transfer bytes,type:double
 		 */
 		public static final String PROGRESS = "progress";
 		/**

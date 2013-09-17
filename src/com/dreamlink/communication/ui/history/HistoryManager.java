@@ -73,9 +73,9 @@ public class HistoryManager {
 	    	@Override
 	    	public void run() {
 	    		ContentValues values = new ContentValues();
-	    		values.put(MetaData.History.FILE_PATH, historyInfo.getFileInfo().getFilePath());
-	    		values.put(MetaData.History.FILE_NAME, historyInfo.getFileInfo().getFileName());
-	    		values.put(MetaData.History.FILE_SIZE, historyInfo.getFileInfo().getFileSize());
+	    		values.put(MetaData.History.FILE_PATH, historyInfo.getFile().getAbsolutePath());
+	    		values.put(MetaData.History.FILE_NAME, historyInfo.getFile().getName());
+	    		values.put(MetaData.History.FILE_SIZE, historyInfo.getFile().length());
 	    		values.put(MetaData.History.SEND_USERNAME, historyInfo.getSendUserName());
 	    		values.put(MetaData.History.RECEIVE_USERNAME, historyInfo.getReceiveUser().getUserName());
 	    		values.put(MetaData.History.PROGRESS, historyInfo.getProgress());
@@ -89,9 +89,9 @@ public class HistoryManager {
 	    
 	    public ContentValues getInsertValues(HistoryInfo historyInfo){
 	    	ContentValues values = new ContentValues();
-    		values.put(MetaData.History.FILE_PATH, historyInfo.getFileInfo().getFilePath());
-    		values.put(MetaData.History.FILE_NAME, historyInfo.getFileInfo().getFileName());
-    		values.put(MetaData.History.FILE_SIZE, historyInfo.getFileInfo().getFileSize());
+	    	values.put(MetaData.History.FILE_PATH, historyInfo.getFile().getAbsolutePath());
+    		values.put(MetaData.History.FILE_NAME, historyInfo.getFile().getName());
+    		values.put(MetaData.History.FILE_SIZE, historyInfo.getFileSize());
     		values.put(MetaData.History.SEND_USERNAME, historyInfo.getSendUserName());
     		values.put(MetaData.History.RECEIVE_USERNAME, historyInfo.getReceiveUser().getUserName());
     		values.put(MetaData.History.PROGRESS, historyInfo.getProgress());

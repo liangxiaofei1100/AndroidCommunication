@@ -216,10 +216,10 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 						break;
 					case 1:
 						//send
-						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(mediaInfo.getUrl()));
+//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(mediaInfo.getUrl()));
 
 						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
-						fileSendUtil.sendFile(fileTransferInfo);
+						fileSendUtil.sendFile(mediaInfo.getUrl());
 						break;
 					case 2:
 						//delete
@@ -294,11 +294,9 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 			break;
 			
 		case R.id.iv_history:
-			MainFragmentActivity.instance.goToHistory();
-//			Intent intent = new Intent();
-//			intent.putExtra(Extra.APP_ID, mAppId);
-//			intent.setClass(mContext, HistoryActivity.class);
-//			startActivity(intent);
+			Intent intent = new Intent();
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
 			break;
 
 		default:

@@ -293,7 +293,7 @@ public class FileInfoManager {
 			Drawable currentIcon = null;
 			int fileType = FileInfoManager.TYPE_DEFAULT;
 			// 取得文件路径
-			String filePath = historyInfo.getFileInfo().getFilePath();
+			String filePath = historyInfo.getFile().getAbsolutePath();
 
 			// 根据文件名来判断文件类型，设置不同的图标
 			int result = fileFilter(filePath);

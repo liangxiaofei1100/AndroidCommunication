@@ -10,7 +10,6 @@ import com.dreamlink.communication.ui.app.GameFragment;
 import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.app.TiandiFragment;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
-import com.dreamlink.communication.ui.history.HistoryFragment;
 import com.dreamlink.communication.ui.image.ImageFragment;
 import com.dreamlink.communication.ui.media.MediaAudioFragment;
 import com.dreamlink.communication.ui.media.MediaVideoFragment;
@@ -47,7 +46,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		//考虑到内存消耗问题，缓存页面不应该设置这么大
 		viewPager.setOffscreenPageLimit(1);
 		
-		int appid = AppUtil.getAppID(MainFragmentActivity.this);
+		int appid = AppUtil.getAppID(getApplication());
 		List<Fragment> fragments = new ArrayList<Fragment>();
 		
 		fragments.add(TiandiFragment.newInstance(appid));//朝颜天地

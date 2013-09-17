@@ -74,11 +74,9 @@ public class RecommendFragment extends BaseFragment implements OnClickListener {
 			break;
 			
 		case R.id.iv_history:
-			MainFragmentActivity.instance.goToHistory();
-//			Intent intent = new Intent();
-//			intent.putExtra(Extra.APP_ID, mAppId);
-//			intent.setClass(getActivity(), HistoryActivity.class);
-//			startActivity(intent);
+			Intent intent = new Intent();
+			intent.setClass(getActivity(), HistoryActivity.class);
+			startActivity(intent);
 			break;
 
 		default:

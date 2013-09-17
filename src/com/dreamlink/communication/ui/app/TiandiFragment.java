@@ -35,16 +35,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.lib.util.Notice;
-import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.media.MediaAudioFragment;
 
 public class TiandiFragment extends BaseFragment implements OnClickListener, OnItemClickListener, OnItemLongClickListener {
 	private GridView mGridView;
@@ -257,11 +253,9 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 			appListTask.execute("");
 			break;
 		case R.id.iv_history:
-			MainFragmentActivity.instance.goToHistory();
-//			Intent intent = new Intent();
-//			intent.putExtra(Extra.APP_ID, mAppId);
-//			intent.setClass(mContext, HistoryActivity.class);
-//			startActivity(intent);
+			Intent intent = new Intent();
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
 			break;
 
 		default:
@@ -282,9 +276,9 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 					switch (which) {
 					case 0:
 						//send
-						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
+//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
 						FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
-						fileSendUtil.sendFile(fileTransferInfo);
+						fileSendUtil.sendFile(appInfo.getInstallPath());
 						break;
 					case 1:
 						//app info

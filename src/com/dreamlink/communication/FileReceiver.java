@@ -17,6 +17,7 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Handler.Callback;
 
+import com.dreamlink.communication.FileReceiverTest.OnReceiveListener;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.history.HistoryInfo;
@@ -35,7 +36,6 @@ public class FileReceiver {
 	private int mServerPort;
 	private FileTransferInfo mFileTransferInfo;
 	private File mReceivedFile;
-	private HistoryInfo mReceivedHistoryInfo;
 	private OnReceiveListener mListener;
 
 	private ReceiveHandlerThread mHandlerThread;
@@ -50,6 +50,8 @@ public class FileReceiver {
 
 	private static final int FINISH_RESULT_SUCCESS = 1;
 	private static final int FINISH_RESULT_FAIL = 2;
+	
+	private Object mKey;
 
 	/** The socket to recieve file. */
 	private Socket mSocket;
@@ -87,11 +89,11 @@ public class FileReceiver {
 	 *            the file to save.
 	 * @param listener
 	 */
-	public void receiveFile(HistoryInfo historyInfo, OnReceiveListener listener) {
+	public void receiveFile(File receivedFile, OnReceiveListener listener, Object key) {
+		mKey = key;
 		Log.d(TAG,
-				"receiveFile() received file " + historyInfo.getFileInfo().getFilePath());
-//		mReceivedFile = receivedFile;
-		mReceivedHistoryInfo = historyInfo;
+				"receiveFile() received file " + receivedFile.getAbsolutePath());
+		mReceivedFile = receivedFile;
 		mListener = listener;
 		if (mServerInetAddress == null) {
 			Log.e(TAG, "receiveFile() Server Address is null.");
@@ -136,8 +138,7 @@ public class FileReceiver {
 						mServerPort)), SOCKET_TIMEOUT);
 				Log.d(TAG, "Client socket - " + mSocket.isConnected());
 				InputStream inputStream = mSocket.getInputStream();
-//				copyFile(inputStream, new FileOutputStream(mReceivedFile));
-				copyFile(inputStream);
+				copyFile(inputStream, new FileOutputStream(mReceivedFile));
 				Log.d(TAG, "Client: Data written");
 			} catch (IOException e) {
 				Log.e(TAG, e.toString());
@@ -155,18 +156,12 @@ public class FileReceiver {
 					}
 				}
 			}
-//			Log.d(TAG, "FileReceiverThread file: [" + mReceivedFile.getName()
-//					+ "] finished.");
-			Log.d(TAG, "FileReceiverThread file: [" + mReceivedHistoryInfo.getFileInfo().getFileName()
+			Log.d(TAG, "FileReceiverThread file: [" + mReceivedFile.getName()
 					+ "] finished.");
 		}
 	}
 
-//	private void copyFile(InputStream inputStream, OutputStream out) throws FileNotFoundException {
-	private void copyFile(InputStream inputStream) throws FileNotFoundException {
-		mReceivedHistoryInfo.setStatus(HistoryManager.STATUS_RECEIVING);
-		mReceivedHistoryInfo.setStartTime(System.currentTimeMillis());
-		OutputStream out = new FileOutputStream(mReceivedHistoryInfo.getFileInfo().getFilePath());
+	private void copyFile(InputStream inputStream, OutputStream out) {
 		byte buf[] = new byte[4096];
 		int len;
 		long receiveBytes = 0;
@@ -182,18 +177,14 @@ public class FileReceiver {
 				currentProgress = (int) (((double) receiveBytes / totalBytes) * 100);
 				if (lastProgress != currentProgress) {
 					lastProgress = currentProgress;
-					mReceivedHistoryInfo.setProgress(receiveBytes);
-					mReceivedHistoryInfo.setNowTime(System.currentTimeMillis());
-					notifyProgress();
+					notifyProgress(receiveBytes, totalBytes);
 				}
 			}
-			mReceivedHistoryInfo.setStatus(HistoryManager.STATUS_RECEIVE_SUCCESS);
 			notifyFinish(true);
 			out.close();
 			inputStream.close();
 		} catch (IOException e) {
 			Log.d(TAG, e.toString());
-			mReceivedHistoryInfo.setStatus(HistoryManager.STATUS_RECEIVE_FAIL);
 			notifyFinish(false);
 		}
 		long time = System.currentTimeMillis() - start;
@@ -216,16 +207,15 @@ public class FileReceiver {
 				long receiveBytes = data.getLong(KEY_RECEIVE_BYTES);
 				long totalBytes = data.getLong(KEY_TOTAL_BYTES);
 				if (mListener != null) {
-//					mListener.onReceiveProgress(receiveBytes, totalBytes);
-					mListener.onReceiveProgress(mReceivedHistoryInfo);
+					mListener.onReceiveProgress(receiveBytes, mReceivedFile, mKey);
 				}
 				break;
 			case MSG_FINISH:
 				if (mListener != null) {
 					if (msg.arg1 == FINISH_RESULT_SUCCESS) {
-						mListener.onReceiveFinished(mReceivedHistoryInfo, true);
+						mListener.onReceiveFinished(true, mReceivedFile, mKey);
 					} else {
-						mListener.onReceiveFinished(mReceivedHistoryInfo, false);
+						mListener.onReceiveFinished(false, mReceivedFile, mKey);
 					}
 				}
 				// Quit the HandlerThread.
@@ -260,12 +250,6 @@ public class FileReceiver {
 		message.setData(data);
 		mHandler.sendMessage(message);
 	}
-	
-	public void notifyProgress(){
-		Message message = mHandler.obtainMessage();
-		message.what = MSG_UPDATE_PROGRESS;
-		mHandler.sendMessage(message);
-	}
 
 	private void notifyFinish(boolean result) {
 		Message message = mHandler.obtainMessage();
@@ -289,14 +273,14 @@ public class FileReceiver {
 		 * @param receivedBytes
 		 * @param totalBytes
 		 */
-		void onReceiveProgress(HistoryInfo historyInfo);
+		void onReceiveProgress(long receivedBytes, File file, Object key);
 
 		/**
 		 * The file is received.
 		 * 
 		 * @param success
 		 */
-		void onReceiveFinished(HistoryInfo historyInfo, boolean success);
+		void onReceiveFinished(boolean success, File file, Object key);
 	}
 
 	/*

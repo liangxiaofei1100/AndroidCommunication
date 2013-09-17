@@ -239,7 +239,7 @@ public class DreamProvider extends ContentProvider {
 					+ MetaData.History.FILE_SIZE + " LONG, "
 					+ MetaData.History.SEND_USERNAME + " TEXT, "
 					+ MetaData.History.RECEIVE_USERNAME + " TEXT, "
-					+ MetaData.History.PROGRESS + " DOUBLE, "
+					+ MetaData.History.PROGRESS + " LONG, "
 					+ MetaData.History.DATE + " LONG, "
 					+ MetaData.History.STATUS + " INTEGER, "
 					+ MetaData.History.MSG_TYPE + " INTEGER, "

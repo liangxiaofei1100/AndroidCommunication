@@ -1,7 +1,6 @@
 package com.dreamlink.communication.ui.app;
 
 
-import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,15 +9,12 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
-import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.media.MediaAudioFragment;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -295,10 +291,10 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 							break;
 						case 1:
 							// send
-							FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
+//							FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
 
 							FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
-							fileSendUtil.sendFile(fileTransferInfo);
+							fileSendUtil.sendFile(appInfo.getInstallPath());
 							break;
 						case 2:
 							// uninstall
@@ -372,11 +368,9 @@ public class GameFragment extends Fragment implements OnItemClickListener, OnIte
 			break;
 			
 		case R.id.iv_history:
-			MainFragmentActivity.instance.goToHistory();
-//			Intent intent = new Intent();
-//			intent.putExtra(Extra.APP_ID, mAppId);
-//			intent.setClass(mContext, HistoryActivity.class);
-//			startActivity(intent);
+			Intent intent = new Intent();
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
 			break;
 
 		default:

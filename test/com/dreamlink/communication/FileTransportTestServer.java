@@ -25,9 +25,6 @@ import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.FileSender.OnFileSendListener;
 import com.dreamlink.communication.lib.util.Notice;
-import com.dreamlink.communication.protocol.FileTransferInfo;
-import com.dreamlink.communication.ui.file.FileInfo;
-import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -102,13 +99,9 @@ public class FileTransportTestServer extends Activity implements
 						return;
 					}
 					mStatusTextView.setText("Sending file```");
-					
-					HistoryInfo historyInfo = new HistoryInfo();
-					FileTransferInfo fileInfo = new FileTransferInfo(file);
-					historyInfo.setFileInfo(fileInfo);
-					historyInfo.setReceiveUser(receiveUser);
-					mCommunicationManager.sendFile(historyInfo,
-							FileTransportTestServer.this, mAppID);
+
+					mCommunicationManager.sendFile(file,
+							FileTransportTestServer.this, receiveUser, mAppID);
 
 					mStartTime = System.currentTimeMillis();
 				} else {
@@ -252,20 +245,20 @@ public class FileTransportTestServer extends Activity implements
 	}
 
 	@Override
-	public void onSendProgress(HistoryInfo historyInfo) {
+	public void onSendProgress(long sentBytes, File file, Object key) {
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_UPDATE_SEND_PROGRESS;
 		Bundle data = new Bundle();
-		data.putDouble(KEY_SENT_BYTES, historyInfo.getProgress());
-		data.putDouble(KEY_TOTAL_BYTES, historyInfo.getMax());
+		data.putLong(KEY_SENT_BYTES, sentBytes);
+		data.putLong(KEY_TOTAL_BYTES, file.length());
 		message.setData(data);
 		mHandler.sendMessage(message);
 
 	}
 
 	@Override
-	public void onSendFinished(HistoryInfo historyInfo, boolean success) {
+	public void onSendFinished(boolean success, File file, Object key) {
 		mHandler.sendEmptyMessage(MSG_FINISHED);
-		
+
 	}
 }

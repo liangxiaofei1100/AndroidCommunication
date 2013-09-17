@@ -296,40 +296,47 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		}
 	}
 
-	public void sendFile(HistoryInfo historyInfo, OnFileSendListener listener,
-			int appID) {
-		Log.d(TAG, "sendFile() file = "
-				+ historyInfo.getFileInfo().getFileName() + ","
-				+ historyInfo.getFileInfo().getFilePath() + ", receive user = "
-				+ historyInfo.getReceiveUser().getUserName() + ", appID = "
-				+ appID);
-		FileSender fileSender = new FileSender();
-		int serverPort = fileSender.sendFile(historyInfo, listener);
+	public void sendFile(File file, OnFileSendListener listener, User receiveUser, 
+			int appID){
+		sendFile(file, listener, receiveUser, appID, null);
+	}
+	
+	public void sendFile(File file, OnFileSendListener listener, User receiveUser, 
+			int appID, Object key) {
+		Log.d(TAG, "sendFile() file = " + file.getName() + ", receive user = "
+				+ receiveUser.getUserName() + ", appID = " + appID);
+		FileSender fileSender = null;
+		if (key == null) {
+			fileSender = new FileSender();
+		} else {
+			fileSender = new FileSender(key);
+		}
+		
+		int serverPort = fileSender.sendFile(file, listener);
 		if (serverPort == -1) {
 			Log.e(TAG, "sendFile error, create socket server fail. file = "
-					+ historyInfo.getFileInfo().getFileName());
+					+ file.getName());
 			return;
 		}
 		InetAddress inetAddress = NetWorkUtil.getLocalInetAddress();
 		if (inetAddress == null) {
-			Log.e(TAG, "sendFile error, get inet address fail. file = "
-					+ historyInfo.getFileInfo().getFileName());
+			Log.e(TAG,
+					"sendFile error, get inet address fail. file = "
+							+ file.getName());
 			return;
 		}
-		int userID = historyInfo.getReceiveUser().getUserID();
+		int userID = receiveUser.getUserID();
 		byte[] inetAddressData = inetAddress.getAddress();
 		byte[] data = ProtocolEncoder.encodeSendFile(mUserManager
-				.getLocalUser().getUserID(), historyInfo.getReceiveUser()
-				.getUserID(), appID, inetAddressData, serverPort,
-				new FileTransferInfo(new File(historyInfo.getFileInfo()
-						.getFilePath())));
+				.getLocalUser().getUserID(), receiveUser.getUserID(), appID,
+				inetAddressData, serverPort, new FileTransferInfo(file));
 		SocketCommunication communication = mUserManager
 				.getSocketCommunication(userID);
 		if (communication != null) {
 			communication.sendMessage(data);
 		} else {
 			Log.e(TAG, "sendFile fail. can not connect with the receiver: "
-					+ historyInfo.getReceiveUser());
+					+ receiveUser);
 		}
 	}
 

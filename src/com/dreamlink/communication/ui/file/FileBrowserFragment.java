@@ -23,6 +23,7 @@ import com.dreamlink.communication.ui.common.FileSendUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
+import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.media.MediaVideoFragment;
 import com.dreamlink.communication.util.Log;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -209,7 +210,9 @@ public class FileBrowserFragment extends BaseFragment implements
 		case R.id.iv_refresh:
 			break;
 		case R.id.iv_history:
-			MainFragmentActivity.instance.goToHistory();
+			Intent intent = new Intent();
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
 			break;
 		default:
 			mTabManager.updateNavigationBar(v.getId(), storge_type);
@@ -316,10 +319,10 @@ public class FileBrowserFragment extends BaseFragment implements
 			mFileInfoManager.openFile(fileInfo.filePath);
 			break;
 		case ListContextMenu.MENU_SEND:
-			FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(fileInfo.filePath));
+//			FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(fileInfo.filePath));
 
 			FileSendUtil fileSendUtil = new FileSendUtil(getActivity());
-			fileSendUtil.sendFile(fileTransferInfo);
+			fileSendUtil.sendFile(fileInfo.filePath);
 			break;
 		case ListContextMenu.MENU_DELETE:
 			showDeleteDialog(fileInfo);
