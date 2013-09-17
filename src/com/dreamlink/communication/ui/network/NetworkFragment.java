@@ -261,30 +261,29 @@ public class NetworkFragment extends BaseFragment implements
 		final OnSearchListener listener = NetworkFragment.this;
 
 		new AlertDialog.Builder(mContext)
-				.setTitle("Please choose the server type")
+				.setTitle(R.string.choose_network_type_title)
 				.setView(view)
 				.setPositiveButton(android.R.string.ok,
 						new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog,
 									int which) {
-								String msg = "";
+								String networkType = "";
 								if (wifiButton.isChecked()) {
-									msg = "To Create Wifi Server";
+									networkType = "Wi-Fi";
 									mConnectHelper.createServer("wifi",
 											listener);
 								} else if (wifiApButton.isChecked()) {
-									msg = "To Create Wifi AP Server";
+									networkType = "Wi-Fi AP";
 									mConnectHelper.createServer("wifi-ap",
 											listener);
 								} else {
+									networkType = "Wi-Fi Direct";
 									mConnectHelper.createServer("wifi-direct",
 											listener);
-									msg = "To Create Wifi Direct Server";
 								}
-								Toast.makeText(mContext, msg,
+								Toast.makeText(mContext, getString(R.string.creating_network, networkType),
 										Toast.LENGTH_SHORT).show();
-
 							}
 						})
 				.setNegativeButton(android.R.string.cancel,
