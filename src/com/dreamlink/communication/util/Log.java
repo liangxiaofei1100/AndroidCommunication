@@ -21,6 +21,11 @@ public class Log {
 			mLogcatSaver.start();
 		}
 	}
+	public static void v(String tag, String message) {
+		if (isDebug) {
+			android.util.Log.v(TAG + tag, message);
+		}
+	}
 
 	public static void i(String tag, String message) {
 		if (isDebug) {
