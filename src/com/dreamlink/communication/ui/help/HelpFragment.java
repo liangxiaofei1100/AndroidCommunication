@@ -115,14 +115,20 @@ public class HelpFragment extends BaseFragment implements OnClickListener {
 
 	@Override
 	public void onClick(View v) {
+		Intent intent = new Intent();
+		intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		switch (v.getId()) {
 		case R.id.iv_refresh:
 
 			break;
 
 		case R.id.iv_history:
-			Intent intent = new Intent();
 			intent.setClass(getActivity(), HistoryActivity.class);
+			startActivity(intent);
+			break;
+			
+		case R.id.ll_help_about:
+			intent.setClass(getActivity(), AboutActivity.class);
 			startActivity(intent);
 			break;
 

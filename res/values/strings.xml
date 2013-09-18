@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"
-    >
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">朝颜无限</string>
     <string name="action_settings">Settings</string>
@@ -33,15 +30,12 @@
     <string name="ui_menu_save">Save</string>
     <string name="lable_user_info">用户资料</string>
     <string name="menu_user_info">用户资料</string>
-
     <string name="btn_test_apps">Test apps</string>
     <string name="readme_file_transport_test">File Transport test.</string>
-    
     <string name="login_dialog_title">用户连接</string>
     <string name="login_dialog_message">"用户：%s 请求连接。"</string>
     <string name="login_dialog_allow">"同意"</string>
     <string name="login_dialog_disallow">"拒绝"</string>
-    
     <string name="user_info_setting">用户信息设置</string>
     <string name="login">登录</string>
     <string name="network_neighborhood">网上邻居</string>
@@ -64,35 +58,23 @@
     <string name="network_creator">局域网创建者</string>
     <string name="creating_network">正在创建%s局域网络</string>
     <string name="choose_network_type_title">请选择网络类型</string>
-    
     <string name="section_remote">远程服务器</string>
     <string name="section_local">本地文件</string>
     <string name="menu_paste">粘贴</string>
-    
     <string name="operitor_title">操作</string>
     <string name="confirm_msg">确认删除 <xliff:g id="delete">%1$s</xliff:g> ?</string>
-    
     <string name="help_title">帮助</string>
-    
     <string name="settings_title">设置</string>
-    
     <string name="settings_logout">退出朝颜天地</string>
-    
     <string name="help_introduction">功能介绍</string>
-    
     <string name="help_introduction_tips">介绍本程序基本功能的使用方法</string>
-    
     <string name="help_suggestion">意见反馈</string>
-    
     <string name="help_suggestion_tips">将您对本程序的建议和意见反馈给我们</string>
-    
     <string name="help_check_update">检查新版本</string>
-    
     <string name="help_current_version">当前版本号:%s</string>
-    
     <string name="help_about">关于</string>
-    
     <string name="settings_user_info">用户信息设置</string>
-    
     <string name="settings_user_info_tips">重新设置用户信息</string>
+    <string name="about_app_name_version">%1$s: %2$s</string>
+
 </resources>
