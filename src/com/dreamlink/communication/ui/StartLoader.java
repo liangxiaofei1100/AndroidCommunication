@@ -205,19 +205,18 @@ public class StartLoader extends Activity {
 	}
 	
 	public void loadAppToDb(List<String> zylist) {
-		List<AppInfo> appList = new ArrayList<AppInfo>();
+		List<ContentValues> valuesList = new ArrayList<ContentValues>();
 		// Retrieve all known applications.
 		List<ApplicationInfo> apps = pm.getInstalledApplications(0);
 		if (apps == null) {
 			apps = new ArrayList<ApplicationInfo>();
 		}
+		ContentValues values = new ContentValues();
 		for (int i = 0; i < apps.size(); i++) {
 			ApplicationInfo info = apps.get(i);
 			// 获取非系统应用
 			int flag1 = info.flags & ApplicationInfo.FLAG_SYSTEM;
-			// 本来是系统程序，被用户手动更新后，该系统程序也成为第三方应用程序了
-			int flag2 = info.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
-			if ((flag1 <= 0) || flag2 != 0) {
+			if (flag1 <= 0) {
 				String pkgName = info.packageName;
 				if (!zylist.contains(pkgName)) {// 这里就不处理朝颜对战里的应用
 					AppInfo entry = new AppInfo(StartLoader.this, apps.get(i));
@@ -235,8 +234,8 @@ public class StartLoader extends Activity {
 					} else {
 						entry.setType(AppManager.NORMAL_APP);
 					}
-					appList.add(entry);
-
+					values = appManager.getValuesByAppInfo(entry);
+					valuesList.add(values);
 					//为了蓝牙邀请准备材料
 					if (DreamConstant.PACKAGE_NAME.equals(info.packageName)) {
 						DreamUtil.package_source_dir = info.sourceDir;
@@ -248,12 +247,10 @@ public class StartLoader extends Activity {
 		}
 		
 		//get values
-		ContentValues[] values = new ContentValues[appList.size()];
-		for (int i = 0; i < appList.size(); i++) {
-			values[i] = appManager.getValuesByAppInfo(appList.get(i));
-		}
+		ContentValues[] contentValues = new ContentValues[0];
+		contentValues =	valuesList.toArray(contentValues);
 		//经验证插入60个应用，仅90ms左右，所以插入时间可以忽略不计了
-		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, values);
+		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, contentValues);
 	}
 	
 	public void insertToDb(AppInfo entry){
