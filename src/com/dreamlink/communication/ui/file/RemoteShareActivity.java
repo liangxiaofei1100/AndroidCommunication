@@ -20,7 +20,6 @@ import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.Command;
 import com.dreamlink.communication.ui.DreamConstant.Cmd;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.dialog.FileExistDialog;
 import com.dreamlink.communication.ui.dialog.FileExistDialog.onMenuItemClickListener;
 import com.dreamlink.communication.ui.dialog.FileTransferDialog;

@@ -56,31 +56,6 @@
             android:label="@string/label_applist"
             android:screenOrientation="portrait" >
         </activity>
-        <activity
-            android:name="com.dreamlink.communication.fileshare.FileShareLauncher"
-            android:label="@string/fileshare_label" >
-
-            <!-- <intent-filter> -->
-            <!-- <action android:name="com.dreamlink.communication.action.app" /> -->
-
-
-            <!-- <category android:name="android.intent.category.DEFAULT" /> -->
-            <!-- </intent-filter> -->
-
-            <meta-data
-                android:name="app_id"
-                android:value="101" />
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.fileshare.FileListActivity"
-            android:label="@string/fileshare_label"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.fileshare.FileMainUI"
-            android:label="@string/fileshare_label"
-            android:screenOrientation="portrait" >
-        </activity>
 
         <service android:name="com.dreamlink.communication.ui.file.RemoteShareService" >
         </service>
@@ -171,10 +146,6 @@
             android:name="com.dreamlink.communication.ui.UserInfoSetting"
             android:windowSoftInputMode="adjustResize" >
         </activity>
-        <activity
-            android:name="com.dreamlink.communication.ui.file.FileTransferActivity"
-            android:screenOrientation="portrait" >
-        </activity>
         <activity android:name="com.dreamlink.communication.ui.app.AppFragmentActivity" >
         </activity>
         <activity
@@ -206,15 +177,6 @@
         <service android:name="com.dreamlink.communication.ui.service.FileManagerService" />
 
         <activity android:name="com.dreamlink.communication.ui.history.HistoryActivity" >
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.ui.dialog.FileTransferActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/MyDialogStyle" >
-        </activity>
-        <activity
-            android:name="com.dreamlink.communication.fileshare.FileShareServer"
-            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.dreamlink.communication.ui.file.LocalFolderDialog"
