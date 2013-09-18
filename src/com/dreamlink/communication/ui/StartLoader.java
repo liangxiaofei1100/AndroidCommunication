@@ -197,6 +197,7 @@ public class StartLoader extends Activity {
 			appInfo.setType(AppManager.ZHAOYAN_APP);
 			values[i] = appManager.getValuesByAppInfo(appInfo);
 			zyList.add(resolveInfos.get(i).activityInfo.packageName);
+//			insertToDb(appInfo);
 		}
 		// get zhaoyan app list end
 		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, values);
@@ -204,14 +205,12 @@ public class StartLoader extends Activity {
 	}
 	
 	public void loadAppToDb(List<String> zylist) {
+		List<AppInfo> appList = new ArrayList<AppInfo>();
 		// Retrieve all known applications.
-		List<ApplicationInfo> apps = appManager.getAllApps();
+		List<ApplicationInfo> apps = pm.getInstalledApplications(0);
 		if (apps == null) {
 			apps = new ArrayList<ApplicationInfo>();
 		}
-		//最多也就这么多吧，就多给他分配一点空间
-		ContentValues[] values = new ContentValues[apps.size()];
-		System.out.println("values.siz=" + values.length);
 		for (int i = 0; i < apps.size(); i++) {
 			ApplicationInfo info = apps.get(i);
 			// 获取非系统应用
@@ -236,12 +235,9 @@ public class StartLoader extends Activity {
 					} else {
 						entry.setType(AppManager.NORMAL_APP);
 					}
-					//这里每个又要花掉30ms
-					values[i] = appManager.getValuesByAppInfo(entry);
-//					Log.d(TAG, "begin query:" + System.currentTimeMillis());
-//					Log.d(TAG, "end query:" + System.currentTimeMillis());
-//					 appList.add(entry);
+					appList.add(entry);
 
+					//为了蓝牙邀请准备材料
 					if (DreamConstant.PACKAGE_NAME.equals(info.packageName)) {
 						DreamUtil.package_source_dir = info.sourceDir;
 					}
@@ -250,6 +246,13 @@ public class StartLoader extends Activity {
 				// system app
 			}
 		}
+		
+		//get values
+		ContentValues[] values = new ContentValues[appList.size()];
+		for (int i = 0; i < appList.size(); i++) {
+			values[i] = appManager.getValuesByAppInfo(appList.get(i));
+		}
+		//经验证插入60个应用，仅90ms左右，所以插入时间可以忽略不计了
 		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, values);
 	}
 	

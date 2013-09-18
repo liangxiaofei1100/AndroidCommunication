@@ -126,7 +126,7 @@ public class AppProvider extends ContentProvider {
 			rowId = mSqLiteDatabase.insertWithOnConflict(AppData.App.TABLE_NAME, "", 
 					values, SQLiteDatabase.CONFLICT_REPLACE);
 			if (rowId > 0) {
-				Uri rowUri = ContentUris.withAppendedId(AppData.App.CONTENT_URI, rowId);
+				Uri rowUri = ContentUris.withAppendedId(uri, rowId);
 				getContext().getContentResolver().notifyChange(uri, null);
 				Log.i(TAG, "insertDb.rowId=" + rowId);
 				return rowUri;
@@ -149,8 +149,9 @@ public class AppProvider extends ContentProvider {
 				insert(uri, values[i]);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			Log.e(TAG, "insert error:" + e.toString());
 		} finally{
+			mSqLiteDatabase.setTransactionSuccessful();
 			mSqLiteDatabase.endTransaction();
 		}
 		return numValues;
@@ -191,7 +192,7 @@ public class AppProvider extends ContentProvider {
 		}
 		
 		mSqLiteDatabase = mDatabaseHelper.getReadableDatabase();
-		Log.i(TAG, "selection:" + selection + ",args:" + selectionArgs.toString());
+//		Log.i(TAG, "selection:" + selection + ",args:" + selectionArgs.toString());
 		Cursor ret = qb.query(mSqLiteDatabase, projection, selection, selectionArgs, null, null, sortOrder);
 		
 		if (ret != null) {
