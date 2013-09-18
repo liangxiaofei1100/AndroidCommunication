@@ -80,10 +80,10 @@ public class AboutActivity extends Activity implements OnClickListener {
 	private void initTitle() {
 		// Title icon
 		mTitleIcon = (ImageView) findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.user_icon_default);
+		mTitleIcon.setImageResource(R.drawable.logo);
 		// Title text
 		mTitleView = (TextView) findViewById(R.id.tv_title_name);
-		mTitleView.setText(R.string.user_info_setting);
+		mTitleView.setText(R.string.help_about);
 		// Title number
 		mTitleNum = (TextView) findViewById(R.id.tv_title_num);
 		mTitleNum.setVisibility(View.GONE);
