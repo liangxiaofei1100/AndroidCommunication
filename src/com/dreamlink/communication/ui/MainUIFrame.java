@@ -1,26 +1,13 @@
 package com.dreamlink.communication.ui;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.data.UserHelper;
-import com.dreamlink.communication.debug.NetworkStatus;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.notification.NotificationMgr;
-import com.dreamlink.communication.ui.app.AppInfo;
-import com.dreamlink.communication.ui.app.AppManager;
-import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.db.MetaData;
-import com.dreamlink.communication.ui.file.FileTransferActivity;
-import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.ui.history.HistoryManager;
 import com.dreamlink.communication.ui.service.FileTransferService;
 import com.dreamlink.communication.util.Log;
@@ -32,20 +19,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
-import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -61,7 +38,7 @@ import android.widget.TextView;
  * @date 2013年9月11日16:50:57
  */
 public class MainUIFrame extends Activity implements OnClickListener,
-		OnItemClickListener, OnItemLongClickListener {
+		OnItemClickListener, OnItemLongClickListener, OnUserChangedListener{
 	private static final String TAG = "MainUIFrame";
 	private Context mContext;
 
@@ -95,17 +72,23 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mNotificationMgr.showNotificaiton(NotificationMgr.STATUS_UNCONNECTED);
 
 		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
+		mUserManager = UserManager.getInstance();
+		mUserManager.registerOnUserChangedListener(this);
+	}
+	
+	private void updateNetworkStatus(){
+		if (mSocketComMgr.isConnected()) {
+			mNetWorkStatusView.setText(R.string.unconnected);
+		} else {
+			mNetWorkStatusView.setText(R.string.connected);
+		}
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		Log.d(TAG, "onResume");
-		if (mSocketComMgr.getCommunications().isEmpty()) {
-			mNetWorkStatusView.setText("未连接");
-		} else {
-			mNetWorkStatusView.setText("已连接");
-		}
+		updateNetworkStatus();
 	}
 
 	public void initView() {
@@ -117,17 +100,6 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mUserNameView.setText(mLocalUser.getUserName());
 		mNetWorkStatusView = (TextView) findViewById(R.id.tv_network_status);
 		mUserIconView.setOnClickListener(this);
-		// for test
-		mUserIconView.setOnLongClickListener(new OnLongClickListener() {
-
-			@Override
-			public boolean onLongClick(View v) {
-				NetworkStatus status = new NetworkStatus(mContext);
-				status.show();
-				return true;
-			}
-		});
-		// for test
 		mTransferView.setOnClickListener(this);
 		mSettingView.setOnClickListener(this);
 		mHelpView.setOnClickListener(this);
@@ -172,20 +144,16 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		System.out.println("onItemClick");
 		mAdapter.setClickPosition(position);
 		mAdapter.notifyDataSetChanged();
 		Intent intent = new Intent(MainUIFrame.this, MainFragmentActivity.class);
 		intent.putExtra("position", position);
 		startActivity(intent);
 	}
-	
+
 	@Override
-	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int position,
-			long arg3) {
-		// TODO Auto-generated method stub
-		System.out.println("onItemLongClick");
-//		mAdapter.setStatus(position, true);
+	public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+			int position, long arg3) {
 		mAdapter.setClickPosition(position);
 		mAdapter.notifyDataSetChanged();
 		return false;
@@ -203,36 +171,14 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		}
 	}
 
-	/** options menu */
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		Log.d(TAG, "onCreateOptionsMenu");
-		menu.add(0, 2, 0, "远程共享");
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case 2:
-			Intent shareIntent = new Intent(MainUIFrame.this,
-					RemoteShareActivity.class);
-			// 如果这个activity已经启动了，就不产生新的activity，而只是把这个activity实例加到栈顶来就可以了。
-			shareIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-			startActivity(shareIntent);
-			break;
-		default:
-			break;
-		}
-		return true;
-	}
-
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		//stop file transfer service
+		// unregister listener
+		mUserManager.unregisterOnUserChangedListener(this);
+		// stop file transfer service
 		stopTransferService();
-		//modify history db
+		// modify history db
 		modifyHistoryDb();
 		// when finish，cloase all connect
 		User tem = UserManager.getInstance().getLocalUser();
@@ -281,33 +227,51 @@ public class MainUIFrame extends Activity implements OnClickListener,
 						}).setNegativeButton(android.R.string.cancel, null)
 				.create().show();
 	}
-	
+
 	/**
 	 * stop file transfer service
 	 */
-	public void stopTransferService(){
+	public void stopTransferService() {
 		Intent intent = new Intent(mContext, FileTransferService.class);
 		stopService(intent);
 	}
-	
+
 	/**
-	 * when app finish,modfiy all pre(pre_send/pre_receive) status to fail status that file transfer history in history stable
+	 * when app finish,modfiy all pre(pre_send/pre_receive) status to fail
+	 * status that file transfer history in history stable
 	 */
-	public void modifyHistoryDb(){
+	public void modifyHistoryDb() {
 		try {
 			ContentValues values = new ContentValues();
-			//更新两次，第一次将pre_send,改为send_fail
+			// 更新两次，第一次将pre_send,改为send_fail
 			values.put(MetaData.History.STATUS, HistoryManager.STATUS_SEND_FAIL);
-			getContentResolver().update(MetaData.History.CONTENT_URI, values, 
-					MetaData.History.STATUS + "=" + HistoryManager.STATUS_PRE_SEND, null);
-			
-			//第二次，将pre_receive,改为receive_fail
-			values.put(MetaData.History.STATUS, HistoryManager.STATUS_RECEIVE_FAIL);
-			getContentResolver().update(MetaData.History.CONTENT_URI, values, 
-					MetaData.History.STATUS + "=" + HistoryManager.STATUS_PRE_RECEIVE, null);
+			getContentResolver().update(
+					MetaData.History.CONTENT_URI,
+					values,
+					MetaData.History.STATUS + "="
+							+ HistoryManager.STATUS_PRE_SEND, null);
+
+			// 第二次，将pre_receive,改为receive_fail
+			values.put(MetaData.History.STATUS,
+					HistoryManager.STATUS_RECEIVE_FAIL);
+			getContentResolver().update(
+					MetaData.History.CONTENT_URI,
+					values,
+					MetaData.History.STATUS + "="
+							+ HistoryManager.STATUS_PRE_RECEIVE, null);
 		} catch (Exception e) {
-			// TODO: handle exception
+			Log.e(TAG, "modifyHistoryDb error. " + e);
 		}
 	}
-	
+
+	@Override
+	public void onUserConnected(User user) {
+		updateNetworkStatus();
+	}
+
+	@Override
+	public void onUserDisconnected(User user) {
+		updateNetworkStatus();
+	}
+
 }
