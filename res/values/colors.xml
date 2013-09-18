@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+
     <color name="translucent">#9000</color>
     <color name="transparent">#0000</color>
     <color name="bright_blue">#ff33b5e5</color>
@@ -12,17 +13,19 @@
     <color name="text_black">#252525</color>
     <color name="text_blue">#00aaaa</color>
     <color name="dividerline_blue">#00aaaa</color>
-    
+
     <drawable name="list_item_press">#ff5b544d</drawable>
     <drawable name="list_item_normal">#ff787470</drawable>
-    
-    <drawable name="list_item_press2">#ff00eeee</drawable><!-- 淡蓝色 -->
+    <drawable name="list_item_press2">#ff00eeee</drawable>
+ <!-- 淡蓝色 -->
     <drawable name="list_item_normal2">#ffffff</drawable>
-    
+
     <!-- 主界面提示语颜色值 -->
-    <color  name="text_color_orange">#4e0000</color>
-    <color  name="text_color_blue">#1f0068</color>
-    <color  name="text_color_green">#004900</color>
+    <color name="text_color_orange">#4e0000</color>
+    <color name="text_color_blue">#1f0068</color>
+    <color name="text_color_green">#004900</color>
     <!-- 主界面提示语颜色值 -->
-    
+
+    <color name="gray">#696969</color>
+
 </resources>

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.LoginActivity;
+import com.dreamlink.communication.ui.UserInfoSetting;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 
 public class SettingsFragment extends BaseFragment implements View.OnClickListener{
@@ -22,6 +25,9 @@ public class SettingsFragment extends BaseFragment implements View.OnClickListen
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
 	private int mAppId = -1;
+	
+	private View mUserInfoSettingView;
+	private Button mLogoutButton;
 
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an argument.
@@ -48,7 +54,17 @@ public class SettingsFragment extends BaseFragment implements View.OnClickListen
 		View rootView = inflater.inflate(R.layout.ui_settings, container,
 				false);
 		getTitleVIews(rootView);
+		
+		initView(rootView);
 		return rootView;
+	}
+
+	private void initView(View rootView) {
+		mLogoutButton = (Button) rootView.findViewById(R.id.btn_settings_logout);	
+		mLogoutButton.setOnClickListener(this);
+		
+		mUserInfoSettingView = rootView.findViewById(R.id.ll_settings_user_info);
+		mUserInfoSettingView.setOnClickListener(this);
 	}
 
 	public void getTitleVIews(View view) {
@@ -75,14 +91,25 @@ public class SettingsFragment extends BaseFragment implements View.OnClickListen
 
 	@Override
 	public void onClick(View v) {
+		Intent intent = new Intent();
+		intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		switch (v.getId()) {
 		case R.id.iv_refresh:
 
 			break;
 
 		case R.id.iv_history:
-			Intent intent = new Intent();
 			intent.setClass(getActivity(), HistoryActivity.class);
+			startActivity(intent);
+			break;
+			
+		case R.id.btn_settings_logout:
+			intent.setClass(getActivity(), LoginActivity.class);
+			startActivity(intent);
+			break;
+			
+		case R.id.ll_settings_user_info:
+			intent.setClass(getActivity(), UserInfoSetting.class);
 			startActivity(intent);
 			break;
 
