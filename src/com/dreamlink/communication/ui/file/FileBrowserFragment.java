@@ -162,6 +162,9 @@ public class FileBrowserFragment extends BaseFragment implements
 
 		mFileInfoManager = new FileInfoManager(mContext);
 		mountManager = new MountManager();
+		
+		mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
+		mFileListView.setAdapter(mFileInfoAdapter);
 
 		// init
 		if (MountManager.NO_EXTERNAL_SDCARD.equals(MountManager.SDCARD_PATH)) {
@@ -185,6 +188,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onActivityCreated(savedInstanceState);
+		
 	}
 
 	private void getTitleVIews(View view){
@@ -251,16 +255,8 @@ public class FileBrowserFragment extends BaseFragment implements
 
 			mAllLists.addAll(mFolderLists);
 			mAllLists.addAll(mFileLists);
-
-			if (isFirst) {
-				isFirst = false;
-
-				// mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
-				mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
-				mFileListView.setAdapter(mFileInfoAdapter);
-			} else {
-				mFileInfoAdapter.notifyDataSetChanged();
-			}
+			
+			mFileInfoAdapter.notifyDataSetChanged();
 			//back to the listview top,every time
 			mFileListView.setSelection(0);
 			
