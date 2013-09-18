@@ -211,14 +211,14 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		final ApplicationInfo applicationInfo = (ApplicationInfo) mAppLists.get(position).getApplicationInfo();
-		String packageName = applicationInfo.packageName;
-		if (DreamConstant.PACKAGE_NAME.equals(packageName)) {
+		mCursor.moveToPosition(position);
+		String packagename = mCursor.getString(mCursor.getColumnIndex(AppData.App.PKG_NAME));
+		if (DreamConstant.PACKAGE_NAME.equals(packagename)) {
 			mNotice.showToast(R.string.app_has_started);
 			return;
 		}
 		
-		Intent intent = pm.getLaunchIntentForPackage(packageName);
+		Intent intent = pm.getLaunchIntentForPackage(packagename);
 		if (null != intent) {
 			startActivity(intent);
 		}else {
