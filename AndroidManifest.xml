@@ -46,10 +46,10 @@
             android:name="com.dreamlink.communication.MainActivity"
             android:label="@string/app_name" >
         </activity>
-        <activity 
+        <activity
             android:name="com.dreamlink.communication.ui.MainFragmentActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.dreamlink.communication.debug.AppListActivity"
@@ -59,11 +59,13 @@
         <activity
             android:name="com.dreamlink.communication.fileshare.FileShareLauncher"
             android:label="@string/fileshare_label" >
-<!--             <intent-filter> -->
-<!--                 <action android:name="com.dreamlink.communication.action.app" /> -->
 
-<!--                 <category android:name="android.intent.category.DEFAULT" /> -->
-<!--             </intent-filter> -->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="com.dreamlink.communication.action.app" /> -->
+
+
+            <!-- <category android:name="android.intent.category.DEFAULT" /> -->
+            <!-- </intent-filter> -->
 
             <meta-data
                 android:name="app_id"
@@ -82,7 +84,7 @@
 
         <service android:name="com.dreamlink.communication.ui.file.RemoteShareService" >
         </service>
-         <service android:name="com.dreamlink.communication.ui.service.FileTransferService" >
+        <service android:name="com.dreamlink.communication.ui.service.FileTransferService" >
         </service>
 
         <activity
@@ -133,7 +135,7 @@
             android:label="SpeedTestServer"
             android:screenOrientation="portrait" >
         </activity>
-         <activity
+        <activity
             android:name="com.dreamlink.communication.FileTransportTest"
             android:label="FileTransportTest"
             android:launchMode="singleTask" >
@@ -167,35 +169,35 @@
         <!-- main ui start -->
         <activity
             android:name="com.dreamlink.communication.ui.UserInfoSetting"
-            android:windowSoftInputMode="adjustResize"
-            >
+            android:windowSoftInputMode="adjustResize" >
         </activity>
-        <activity 
+        <activity
             android:name="com.dreamlink.communication.ui.file.FileTransferActivity"
-            android:screenOrientation="portrait"></activity>
-        <activity 
-            android:name="com.dreamlink.communication.ui.app.AppFragmentActivity"
-            ></activity>
-        <activity 
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="com.dreamlink.communication.ui.app.AppFragmentActivity" >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.ui.image.ImageFragmentActivity"
             android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.Black"
-            ></activity>
-        <activity 
+            android:theme="@android:style/Theme.Black" >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.ui.media.MediaFragmentActivity"
-            android:screenOrientation="portrait"></activity>
-        <activity 
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.ui.file.FileFragmentActivity"
-            android:screenOrientation="portrait"></activity>
-        <activity 
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.ui.file.RemoteShareActivity"
-            android:screenOrientation="portrait"
-            >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="app_id"
                 android:value="112" />
         </activity>
-        <activity 
+        <activity
             android:name="com.dreamlink.communication.ui.ConnectFriendActivity"
             android:theme="@android:style/Theme.Dialog" >
         </activity>
@@ -203,9 +205,7 @@
 
         <service android:name="com.dreamlink.communication.ui.service.FileManagerService" />
 
-        <activity
-            android:name="com.dreamlink.communication.ui.history.HistoryActivity"
-            >
+        <activity android:name="com.dreamlink.communication.ui.history.HistoryActivity" >
         </activity>
         <activity
             android:name="com.dreamlink.communication.ui.dialog.FileTransferActivity"
@@ -227,7 +227,8 @@
         </activity>
         <activity
             android:name="com.dreamlink.communication.ui.network.CreateNetworkActivity"
-            android:screenOrientation="portrait" android:theme="@style/MyDialogStyle">
+            android:screenOrientation="portrait"
+            android:theme="@style/MyDialogStyle" >
         </activity>
         <activity
             android:name="com.dreamlink.communication.ui.network.JoinNetworkActivity"
@@ -236,14 +237,23 @@
         <activity
             android:name="com.dreamlink.communication.ui.LoginActivity"
             android:screenOrientation="portrait" >
-		</activity>
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.ui.help.AboutActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.debug.DebugActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+
         <provider
             android:name="com.dreamlink.communication.ui.db.DreamProvider"
-            android:authorities="com.dreamlink.communication.db.comprovider">
+            android:authorities="com.dreamlink.communication.db.comprovider" >
         </provider>
         <provider
             android:name="com.dreamlink.communication.ui.db.AppProvider"
-            android:authorities="com.dreamlink.communication.db.app">
+            android:authorities="com.dreamlink.communication.db.app" >
         </provider>
 
         <service android:name="com.dreamlink.communication.server.service.DirectService" />
