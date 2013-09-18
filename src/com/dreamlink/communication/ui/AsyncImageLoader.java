@@ -214,7 +214,10 @@ public class AsyncImageLoader {
 	private int height = 150;//每个Item的高度,可以根据实际情况修改
 	private Bitmap getBitmapFromUrl(String url, Map<String, Bitmap> caches){
 		Bitmap bitmap = null;
-		bitmap = caches.get(url);
+		if (null != caches) {
+			bitmap = caches.get(url);
+		}
+		
 		if(bitmap != null){
 			return bitmap;
 		}
