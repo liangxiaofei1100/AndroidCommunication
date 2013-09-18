@@ -64,7 +64,10 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 
 		public void disconnect();
 
-		public void receiverMessage(byte[] data, User sendUser, boolean allFlag);
+		public void receiverMessage(byte[] data, User sendUser,
+				boolean allFlag, HostInfo info);
+
+		public void startGroupBusiness(HostInfo hostInfo);
 	}
 
 	/** test interface ,final will be define end */
@@ -672,7 +675,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			if (id == userManager.getLocalUser().getUserID()) {
 				continue;
 			} else {
-				sendData(data, userMap.get(id), true);
+				sendData(data, userMap.get(id), true, info);
 			}
 		}
 
@@ -684,23 +687,31 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		}
 		ArrayList<Integer> userList = groupMember.get(info.hostId);
 		if (userList.contains(targetUser.getUserID())) {
-			sendData(data, targetUser, false);
+			sendData(data, targetUser, false, info);
 		}
 	}
 
-	private void sendData(byte[] data, User user, boolean flag) {
+	private void sendData(byte[] data, User user, boolean flag,
+			HostInfo hostInfo) {
 		byte[] allFlag;
 		if (flag)
 			allFlag = new byte[] { 1 };
 		else
 			allFlag = new byte[] { 0 };
-		data = ArrayUtil.join(allFlag, data);
+		byte[] tempData = ArrayUtil.join(allFlag,
+				ArrayUtil.int2ByteArray(hostInfo.hostId));
+		data = ArrayUtil.join(tempData, data);
 		byte[] target = platformProtocol.encodePlatformProtocol(
 				platformProtocol.MESSAGE_CMD_CODE, data);
+		mSocketCommunicationManager.sendMessageToSingle(data, user, appId);
 	}
 
-	public void receiverData(byte[] data, User sendUser, boolean allFlag) {
+	public void receiverData(byte[] data, User sendUser, boolean allFlag,
+			int hostId) {
 		// TODO notify receiver communication data from group
+		if(joinedGroup.containsKey(hostId)){
+			
+		}
 	}
 
 	@Override

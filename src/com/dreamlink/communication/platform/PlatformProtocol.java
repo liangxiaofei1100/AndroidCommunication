@@ -256,11 +256,14 @@ public class PlatformProtocol {
 
 	private void groupMessagePass(byte[] data, User user) {
 		byte flag = data[0];
-		byte[] targetData = Arrays.copyOfRange(data, 1, data.length);
+		int hostId = ArrayUtil.byteArray2Int(Arrays.copyOfRange(data, 1, 5));
+		byte[] targetData = Arrays.copyOfRange(data, 5, data.length);
 		if (flag == 1) {
-			mPlatformManagerService.receiverData(targetData, user, true);
+			mPlatformManagerService
+					.receiverData(targetData, user, true, hostId);
 		} else {
-			mPlatformManagerService.receiverData(targetData, user, false);
+			mPlatformManagerService.receiverData(targetData, user, false,
+					hostId);
 		}
 	}
 }
