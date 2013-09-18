@@ -107,7 +107,7 @@ public class AppProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		Log.d(TAG, "insert db");
+//		Log.d(TAG, "insert db");
 		mSqLiteDatabase = mDatabaseHelper.getWritableDatabase();
 		long rowId = 0;
 		switch (uriMatcher.match(uri)) {
@@ -128,7 +128,7 @@ public class AppProvider extends ContentProvider {
 			if (rowId > 0) {
 				Uri rowUri = ContentUris.withAppendedId(uri, rowId);
 				getContext().getContentResolver().notifyChange(uri, null);
-				Log.i(TAG, "insertDb.rowId=" + rowId);
+//				Log.i(TAG, "insertDb.rowId=" + rowId);
 				return rowUri;
 			}
 			throw new IllegalArgumentException("Cannot insert into uri:" + uri);

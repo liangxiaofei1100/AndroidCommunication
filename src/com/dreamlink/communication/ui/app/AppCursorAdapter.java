@@ -91,7 +91,7 @@ public class AppCursorAdapter extends CursorAdapter {
 	
 	@Override
 	public View newView(Context arg0, Cursor cursor, ViewGroup arg2) {
-		View view  = inflater.inflate(R.layout.ui_app_normal_item, null);
+		View view  = inflater.inflate(R.layout.ui_app_item, null);
 		ViewHolder holder = new ViewHolder();
 		
 		holder.iconView = (ImageView) view.findViewById(R.id.app_icon_text_view);

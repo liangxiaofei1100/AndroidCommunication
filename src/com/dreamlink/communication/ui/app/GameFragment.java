@@ -111,7 +111,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.d(TAG, "onCreateView");
-		View rootView = inflater.inflate(R.layout.ui_app_normal, container, false);
+		View rootView = inflater.inflate(R.layout.ui_app, container, false);
 
 		mContext = getActivity();
 		
@@ -298,8 +298,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 					Intent intent = new Intent(AppManager.ACTION_REFRESH_APP);
 					mContext.sendBroadcast(intent);
 					
-					mCursor.requery();
-					notifyUpdateUI();
+					reQuery(mCursor);
 				}
 			}
 		}).create().show();
@@ -312,10 +311,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			String action = intent.getAction();
 			Log.d(TAG, "get receiver:" + action);
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
-				if (null != mCursor) {
-					mCursor.requery();
-					notifyUpdateUI();
-				}
+				reQuery(mCursor);
 			}
 		}
 	}
@@ -349,7 +345,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.iv_refresh:
-			
+			reQuery(mCursor);
 			break;
 			
 		case R.id.iv_history:
@@ -360,6 +356,15 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 
 		default:
 			break;
+		}
+	}
+	
+	public void reQuery(Cursor cursor){
+		if (null == cursor) {
+			query();
+		}else {
+			cursor.requery();
+			notifyUpdateUI();
 		}
 	}
 }

@@ -54,7 +54,7 @@ public class FileListAdapter extends BaseAdapter {
 		ViewHolder holder = null;
 		if (null == convertView || null == convertView.getTag()) {
 			holder = new ViewHolder();
-			view = mInflater.inflate(R.layout.filelist_item, parent, false);
+			view = mInflater.inflate(R.layout.ui_filelist_item, parent, false);
 			
 			holder.iconView = (ImageView) view.findViewById(R.id.icon);
 			holder.filenameText = (TextView) view.findViewById(R.id.filename_text);

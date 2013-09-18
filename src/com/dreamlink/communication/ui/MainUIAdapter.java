@@ -54,7 +54,7 @@ public class MainUIAdapter extends BaseAdapter{
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View view = convertView;
 		if (null == view) {
-			view = inflater.inflate(R.layout.ui_main_new_item, null);
+			view = inflater.inflate(R.layout.ui_mainframe_item, null);
 		}
 		ImageView imageView  = (ImageView) view.findViewById(R.id.iv_menu_icon);
 		TextView nameView = (TextView) view.findViewById(R.id.tv_menu_name);
