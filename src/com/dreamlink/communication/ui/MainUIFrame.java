@@ -226,8 +226,6 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		NetWorkUtil.clearWifiConnectHistory(mContext);
 		// Stop record log and close log file.
 		Log.stopAndSave();
-		//delete table
-		getContentResolver().delete(AppData.App.CONTENT_URI, null, null);
 	}
 
 	@Override

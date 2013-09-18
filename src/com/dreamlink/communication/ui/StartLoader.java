@@ -14,6 +14,7 @@ import java.io.InputStream;
 
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.service.FileTransferService;
+import com.dreamlink.communication.util.Log;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -24,11 +25,10 @@ import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 
 /**
  * This is the first ui to show logo, initialize application and load resource.
- *
+ * 
  */
 public class StartLoader extends Activity {
 	private static final String TAG = "StartLoader";
@@ -36,7 +36,7 @@ public class StartLoader extends Activity {
 	private static final int MIN_LOADING_TIME = 1500;
 	private PackageManager pm = null;
 	private AppManager appManager = null;
-	
+
 	private static final String DB_PATH = "/data"
 			+ Environment.getDataDirectory().getAbsolutePath()
 			+ "/com.dreamlink.communication" + "/databases";
@@ -48,7 +48,7 @@ public class StartLoader extends Activity {
 
 		appManager = new AppManager(StartLoader.this);
 		pm = getPackageManager();
-		
+
 		LoadAsyncTask loadAsyncTask = new LoadAsyncTask();
 		loadAsyncTask.execute();
 	}
@@ -63,11 +63,13 @@ public class StartLoader extends Activity {
 		initMountManager();
 		// Do not use game DB now.
 		// importGameKeyDb();
-		
+
 		startService();
-//		List<String> zyPkgList = loadZYAppToDb();
-//		loadAppToDb(zyPkgList);
-		//实在太耗时间了，还是开个线程吧，不然一直卡在加载界面，如果应用多的话，待继续优化
+		// List<String> zyPkgList = loadZYAppToDb();
+		// loadAppToDb(zyPkgList);
+		// delete table
+		getContentResolver().delete(AppData.App.CONTENT_URI, null, null);
+		// 实在太耗时间了，还是开个线程吧，不然一直卡在加载界面，如果应用多的话，待继续优化
 		LoadAppThread thread = new LoadAppThread();
 		thread.start();
 		Log.d(TAG, "Load end");
@@ -81,7 +83,7 @@ public class StartLoader extends Activity {
 		finish();
 		overridePendingTransition(R.anim.push_right_in, R.anim.push_left_out);
 	}
-	
+
 	// import game key db
 	private void importGameKeyDb() {
 		// copy game_app.db to database
@@ -121,8 +123,8 @@ public class StartLoader extends Activity {
 			file.mkdirs();
 		}
 	}
-	
-	private void initMountManager(){
+
+	private void initMountManager() {
 		// get sdcards
 		MountManager mountManager = new MountManager();
 		mountManager.init();
@@ -169,16 +171,17 @@ public class StartLoader extends Activity {
 		intent.setClass(this, FileTransferService.class);
 		startService(intent);
 	}
-	
-	public class LoadAppThread extends Thread{
+
+	public class LoadAppThread extends Thread {
 		@Override
 		public void run() {
 			List<String> zyPkgList = loadZYAppToDb();
 			loadAppToDb(zyPkgList);
 		}
 	}
-	
-	public List<String> loadZYAppToDb(){
+
+	public List<String> loadZYAppToDb() {
+		long start = System.currentTimeMillis();
 		List<String> zyList = new ArrayList<String>();
 		// get zhaoyan app list
 		Intent appIntent = new Intent(DreamConstant.APP_ACTION);
@@ -197,14 +200,17 @@ public class StartLoader extends Activity {
 			appInfo.setType(AppManager.ZHAOYAN_APP);
 			values[i] = appManager.getValuesByAppInfo(appInfo);
 			zyList.add(resolveInfos.get(i).activityInfo.packageName);
-//			insertToDb(appInfo);
+			// insertToDb(appInfo);
 		}
 		// get zhaoyan app list end
 		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, values);
+		Log.d(TAG, "loadZYAppToDb cost time = "
+				+ (System.currentTimeMillis() - start));
 		return zyList;
 	}
-	
+
 	public void loadAppToDb(List<String> zylist) {
+		long start = System.currentTimeMillis();
 		List<ContentValues> valuesList = new ArrayList<ContentValues>();
 		// Retrieve all known applications.
 		List<ApplicationInfo> apps = pm.getInstalledApplications(0);
@@ -226,9 +232,10 @@ public class StartLoader extends Activity {
 					entry.loadVersion();
 					// 查询一下，该包名是否存在游戏数据表中
 					// 每一个应用都要查询一下是否是游戏，会不会很慢呢？
-					//经过验证，查询速度还是可以的
-					//一般每个的查询速度是20ms。那么100个就是2s。可接受
-					boolean is_game_app = appManager.isGameApp(info.packageName);
+					// 经过验证，查询速度还是可以的
+					// 一般每个的查询速度是20ms。那么100个就是2s。可接受
+					boolean is_game_app = appManager
+							.isGameApp(info.packageName);
 					if (is_game_app) {
 						entry.setType(AppManager.GAME_APP);
 					} else {
@@ -236,7 +243,7 @@ public class StartLoader extends Activity {
 					}
 					values = appManager.getValuesByAppInfo(entry);
 					valuesList.add(values);
-					//为了蓝牙邀请准备材料
+					// 为了蓝牙邀请准备材料
 					if (DreamConstant.PACKAGE_NAME.equals(info.packageName)) {
 						DreamUtil.package_source_dir = info.sourceDir;
 					}
@@ -245,17 +252,19 @@ public class StartLoader extends Activity {
 				// system app
 			}
 		}
-		
-		//get values
+
+		// get values
 		ContentValues[] contentValues = new ContentValues[0];
-		contentValues =	valuesList.toArray(contentValues);
-		//经验证插入60个应用，仅90ms左右，所以插入时间可以忽略不计了
+		contentValues = valuesList.toArray(contentValues);
+		// 经验证插入60个应用，仅90ms左右，所以插入时间可以忽略不计了
 		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, contentValues);
+		Log.d(TAG, "loadAppToDb cost time = "
+				+ (System.currentTimeMillis() - start));
 	}
-	
-	public void insertToDb(AppInfo entry){
+
+	public void insertToDb(AppInfo entry) {
 		ContentValues values = appManager.getValuesByAppInfo(entry);
 		getContentResolver().insert(AppData.App.CONTENT_URI, values);
 	}
-	
+
 }
