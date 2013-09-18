@@ -20,7 +20,6 @@ import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.Command;
 import com.dreamlink.communication.ui.DreamConstant.Cmd;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.dialog.FileExistDialog;
 import com.dreamlink.communication.ui.dialog.FileExistDialog.onMenuItemClickListener;
 import com.dreamlink.communication.ui.dialog.FileTransferDialog;
@@ -42,7 +41,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -168,18 +166,35 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_remote_share);
 		
-		initTitle();
-		
 		mContext = this;
 		mSocketMgr = SocketCommunicationManager.getInstance(mContext);
-//		mAppId = AppUtil.getAppID(getParent());
 		mAppId = AppUtil.getAppID(this);
 		
 		mFileInfoManager = new FileInfoManager(mContext);
 		
-		logFile = new LogFile(mContext, "log_client.txt");
-		logFile.open();
+		initTitle();
+		initView();
+		// is connected to server
+		if (mSocketMgr.isConnected()) {
+			mNoConnectionTips.setVisibility(View.VISIBLE);
+			mListLayout.setVisibility(View.INVISIBLE);
+			mServerListLayout.setVisibility(View.INVISIBLE);
+			mStopServerBtn.setVisibility(View.INVISIBLE);
+		} else {
+			mSocketMgr.registerOnCommunicationListenerExternal(this, mAppId);
+			mNoConnectionTips.setVisibility(View.INVISIBLE);
+			mListLayout.setVisibility(View.INVISIBLE);
+			mServerListLayout.setVisibility(View.VISIBLE);
+			mStopServerBtn.setVisibility(View.INVISIBLE);
+			mLoadingLayout.setVisibility(View.VISIBLE);
+			getShareServerList();
+		}
 		
+		mNotice = new Notice(mContext);
+		Log.d(TAG, "onCreate end");
+	}
+	
+	private void initView() {
 		mListView = (ListView) findViewById(R.id.file_listview);
 		mListLayout = (RelativeLayout) findViewById(R.id.list_layout);
 		mLoadingLayout = (LinearLayout) findViewById(R.id.loading_layout);
@@ -205,34 +220,12 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 		mUpDirBtn.setOnClickListener(this);
 		mRefreshBtn.setOnClickListener(this);
 		
-		// is connected to server
-		if (mSocketMgr.getCommunications().isEmpty()) {
-			mNoConnectionTips.setVisibility(View.VISIBLE);
-			mListLayout.setVisibility(View.INVISIBLE);
-			mServerListLayout.setVisibility(View.INVISIBLE);
-			mStopServerBtn.setVisibility(View.INVISIBLE);
-		} else {
-			mSocketMgr.registerOnCommunicationListenerExternal(this, mAppId);
-			
-			mNoConnectionTips.setVisibility(View.INVISIBLE);
-			mListLayout.setVisibility(View.INVISIBLE);
-			mServerListLayout.setVisibility(View.VISIBLE);
-			mStopServerBtn.setVisibility(View.INVISIBLE);
-
-			mLoadingLayout.setVisibility(View.VISIBLE);
-
-			getShareServerList();
-		}
-		
 		mAdapter = new FileListAdapter(mContext, mList);
 		mListView.setAdapter(mAdapter);
 		mListView.setOnItemClickListener(this);
 		mListView.setOnItemLongClickListener(this);
-		
-		mNotice = new Notice(mContext);
-		Log.d(TAG, "onCreate end");
 	}
-	
+
 	private void initTitle() {
 		// Title icon
 		mTitleIcon = (ImageView) findViewById(R.id.iv_title_icon);
@@ -342,7 +335,6 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.iv_refresh:
 			// tell server that i want look u sdcard files
@@ -418,7 +410,7 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 
 	@Override
 	public void onReceiveMessage(byte[] msg, User sendUser) throws RemoteException {
-		Log.d(TAG, "onReceiveMessage:" + new String(msg)  + ",sendUser:" + sendUser.getUserName());
+		Log.v(TAG, "onReceiveMessage:" + new String(msg)  + ",sendUser:" + sendUser.getUserName());
 		if (null == mCurrentConnectUser) {
 			// 表示还没有连接远程共享设备,这时候收到的应该是更新共享列表的消息，其他的不用理会
 			int cmd = -1;
@@ -556,7 +548,6 @@ public class RemoteShareActivity extends Activity implements OnItemClickListener
 
 	@Override
 	public void onUserConnected(User user) throws RemoteException {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "onUserConnected");
 	}
 
