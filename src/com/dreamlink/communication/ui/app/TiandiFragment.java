@@ -19,6 +19,7 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -73,6 +74,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	private ImageView mHistoryView;
 	
 	private int mAppId = -1;
+	private Cursor mCursor;
 	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
@@ -166,6 +168,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 				Log.d(TAG, "onQueryComplete");
 				mLoadingBar.setVisibility(View.INVISIBLE);
 				if (null != cursor && cursor.getCount() > 0) {
+					mCursor = cursor;
 					Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
 					mAdapter = new AppCursorAdapter(mContext);
 					mAdapter.changeCursor(cursor);
@@ -208,43 +211,67 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	}
 
 	@Override
-	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2,
+	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int position,
 			long arg3) {
-		final AppInfo appInfo = mMyAppList.get(arg2);
-		new AlertDialog.Builder(mContext)
-		.setIcon(appInfo.getAppIcon())
-		.setTitle(appInfo.getLabel())
-		.setItems(R.array.zy_game_menu, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						//send
-//						FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(appInfo.getInstallPath()));
-						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(appInfo.getInstallPath());
-						break;
-					case 1:
-						//app info
-						mAppManager.showInfoDialog(appInfo);
-						break;
+		mCursor.moveToPosition(position);
+		String packagename = mCursor.getString(mCursor.getColumnIndex(AppData.App.PKG_NAME));
+		ApplicationInfo applicationInfo = null;
+		AppInfo appInfo = null;
+		try {
+			applicationInfo = pm.getApplicationInfo(packagename, 0);
+			appInfo = new AppInfo(getActivity(), applicationInfo);
+			appInfo.setPackageName(packagename);
+			appInfo.setAppIcon(applicationInfo.loadIcon(pm));
+			appInfo.loadLabel();
+			appInfo.loadVersion();
 
-					default:
-						break;
-					}
-			}
-		}).create().show();
+			showMenuDialog(appInfo);
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, e.toString());
+			e.printStackTrace();
+		}
 		return true;
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-		Intent intent = mMyAppList.get(position).getLaunchIntent();
+		mCursor.moveToPosition(position);
+		String packagename = mCursor.getString(mCursor.getColumnIndex(AppData.App.PKG_NAME));
+		Intent intent = pm.getLaunchIntentForPackage(packagename);
 		if (null == intent) {
 			mNotice.showToast(R.string.cannot_start_app);
 			return;
 		}
 		startActivity(intent);
+	}
+	
+	public void showMenuDialog(final AppInfo appInfo) {
+		new AlertDialog.Builder(mContext)
+				.setIcon(appInfo.getAppIcon())
+				.setTitle(appInfo.getLabel())
+				.setItems(R.array.zy_game_menu,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								switch (which) {
+								case 0:
+									// send
+									FileTransferUtil fileSendUtil = new FileTransferUtil(
+											getActivity());
+									fileSendUtil.sendFile(appInfo
+											.getInstallPath());
+									break;
+								case 1:
+									// app info
+									mAppManager.showInfoDialog(appInfo);
+									break;
+
+								default:
+									break;
+								}
+							}
+						}).create().show();
 	}
 	
 	public void onDestroy() {

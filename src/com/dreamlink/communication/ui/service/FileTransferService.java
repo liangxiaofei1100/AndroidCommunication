@@ -184,7 +184,6 @@ public class FileTransferService extends Service implements OnFileTransportListe
 			Uri uri = getContentResolver().insert(MetaData.History.CONTENT_URI, values);
 			Object key = new Object();
 			mTransferMap.put(key, uri);//save file & uri map
-			Log.d(TAG, mTransferMap.toString()  + ",key=" + key + "\n" + "SendFileThread.mTransferMap.size=" + mTransferMap.size());
 			mSocketMgr.sendFile(file , FileTransferService.this, receiveUser, mAppId, key);
 		}
 	}
@@ -241,7 +240,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 
 	@Override
 	public void onSendProgress(long sentBytes, File file, Object key) {
-		Log.v(TAG, "onSendProgress.name=" + file.getName());
+//		Log.v(TAG, "onSendProgress.name=" + file.getName());
 		ContentValues values = new ContentValues();
 		values.put(MetaData.History.STATUS, HistoryManager.STATUS_SENDING);
 		values.put(MetaData.History.PROGRESS, sentBytes);
@@ -251,7 +250,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 
 	@Override
 	public void onSendFinished(boolean success, File file, Object key) {
-		Log.d(TAG, "onSendFinished.name=" + file.getName());
+//		Log.d(TAG, "onSendFinished.name=" + file.getName());
 		int status;
 		if (success) {
 			status = HistoryManager.STATUS_SEND_SUCCESS;
@@ -269,13 +268,13 @@ public class FileTransferService extends Service implements OnFileTransportListe
 	 * @return
 	 */
 	public Uri getFileUri(Object key){
-		Log.d(TAG, mTransferMap.toString() + ",key=" + key);
+//		Log.d(TAG, mTransferMap.toString() + ",key=" + key);
 		return mTransferMap.get(key);
 	}
 
 	@Override
 	public void onReceiveProgress(long receivedBytes, File file, Object key) {
-		Log.v(TAG, "onReceiveProgress.name=" + file.getName());
+//		Log.v(TAG, "onReceiveProgress.name=" + file.getName());
 		ContentValues values = new ContentValues();
 		values.put(MetaData.History.STATUS, HistoryManager.STATUS_SENDING);
 		values.put(MetaData.History.PROGRESS, receivedBytes);
@@ -284,7 +283,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 
 	@Override
 	public void onReceiveFinished(boolean success, File file, Object key) {
-		Log.d(TAG, "onReceiveFinished.name=" + file.getName());
+//		Log.d(TAG, "onReceiveFinished.name=" + file.getName());
 		int status;
 		if (success) {
 			status = HistoryManager.STATUS_SEND_SUCCESS;
