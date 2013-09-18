@@ -78,9 +78,9 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	
 	private void updateNetworkStatus(){
 		if (mSocketComMgr.isConnected()) {
-			mNetWorkStatusView.setText(R.string.unconnected);
-		} else {
 			mNetWorkStatusView.setText(R.string.connected);
+		} else {
+			mNetWorkStatusView.setText(R.string.unconnected);
 		}
 	}
 
