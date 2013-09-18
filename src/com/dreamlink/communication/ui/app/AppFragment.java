@@ -17,6 +17,7 @@ import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.history.HistoryCursorAdapter;
+import com.dreamlink.communication.ui.history.HistoryManager;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -34,6 +35,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -55,7 +58,7 @@ import android.widget.GridView;
  * use this to load app
  */
 public class AppFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
-	private static final String TAG = "AppFragment2";
+	private static final String TAG = "AppFragment";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
 
@@ -185,7 +188,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		//查询类型为应用的所有数据
 		String selectionString = AppData.App.TYPE + "=?" ;
     	String args[] = {"" + AppManager.NORMAL_APP};
-		mQueryHandler.startQuery(11, null, AppData.App.CONTENT_URI, PROJECTION, selectionString, args, AppData.App.SORT_ORDER_DEFAULT);
+		mQueryHandler.startQuery(11, null, AppData.App.CONTENT_URI, PROJECTION, selectionString, args, AppData.App.SORT_ORDER_LABEL);
 	}
 	
 	//query db
@@ -238,16 +241,32 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	}
 
 	@Override
-	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+	public boolean onItemLongClick(AdapterView<?> parent, View view,
+			final int position, long id) {
 		mCursor.moveToPosition(position);
-		final String packagename = mCursor.getString(mCursor.getColumnIndex(AppData.App.PKG_NAME));
-		final String path = mCursor.getString(mCursor.getColumnIndex(AppData.App.PATH));
-		String label = mCursor.getString(mCursor.getColumnIndex(AppData.App.LABEL));
-//		byte[] iconBlob = mCursor.getBlob(mCursor.getColumnIndex(AppData.App.ICON));
-//		Bitmap bitmap = BitmapFactory.decodeByteArray(iconBlob, 0, iconBlob.length);
-//		final AppInfo appInfo = mAppLists.get(position);
+		final String packagename = mCursor.getString(mCursor
+				.getColumnIndex(AppData.App.PKG_NAME));
+		ApplicationInfo applicationInfo = null;
+		AppInfo appInfo = null;
+		try {
+			applicationInfo = pm.getApplicationInfo(packagename, 0);
+			appInfo = new AppInfo(getActivity(), applicationInfo);
+			appInfo.setPackageName(packagename);
+			appInfo.setAppIcon(applicationInfo.loadIcon(pm));
+			appInfo.loadLabel();
+			appInfo.loadVersion();
+
+			showMenuDialog(appInfo);
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, e.toString());
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
+	public void showMenuDialog(final AppInfo appInfo){
 		int resId = R.array.app_menu_normal;
-		if (DreamConstant.PACKAGE_NAME.equals(packagename)) {
+		if (DreamConstant.PACKAGE_NAME.equals(appInfo.getPackageName())) {
 			//本身这个程序不允许卸载，不允许移动到游戏，已经打开了，所以没有打开选项
 			//总之，菜单要不一样
 			resId = R.array.app_menu_myself;
@@ -255,58 +274,58 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		final String[] current_menus = getResources().getStringArray(resId);
 		final String[] normal_menus = getResources().getStringArray(R.array.app_menu_normal);
 		new AlertDialog.Builder(mContext)
-//			.setIcon(bitmap)
-			.setTitle(label)
-			.setItems(resId, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					String currentMenu = current_menus[which];
-					if (normal_menus[0].equals(currentMenu)) {
-						//open
-						Intent intent = pm.getLaunchIntentForPackage(packagename);
-						if (null != intent) {
-							startActivity(intent);
-						}else {
-							mNotice.showToast(R.string.cannot_start_app);
-							return;
-						}
-					}else if (normal_menus[1].equals(currentMenu)) {
-						//send
-						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(path);
-					}else if (normal_menus[2].equals(currentMenu)) {
-						//uninstall
-						mAppManager.uninstallApp(packagename);
-					}else if (normal_menus[3].equals(currentMenu)) {
-						//app info
-//						mAppManager.showInfoDialog(appInfo);
-						mNotice.showToast("尚未完成");
-					}else if (normal_menus[4].equals(currentMenu)) {
-						//move to game
-//						mAppLists.remove(position);
-						
-//						int index = DreamUtil.getInsertIndex(GameFragment.mGameAppList, appInfo);
-//						if (GameFragment.mGameAppList.size() == index) {
-//							GameFragment.mGameAppList.add(appInfo);
-//						} else {
-//							GameFragment.mGameAppList.add(index, appInfo);
-//						}
-						
-						//insert to db
-//						ContentValues values = new ContentValues();
-//						values.put(MetaData.Game.PKG_NAME, appInfo.getPackageName());
-//						mContext.getContentResolver().insert(MetaData.Game.CONTENT_URI, values);
-						
-						//update myself
-//						mAdapter.notifyDataSetChanged();
-//						notifyUpdateUI(mAppLists.size());
-//						
-//						mAppManager.updateAppUI();
-						mNotice.showToast("尚未完成");
+		.setIcon(appInfo.getAppIcon())
+		.setTitle(appInfo.getLabel())
+		.setItems(resId, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				String currentMenu = current_menus[which];
+				if (normal_menus[0].equals(currentMenu)) {
+					//open
+					Intent intent = pm.getLaunchIntentForPackage(appInfo.getPackageName());
+					if (null != intent) {
+						startActivity(intent);
+					}else {
+						mNotice.showToast(R.string.cannot_start_app);
+						return;
 					}
+				}else if (normal_menus[1].equals(currentMenu)) {
+					//send
+					FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
+					fileSendUtil.sendFile(appInfo.getInstallPath());
+				}else if (normal_menus[2].equals(currentMenu)) {
+					//uninstall
+					mAppManager.uninstallApp(appInfo.getPackageName());
+				}else if (normal_menus[3].equals(currentMenu)) {
+					//app info
+					mAppManager.showInfoDialog(appInfo);
+				}else if (normal_menus[4].equals(currentMenu)) {
+					//move to game
+					//1，将该记录的type设置为game
+					//2，将数据插入到game表中
+					//3，通知GameFragment
+					//4，重新查询数据库
+					ContentResolver contentResolver = getActivity().getContentResolver();
+					ContentValues values = null;
+					
+					values = new ContentValues();
+					values.put(AppData.App.TYPE, AppManager.GAME_APP);
+					contentResolver.update(AppData.App.CONTENT_URI, values, 
+							AppData.App.PKG_NAME + "='" + appInfo.getPackageName() + "'", null);
+					
+					//insert to db
+					values = new ContentValues();
+					values.put(AppData.App.PKG_NAME, appInfo.getPackageName());
+					contentResolver.insert(AppData.AppGame.CONTENT_URI, values);
+					
+//					
+					Intent intent = new Intent(AppManager.ACTION_REFRESH_APP);
+					mContext.sendBroadcast(intent);
+					
+					mCursor.requery();
 				}
-			}).create().show();
-		return true;
+			}
+		}).create().show();
 	}
 	
 	//recevier that can update ui
@@ -316,8 +335,9 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			String action = intent.getAction();
 			Log.d(TAG, "get receiver:" + action);
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
-				mAdapter.notifyDataSetChanged();
-				notifyUpdateUI(mAppLists.size());
+				if (null != mCursor) {
+					mCursor.requery();
+				}
 			}
 		}
 	}

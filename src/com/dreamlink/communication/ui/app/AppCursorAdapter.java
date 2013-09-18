@@ -67,7 +67,7 @@ public class AppCursorAdapter extends CursorAdapter {
 	private Cursor mCursor = null;
 	@Override
 	public void bindView(View view, Context arg1, Cursor cursor) {
-		Log.d(TAG, "bindView.count=" + cursor.getCount());
+//		Log.d(TAG, "bindView.count=" + cursor.getCount());
 		ViewHolder holder = (ViewHolder) view.getTag();
 		
 		String label = cursor.getString(cursor.getColumnIndex(AppData.App.LABEL));

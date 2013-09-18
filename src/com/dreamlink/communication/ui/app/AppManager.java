@@ -205,7 +205,7 @@ public class AppManager {
 	private String getAppInfo(AppInfo appInfo){
 		String result = "";
 		result = "名称:" + appInfo.getLabel() + DreamConstant.ENTER
-				+ "类型:" + (appInfo.getType() == 1 ? "游戏" : "应用") + DreamConstant.ENTER
+				+ "类型:" + (appInfo.getType() == GAME_APP ? "游戏" : "应用") + DreamConstant.ENTER
 				+ "版本:" + appInfo.getVersion() + DreamConstant.ENTER
 				+ "包名:" + appInfo.getPackageName() + DreamConstant.ENTER
 				+ "位置:" + appInfo.getInstallPath() + DreamConstant.ENTER

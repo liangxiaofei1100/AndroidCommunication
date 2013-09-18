@@ -211,7 +211,7 @@ public class StartLoader extends Activity {
 		if (apps == null) {
 			apps = new ArrayList<ApplicationInfo>();
 		}
-		ContentValues values = new ContentValues();
+		ContentValues values = null;
 		for (int i = 0; i < apps.size(); i++) {
 			ApplicationInfo info = apps.get(i);
 			// 获取非系统应用
