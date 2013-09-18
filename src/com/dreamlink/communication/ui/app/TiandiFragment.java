@@ -149,7 +149,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		//查询类型为游戏的所有数据
 		String selectionString = AppData.App.TYPE + "=?" ;
     	String args[] = {"" + AppManager.ZHAOYAN_APP};
-		mQueryHandler.startQuery(11, null, AppData.App.CONTENT_URI, PROJECTION, selectionString, args, AppData.App.SORT_ORDER_DEFAULT);
+		mQueryHandler.startQuery(11, null, AppData.App.CONTENT_URI, PROJECTION, selectionString, args, AppData.App.SORT_ORDER_LABEL);
 	}
 	
 	//query db

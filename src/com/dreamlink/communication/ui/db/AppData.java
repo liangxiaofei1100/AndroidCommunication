@@ -49,8 +49,8 @@ public class AppData{
 		/**app path*/
 		public static final String PATH = "path";
 		
-		/**order by _id DESC*/
-		public static final String SORT_ORDER_DEFAULT = _ID + " DESC"; 
+		/**order by label ASC*/
+		public static final String SORT_ORDER_LABEL = LABEL + " ASC"; 
 	}
 	
 	/**game table*/

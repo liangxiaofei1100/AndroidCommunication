@@ -63,7 +63,7 @@ public class AppProvider extends ContentProvider {
 			}else {
 				//由于segment是个string，那么需要给他加个'',如果是int型的就不需要了
 				//根据包名删除
-				selection = "pkg_name='" +  segment + "'";
+				selection = AppData.App.PKG_NAME + "='" + segment + "'";
 			}
 			count = mSqLiteDatabase.delete(AppData.AppGame.TABLE_NAME, selection, selectionArgs);
 			break;
@@ -177,7 +177,6 @@ public class AppProvider extends ContentProvider {
 			break;
 			
 		case APP_COLLECTION:
-			Log.d(TAG, "here app collection");
 			qb.setTables(AppData.App.TABLE_NAME);
 			break;
 		case APP_SINGLE:
