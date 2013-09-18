@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
@@ -320,7 +321,7 @@ public class LoginProtocol {
 		start = end;
 		end = data.length;
 		byte[] allUserData = Arrays.copyOfRange(data, start, end);
-		userManager.clear();
+		// userManager.clear();
 		addAllUser(userTotalNumber, allUserData, userManager, communication);
 	}
 
@@ -348,6 +349,19 @@ public class LoginProtocol {
 		for (User user : result) {
 			Log.d(TAG, "addAllUser : " + user);
 			userManager.addUser(user, communication);
+		}
+		Map<Integer, User> userMap = userManager.getAllUser();
+		for (Entry<Integer, User> entry : userMap.entrySet()) {
+			boolean flag = false;
+			User tem = entry.getValue();
+			for (User user : result) {
+				if (tem.getUserID() == user.getUserID()) {
+					flag = true;
+				}
+			}
+			if (!flag) {
+				userManager.removeUser(tem.getUserID());
+			}
 		}
 		return result;
 	}

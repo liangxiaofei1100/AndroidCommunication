@@ -19,6 +19,7 @@ import android.content.pm.ServiceInfo;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.text.NoCopySpan.Concrete;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -41,7 +42,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	private SocketCommunicationManager mSocketCommunicationManager;
 	private int appId = 115;;
 	private String TAG = "ArbiterLiu-PlatformManagerService";
-	private List<PlatformManagerCallback> callbackList;
+	private ConcurrentHashMap<Integer, PlatformManagerCallback> callbackList;
 	private Map<Integer, HostInfo> joinedGroup;
 	private Context mContext;
 	private static PlatformManager mPlatformManager;
@@ -77,6 +78,18 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		onCreate();
 	}
 
+	/**
+	 * one app_id just allow register only one,if the new one come in ,replace
+	 * old one
+	 */
+	public void register(PlatformManagerCallback callback, int app_id) {
+		callbackList.put(app_id, callback);
+	}
+
+	public void unregister(int app_id) {
+		callbackList.remove(app_id);
+	}
+
 	public PlatformManager getInstance(Context context) {
 		if (mPlatformManager == null) {
 			mPlatformManager = new PlatformManager(context);
@@ -93,9 +106,10 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		allHostList = new ConcurrentHashMap<Integer, HostInfo>();
 		mSocketCommunicationManager.registerOnCommunicationListenerExternal(
 				this, appId);
-		callbackList = new ArrayList<PlatformManager.PlatformManagerCallback>();
 		platformProtocol = new PlatformProtocol(this);
 		createHost = new HashMap<Integer, HostInfo>();
+
+		callbackList = new ConcurrentHashMap<Integer, PlatformManager.PlatformManagerCallback>();
 	}
 
 	/**
@@ -195,7 +209,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	}
 
 	private void notifyGroupCreated(HostInfo hostIo) {
-		for (PlatformManagerCallback callback : callbackList) {
+		int app_id = hostIo.app_id;
+		PlatformManagerCallback callback = callbackList.get(app_id);
+		if (callback != null) {
 			callback.hostHasCreated(hostIo);
 		}
 	}
@@ -246,8 +262,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		// HostInfo hostInfo = entry.getValue();
 		// allHostList.put(hostInfo.ownerID, hostInfo);
 		// }
-		for (PlatformManagerCallback callback : callbackList) {
-			callback.hostInfoChange(allHostInfo);
+		for (Entry<Integer, PlatformManagerCallback> entry : callbackList
+				.entrySet()) {
+			entry.getValue().hostInfoChange(allHostInfo);
 		}
 	}
 
@@ -362,7 +379,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	public void receiverJoinAck(boolean flag, HostInfo hostInfo) {
 		// TODO 收到owner发送过来的join的Ack，对应于sendJoinAck
 		if (flag) {
-			// join OK
+			// join OK,save joined info
 			joinedGroup.put(hostInfo.hostId, hostInfo);
 		} else {
 			// refuse join
@@ -392,14 +409,17 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	@SuppressLint("UseSparseArrays")
 	public void receiverGroupMemberUpdat(int hostId, ArrayList<Integer> userList) {
 		/** when group member update ,will receiver here */
+		if (!joinedGroup.containsKey(hostId)) {
+			return;
+		}
 		if (groupMember == null) {
 			groupMember = new HashMap<Integer, ArrayList<Integer>>();
 		}
 		groupMember.put(hostId, userList);
-		if (callbackList != null) {
-			for (PlatformManagerCallback callback : callbackList) {
-				callback.groupMemberUpdate(hostId, userList);
-			}
+		HostInfo hostInfo = joinedGroup.get(hostId);
+		PlatformManagerCallback callback = callbackList.get(hostInfo.app_id);
+		if (callback != null) {
+			callback.groupMemberUpdate(hostId, userList);
 		}
 	}
 
@@ -483,7 +503,8 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	public void receiverRemoveUser(HostInfo hostInfo) {
 		joinedGroup.remove(hostInfo.hostId);
 		groupMember.remove(hostInfo.hostId);
-		for (PlatformManagerCallback callback : callbackList) {
+		PlatformManagerCallback callback = callbackList.get(hostInfo.app_id);
+		if (callback != null) {
 			callback.beRemoved(hostInfo.hostId);
 		}
 		Log.d(TAG, "you are removed by form " + hostInfo.hostId);
@@ -533,7 +554,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		if (joinedGroup.containsKey(hostInfo.hostId)) {
 			joinedGroup.remove(hostInfo.hostId);
 			groupMember.remove(hostInfo.hostId);
-			for (PlatformManagerCallback callback : callbackList) {
+			PlatformManagerCallback callback = callbackList
+					.get(hostInfo.app_id);
+			if (callback != null) {
 				callback.hostBeCanceled(hostInfo.hostId);
 			}
 		}
@@ -607,8 +630,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 				if (groupMember != null)
 					groupMember.clear();
 			}
-			for (PlatformManagerCallback callback : callbackList) {
-				callback.disconnect();
+			for (Entry<Integer, PlatformManagerCallback> entry : callbackList
+					.entrySet()) {
+				entry.getValue().disconnect();
 			}
 			if (allHostList != null)
 				allHostList.clear();
@@ -708,9 +732,8 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 
 	public void receiverData(byte[] data, User sendUser, boolean allFlag,
 			int hostId) {
-		// TODO notify receiver communication data from group
-		if(joinedGroup.containsKey(hostId)){
-			
+		if (joinedGroup.containsKey(hostId)) {
+			// TODO notify receiver communication data from group
 		}
 	}
 
