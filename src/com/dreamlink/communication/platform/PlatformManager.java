@@ -378,12 +378,13 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	}
 
 	public void receiverJoinAck(boolean flag, HostInfo hostInfo) {
-		// TODO 收到owner发送过来的join的Ack，对应于sendJoinAck
 		if (flag) {
 			// join OK,save joined info
 			joinedGroup.put(hostInfo.hostId, hostInfo);
-		} else {
-			// refuse join
+		}
+		PlatformManagerCallback callback = callbackList.get(hostInfo.app_id);
+		if (callback != null) {
+			callback.joinGroupResult(hostInfo, flag);
 		}
 	}
 
@@ -686,7 +687,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 
 	public void receiverStartGroupBusiness(int hostId) {
 		if (joinedGroup.containsKey(hostId)) {
-			// TODO notify application start business
 			PlatformManagerCallback callback = callbackList.get(joinedGroup
 					.get(hostId).app_id);
 			if (callback != null) {
@@ -739,7 +739,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	public void receiverData(byte[] data, User sendUser, boolean allFlag,
 			int hostId) {
 		if (joinedGroup.containsKey(hostId)) {
-			// TODO notify receiver communication data from group
 			PlatformManagerCallback callback = callbackList.get(joinedGroup
 					.get(hostId).app_id);
 			if (callback != null) {
