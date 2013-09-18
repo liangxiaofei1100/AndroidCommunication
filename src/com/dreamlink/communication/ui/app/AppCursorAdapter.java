@@ -21,6 +21,9 @@ import android.R.integer;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -43,6 +46,7 @@ public class AppCursorAdapter extends CursorAdapter {
 	private Context mContext;
 	private AsyncImageLoader bitmapLoader = null;
 	private boolean scrollFlag = true;
+	private PackageManager pm = null;
 	
 	public AppCursorAdapter(Context context){
 		super(context, null, true);
@@ -52,6 +56,7 @@ public class AppCursorAdapter extends CursorAdapter {
 		inflater = LayoutInflater.from(context);
 		
 		bitmapLoader = new AsyncImageLoader(context);
+		pm = context.getPackageManager();
 	}
 	
 	@Override
@@ -67,16 +72,21 @@ public class AppCursorAdapter extends CursorAdapter {
 	private Cursor mCursor = null;
 	@Override
 	public void bindView(View view, Context arg1, Cursor cursor) {
-//		Log.d(TAG, "bindView.count=" + cursor.getCount());
 		ViewHolder holder = (ViewHolder) view.getTag();
 		
-		String label = cursor.getString(cursor.getColumnIndex(AppData.App.LABEL));
-		long appSize = cursor.getLong(cursor.getColumnIndex(AppData.App.APP_SIZE));
-		byte[] iconBlob = cursor.getBlob(cursor.getColumnIndex(AppData.App.ICON));
-		Bitmap bitmap = BitmapFactory.decodeByteArray(iconBlob, 0, iconBlob.length);
-		holder.iconView.setImageBitmap(bitmap);
-		holder.nameView.setText(label);
-		holder.sizeView.setText(DreamUtil.getFormatSize(appSize));
+		final String packagename = cursor.getString(cursor.getColumnIndex(AppData.App.PKG_NAME));
+		ApplicationInfo applicationInfo = null;
+		try {
+			applicationInfo = pm.getApplicationInfo(packagename, 0);
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, e.toString());
+			e.printStackTrace();
+		}
+		
+		holder.iconView.setImageDrawable(applicationInfo.loadIcon(pm));
+		holder.nameView.setText(applicationInfo.loadLabel(pm));
+		long size = new File(applicationInfo.sourceDir).length();
+		holder.sizeView.setText(DreamUtil.getFormatSize(size));
 	}
 	
 	@Override

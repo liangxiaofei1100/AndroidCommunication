@@ -323,6 +323,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 					mContext.sendBroadcast(intent);
 					
 					mCursor.requery();
+					notifyUpdateUI();
 				}
 			}
 		}).create().show();
@@ -337,14 +338,15 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
 				if (null != mCursor) {
 					mCursor.requery();
+					notifyUpdateUI();
 				}
 			}
 		}
 	}
     
-    public void notifyUpdateUI(int num){
+    public void notifyUpdateUI(){
 		Message message = mHandler.obtainMessage();
-		message.arg1 = num;
+		message.arg1 = mCursor.getCount();
 		message.what = MSG_UPDATE_UI;
 		message.sendToTarget();
 	}

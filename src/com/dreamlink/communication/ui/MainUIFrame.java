@@ -41,12 +41,15 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -58,7 +61,7 @@ import android.widget.TextView;
  * @date 2013年9月11日16:50:57
  */
 public class MainUIFrame extends Activity implements OnClickListener,
-		OnItemClickListener {
+		OnItemClickListener, OnItemLongClickListener {
 	private static final String TAG = "MainUIFrame";
 	private Context mContext;
 
@@ -133,6 +136,7 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mAdapter = new MainUIAdapter(this, mGridView);
 		mGridView.setAdapter(mAdapter);
 		mGridView.setOnItemClickListener(this);
+		mGridView.setOnItemLongClickListener(this);
 	}
 
 	@Override
@@ -168,9 +172,23 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
+		System.out.println("onItemClick");
+		mAdapter.setClickPosition(position);
+		mAdapter.notifyDataSetChanged();
 		Intent intent = new Intent(MainUIFrame.this, MainFragmentActivity.class);
 		intent.putExtra("position", position);
 		startActivity(intent);
+	}
+	
+	@Override
+	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int position,
+			long arg3) {
+		// TODO Auto-generated method stub
+		System.out.println("onItemLongClick");
+//		mAdapter.setStatus(position, true);
+		mAdapter.setClickPosition(position);
+		mAdapter.notifyDataSetChanged();
+		return false;
 	}
 
 	@Override

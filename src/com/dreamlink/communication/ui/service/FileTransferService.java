@@ -120,17 +120,21 @@ public class FileTransferService extends Service implements OnFileTransportListe
 		}
 	};
 	
+	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "FileTransferService.onStartCommand()");
 		
 		//register broadcast
-		IntentFilter filter = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
+		IntentFilter filter = new IntentFilter();
 		filter.addAction(Intent.ACTION_PACKAGE_ADDED);
 		filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
 		filter.addDataScheme("package");
+		
+		IntentFilter filter2 = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
+		
 		registerReceiver(transferReceiver, filter);
+		registerReceiver(transferReceiver, filter2);
 		
 		mNotice = new Notice(this);
 		mFileInfoManager = new FileInfoManager(this);

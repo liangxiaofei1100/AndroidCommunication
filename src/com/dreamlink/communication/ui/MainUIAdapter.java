@@ -1,8 +1,12 @@
 package com.dreamlink.communication.ui;
 
+import java.util.Map;
+
 import com.dreamlink.communication.R;
 
+import android.R.integer;
 import android.content.Context;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,11 +20,17 @@ public class MainUIAdapter extends BaseAdapter{
 	private LayoutInflater inflater = null;
 	private String[] menus = {"朝颜天地","网上邻居","精品推荐","图片","音乐","视频","应用","游戏"};
 	private String[] tips = {"省流量","易分享","送朝元","","","","",""};
-	private int[] icons = {
+	private int[] normal_icons = {
 			R.drawable.tiandi_normal,R.drawable.network_normal,
 			R.drawable.tuijian_normal, R.drawable.image_normal,
 			R.drawable.music_normal, R.drawable.video_normal,
 			R.drawable.app_normal, R.drawable.game_normal
+	};
+	private int[] down_icons = {
+			R.drawable.tiandi_pressed, R.drawable.network_pressed,
+			R.drawable.tuijian_pressed, R.drawable.image_pressed,
+			R.drawable.music_pressed, R.drawable.video_pressed,
+			R.drawable.app_pressed, R.drawable.game_pressed
 	};
 	private int[] colors = { R.color.text_color_orange,
 			R.color.text_color_blue, R.color.text_color_green,
@@ -28,10 +38,16 @@ public class MainUIAdapter extends BaseAdapter{
 			R.color.transparent, R.color.transparent };
 
 	private GridView gridView;
+	private int clickPosition = -1;
 	
 	public MainUIAdapter(Context context, GridView gridView){
 		inflater = LayoutInflater.from(context);
 		this.gridView = gridView;
+	}
+	
+	
+	public void setClickPosition(int position){
+		clickPosition = position;
 	}
 	
 	@Override
@@ -45,7 +61,7 @@ public class MainUIAdapter extends BaseAdapter{
 		TextView tipView = (TextView) view.findViewById(R.id.tv_menu_tip);
 		
 		int pos = position % getCount();
-		imageView.setImageResource(icons[pos]);
+		imageView.setImageResource(normal_icons[pos]);
 		nameView.setText(menus[pos]);
 		tipView.setText(tips[pos]);
 		tipView.setTextColor(colors[pos]);
