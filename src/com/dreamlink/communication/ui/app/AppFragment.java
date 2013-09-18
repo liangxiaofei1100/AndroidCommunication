@@ -322,8 +322,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 					Intent intent = new Intent(AppManager.ACTION_REFRESH_APP);
 					mContext.sendBroadcast(intent);
 					
-					mCursor.requery();
-					notifyUpdateUI();
+					reQuery(mCursor);
 				}
 			}
 		}).create().show();
@@ -336,10 +335,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			String action = intent.getAction();
 			Log.d(TAG, "get receiver:" + action);
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
-				if (null != mCursor) {
-					mCursor.requery();
-					notifyUpdateUI();
-				}
+				reQuery(mCursor);
 			}
 		}
 	}
@@ -384,6 +380,15 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 
 		default:
 			break;
+		}
+	}
+	
+	public void reQuery(Cursor cursor){
+		if (null == cursor) {
+			query();
+		}else {
+			cursor.requery();
+			notifyUpdateUI();
 		}
 	}
 }
