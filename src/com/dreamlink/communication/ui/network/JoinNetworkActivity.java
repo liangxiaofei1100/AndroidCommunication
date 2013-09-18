@@ -416,66 +416,6 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.create_connect_btn:
-			LayoutInflater inflater = LayoutInflater.from(mContext);
-			View view = inflater.inflate(R.layout.ui_create_server, null);
-			final RadioButton wifiButton = (RadioButton) view
-					.findViewById(R.id.radio_wifi);
-			final RadioButton wifiApButton = (RadioButton) view
-					.findViewById(R.id.radio_wifi_ap);
-			final RadioButton wifiDirectButton = (RadioButton) view
-					.findViewById(R.id.radio_wifi_direct);
-			if (!mContext.getPackageManager().hasSystemFeature(
-					PackageManager.FEATURE_WIFI_DIRECT)) {
-				wifiDirectButton.setVisibility(View.GONE);
-			}
-			new AlertDialog.Builder(JoinNetworkActivity.this)
-					.setTitle("Please choose the server type")
-					.setView(view)
-					.setPositiveButton(android.R.string.ok,
-							new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									String msg = "";
-									if (wifiButton.isChecked()) {
-										msg = "To Create Wifi Server";
-										connectHelper.createServer("wifi",
-												JoinNetworkActivity.this);
-									} else if (wifiApButton.isChecked()) {
-										msg = "To Create Wifi AP Server";
-										connectHelper.createServer("wifi-ap",
-												JoinNetworkActivity.this);
-									} else {
-										connectHelper.createServer(
-												"wifi-direct",
-												JoinNetworkActivity.this);
-										msg = "To Create Wifi Direct Server";
-									}
-									Toast.makeText(JoinNetworkActivity.this,
-											msg, Toast.LENGTH_SHORT).show();
-									Intent intent = new Intent();
-									// data
-//									intent.putExtra("status",
-//											MainUIFrame.CREATING);
-									setResult(RESULT_OK, intent);
-									sever_flag = true;
-									if (null != mTimeoutTimer) {
-										mTimeoutTimer.cancel();
-									}
-									finish();
-
-								}
-							})
-					.setNegativeButton(android.R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									setResult(RESULT_CANCELED);
-								}
-							}).create().show();
-			break;
 
 		case R.id.search_view:
 			startSearch();

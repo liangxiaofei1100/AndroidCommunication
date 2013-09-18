@@ -66,9 +66,6 @@ public class InviteBluetoothActivity extends Activity implements
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.title_back_layout:
-			exitActivity();
-			break;
 		case R.id.bluetooth_send_btn:
 			// tranfer file by bluetooth
 			Intent intent = new Intent();
