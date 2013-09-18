@@ -231,9 +231,9 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		int type = cursor.getInt(cursor.getColumnIndex(MetaData.History.MSG_TYPE));
 		View view  = null;
 		if (HistoryManager.TYPE_RECEIVE == type) {
-			view = inflater.inflate(R.layout.ui_history_item_msg_left, null);
+			view = inflater.inflate(R.layout.ui_history_item_left, null);
 		}else {
-			view = inflater.inflate(R.layout.ui_history_item_msg_right, null);
+			view = inflater.inflate(R.layout.ui_history_item_right, null);
 		}
 		
 		ViewHolder holder = new ViewHolder();

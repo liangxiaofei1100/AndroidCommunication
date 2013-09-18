@@ -120,7 +120,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.d(TAG, "onCreateView");
-		View rootView = inflater.inflate(R.layout.ui_app_normal, container, false);
+		View rootView = inflater.inflate(R.layout.ui_app, container, false);
 
 		mContext = getActivity();
 		

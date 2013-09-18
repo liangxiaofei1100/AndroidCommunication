@@ -84,7 +84,7 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 		mContext = this;
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.ui_main_new);
+		setContentView(R.layout.ui_mainframe);
 
 		UserHelper userHelper = new UserHelper(this);
 		mLocalUser = userHelper.loadUser();

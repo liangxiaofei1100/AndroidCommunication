@@ -17,7 +17,6 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 /**
@@ -106,7 +105,6 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.save_button:
-		case R.id.title_right_layout:
 			String name = mUserName_Edit.getText().toString();
 			if (TextUtils.isEmpty(name)) {
 				name = mUserName_Edit.getHint().toString();
