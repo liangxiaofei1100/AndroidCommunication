@@ -10,6 +10,7 @@ import com.dreamlink.communication.ui.app.GameFragment;
 import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.app.TiandiFragment;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
+import com.dreamlink.communication.ui.help.HelpFragment;
 import com.dreamlink.communication.ui.image.ImageFragment;
 import com.dreamlink.communication.ui.media.MediaAudioFragment;
 import com.dreamlink.communication.ui.media.MediaVideoFragment;

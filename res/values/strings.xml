@@ -76,4 +76,23 @@
     
     <string name="settings_title">设置</string>
     
+    <string name="settings_logout">退出朝颜天地</string>
+    
+    <string name="help_introduction">功能介绍</string>
+    
+    <string name="help_introduction_tips">介绍本程序基本功能的使用方法</string>
+    
+    <string name="help_suggestion">意见反馈</string>
+    
+    <string name="help_suggestion_tips">将您对本程序的建议和意见反馈给我们</string>
+    
+    <string name="help_check_update">检查新版本</string>
+    
+    <string name="help_current_version">当前版本号:%s</string>
+    
+    <string name="help_about">关于</string>
+    
+    <string name="settings_user_info">用户信息设置</string>
+    
+    <string name="settings_user_info_tips">重新设置用户信息</string>
 </resources>
