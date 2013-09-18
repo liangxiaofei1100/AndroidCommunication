@@ -49,8 +49,10 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 
 	/** test interface ,final will be define start */
 	public interface PlatformManagerCallback {
+		/** please check the return value,with the create parameters */
 		public void hostHasCreated(HostInfo hostInfo);
 
+		/** the flag true mean joined ,false mean refused */
 		public void joinGroupResult(HostInfo hostInfo, boolean flag);
 
 		public void groupMemberUpdate(int hostId, ArrayList<Integer> userList);
@@ -59,10 +61,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 
 		public void hasExitGroup(int hostId);
 
-		public void beRemoved(int hostId);
-
-		public void hostBeCanceled(int hostId);
-
+		/** the network disconnect clear all data */
 		public void disconnect();
 
 		public void receiverMessage(byte[] data, User sendUser,
@@ -114,9 +113,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 
 	/**
 	 * @param appName
-	 *            创建包名下属的名字，一个程序可能会创建很多个不同德主机，需要用此加以标示
+	 *            创建包名下属的名字，一个程序可能会创建很多个不同的主机，需要用此加以标示
 	 * @param pakcageName
-	 *            创建的包名
+	 *            创建的包名,目前这个项作用不大
 	 * @param numberLimit
 	 *            创建人数限制
 	 * @param app_id
@@ -153,7 +152,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		for (Entry<Integer, HostInfo> entry : allHostList.entrySet()) {
 			HostInfo temp = entry.getValue();
 			if (temp.ownerID == hostInfo.ownerID
-					&& temp.app_id == hostInfo.app_id) {
+					&& temp.app_id == hostInfo.app_id
+					&& temp.appName.equals(hostInfo.appName)
+					&& temp.packageName.equals(hostInfo.packageName)) {
 				/* do nothing or return the old hostInfo */
 				User tem = userManager.getAllUser().get(hostInfo.ownerID);
 				if (tem != null) {
@@ -505,7 +506,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		groupMember.remove(hostInfo.hostId);
 		PlatformManagerCallback callback = callbackList.get(hostInfo.app_id);
 		if (callback != null) {
-			callback.beRemoved(hostInfo.hostId);
+			callback.hasExitGroup(hostInfo.hostId);
 		}
 		Log.d(TAG, "you are removed by form " + hostInfo.hostId);
 	}
@@ -557,7 +558,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			PlatformManagerCallback callback = callbackList
 					.get(hostInfo.app_id);
 			if (callback != null) {
-				callback.hostBeCanceled(hostInfo.hostId);
+				callback.hasExitGroup(hostInfo.hostId);
 			}
 		}
 		if (userManager.getLocalUser().getUserID() == -1) {
@@ -686,6 +687,11 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	public void receiverStartGroupBusiness(int hostId) {
 		if (joinedGroup.containsKey(hostId)) {
 			// TODO notify application start business
+			PlatformManagerCallback callback = callbackList.get(joinedGroup
+					.get(hostId).app_id);
+			if (callback != null) {
+				callback.startGroupBusiness(joinedGroup.get(hostId));
+			}
 		}
 	}
 
@@ -734,6 +740,12 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			int hostId) {
 		if (joinedGroup.containsKey(hostId)) {
 			// TODO notify receiver communication data from group
+			PlatformManagerCallback callback = callbackList.get(joinedGroup
+					.get(hostId).app_id);
+			if (callback != null) {
+				callback.receiverMessage(data, sendUser, allFlag,
+						joinedGroup.get(hostId));
+			}
 		}
 	}
 
