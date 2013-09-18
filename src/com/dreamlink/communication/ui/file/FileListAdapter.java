@@ -73,7 +73,7 @@ public class FileListAdapter extends BaseAdapter {
 			holder.iconView.setImageResource(R.drawable.icon_folder);
 			holder.fileInfoText.setText(date);
 		}else {
-			holder.iconView.setImageResource(R.drawable.file);
+			holder.iconView.setImageResource(R.drawable.icon_file);
 			holder.fileInfoText.setText(size + " | " + date);
 		}
 		
