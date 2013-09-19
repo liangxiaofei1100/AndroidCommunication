@@ -285,8 +285,13 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		for (Map.Entry<OnFileTransportListener, Integer> entry : mOnFileTransportListener
 				.entrySet()) {
 			if (entry.getValue() == appID) {
-				FileReceiver fileReceiver = new FileReceiver(mUserManager
-						.getAllUser().get(sendUserID), serverAddress,
+				User sendUser = mUserManager
+						.getAllUser().get(sendUserID);
+				if (sendUser == null) {
+					Log.e(TAG, "notfiyFileReceiveListeners cannot find send user, send user id = " + sendUserID);
+					return;
+				}
+				FileReceiver fileReceiver = new FileReceiver(sendUser, serverAddress,
 						serverPort, fileTransferInfo);
 				entry.getKey().onReceiveFile(fileReceiver);
 			}

@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,7 +39,7 @@ import android.widget.TextView;
  * @date 2013年9月11日16:50:57
  */
 public class MainUIFrame extends Activity implements OnClickListener,
-		OnItemClickListener, OnItemLongClickListener, OnUserChangedListener{
+		OnItemClickListener, OnItemLongClickListener, OnUserChangedListener {
 	private static final String TAG = "MainUIFrame";
 	private Context mContext;
 
@@ -55,6 +56,27 @@ public class MainUIFrame extends Activity implements OnClickListener,
 
 	private UserManager mUserManager = null;
 	private User mLocalUser;
+
+	private static final int MSG_USER_CONNECTED = 1;
+	private static final int MSG_USER_DISCONNECTED = 2;
+
+	private Handler mHandler = new Handler() {
+
+		@Override
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			case MSG_USER_CONNECTED:
+				updateNetworkStatus();
+				break;
+			case MSG_USER_DISCONNECTED:
+				updateNetworkStatus();
+				break;
+
+			default:
+				break;
+			}
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +97,8 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mUserManager = UserManager.getInstance();
 		mUserManager.registerOnUserChangedListener(this);
 	}
-	
-	private void updateNetworkStatus(){
+
+	private void updateNetworkStatus() {
 		if (mSocketComMgr.isConnected()) {
 			mNetWorkStatusView.setText(R.string.connected);
 		} else {
@@ -266,12 +288,12 @@ public class MainUIFrame extends Activity implements OnClickListener,
 
 	@Override
 	public void onUserConnected(User user) {
-		updateNetworkStatus();
+		mHandler.sendEmptyMessage(MSG_USER_CONNECTED);
 	}
 
 	@Override
 	public void onUserDisconnected(User user) {
-		updateNetworkStatus();
+		mHandler.sendEmptyMessage(MSG_USER_DISCONNECTED);
 	}
 
 }

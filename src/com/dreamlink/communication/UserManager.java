@@ -151,9 +151,8 @@ public class UserManager {
 	public synchronized boolean addLocalServerUser() {
 		mLocalUser.setUserID(SERVER_USER_ID);
 		UserTree.getInstance().setHead(mLocalUser);
-		if (isUserExist(mLocalUser)) {
-			return false;
-		}
+		// Create new network, clear old users.
+		mUsers.clear();
 		mUsers.put(mLocalUser.getUserID(), mLocalUser);
 		SocketCommunication communication = new SocketCommunication(null, null);
 		mCommunications.put(mLocalUser.getUserID(), communication);
