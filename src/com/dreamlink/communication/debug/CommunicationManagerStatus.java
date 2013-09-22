@@ -18,6 +18,7 @@ public class CommunicationManagerStatus extends Activity {
 	private SocketCommunicationManager mCommunicationManager;
 	private TextView mCommunicationListenerTextView;
 	private TextView mCommunicationListenerExternalTextView;
+	private TextView mFileTransferListenerTextView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,14 +37,16 @@ public class CommunicationManagerStatus extends Activity {
 				.setText(getCommunicationListenerStatus());
 		mCommunicationListenerExternalTextView
 				.setText(getExternalCommunicationListenerStatus());
+		mFileTransferListenerTextView.setText(getFileTransferListenerStatus());
 	}
 
 	private void initView() {
 		mCommunicationListenerTextView = (TextView) findViewById(R.id.tv_debug_cm_communication_listener);
 		mCommunicationListenerExternalTextView = (TextView) findViewById(R.id.tv_debug_cm_communication_listener_external);
+		mFileTransferListenerTextView = (TextView) findViewById(R.id.tv_debug_cm_file_transfer_listener);
 	}
-	
-	public CommunicationManagerStatus(){
+
+	public CommunicationManagerStatus() {
 		super();
 	}
 
@@ -63,6 +66,11 @@ public class CommunicationManagerStatus extends Activity {
 		alertConfig.create().show();
 	}
 
+	private String getFileTransferListenerStatus() {
+		return "FileTransferListener: \n"
+				+ mCommunicationManager.getOnFileTransportListenerStatus();
+	}
+
 	private String getCommunicationListenerStatus() {
 		return "Communication Listeners:\n"
 				+ mCommunicationManager.getOnCommunicationListenerStatus()
@@ -79,6 +87,7 @@ public class CommunicationManagerStatus extends Activity {
 		StringBuilder builder = new StringBuilder();
 		builder.append(getCommunicationListenerStatus());
 		builder.append(getExternalCommunicationListenerStatus());
+		builder.append(getFileTransferListenerStatus());
 
 		return builder.toString();
 	}

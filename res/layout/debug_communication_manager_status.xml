@@ -28,6 +28,10 @@
                 android:id="@+id/tv_debug_cm_communication_listener_external"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/tv_debug_cm_file_transfer_listener"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
             
         </LinearLayout>
     </ScrollView>
