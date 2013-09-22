@@ -730,12 +730,15 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 */
 	public String getOnCommunicationListenerExternalStatus() {
 		StringBuffer status = new StringBuffer();
+		status.append("Total size: " + mOnCommunicationListenerExternals.size()
+				+ "\n");
 		status.append(mOnCommunicationListenerExternals.toString());
 		return status.toString();
 	}
 
 	public String getOnCommunicationListenerStatus() {
 		StringBuffer status = new StringBuffer();
+		status.append("Total size: " + mOnCommunicationListeners.size() + "\n");
 		status.append(mOnCommunicationListeners.toString());
 		return status.toString();
 	}

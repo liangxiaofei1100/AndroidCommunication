@@ -47,11 +47,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait" >
         </activity>
-        <activity
-            android:name="com.dreamlink.communication.debug.AppListActivity"
-            android:label="@string/label_applist"
-            android:screenOrientation="portrait" >
-        </activity>
 
         <service android:name="com.dreamlink.communication.ui.file.RemoteShareService" >
         </service>
@@ -164,10 +159,6 @@
                 android:name="app_id"
                 android:value="112" />
         </activity>
-        <activity
-            android:name="com.dreamlink.communication.ui.ConnectFriendActivity"
-            android:theme="@android:style/Theme.Dialog" >
-        </activity>
         <activity android:name="com.dreamlink.communication.ui.image.ImagePagerActivity" />
 
         <service android:name="com.dreamlink.communication.ui.service.FileManagerService" />
@@ -203,6 +194,36 @@
         <activity
             android:name="com.dreamlink.communication.debug.DebugActivity"
             android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.debug.TestListActivity"
+            android:label="Test app list"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="com.dreamlink.communication.action.debug" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.debug.NetworkStatus"
+            android:label="Network status"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="com.dreamlink.communication.action.debug" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.debug.CommunicationManagerStatus"
+            android:label="Communication manager status"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="com.dreamlink.communication.action.debug" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <provider
