@@ -47,9 +47,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait" >
         </activity>
-
-        <service android:name="com.dreamlink.communication.ui.file.RemoteShareService" >
-        </service>
         <service android:name="com.dreamlink.communication.ui.service.FileTransferService" >
         </service>
 
@@ -159,6 +156,11 @@
                 android:name="app_id"
                 android:value="112" />
         </activity>
+        <service android:name="com.dreamlink.communication.ui.file.RemoteShareService" >
+            <meta-data
+                android:name="app_id"
+                android:value="112" />
+        </service>
         <activity android:name="com.dreamlink.communication.ui.image.ImagePagerActivity" />
 
         <service android:name="com.dreamlink.communication.ui.service.FileManagerService" />

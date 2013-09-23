@@ -20,10 +20,10 @@ import android.os.RemoteException;
 import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.ui.Command;
 import com.dreamlink.communication.ui.DreamConstant.Cmd;
 import com.dreamlink.communication.util.Log;
-import com.dreamlink.communication.util.LogFile;
 
 @SuppressLint("NewApi")
 public class RemoteShareService extends Service implements OnCommunicationListenerExternal{
@@ -45,18 +45,19 @@ public class RemoteShareService extends Service implements OnCommunicationListen
 		return null;
 	}
 	
-	LogFile logFile;
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
+	public void onCreate() {
+		super.onCreate();
 		mCommunicationManager = SocketCommunicationManager
 				.getInstance(this);
-		if (null != intent) {
-			mAppId = intent.getIntExtra("app_id", 0);
-		}
-		Log.d(TAG, "onStartCommand.appid:" + mAppId);
+		mAppId = AppUtil.getAppID(this);
+		Log.d(TAG, "oncreate, appid:" + mAppId);
 		mCommunicationManager.registerOnCommunicationListenerExternal(this, mAppId);
-		logFile = new LogFile(getApplicationContext(), "log_server.txt");
-		logFile.open();
+	}
+	
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -144,18 +145,12 @@ public class RemoteShareService extends Service implements OnCommunicationListen
 			Log.d(TAG, "while.size= " + size);
 			String temp = listToArray(MAX_SEND_LENGTH);
 			size = size - MAX_SEND_LENGTH;
-//			logFile.writeLog(temp);
-//			logFile.writeLog("\n=============\n");
-			logFile.writeLog(temp.getBytes());
 			mCommunicationManager.sendMessageToAll(temp.getBytes(), mAppId);
 		}
 		
 		Log.d(TAG, "out while.size=" + size);
 		if (size > 0) {
 			String temp = listToArray(size);
-//			logFile.writeLog(temp);
-//			logFile.writeLog("\n=============\n");
-			logFile.writeLog(temp.getBytes());
 			mCommunicationManager.sendMessageToAll(temp.getBytes(), mAppId);
 		}
 	}
