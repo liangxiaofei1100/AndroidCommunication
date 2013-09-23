@@ -150,7 +150,7 @@ public class RemoteShareActivity extends Activity implements
 			case UPDATE_SERVER_LIST:
 				mShareAdapter.notifyDataSetChanged();
 				break;
-				
+
 			default:
 				break;
 			}
@@ -259,7 +259,7 @@ public class RemoteShareActivity extends Activity implements
 		}
 		if (null == mCurrentConnectUser) {
 			Log.e(TAG, "current connect user is null");
-			mNotice.showToast("User is null");
+			mNotice.showToast("连接服务器失败。");
 		} else {
 			mSocketMgr.sendMessageToSingle(cmdMsg.getBytes(),
 					mCurrentConnectUser, mAppId);
@@ -294,18 +294,13 @@ public class RemoteShareActivity extends Activity implements
 			mStopServerBtn.setVisibility(View.INVISIBLE);
 			break;
 		case R.id.file_listview:
-			// click to into subdirectory
-			// first you need send a command to tell server i want to ls the
-			// path
-			// server return all the folders and files about the path to client
-			// ps:english is so so
+			// Click a file to browse the file's sub directory. Process as below：
+			// 1. Client send LS command to server.
+			// 2. Server return all the folders and files about the path to
+			// client.
 			String msg = "";
-
-			// tell server that the path you want into
 			FileInfo fileInfo = mList.get(position);
 			if (fileInfo.isDir) {
-				// msg = Command.LS + Command.AITE + fileInfo.filePath;
-				// use int command
 				msg = Cmd.LS + fileInfo.filePath;
 				mLoadingLayout.setVisibility(View.VISIBLE);
 				sendMsgToSingle(msg);
@@ -353,13 +348,14 @@ public class RemoteShareActivity extends Activity implements
 		case R.id.iv_refresh:
 			updateConnectionStatus();
 			break;
-			
+
 		case R.id.iv_history:
 			HistoryActivity.launch(mContext);
 			break;
 
 		case R.id.create_share:
-			Intent intent2 = new Intent(mContext, RemoteShareServerService.class);
+			Intent intent2 = new Intent(mContext,
+					RemoteShareServerService.class);
 			intent2.putExtra("app_id", mAppId);
 			startService(intent2);
 
@@ -369,7 +365,8 @@ public class RemoteShareActivity extends Activity implements
 			mStopServerBtn.setVisibility(View.VISIBLE);
 			break;
 		case R.id.stop_server_button:
-			Intent stopIntent = new Intent(mContext, RemoteShareServerService.class);
+			Intent stopIntent = new Intent(mContext,
+					RemoteShareServerService.class);
 			stopService(stopIntent);
 
 			mNoConnectionTips.setVisibility(View.INVISIBLE);
@@ -427,6 +424,7 @@ public class RemoteShareActivity extends Activity implements
 							.obtainMessage(UPDATE_SERVER_LIST));
 				}
 			} catch (NumberFormatException e) {
+				Log.e(TAG, "onReceiveMessage receive server list message error." + e);
 			}
 			return;
 		} else if (mCurrentConnectUser.getUserID() != sendUser.getUserID()) {
@@ -435,28 +433,7 @@ public class RemoteShareActivity extends Activity implements
 		}
 
 		if (currentCopyFile != null) {
-			Log.d(TAG, "copying:" + currentCopyFile.fileName);
-			// receive file from server
-			try {
-				copyLen += msg.length;
-				if (mFileTransferDialog != null) {
-					mFileTransferDialog.setDProgress(copyLen);
-				} else {
-					Log.e(TAG, "mProgressDialog is null");
-				}
-
-				// use FileOutPutStream do not use DataOutPutStrem
-				if (fos != null) {
-					fos.write(msg);
-					fos.flush();
-				} else {
-					Log.e(TAG, "fos is null");
-				}
-				now_time = System.currentTimeMillis();
-			} catch (Exception e) {
-				Log.e(TAG, "Receive error:" + e.toString());
-				e.printStackTrace();
-			}
+			processCopyFile(msg);
 		} else {
 			/*
 			 * [第一行]表示显示文件列表返回标识:lsretn
@@ -549,6 +526,31 @@ public class RemoteShareActivity extends Activity implements
 					mFileMsgList.add(splitMsg[i]);
 				}
 			}
+		}
+	}
+
+	private void processCopyFile(byte[] msg) {
+		Log.d(TAG, "copying:" + currentCopyFile.fileName);
+		// receive file from server
+		try {
+			copyLen += msg.length;
+			if (mFileTransferDialog != null) {
+				mFileTransferDialog.setDProgress(copyLen);
+			} else {
+				Log.e(TAG, "mProgressDialog is null");
+			}
+
+			// use FileOutPutStream do not use DataOutPutStrem
+			if (fos != null) {
+				fos.write(msg);
+				fos.flush();
+			} else {
+				Log.e(TAG, "fos is null");
+			}
+			now_time = System.currentTimeMillis();
+		} catch (Exception e) {
+			Log.e(TAG, "Receive error:" + e.toString());
+			e.printStackTrace();
 		}
 	}
 
@@ -820,7 +822,7 @@ public class RemoteShareActivity extends Activity implements
 		mListLayout.setVisibility(View.INVISIBLE);
 		mStopServerBtn.setVisibility(View.VISIBLE);
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
