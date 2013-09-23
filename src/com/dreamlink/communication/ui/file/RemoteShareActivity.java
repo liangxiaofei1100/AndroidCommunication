@@ -16,7 +16,6 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.lib.util.Notice;
-import com.dreamlink.communication.ui.Command;
 import com.dreamlink.communication.ui.DreamConstant.Cmd;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.dialog.FileExistDialog;
@@ -362,7 +361,7 @@ public class RemoteShareActivity extends Activity implements
 			break;
 
 		case R.id.create_share:
-			Intent intent2 = new Intent(mContext, RemoteShareService.class);
+			Intent intent2 = new Intent(mContext, RemoteShareServerService.class);
 			intent2.putExtra("app_id", mAppId);
 			startService(intent2);
 
@@ -375,7 +374,7 @@ public class RemoteShareActivity extends Activity implements
 			getShareServerList();
 			break;
 		case R.id.stop_server_button:
-			Intent stopIntent = new Intent(mContext, RemoteShareService.class);
+			Intent stopIntent = new Intent(mContext, RemoteShareServerService.class);
 			stopService(stopIntent);
 
 			mNoConnectionTips.setVisibility(View.INVISIBLE);

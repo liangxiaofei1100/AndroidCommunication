@@ -159,7 +159,7 @@
                 android:name="app_id"
                 android:value="112" />
         </activity>
-        <service android:name="com.dreamlink.communication.ui.file.RemoteShareService" >
+        <service android:name="com.dreamlink.communication.ui.file.RemoteShareServerService" >
             <meta-data
                 android:name="app_id"
                 android:value="112" />
