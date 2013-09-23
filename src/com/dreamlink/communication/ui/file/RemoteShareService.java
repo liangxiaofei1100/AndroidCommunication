@@ -132,7 +132,6 @@ public class RemoteShareService extends Service implements OnCommunicationListen
 		if ("".equals(cmdMsg)) {
 			return;
 		}
-		// TODO need to implement appID.
 		mCommunicationManager.sendMessageToAll(cmdMsg.getBytes(), mAppId);
 	}
 	

@@ -170,8 +170,8 @@ public class RemoteShareActivity extends Activity implements
 		mContext = this;
 		mNotice = new Notice(mContext);
 		mSocketMgr = SocketCommunicationManager.getInstance(mContext);
-		mSocketMgr.registerOnCommunicationListenerExternal(this, mAppId);
 		mAppId = AppUtil.getAppID(this);
+		mSocketMgr.registerOnCommunicationListenerExternal(this, mAppId);
 
 		mFileInfoManager = new FileInfoManager(mContext);
 
