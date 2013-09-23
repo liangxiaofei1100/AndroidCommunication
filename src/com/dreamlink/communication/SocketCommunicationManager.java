@@ -187,7 +187,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		if (null == listener) {
 			Log.e(TAG, "the params listener is null");
 		} else {
-			if (mOnFileTransportListener.contains(listener)) {
+			if (mOnFileTransportListener.containsKey(listener)) {
 				int appID = mOnFileTransportListener.remove(listener);
 				Log.d(TAG, "mOnFileTransportListener() appID = " + appID);
 			} else {
@@ -195,8 +195,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 			}
 		}
 	}
-
-	// test by yuri
 
 	public void setLoginRequestCallBack(ILoginRequestCallBack callback) {
 		mLoginRequestCallBack = callback;
@@ -499,7 +497,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 *            ,if true ,connect add ,else connect remove
 	 * */
 	private void notifyComunicationChange() {
-		// TODO need to update.
 		// if need notify someone ,doing here
 		if (!mOnCommunicationListeners.isEmpty()) {
 			for (OnCommunicationListener listener : mOnCommunicationListeners) {

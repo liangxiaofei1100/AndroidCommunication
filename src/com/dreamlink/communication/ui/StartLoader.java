@@ -64,7 +64,6 @@ public class StartLoader extends Activity {
 		// Do not use game DB now.
 		// importGameKeyDb();
 
-		startService();
 		// List<String> zyPkgList = loadZYAppToDb();
 		// loadAppToDb(zyPkgList);
 		// delete table
@@ -164,12 +163,6 @@ public class StartLoader extends Activity {
 		Intent intent = new Intent();
 		intent.setClass(this, LoginActivity.class);
 		startActivity(intent);
-	}
-
-	public void startService() {
-		Intent intent = new Intent();
-		intent.setClass(this, FileTransferService.class);
-		startService(intent);
 	}
 
 	public class LoadAppThread extends Thread {

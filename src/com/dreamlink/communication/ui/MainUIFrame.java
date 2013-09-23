@@ -96,6 +96,8 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
 		mUserManager = UserManager.getInstance();
 		mUserManager.registerOnUserChangedListener(this);
+		
+		startFileTransferService();
 	}
 
 	private void updateNetworkStatus() {
@@ -131,6 +133,12 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mGridView.setAdapter(mAdapter);
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
+	}
+	
+	public void startFileTransferService() {
+		Intent intent = new Intent();
+		intent.setClass(this, FileTransferService.class);
+		startService(intent);
 	}
 
 	@Override

@@ -292,9 +292,19 @@ public class HistoryCursorAdapter extends CursorAdapter {
 									switch (which) {
 									case 0:
 										// send
-										FileTransferUtil fileSendUtil = new FileTransferUtil(
-												mContext);
-										fileSendUtil.sendFile(filePath);
+										File file = new File(filePath);
+										if (!file.exists()) {
+											Log.d(TAG,
+													"Send file fail. File is not exits. "
+															+ filePath);
+											mNotice.showToast("文件不存在");
+											break;
+										} else {
+											FileTransferUtil fileSendUtil = new FileTransferUtil(
+													mContext);
+											fileSendUtil.sendFile(filePath);
+										}
+										
 										break;
 									case 1:
 										// open
