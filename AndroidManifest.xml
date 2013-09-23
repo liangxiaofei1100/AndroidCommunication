@@ -23,9 +23,6 @@
         android:icon="@drawable/app_logo"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <meta-data
-            android:name="app_id"
-            android:value="111" />
 
         <activity
             android:name="com.dreamlink.communication.ui.StartLoader"
@@ -46,8 +43,14 @@
             android:name="com.dreamlink.communication.ui.MainFragmentActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" >
+            <meta-data
+                android:name="app_id"
+                android:value="100" />
         </activity>
         <service android:name="com.dreamlink.communication.ui.service.FileTransferService" >
+            <meta-data
+                android:name="app_id"
+                android:value="111" />
         </service>
 
         <activity

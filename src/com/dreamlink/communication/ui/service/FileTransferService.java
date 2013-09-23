@@ -137,7 +137,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 		mFileInfoManager = new FileInfoManager(this);
 		mHistoryManager = new HistoryManager(this);
 		mSocketMgr = SocketCommunicationManager.getInstance(this);
-		mAppId = AppUtil.getAppID(getApplication());
+		mAppId = AppUtil.getAppID(this);
 		Log.d(TAG, "mappid=" + mAppId);
 		mSocketMgr.registerOnFileTransportListener(this, mAppId);
 
