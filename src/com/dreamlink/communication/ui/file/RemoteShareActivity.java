@@ -69,7 +69,7 @@ public class RemoteShareActivity extends Activity implements
 	private Button mStopServerBtn;
 	// show remote share server list
 	private RelativeLayout mServerListLayout;
-	private Button mCreateServerBtn, mSearchServerBtn;
+	private Button mCreateServerBtn;
 	private ListView mServerListView;
 	private RemoteShareAdapter mShareAdapter = null;
 	private List<User> mRemoteShareList = new ArrayList<User>();
@@ -212,8 +212,6 @@ public class RemoteShareActivity extends Activity implements
 		mServerListLayout = (RelativeLayout) findViewById(R.id.remote_share_server_list);
 		mCreateServerBtn = (Button) findViewById(R.id.create_share);
 		mCreateServerBtn.setOnClickListener(this);
-		mSearchServerBtn = (Button) findViewById(R.id.search_share);
-		mSearchServerBtn.setOnClickListener(this);
 		mServerListView = (ListView) findViewById(R.id.server_listview);
 		mServerListView.setOnItemClickListener(this);
 		mShareAdapter = new RemoteShareAdapter(mContext, mRemoteShareList);
@@ -369,9 +367,6 @@ public class RemoteShareActivity extends Activity implements
 			mServerListLayout.setVisibility(View.INVISIBLE);
 			mListLayout.setVisibility(View.INVISIBLE);
 			mStopServerBtn.setVisibility(View.VISIBLE);
-			break;
-		case R.id.search_share:
-			getShareServerList();
 			break;
 		case R.id.stop_server_button:
 			Intent stopIntent = new Intent(mContext, RemoteShareServerService.class);

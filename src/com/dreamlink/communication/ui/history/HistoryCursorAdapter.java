@@ -324,14 +324,12 @@ public class HistoryCursorAdapter extends CursorAdapter {
 	}
 
 	/**
-	 * Delete file and record in DB.
+	 * Delete the transfer record in DB.
 	 * @param file
 	 * @param id
 	 */
 	private void delete(File file, int id) {
-		if (file.exists()) {
-			file.delete();
-		}
+		// Do not delete file current.
 		String selection = MetaData.History._ID + "=" + id;
 		int result = mContext.getContentResolver().delete(
 				MetaData.History.CONTENT_URI, selection, null);

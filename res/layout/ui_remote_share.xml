@@ -104,15 +104,6 @@
             android:orientation="vertical" >
 
             <Button
-                android:id="@+id/search_share"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="@string/search_remote_share" 
-                android:background="@drawable/button_bg"
-                android:visibility="gone"/>
-
-            <Button
                 android:id="@+id/create_share"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
