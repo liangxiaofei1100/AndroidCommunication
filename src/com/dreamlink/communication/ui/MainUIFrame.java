@@ -67,15 +67,18 @@ public class MainUIFrame extends Activity implements OnClickListener,
 			switch (msg.what) {
 			case MSG_USER_CONNECTED:
 				updateNetworkStatus();
+				updateNotification();
 				break;
 			case MSG_USER_DISCONNECTED:
 				updateNetworkStatus();
+				updateNotification();
 				break;
 
 			default:
 				break;
 			}
 		}
+
 	};
 
 	@Override
@@ -107,12 +110,21 @@ public class MainUIFrame extends Activity implements OnClickListener,
 			mNetWorkStatusView.setText(R.string.unconnected);
 		}
 	}
+	
+	private void updateNotification() {
+		if (mSocketComMgr.isConnected()) {
+			mNotificationMgr.updateNotification(NotificationMgr.STATUS_CONNECTED);
+		} else {
+			mNotificationMgr.updateNotification(NotificationMgr.STATUS_UNCONNECTED);
+		}
+	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		Log.d(TAG, "onResume");
 		updateNetworkStatus();
+		updateNotification();
 	}
 
 	public void initView() {
