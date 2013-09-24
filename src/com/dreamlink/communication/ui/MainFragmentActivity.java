@@ -25,6 +25,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 
@@ -124,5 +125,23 @@ public class MainFragmentActivity extends FragmentActivity {
 			return views.get(position);
 		}
 
+	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_BACK:
+			//8 is instead of FileBrowserFragment,fixed
+			int position = viewPager.getCurrentItem();
+			if (8 == position) {
+				FileBrowserFragment.mInstance.onBackPressed();
+				return false;
+			}
+			break;
+
+		default:
+			break;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 }

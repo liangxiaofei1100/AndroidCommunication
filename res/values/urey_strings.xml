@@ -39,6 +39,7 @@
     <string name="all_file">全部文件</string>
     <string name="sdcard">SD卡</string>
     <string name="internal_sdcard">手机存储</string>
+    <string name="no_sdcard">SDCard不存在</string>
     
     <!-- menu start -->
     <string name="menu">菜单</string>

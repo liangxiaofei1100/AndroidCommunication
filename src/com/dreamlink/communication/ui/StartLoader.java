@@ -125,7 +125,7 @@ public class StartLoader extends Activity {
 
 	private void initMountManager() {
 		// get sdcards
-		MountManager mountManager = new MountManager();
+		MountManager mountManager = new MountManager(this);
 		mountManager.init();
 	}
 

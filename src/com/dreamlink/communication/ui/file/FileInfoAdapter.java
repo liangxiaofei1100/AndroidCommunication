@@ -1,10 +1,13 @@
 package com.dreamlink.communication.ui.file;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
+import com.dreamlink.communication.ui.MountManager;
+import com.dreamlink.communication.util.Log;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -18,7 +21,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class FileInfoAdapter extends BaseAdapter {
-	private List<FileInfo> mList;
+	private static final String TAG = "FileInfoAdapter";
+	private List<FileInfo> mList = new ArrayList<FileInfo>();
+	private List<Integer> homeList = new ArrayList<Integer>();
 	private LayoutInflater mInflater = null;
 	
 	private Context mContext;
@@ -26,12 +31,23 @@ public class FileInfoAdapter extends BaseAdapter {
 	private SparseBooleanArray mIsSelected = null;
 	
 	private AsyncImageLoader bitmapLoader;
+	private int size = 0;
 	
 	private boolean flag = true;
+	public boolean isHome = true;
+	
+	public FileInfoAdapter(Context context, boolean home, List<Integer> list){
+		isHome = home;
+		mInflater = LayoutInflater.from(context);
+		homeList = list;
+		size = list.size();
+	}
 	
 	public FileInfoAdapter(Context context, List<FileInfo> list){
+		isHome = false;
 		mInflater = LayoutInflater.from(context);
 		this.mList = list;
+		size = list.size();
 		this.mContext = context;
 		mIsSelected = new SparseBooleanArray();
 		//init checkbox
@@ -74,7 +90,11 @@ public class FileInfoAdapter extends BaseAdapter {
 	
 	@Override
 	public int getCount() {
-		return mList.size();
+		if (isHome) {
+			return homeList.size();
+		}else {
+			return mList.size();
+		}
 	}
 
 	@Override
@@ -101,7 +121,7 @@ public class FileInfoAdapter extends BaseAdapter {
 		
 		if (null == convertView || null == convertView.getTag()) {
 			holder = new ViewHolder();
-			view = mInflater.inflate(R.layout.ui_file_all_item, parent, false);
+			view = mInflater.inflate(R.layout.ui_file_item, parent, false);
 			holder.iconView = (ImageView) view.findViewById(R.id.file_icon_imageview);
 			holder.nameView = (TextView) view.findViewById(R.id.file_name_textview);
 			holder.dateAndSizeView = (TextView) view.findViewById(R.id.file_info_textview);
@@ -110,6 +130,20 @@ public class FileInfoAdapter extends BaseAdapter {
 		}else {
 			view = convertView;
 			holder = (ViewHolder) view.getTag();
+		}
+		Log.i(TAG, "getView.isHome:" + isHome);
+		if (isHome) {
+			holder.checkBox.setVisibility(View.GONE);
+			holder.dateAndSizeView.setVisibility(View.GONE);
+			if (MountManager.INTERNAL == homeList.get(position)) {
+				holder.iconView.setImageResource(R.drawable.storage_internal_n);
+				holder.nameView.setText(R.string.internal_sdcard);
+			}else {
+				holder.iconView.setImageResource(R.drawable.storage_sd_card_n);
+				holder.nameView.setText(R.string.sdcard);
+			}
+			
+			return view;
 		}
 		
 		FileInfo fileInfo = mList.get(position);

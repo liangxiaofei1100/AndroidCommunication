@@ -81,6 +81,7 @@ public class AppCursorAdapter extends CursorAdapter {
 		} catch (NameNotFoundException e) {
 			Log.e(TAG, e.toString());
 			e.printStackTrace();
+			return;
 		}
 		
 		holder.iconView.setImageDrawable(applicationInfo.loadIcon(pm));

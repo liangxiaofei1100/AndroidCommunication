@@ -84,6 +84,12 @@
         <item>@string/menu_send</item>
         <item>@string/menu_delete</item>
         <item>@string/menu_info</item>
+		<item>@string/menu_rename</item>        
+    </string-array>
+    
+    <string-array name="folder_menu">
+        <item>@string/menu_info</item>
+		<item>@string/menu_rename</item>        
     </string-array>
     
     <string-array name="history_menu">

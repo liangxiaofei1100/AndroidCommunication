@@ -662,11 +662,18 @@ public class FileInfoManager {
 	private String getFileInfo(FileInfo fileInfo) {
 		String path = fileInfo.filePath.substring(0, fileInfo.filePath.lastIndexOf("/"));
 		String result = "";
-		result = "名称:" + fileInfo.fileName + DreamConstant.ENTER + "类型:"
-				+ (fileInfo.isDir ? "文件夹" : "文件") + DreamConstant.ENTER + "位置:"
-				+ path + DreamConstant.ENTER + "大小:"
-				+ fileInfo.getFormatFileSize() + DreamConstant.ENTER + "修改日期:"
-				+ fileInfo.getFormateDate();
+		if (fileInfo.isDir) {
+			result = "名称:" + fileInfo.fileName + DreamConstant.ENTER
+					+ "类型:文件夹" + DreamConstant.ENTER
+					+ "位置:" + path + DreamConstant.ENTER
+					+ "修改日期:"+ fileInfo.getFormateDate();
+		}else {
+			result = "名称:" + fileInfo.fileName + DreamConstant.ENTER
+					+ "类型:文件" + DreamConstant.ENTER
+					+ "位置:" + path + DreamConstant.ENTER
+					+ "大小:" + fileInfo.getFormatFileSize() + DreamConstant.ENTER
+					+ "修改日期:" + fileInfo.getFormateDate();
+		}
 		return result;
 	}
 	
@@ -675,7 +682,7 @@ public class FileInfoManager {
 	/**
 	 * auto rename
 	 * @param oldName
-	 * @return
+	 * @return newName
 	 */
 	public static String autoRename(String oldName){
 		String newName = "";
