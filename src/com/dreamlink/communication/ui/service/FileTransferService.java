@@ -308,7 +308,6 @@ public class FileTransferService extends Service implements OnFileTransportListe
 		super.onDestroy();
 		mSocketMgr.unregisterOnFileTransportListener(this);
 		unregisterReceiver(transferReceiver);
-		mSocketMgr.unregisterOnFileTransportListener(this);
 	}
 
 }
