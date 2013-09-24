@@ -192,6 +192,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 	public void onReceiveFile(FileReceiver fileReceiver) {
 		String fileName = fileReceiver.getFileTransferInfo().getFileName();
 		String sendUserName = fileReceiver.getSendUser().getUserName();
+		File file = null;
 		long fileSize = fileReceiver.getFileTransferInfo().getFileSize();
 		Log.d(TAG, "onReceiveFile:" + fileName + "," + sendUserName + ",size=" + fileSize);
 		//define a file to save the receive file
@@ -201,7 +202,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 		}
 		
 		String filePath = DreamConstant.DEFAULT_SAVE_FOLDER + File.separator +fileName;
-		File file = new File(filePath);
+		file = new File(filePath);
 		if (!file.exists()) {
 			try {
 				file.createNewFile();
@@ -217,7 +218,9 @@ public class FileTransferService extends Service implements OnFileTransportListe
 				fileName = FileInfoManager.autoRename(fileName);
 			}
 			filePath = DreamConstant.DEFAULT_SAVE_FOLDER + File.separator +fileName;
+			file = new File(filePath);
 		}
+		
 		
 		HistoryInfo historyInfo = new HistoryInfo();
 		historyInfo.setFile(file);
@@ -302,6 +305,7 @@ public class FileTransferService extends Service implements OnFileTransportListe
 	public void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
+		mSocketMgr.unregisterOnFileTransportListener(this);
 		unregisterReceiver(transferReceiver);
 	}
 

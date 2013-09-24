@@ -7,13 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.ListContextMenu;
-import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.PopupView;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
@@ -24,18 +21,17 @@ import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
 import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.media.MediaVideoFragment;
 import com.dreamlink.communication.util.Log;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -679,4 +675,5 @@ public class FileBrowserFragment extends BaseFragment implements
 			}
 		}
 	}
+	
 }
