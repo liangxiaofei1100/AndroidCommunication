@@ -10,9 +10,9 @@ import java.util.Map;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.MountManager;
-import com.dreamlink.communication.ui.PopupView;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
@@ -22,16 +22,17 @@ import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,6 +43,7 @@ import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -51,13 +53,15 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class FileBrowserFragment extends BaseFragment implements
-		OnClickListener, OnItemClickListener,PopupViewClickListener, OnScrollListener {
+		OnClickListener, OnItemClickListener,PopupViewClickListener, OnScrollListener, OnItemLongClickListener {
 	private static final String TAG = "FileBrowserFragment";
 
 	// 文件路径导航栏
 	private SlowHorizontalScrollView mNavigationBar = null;
 	// 显示所有文件
 	private ListView mFileListView = null;
+	private TextView mNoSDcardView;
+	private LinearLayout mNavBarLayout;
 
 	// sdcard & 手机存储 切换按钮
 	private ImageView mSwitchImageView;
@@ -75,29 +79,22 @@ public class FileBrowserFragment extends BaseFragment implements
 	private List<FileInfo> mFolderLists = new ArrayList<FileInfo>();
 	// save files
 	private List<FileInfo> mFileLists = new ArrayList<FileInfo>();
+	private List<Integer> mHomeList = new ArrayList<Integer>();
 
 	// 用来保存ListView中每个Item的图片，以便释放
 	public static Map<String, Bitmap> bitmapCaches = new HashMap<String, Bitmap>();
 
 	private Context mContext;
 
-	// get sdcard files flag
-	private boolean isFirst = true;
-
 	private File mCurrentFile = null;
 	private String mCurrentPath;
 
-	private DisplayImageOptions options;
-
 	// context menu
 	private int mCurrentPosition = -1;
-	// //popup view
-	// show select sdcard view
-	private PopupView mPopupView;
 	// save current sdcard type
 	private static int storge_type = -1;
 	// save current sdcard type path
-	private String current_root_path;
+	private String mCurrent_root_path;
 
 	//title views
 	private ImageView mTitleIcon;
@@ -107,6 +104,16 @@ public class FileBrowserFragment extends BaseFragment implements
 	private ImageView mHistoryView;
 	
 	private int mAppId = -1;
+	public static FileBrowserFragment mInstance = null;
+	private SharedPreferences sp = null;
+	
+	//two status
+	private static final int STATUS_FILE = 0;
+	private static final int STATUS_HOME = 1;
+	private int mStatus = STATUS_HOME;
+	
+	private String sdcard_path;
+	private String internal_path;
 	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
@@ -122,29 +129,40 @@ public class FileBrowserFragment extends BaseFragment implements
 		return f;
 	}
 	
+	private static final int MSG_UPDATE_UI = 0;
+	Handler mHandler = new Handler(){
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			case MSG_UPDATE_UI:
+				int size = msg.arg1;
+				mTitleNum.setText(getResources().getString(R.string.num_format, size));
+				break;
+			default:
+				break;
+			}
+		};
+	};
+	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		mInstance = this;
 	};
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		rootView = inflater.inflate(R.layout.ui_file_all, container, false);
+		rootView = inflater.inflate(R.layout.ui_file, container, false);
 		Log.d(TAG, "onCreateView");
 		mContext = getActivity();
-		getTitleVIews(rootView);
+		initTitleVIews(rootView);
 
-		mFileListView = (ListView) rootView.findViewById(R.id.file_listview);
-		if (mFileListView != null) {
-			mFileListView.setEmptyView(rootView
-					.findViewById(R.id.empty_textview));
-			mFileListView.setOnItemClickListener(this);
-			mFileListView.setOnScrollListener(this);
-			mFileListView.setOnCreateContextMenuListener(new ListContextMenu(
-					ListContextMenu.MENU_TYPE_FILE));
-		}
-
+		mFileListView = (ListView) rootView.findViewById(R.id.lv_file);
+		mFileListView.setOnItemClickListener(this);
+		mFileListView.setOnScrollListener(this);
+		mFileListView.setOnItemLongClickListener(this);
+		mNoSDcardView = (TextView) rootView.findViewById(R.id.tv_no_sdcard);
+		mNavBarLayout = (LinearLayout) rootView.findViewById(R.id.navigation_bar);
 		mNavigationBar = (SlowHorizontalScrollView) rootView
 				.findViewById(R.id.navigation_bar_view);
 		if (mNavigationBar != null) {
@@ -153,28 +171,8 @@ public class FileBrowserFragment extends BaseFragment implements
 			mTabManager = new TabManager();
 		}
 		mSwitchImageView = (ImageView) rootView
-				.findViewById(R.id.ram_select_imageview);
+				.findViewById(R.id.iv_home);
 		mSwitchImageView.setOnClickListener(this);
-
-		mFileInfoManager = new FileInfoManager(mContext);
-		mountManager = new MountManager();
-		
-		mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
-		mFileListView.setAdapter(mFileInfoAdapter);
-
-		// init
-		if (MountManager.NO_EXTERNAL_SDCARD.equals(MountManager.SDCARD_PATH)) {
-			mSwitchImageView.setVisibility(View.GONE);
-			doInternal();
-		} else {
-			if (MountManager.NO_INTERNAL_SDCARD.equals(MountManager.INTERNAL_PATH)) {
-				mSwitchImageView.setVisibility(View.GONE);
-			}
-			doSdcard();
-		}
-
-		mPopupView = new PopupView(mContext);
-		mPopupView.setOnPopupViewListener(this);
 
 		Log.d(TAG, "onCreate end");
 		return rootView;
@@ -182,12 +180,37 @@ public class FileBrowserFragment extends BaseFragment implements
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onActivityCreated(savedInstanceState);
+		
+		sp = mContext.getSharedPreferences(Extra.SHARED_PERFERENCE_NAME, Context.MODE_PRIVATE);
+		
+		mFileInfoManager = new FileInfoManager(mContext);
+		mountManager = new MountManager(getActivity());
+
+		sdcard_path = sp.getString(Extra.SDCARD_PATH, MountManager.NO_EXTERNAL_SDCARD);
+		internal_path = sp.getString(Extra.INTERNAL_PATH, MountManager.NO_INTERNAL_SDCARD);
+		Log.d(TAG, "sdcard_path:" + sdcard_path + "\n," + "internal_path:" + internal_path);
+		
+		mHomeList.clear();
+		// init
+		if (!MountManager.NO_INTERNAL_SDCARD.equals(internal_path)) {
+			mHomeList.add(MountManager.INTERNAL);
+		}
+		
+		if (!MountManager.NO_EXTERNAL_SDCARD.equals(sdcard_path)) {
+			mHomeList.add(MountManager.SDCARD);
+		} 
+		
+		if (mHomeList.size() <= 0) {
+			mNavBarLayout.setVisibility(View.GONE);
+			mNoSDcardView.setVisibility(View.VISIBLE);
+		}else {
+			goToHome();
+		}
 		
 	}
 
-	private void getTitleVIews(View view){
+	private void initTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.icon_transfer_history);
@@ -204,8 +227,9 @@ public class FileBrowserFragment extends BaseFragment implements
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.ram_select_imageview:
-			mPopupView.showAsDropDown(v);
+		case R.id.iv_home:
+			goToHome();
+			mTabManager.refreshTab(mCurrent_root_path, storge_type);
 			break;
 		case R.id.iv_refresh:
 			break;
@@ -223,6 +247,23 @@ public class FileBrowserFragment extends BaseFragment implements
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
+		if (mFileInfoAdapter.isHome) {
+			mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
+			mFileListView.setAdapter(mFileInfoAdapter);
+			mStatus = STATUS_FILE;
+			switch (mHomeList.get(position)) {
+			case MountManager.INTERNAL:
+				doInternal();
+				break;
+			case MountManager.SDCARD:
+				doSdcard();
+				break;
+			default:
+				break;
+			}
+			return;
+		}
+		
 		FileInfo fileInfo = mAllLists.get(position);
 		int top = view.getTop();
 		if (fileInfo.isDir) {
@@ -234,6 +275,69 @@ public class FileBrowserFragment extends BaseFragment implements
 			mFileInfoAdapter.setChecked(position, !checked);
 			mFileInfoAdapter.notifyDataSetChanged();
 		}
+	}
+	
+	@Override
+	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, final int position,
+			long arg3) {
+		if (mFileInfoAdapter.isHome) {
+			return false;
+		}
+		
+		final FileInfo fileInfo = mAllLists.get(position);
+		int resId = R.array.file_menu;
+		if (fileInfo.isDir) {
+			resId = R.array.folder_menu;
+		}
+		new AlertDialog.Builder(mContext)
+		.setTitle(fileInfo.fileName)
+		.setItems(resId, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				//暂时没想到什么好方法，实现文件和文件夹弹出不同菜单，先就这样
+				if (fileInfo.isDir) {
+					switch (which) {
+					case 0:
+						//info
+						mFileInfoManager.showInfoDialog(fileInfo);
+						break;
+					case 1:
+						//rename
+						showRenameDialog(fileInfo, position);
+						break;
+					}
+					return;
+				}
+				
+				switch (which) {
+				case 0:
+					//open
+					mFileInfoManager.openFile(fileInfo.filePath);
+					break;
+				case 1:
+					//send
+					FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
+					fileSendUtil.sendFile(fileInfo.filePath);
+					break;
+				case 2:
+					//delete
+					showDeleteDialog(fileInfo);
+					break;
+				case 3:
+					//info
+					mFileInfoManager.showInfoDialog(fileInfo);
+					break;
+				case 4:
+					//rename
+					showRenameDialog(fileInfo, position);
+					break;
+
+				default:
+					break;
+				}
+			}
+		}).create().show();
+		return true;
 	}
 
 	public void browserTo(File file) {
@@ -257,6 +361,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			mFileListView.setSelection(0);
 			
 			mFileInfoAdapter.selectAll(false);
+			updateUI(mAllLists.size());
 			mTabManager.refreshTab(mCurrentPath, storge_type);
 		} else {
 			Log.e(TAG, "It is a file");
@@ -297,38 +402,6 @@ public class FileBrowserFragment extends BaseFragment implements
 				}
 			}
 		}
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item
-				.getMenuInfo();
-		mCurrentPosition = menuInfo.position;
-		int position = menuInfo.position;
-		FileInfo fileInfo = mAllLists.get(position);
-		switch (item.getItemId()) {
-		case ListContextMenu.MENU_OPEN:
-			mFileInfoManager.openFile(fileInfo.filePath);
-			break;
-		case ListContextMenu.MENU_SEND:
-//			FileTransferInfo fileTransferInfo = new FileTransferInfo(new File(fileInfo.filePath));
-
-			FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-			fileSendUtil.sendFile(fileInfo.filePath);
-			break;
-		case ListContextMenu.MENU_DELETE:
-			showDeleteDialog(fileInfo);
-			break;
-		case ListContextMenu.MENU_INFO:
-			mFileInfoManager.showInfoDialog(fileInfo);
-			break;
-		case ListContextMenu.MENU_RENAME:
-			showRenameDialog(fileInfo, position);
-			break;
-		default:
-			break;
-		}
-		return super.onContextItemSelected(item);
 	}
 	
 	public void showRenameDialog(final FileInfo fileInfo, final int position){
@@ -472,7 +545,7 @@ public class FileBrowserFragment extends BaseFragment implements
 
 			curFilePath = initFileInfo;
 			if (curFilePath != null) {
-				String[] result = mountManager.getShowPath(curFilePath, type)
+				String[] result = mountManager.getShowPath(mCurrent_root_path, curFilePath, type)
 						.split(MountManager.SEPERATOR);
 				for (String string : result) {
 					// add string to tab
@@ -584,16 +657,16 @@ public class FileBrowserFragment extends BaseFragment implements
 				// mTabsHolder.addView(mBlankTab);
 
 				if (id == 0) {
-					curFilePath = current_root_path;
+					curFilePath = mCurrent_root_path;
 				} else {
-					String[] result = mountManager.getShowPath(curFilePath,
+					String[] result = mountManager.getShowPath(mCurrent_root_path, curFilePath,
 							type).split(MountManager.SEPERATOR);
 					StringBuilder sb = new StringBuilder();
 					for (int i = 0; i <= id; i++) {
 						sb.append(MountManager.SEPERATOR);
 						sb.append(result[i]);
 					}
-					curFilePath = current_root_path + sb.toString();
+					curFilePath = mCurrent_root_path + sb.toString();
 				}
 
 				int top = -1;
@@ -615,24 +688,24 @@ public class FileBrowserFragment extends BaseFragment implements
 	@Override
 	public void doInternal() {
 		storge_type = MountManager.INTERNAL;
-		if (MountManager.NO_INTERNAL_SDCARD.equals(MountManager.INTERNAL_PATH)) {
+		if (MountManager.NO_INTERNAL_SDCARD.equals(internal_path)) {
 			// 没有外部&内部sdcard
 			return;
 		}
-		current_root_path = MountManager.INTERNAL_PATH;
-		browserTo(new File(current_root_path));
+		mCurrent_root_path = internal_path;
+		browserTo(new File(mCurrent_root_path));
 	}
 
 	@Override
 	public void doSdcard() {
 		storge_type = MountManager.SDCARD;
-		current_root_path = MountManager.SDCARD_PATH;
-		if (current_root_path == null) {
+		mCurrent_root_path = sdcard_path;
+		if (mCurrent_root_path == null) {
 			// TODO Why MountManager.SDCARD_PATH is null?
 			Log.e(TAG, "MountManager.SDCARD_PATH = null.");
 			return;
 		}
-		browserTo(new File(current_root_path));
+		browserTo(new File(mCurrent_root_path));
 	}
 
 	@Override
@@ -657,7 +730,6 @@ public class FileBrowserFragment extends BaseFragment implements
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
-		// TODO Auto-generated method stub
 		// 注释：firstVisibleItem为第一个可见的Item的position，从0开始，随着拖动会改变
 		// visibleItemCount为当前页面总共可见的Item的项数
 		// totalItemCount为当前总共已经出现的Item的项数
@@ -678,6 +750,40 @@ public class FileBrowserFragment extends BaseFragment implements
 				delBitmap.recycle();
 				delBitmap = null;
 			}
+		}
+	}
+	
+	public void updateUI(int num){
+		Message message = mHandler.obtainMessage();
+		message.arg1 = num;
+		message.what = MSG_UPDATE_UI;
+		message.sendToTarget();
+	}
+	
+	public void goToHome(){
+		mStatus = STATUS_HOME;
+		mFileInfoAdapter = new FileInfoAdapter(mContext, true, mHomeList);
+		mFileListView.setAdapter(mFileInfoAdapter);
+		updateUI(mHomeList.size());
+	}
+	
+	public void onBackPressed(){
+		switch (mStatus) {
+		case STATUS_HOME:
+			getActivity().finish();
+			break;
+		case STATUS_FILE:
+			if (mCurrent_root_path.equals(mCurrentPath)) {
+				goToHome();
+				return;
+			}
+			
+			File parentFile = mCurrentFile.getParentFile();
+			browserTo(parentFile.getAbsoluteFile());
+			break;
+
+		default:
+			break;
 		}
 	}
 	

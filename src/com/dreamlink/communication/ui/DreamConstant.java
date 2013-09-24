@@ -42,6 +42,8 @@ public class DreamConstant {
 		
 		public static final String SHARED_PERFERENCE_NAME = "my_shared";
 		public static final String DEFAULT_SAVE_PATH = "DEFAULT_SAVE_PATH";
+		public static final String SDCARD_PATH = "sdcard_path";
+		public static final String INTERNAL_PATH = "internal_path";
 		
 		public static final String APP_ID = "app_id";
 		

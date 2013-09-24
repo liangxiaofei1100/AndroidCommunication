@@ -3,11 +3,15 @@ package com.dreamlink.communication.ui;
 import java.io.File;
 
 import com.dreamlink.communication.ui.DevMountInfo.DevInfo;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.util.Log;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Environment;
 
-/**
+/*
  * (PS:以下方法仅为个人理解，不能保证100%准确，因为没有足够的机器或者资料证明，仅根据Google nexus，phiee机器验证而得)
  * Q1：如何判断该手机是否有支持外置SDCARD？ </br>
  * A：猜测，目前无法得知是否正确，通过判断/etc/vold.fstab文件是否存在，如果不存在，表示不支持外置sdcard，存在表示支持sdcard  </br>
@@ -41,8 +45,10 @@ public class MountManager {
 	public static final int SDCARD = 1;
 	private DevMountInfo mDevMountInfo;
 	private DevInfo devInfo;
+	private SharedPreferences sp = null;
 	
-	public MountManager() {
+	public MountManager(Context context) {
+		sp = context.getSharedPreferences(Extra.SHARED_PERFERENCE_NAME, Context.MODE_PRIVATE);
 	}
 	
 	public void init() {
@@ -50,7 +56,7 @@ public class MountManager {
 
 		if (mDevMountInfo.isExistExternal()) {
 			Log.d(TAG, "isExistExternal");
-//			if (isSdcardMounted()) {
+			if (isSdcardMounted()) {
 				//可以肯定存在sdcard，支持外置sdcard
 				DevInfo exDevInfo = mDevMountInfo.getExternalInfo();
 				DevInfo interDevInfo = mDevMountInfo.getInternalInfo();
@@ -70,13 +76,13 @@ public class MountManager {
 				}
 				Log.d(TAG, "SDCARD_PATH=" + SDCARD_PATH);
 				Log.d(TAG, "INTERNAL_PATH=" + INTERNAL_PATH);
-//			} else {
-//				//不存在内置sdcard，而且外置sdcard也未挂载
-//				//不能这样做，因为有的内置sdcard，的状态时removed,这样做会有问题
-//				Log.e(TAG, "ther is no sdcard");
-//				INTERNAL_PATH = NO_INTERNAL_SDCARD;
-//				SDCARD_PATH = NO_EXTERNAL_SDCARD;
-//			}
+			} else {
+				//不存在内置sdcard，而且外置sdcard也未挂载
+				Log.e(TAG, "ther is no sdcard");
+				INTERNAL_PATH = NO_INTERNAL_SDCARD;
+				SDCARD_PATH = NO_EXTERNAL_SDCARD;
+			}
+			
 		} else {
 			//不支持外置sdcard
 			if (isSdcardMounted()) {
@@ -89,6 +95,10 @@ public class MountManager {
 				SDCARD_PATH = NO_EXTERNAL_SDCARD;
 			}
 		}
+		Editor editor = sp.edit();
+		editor.putString(Extra.SDCARD_PATH, SDCARD_PATH);
+		editor.putString(Extra.INTERNAL_PATH, INTERNAL_PATH);
+		editor.commit();
 	}
 	
 	/***
@@ -101,18 +111,8 @@ public class MountManager {
 		return Environment.MEDIA_MOUNTED.equals(state);
 	}
 	
-	public String getShowPath(String path,int type){
-		int len = -1;
-		switch (type) {
-		case INTERNAL:
-			len = INTERNAL_PATH.length();
-			break;
-		case SDCARD:
-			len = SDCARD_PATH.length();
-			break;
-		default:
-			break;
-		}
+	public String getShowPath(String rootPath, String path,int type){
+		int len = rootPath.length();
 		String result = path.substring(len);
 		Log.d(TAG, "getShowPath=" + result);
 		return result;
