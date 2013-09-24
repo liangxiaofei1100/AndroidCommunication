@@ -2,10 +2,9 @@ package com.dreamlink.communication.ui.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.dreamlink.communication.FileReceiver;
 import com.dreamlink.communication.FileReceiver.OnReceiveListener;
@@ -18,7 +17,6 @@ import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.app.AppInfo;
 import com.dreamlink.communication.ui.app.AppManager;
@@ -59,12 +57,11 @@ public class FileTransferService extends Service implements OnFileTransportListe
 	private UserManager mUserManager = null;
 	private PackageManager pm = null;
 	
-	private Map<Object, Uri> mTransferMap = new HashMap<Object, Uri>();
+	private Map<Object, Uri> mTransferMap = new ConcurrentHashMap<Object, Uri>();
 	private int mAppId = -1;
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -122,31 +119,35 @@ public class FileTransferService extends Service implements OnFileTransportListe
 	
 	
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.d(TAG, "FileTransferService.onStartCommand()");
-		
-		//register broadcast
+	public void onCreate() {
+		Log.d(TAG, "onCreate");
+		super.onCreate();
+		// register broadcast
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Intent.ACTION_PACKAGE_ADDED);
 		filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
 		filter.addDataScheme("package");
-		
+
 		IntentFilter filter2 = new IntentFilter(DreamConstant.SEND_FILE_ACTION);
-		
+
 		registerReceiver(transferReceiver, filter);
 		registerReceiver(transferReceiver, filter2);
-		
+
 		mNotice = new Notice(this);
 		mFileInfoManager = new FileInfoManager(this);
 		mHistoryManager = new HistoryManager(this);
 		mSocketMgr = SocketCommunicationManager.getInstance(this);
-		mAppId = AppUtil.getAppID(getApplication());
+		mAppId = AppUtil.getAppID(this);
 		Log.d(TAG, "mappid=" + mAppId);
 		mSocketMgr.registerOnFileTransportListener(this, mAppId);
-		
+
 		mUserManager = UserManager.getInstance();
 		pm = getPackageManager();
-		
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.d(TAG, "FileTransferService.onStartCommand()");
 		return super.onStartCommand(intent, flags, startId);
 	}
 	
@@ -303,10 +304,11 @@ public class FileTransferService extends Service implements OnFileTransportListe
 	
 	@Override
 	public void onDestroy() {
-		// TODO Auto-generated method stub
+		Log.d(TAG, "onDestroy");
 		super.onDestroy();
 		mSocketMgr.unregisterOnFileTransportListener(this);
 		unregisterReceiver(transferReceiver);
+		mSocketMgr.unregisterOnFileTransportListener(this);
 	}
 
 }

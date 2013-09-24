@@ -9,6 +9,7 @@ import com.dreamlink.communication.util.Log;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Environment;
@@ -189,5 +190,12 @@ public class HistoryActivity extends FragmentActivity implements
 	@Override
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 
+	}
+	
+	public static void launch(Context context){
+		Intent intent = new Intent();
+		intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+		intent.setClass(context, HistoryActivity.class);
+		context.startActivity(intent);
 	}
 }

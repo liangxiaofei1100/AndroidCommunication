@@ -48,7 +48,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		//考虑到内存消耗问题，缓存页面不应该设置这么大
 		viewPager.setOffscreenPageLimit(1);
 		
-		int appid = AppUtil.getAppID(getApplication());
+		int appid = AppUtil.getAppID(this);
 		List<Fragment> fragments = new ArrayList<Fragment>();
 		
 		fragments.add(TiandiFragment.newInstance(appid));//朝颜天地

@@ -1,4 +1,4 @@
-package com.dreamlink.communication.ui;
+package com.dreamlink.communication.ui.file;
 
 
 public class Command {

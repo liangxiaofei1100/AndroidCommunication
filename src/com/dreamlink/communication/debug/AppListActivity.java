@@ -9,20 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.R.id;
-import com.dreamlink.communication.R.layout;
-import com.dreamlink.communication.R.menu;
-import com.dreamlink.communication.wifip2p.WifiDirectManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -30,12 +23,10 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 /**
- * Get all test app.
- * 
- * TODO this activity is old code.
+ * Get all activity with the specific action set by {@link #setAction(String)}.
  * 
  */
-public class AppListActivity extends Activity implements OnItemClickListener {
+public abstract class AppListActivity extends Activity implements OnItemClickListener {
 	private static final String TAG = "AppListActivity";
 	private Context mContext;
 	/**
@@ -51,10 +42,6 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 
 	private ListView mListView;
 	private SimpleAdapter mAdapter;
-	private boolean mIsServer = false;
-	/** Flag for server or client. True means server, False means client. */
-	public static final String EXTRA_IS_SERVER = "isServer";
-	private boolean WifiP2p = false;
 	/**
 	 * Action for find apps. Add a intent-filter including the action in
 	 * manifest. Example as below: <intent-filter> <action
@@ -63,7 +50,7 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 	 * <category android:name="android.intent.category.DEFAULT" />
 	 * </intent-filter>
 	 */
-	public static final String ACTION_APP = "com.dreamlink.communication.action.testapp";
+	private String ACTION_APP = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,11 +59,6 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 		setContentView(R.layout.activity_app_list);
 
 		initView();
-
-		Intent intent = getIntent();
-		if (intent != null) {
-			mIsServer = intent.getBooleanExtra(EXTRA_IS_SERVER, false);
-		}
 	}
 
 	private void initView() {
@@ -88,6 +70,14 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 		mListView.setAdapter(mAdapter);
 		mListView.setOnItemClickListener(this);
 	}
+	
+	/**
+	 * Set action before {@link #onCreate(Bundle)}.
+	 * @param action
+	 */
+	public void setAction(String action){
+		ACTION_APP = action;
+	}
 
 	/**
 	 * Get all apps.
@@ -95,7 +85,7 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 	private void initData() {
 		mApps = new ArrayList<Map<String, Object>>();
 
-		Intent appIntent = new Intent(AppListActivity.ACTION_APP, null);
+		Intent appIntent = new Intent(ACTION_APP, null);
 		PackageManager pm = getPackageManager();
 		List<ResolveInfo> list = pm.queryIntentActivities(appIntent, 0);
 		if (list != null) {
@@ -156,41 +146,6 @@ public class AppListActivity extends Activity implements OnItemClickListener {
 	public void onItemClick(AdapterView<?> arg0, View view, int position,
 			long arg3) {
 		Intent intent = (Intent) mApps.get(position).get(KEY_INTENT);
-		intent.putExtra(EXTRA_IS_SERVER, mIsServer);
 		startActivity(intent);
 	}
-
-	@Override
-	public void finish() {
-		super.finish();
-//		SocketCommunicationManager.getInstance(this).closeAllCommunication();
-//		if (Build.VERSION.SDK_INT >= 14) {
-//			WifiDirectManager manager = new WifiDirectManager(this);
-//			manager.stopConnect();
-//		}
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.app_list, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.menu_network_status:
-			showNetworkStatus();
-			break;
-		default:
-			break;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-
-	private void showNetworkStatus() {
-		NetworkStatus status = new NetworkStatus(mContext);
-		status.show();
-	}
-
 }

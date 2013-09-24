@@ -292,9 +292,19 @@ public class HistoryCursorAdapter extends CursorAdapter {
 									switch (which) {
 									case 0:
 										// send
-										FileTransferUtil fileSendUtil = new FileTransferUtil(
-												mContext);
-										fileSendUtil.sendFile(filePath);
+										File file = new File(filePath);
+										if (!file.exists()) {
+											Log.d(TAG,
+													"Send file fail. File is not exits. "
+															+ filePath);
+											mNotice.showToast("文件不存在");
+											break;
+										} else {
+											FileTransferUtil fileSendUtil = new FileTransferUtil(
+													mContext);
+											fileSendUtil.sendFile(filePath);
+										}
+										
 										break;
 									case 1:
 										// open
@@ -314,14 +324,12 @@ public class HistoryCursorAdapter extends CursorAdapter {
 	}
 
 	/**
-	 * Delete file and record in DB.
+	 * Delete the transfer record in DB.
 	 * @param file
 	 * @param id
 	 */
 	private void delete(File file, int id) {
-		if (file.exists()) {
-			file.delete();
-		}
+		// Do not delete file current.
 		String selection = MetaData.History._ID + "=" + id;
 		int result = mContext.getContentResolver().delete(
 				MetaData.History.CONTENT_URI, selection, null);

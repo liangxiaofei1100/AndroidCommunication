@@ -627,6 +627,11 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void doSdcard() {
 		storge_type = MountManager.SDCARD;
 		current_root_path = MountManager.SDCARD_PATH;
+		if (current_root_path == null) {
+			// TODO Why MountManager.SDCARD_PATH is null?
+			Log.e(TAG, "MountManager.SDCARD_PATH = null.");
+			return;
+		}
 		browserTo(new File(current_root_path));
 	}
 

@@ -1,16 +1,14 @@
 package com.dreamlink.communication.debug;
 
+import android.app.Activity;
 import android.os.Bundle;
 
-public class DebugActivity extends AppListActivity{
-
+public class FileTransferServiceStatus extends Activity{
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		setAction("com.dreamlink.communication.action.debug");
 		super.onCreate(savedInstanceState);
-		setTitle("Debug");
 		
 	}
-	
-	
+
 }
