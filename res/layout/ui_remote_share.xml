@@ -102,14 +102,22 @@
             android:layout_alignParentBottom="true"
             android:gravity="center"
             android:orientation="vertical" >
-
+            
             <Button
-                android:id="@+id/create_share"
+                android:id="@+id/start_server_button"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text="@string/create_remote_share"
-                android:background="@drawable/button_bg" />
+                android:background="@drawable/button_bg"
+                android:text="@string/create_remote_share" />
+
+            <Button
+                android:id="@+id/stop_server_button"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:background="@drawable/button_bg"
+                android:text="@string/stop_file_share" />
         </LinearLayout>
 
         <ListView
@@ -120,15 +128,5 @@
             android:layout_below="@+id/serverlist_text" >
         </ListView>
     </RelativeLayout>
-
-    <!-- server ui -->
-
-    <Button
-        android:id="@+id/stop_server_button"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="@string/stop_file_share" 
-        android:background="@drawable/button_bg"/>
 
 </RelativeLayout>

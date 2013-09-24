@@ -59,6 +59,7 @@ public class RemoteShareServerService extends Service implements
 		Log.d(TAG, "oncreate, appid:" + mAppId);
 		mCommunicationManager.registerOnCommunicationListenerExternal(this,
 				mAppId);
+		sendMessageToDeclareServer();
 	}
 
 	@Override
@@ -66,7 +67,7 @@ public class RemoteShareServerService extends Service implements
 		super.onDestroy();
 		Log.d(TAG, "onDestroy");
 		mIsStarted = false;
-
+		sendMessageToDelareServerStop();
 		mCommunicationManager.unregisterOnCommunicationListenerExternal(this);
 	}
 
@@ -106,14 +107,22 @@ public class RemoteShareServerService extends Service implements
 			mIsStopSendFile = true;
 			break;
 		case Cmd.GET_REMOTE_SHARE_SERVICE:
-			String return_cmd = Cmd.RETURN_REMOTE_SHARE_SERVICE + "";
-			mCommunicationManager.sendMessageToAll(return_cmd.getBytes(),
-					mAppId);
+			sendMessageToDeclareServer();
 			break;
 
 		default:
 			break;
 		}
+	}
+
+	private void sendMessageToDeclareServer() {
+		String return_cmd = Cmd.RETURN_REMOTE_SHARE_SERVICE + "";
+		mCommunicationManager.sendMessageToAll(return_cmd.getBytes(), mAppId);
+	}
+	
+	private void sendMessageToDelareServerStop() {
+		String return_cmd = Cmd.REMOTE_SHARE_SERVICE_STOPPED + "";
+		mCommunicationManager.sendMessageToAll(return_cmd.getBytes(), mAppId);
 	}
 
 	/**
@@ -131,7 +140,7 @@ public class RemoteShareServerService extends Service implements
 
 	/**
 	 * Send file use SocketCommunicationManager.
-	 *
+	 * 
 	 */
 	private class SendFileThread extends Thread {
 		private File mFile;

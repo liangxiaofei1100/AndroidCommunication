@@ -24,6 +24,7 @@ import com.dreamlink.communication.ui.dialog.FileTransferDialog;
 import com.dreamlink.communication.ui.dialog.FileTransferDialog.FileTransferOnClickListener;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.ServiceUtil;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -62,14 +63,14 @@ public class RemoteShareActivity extends Activity implements
 	// show file list
 	private ListView mListView = null;
 	private ImageButton mRootViewBtn, mUpDirBtn, mRefreshBtn;
-	private RelativeLayout mListLayout;
+	private RelativeLayout mRemoteFileListLayout;
 	private LinearLayout mLoadingLayout;
 	// show tip msg
 	private TextView mNoConnectionTips = null;
 	private Button mStopServerBtn;
 	// show remote share server list
 	private RelativeLayout mServerListLayout;
-	private Button mCreateServerBtn;
+	private Button mStartServerBtn;
 	private ListView mServerListView;
 	private RemoteShareAdapter mShareAdapter = null;
 	private List<User> mRemoteShareList = new ArrayList<User>();
@@ -132,6 +133,8 @@ public class RemoteShareActivity extends Activity implements
 	/** current connect user */
 	private User mCurrentConnectUser;
 
+	private int mAppId = 0;
+
 	private Handler uiHandler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
@@ -144,7 +147,7 @@ public class RemoteShareActivity extends Activity implements
 			case USER_DISCONNECTED:
 				mNoConnectionTips.setVisibility(View.VISIBLE);
 				mServerListLayout.setVisibility(View.INVISIBLE);
-				mListLayout.setVisibility(View.INVISIBLE);
+				mRemoteFileListLayout.setVisibility(View.INVISIBLE);
 				mStopServerBtn.setVisibility(View.INVISIBLE);
 				break;
 			case UPDATE_SERVER_LIST:
@@ -156,8 +159,6 @@ public class RemoteShareActivity extends Activity implements
 			}
 		};
 	};
-
-	private int mAppId = 0;
 
 	@Override
 	protected void onCreate(Bundle arg0) {
@@ -176,42 +177,89 @@ public class RemoteShareActivity extends Activity implements
 
 		initTitle();
 		initView();
-		updateConnectionStatus();
+
+		updateNetworkStatus();
+		updateShareServerServiceStatus();
+		updateRemoteFileList();
+		updateRemoteServerList();
 
 		Log.d(TAG, "onCreate end");
+	}
+
+	/**
+	 * Send message to search share server.
+	 */
+	private void updateRemoteServerList() {
+		if (mSocketMgr.isConnected()) {
+			mLoadingLayout.setVisibility(View.VISIBLE);
+			getShareServerList();
+		} else {
+			Log.d(TAG, "updateRemoteServerList not connection.");
+		}
+	}
+
+	/**
+	 * If connect to remote server, show remote file list, hide remote server
+	 * list and start stop button. If not connected to remote server, hide
+	 * remote file list, show remote server list and start/stop server button.
+	 */
+	private void updateRemoteFileList() {
+		if (mCurrentConnectUser != null) {
+			// Connect to remote share server.
+			mRemoteFileListLayout.setVisibility(View.VISIBLE);
+			mServerListLayout.setVisibility(View.INVISIBLE);
+		} else {
+			// Not connect to remote share server.
+			mRemoteFileListLayout.setVisibility(View.INVISIBLE);
+			mServerListLayout.setVisibility(View.VISIBLE);
+		}
 	}
 
 	/**
 	 * If has connected to network, show file share server list. If not
 	 * connected to network, show "No connection" tips.
 	 */
-	private void updateConnectionStatus() {
+	private void updateNetworkStatus() {
 		if (!mSocketMgr.isConnected()) {
 			mNoConnectionTips.setVisibility(View.VISIBLE);
-			mListLayout.setVisibility(View.INVISIBLE);
+			mRemoteFileListLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.INVISIBLE);
-			mStopServerBtn.setVisibility(View.INVISIBLE);
 		} else {
 			mNoConnectionTips.setVisibility(View.INVISIBLE);
-			mListLayout.setVisibility(View.INVISIBLE);
+			mRemoteFileListLayout.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.VISIBLE);
-			mStopServerBtn.setVisibility(View.INVISIBLE);
-			mLoadingLayout.setVisibility(View.VISIBLE);
-			getShareServerList();
+		}
+	}
+
+	/**
+	 * If server is running, show stop button. If server is not running, show
+	 * start button.
+	 */
+	private void updateShareServerServiceStatus() {
+		if (mSocketMgr.isConnected()
+				&& ServiceUtil.isServiceRunning(mContext,
+						RemoteShareServerService.class.getName())) {
+			// Service is running.
+			mStopServerBtn.setVisibility(View.VISIBLE);
+			mStartServerBtn.setVisibility(View.GONE);
+		} else {
+			// Service is not running.
+			mStopServerBtn.setVisibility(View.GONE);
+			mStartServerBtn.setVisibility(View.VISIBLE);
 		}
 	}
 
 	private void initView() {
 		mListView = (ListView) findViewById(R.id.file_listview);
-		mListLayout = (RelativeLayout) findViewById(R.id.list_layout);
+		mRemoteFileListLayout = (RelativeLayout) findViewById(R.id.list_layout);
 		mLoadingLayout = (LinearLayout) findViewById(R.id.loading_layout);
 		mNoConnectionTips = (TextView) findViewById(R.id.tv_no_connection_tips);
 		mStopServerBtn = (Button) findViewById(R.id.stop_server_button);
 		mStopServerBtn.setOnClickListener(this);
 
 		mServerListLayout = (RelativeLayout) findViewById(R.id.remote_share_server_list);
-		mCreateServerBtn = (Button) findViewById(R.id.create_share);
-		mCreateServerBtn.setOnClickListener(this);
+		mStartServerBtn = (Button) findViewById(R.id.start_server_button);
+		mStartServerBtn.setOnClickListener(this);
 		mServerListView = (ListView) findViewById(R.id.server_listview);
 		mServerListView.setOnItemClickListener(this);
 		mShareAdapter = new RemoteShareAdapter(mContext, mRemoteShareList);
@@ -290,11 +338,12 @@ public class RemoteShareActivity extends Activity implements
 
 			mNoConnectionTips.setVisibility(View.INVISIBLE);
 			mServerListLayout.setVisibility(View.INVISIBLE);
-			mListLayout.setVisibility(View.VISIBLE);
+			mRemoteFileListLayout.setVisibility(View.VISIBLE);
 			mStopServerBtn.setVisibility(View.INVISIBLE);
 			break;
 		case R.id.file_listview:
-			// Click a file to browse the file's sub directory. Process as below：
+			// Click a file to browse the file's sub directory. Process as
+			// below：
 			// 1. Client send LS command to server.
 			// 2. Server return all the folders and files about the path to
 			// client.
@@ -346,33 +395,31 @@ public class RemoteShareActivity extends Activity implements
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.iv_refresh:
-			updateConnectionStatus();
+			updateNetworkStatus();
+			updateRemoteFileList();
+			if (mRemoteFileListLayout.getVisibility() != View.VISIBLE) {
+				// Not connect to remote server, update server list.
+				updateShareServerServiceStatus();
+				updateRemoteServerList();
+			}
 			break;
 
 		case R.id.iv_history:
 			HistoryActivity.launch(mContext);
 			break;
 
-		case R.id.create_share:
+		case R.id.start_server_button:
 			Intent intent2 = new Intent(mContext,
 					RemoteShareServerService.class);
-			intent2.putExtra("app_id", mAppId);
 			startService(intent2);
+			updateShareServerServiceStatus();
 
-			mNoConnectionTips.setVisibility(View.INVISIBLE);
-			mServerListLayout.setVisibility(View.INVISIBLE);
-			mListLayout.setVisibility(View.INVISIBLE);
-			mStopServerBtn.setVisibility(View.VISIBLE);
 			break;
 		case R.id.stop_server_button:
 			Intent stopIntent = new Intent(mContext,
 					RemoteShareServerService.class);
 			stopService(stopIntent);
-
-			mNoConnectionTips.setVisibility(View.INVISIBLE);
-			mServerListLayout.setVisibility(View.VISIBLE);
-			mListLayout.setVisibility(View.INVISIBLE);
-			mStopServerBtn.setVisibility(View.INVISIBLE);
+			updateShareServerServiceStatus();
 			break;
 
 		case R.id.root_view:
@@ -419,12 +466,29 @@ public class RemoteShareActivity extends Activity implements
 			try {
 				cmd = Integer.parseInt(new String(msg).substring(0, 3));
 				if (Cmd.RETURN_REMOTE_SHARE_SERVICE == cmd) {
-					mRemoteShareList.add(sendUser);
+					Log.d(TAG, "Found a server. " + sendUser.getUserName());
+					synchronized (this) {
+						mRemoteShareList.add(sendUser);
+					}
 					uiHandler.sendMessage(uiHandler
 							.obtainMessage(UPDATE_SERVER_LIST));
+				} else if (Cmd.REMOTE_SHARE_SERVICE_STOPPED == cmd) {
+					Log.d(TAG, "A server stopped. " + sendUser.getUserName());
+					synchronized (this) {
+						for (User user : mRemoteShareList) {
+							if (user.getUserID() == sendUser.getUserID()) {
+								mRemoteShareList.remove(user);
+								break;
+							}
+						}
+						uiHandler.sendMessage(uiHandler
+								.obtainMessage(UPDATE_SERVER_LIST));
+					}
 				}
 			} catch (NumberFormatException e) {
-				Log.e(TAG, "onReceiveMessage receive server list message error." + e);
+				Log.e(TAG,
+						"onReceiveMessage receive server list message error."
+								+ e);
 			}
 			return;
 		} else if (mCurrentConnectUser.getUserID() != sendUser.getUserID()) {
@@ -754,6 +818,7 @@ public class RemoteShareActivity extends Activity implements
 
 	private void getShareServerList() {
 		mRemoteShareList.clear();
+		mShareAdapter.notifyDataSetChanged();
 		String search_cmd = Cmd.GET_REMOTE_SHARE_SERVICE + "";
 		sendMsgToAll(search_cmd);
 	}
@@ -799,33 +864,20 @@ public class RemoteShareActivity extends Activity implements
 		case R.id.menu_disconnect:
 			// 断开连接
 			mCurrentConnectUser = null;
-
-			mNoConnectionTips.setVisibility(View.INVISIBLE);
-			mListLayout.setVisibility(View.INVISIBLE);
-			mServerListLayout.setVisibility(View.VISIBLE);
-			mStopServerBtn.setVisibility(View.INVISIBLE);
-
+			updateRemoteFileList();
 			mLoadingLayout.setVisibility(View.VISIBLE);
-
 			getShareServerList();
 			break;
-
 		default:
 			break;
 		}
 		return true;
 	}
 
-	private void updateUI(int status) {
-		mNoConnectionTips.setVisibility(View.INVISIBLE);
-		mServerListLayout.setVisibility(View.INVISIBLE);
-		mListLayout.setVisibility(View.INVISIBLE);
-		mStopServerBtn.setVisibility(View.VISIBLE);
-	}
-
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		mSocketMgr.unregisterOnCommunicationListenerExternal(this);
+		mCurrentConnectUser = null;
 	}
 }

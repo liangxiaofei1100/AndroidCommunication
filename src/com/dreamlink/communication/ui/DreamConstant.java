@@ -66,6 +66,8 @@ public class DreamConstant {
 		public static final int RETURN_REMOTE_SHARE_SERVICE = 107;
 		/**send file command*/
 		public static final int SEND_FILE = 108;
+		/**ask for get remote file share service*/
+		public static final int REMOTE_SHARE_SERVICE_STOPPED = 109;
 	}
 
 	public static final String MEDIA_AUDIO_ACTION = "intent.media.audio.action";
