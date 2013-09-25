@@ -75,10 +75,11 @@ public class FileTransferService extends Service implements OnFileTransportListe
 			if (DreamConstant.SEND_FILE_ACTION.equals(action)) {
 				bundle = intent.getExtras();
 				if (null != bundle) {
-					File file = (File) bundle.getSerializable(Extra.SEND_FILE);
-					Log.d(TAG, "bundle.file=" + file.getAbsolutePath());
-					List<User> userList = bundle.getParcelableArrayList(Extra.SEND_USER);
-					sendFile(file, userList);
+					List<String> pathLists = bundle.getStringArrayList(Extra.SEND_FILES);
+					List<User> userList = bundle.getParcelableArrayList(Extra.SEND_USERS);
+					for(String path : pathLists){
+						sendFile(path, userList);
+					}
 				}
 			}else if (Intent.ACTION_PACKAGE_ADDED.equals(action)) {
 				AppManager appManager = new AppManager(FileTransferService.this);
@@ -149,6 +150,11 @@ public class FileTransferService extends Service implements OnFileTransportListe
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(TAG, "FileTransferService.onStartCommand()");
 		return super.onStartCommand(intent, flags, startId);
+	}
+	
+	public void sendFile(String path, List<User> list){
+		File file = new File(path);
+		sendFile(file, list);
 	}
 	
 	public void sendFile(File file, List<User> list){

@@ -5,6 +5,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"
     >
     
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
     <string name="delete_confirm">删除确认</string>
     <string name="info">属性: <xliff:g id="info">%1$s</xliff:g></string>
     <string name="name">名称:<xliff:g id="name">%1$s</xliff:g></string>
@@ -150,4 +152,5 @@
      <string name="me">我</string>
      
      <string name="num_format">(<xliff:g id="num">%1$d</xliff:g>)</string>
+     <string name="transfer_all">全部发送(<xliff:g id="num">%1$d</xliff:g>)</string>
 </resources>

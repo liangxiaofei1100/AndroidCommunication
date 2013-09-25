@@ -37,8 +37,9 @@ public class DreamConstant {
 		public static final String COPY_PATH = "copy_path";
 		
 		public static final String SEND_FILE = "send_file";
+		public static final String SEND_FILES = "send_files";
 		public static final String RECEIVE_FILE = "receive_file";
-		public static final String SEND_USER ="send_user";
+		public static final String SEND_USERS ="send_users";
 		
 		public static final String SHARED_PERFERENCE_NAME = "my_shared";
 		public static final String DEFAULT_SAVE_PATH = "DEFAULT_SAVE_PATH";
