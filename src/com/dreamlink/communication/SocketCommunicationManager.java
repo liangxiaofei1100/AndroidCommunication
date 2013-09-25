@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -176,6 +177,15 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		}
 	}
 
+	public void unregisterOnCommunicationListenerExternal(int appId) {
+		for (Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
+				.entrySet()) {
+			if (entry.getValue() == appId) {
+				mOnCommunicationListenerExternals.remove(entry.getKey());
+			}
+		}
+	}
+
 	public void registerOnFileTransportListener(
 			OnFileTransportListener listener, int appID) {
 		Log.d(TAG, "registerOnFileTransportListener() appID = " + appID);
@@ -285,14 +295,15 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		for (Map.Entry<OnFileTransportListener, Integer> entry : mOnFileTransportListener
 				.entrySet()) {
 			if (entry.getValue() == appID) {
-				User sendUser = mUserManager
-						.getAllUser().get(sendUserID);
+				User sendUser = mUserManager.getAllUser().get(sendUserID);
 				if (sendUser == null) {
-					Log.e(TAG, "notfiyFileReceiveListeners cannot find send user, send user id = " + sendUserID);
+					Log.e(TAG,
+							"notfiyFileReceiveListeners cannot find send user, send user id = "
+									+ sendUserID);
 					return;
 				}
-				FileReceiver fileReceiver = new FileReceiver(sendUser, serverAddress,
-						serverPort, fileTransferInfo);
+				FileReceiver fileReceiver = new FileReceiver(sendUser,
+						serverAddress, serverPort, fileTransferInfo);
 				entry.getKey().onReceiveFile(fileReceiver);
 			}
 		}
@@ -517,8 +528,11 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		if (localUser.getUserID() == 0) {
 			return false;
 		} else if (UserManager.isManagerServer(localUser)) {
-			if (mCommunications.isEmpty()) {
+			if (mCommunications.isEmpty()
+					&& !SocketServer.getInstance().isServerStarted()) {
 				return false;
+			}else{
+				return true;
 			}
 		} else {
 			if (mCommunications.isEmpty()) {
@@ -589,24 +603,26 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * @param data
 	 */
 	public void notifyReceiveListeners(int sendUserID, int appID, byte[] data) {
-		int index = SocketCommunicationService.mCallBackList.beginBroadcast();
-		for (int i = 0; i < index; i++) {
-			int app_ip = (Integer) SocketCommunicationService.mCallBackList
-					.getBroadcastCookie(i);
-			if (app_ip == appID) {
-				OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.mCallBackList
-						.getBroadcastItem(i);
-				try {
-					l.onReceiveMessage(data,
-							mUserManager.getAllUser().get(sendUserID));
-				} catch (RemoteException e) {
-					Log.e(TAG,
-							"notifyReceiveListeners SocketCommunicationService listener error."
-									+ e);
-				}
-			}
-		}
-		SocketCommunicationService.mCallBackList.finishBroadcast();
+		// int index =
+		// SocketCommunicationService.mCallBackList.beginBroadcast();
+		// for (int i = 0; i < index; i++) {
+		// int app_ip = (Integer) SocketCommunicationService.mCallBackList
+		// .getBroadcastCookie(i);
+		// if (app_ip == appID) {
+		// OnCommunicationListenerExternal l = (OnCommunicationListenerExternal)
+		// SocketCommunicationService.mCallBackList
+		// .getBroadcastItem(i);
+		// try {
+		// l.onReceiveMessage(data,
+		// mUserManager.getAllUser().get(sendUserID));
+		// } catch (RemoteException e) {
+		// Log.e(TAG,
+		// "notifyReceiveListeners SocketCommunicationService listener error."
+		// + e);
+		// }
+		// }
+		// }
+		// SocketCommunicationService.mCallBackList.finishBroadcast();
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
 			if (entry.getValue() == appID) {
@@ -623,18 +639,20 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	@Override
 	public void onUserConnected(User user) {
 
-		int index = SocketCommunicationService.mCallBackList.beginBroadcast();
-		for (int i = 0; i < index; i++) {
-			OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.mCallBackList
-					.getBroadcastItem(i);
-			try {
-				l.onUserConnected(user);
-			} catch (RemoteException e) {
-				Log.e(TAG, "onUserConnected SocketCommunicationService error."
-						+ e);
-			}
-		}
-		SocketCommunicationService.mCallBackList.finishBroadcast();
+		// int index =
+		// SocketCommunicationService.mCallBackList.beginBroadcast();
+		// for (int i = 0; i < index; i++) {
+		// OnCommunicationListenerExternal l = (OnCommunicationListenerExternal)
+		// SocketCommunicationService.mCallBackList
+		// .getBroadcastItem(i);
+		// try {
+		// l.onUserConnected(user);
+		// } catch (RemoteException e) {
+		// Log.e(TAG, "onUserConnected SocketCommunicationService error."
+		// + e);
+		// }
+		// }
+		// SocketCommunicationService.mCallBackList.finishBroadcast();
 
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {
@@ -649,19 +667,21 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	@Override
 	public void onUserDisconnected(User user) {
 
-		int index = SocketCommunicationService.mCallBackList.beginBroadcast();
-		for (int i = 0; i < index; i++) {
-			OnCommunicationListenerExternal l = (OnCommunicationListenerExternal) SocketCommunicationService.mCallBackList
-					.getBroadcastItem(i);
-			try {
-				l.onUserDisconnected(user);
-			} catch (RemoteException e) {
-				Log.e(TAG,
-						"onUserDisconnected SocketCommunicationService error."
-								+ e);
-			}
-		}
-		SocketCommunicationService.mCallBackList.finishBroadcast();
+		// int index =
+		// SocketCommunicationService.mCallBackList.beginBroadcast();
+		// for (int i = 0; i < index; i++) {
+		// OnCommunicationListenerExternal l = (OnCommunicationListenerExternal)
+		// SocketCommunicationService.mCallBackList
+		// .getBroadcastItem(i);
+		// try {
+		// l.onUserDisconnected(user);
+		// } catch (RemoteException e) {
+		// Log.e(TAG,
+		// "onUserDisconnected SocketCommunicationService error."
+		// + e);
+		// }
+		// }
+		// SocketCommunicationService.mCallBackList.finishBroadcast();
 
 		for (Map.Entry<OnCommunicationListenerExternal, Integer> entry : mOnCommunicationListenerExternals
 				.entrySet()) {

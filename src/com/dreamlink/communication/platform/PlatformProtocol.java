@@ -133,6 +133,7 @@ public class PlatformProtocol {
 	 * 信息格式：cmdCode+info.信息长度在传送的时候会编码，这里避免这些数据重复
 	 * */
 	public byte[] encodePlatformProtocol(int cmdCode, byte[] sourceData) {
+		Log.e("ArbiterLiu", "encodePlatformProtocol--------*"+cmdCode);
 		byte[] target = ArrayUtil.int2ByteArray(cmdCode);
 		if (sourceData != null)
 			target = ArrayUtil.join(target, sourceData);
