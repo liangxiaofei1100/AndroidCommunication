@@ -205,14 +205,14 @@
         <LinearLayout
             android:id="@+id/ll_users_title"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="45dp"
             android:layout_alignParentTop="true"
             android:background="@color/main_title"
             android:gravity="center_vertical" >
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:layout_margin="10dp"
                 android:src="@drawable/logo" />
 
@@ -235,8 +235,8 @@
             android:orientation="vertical" >
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:src="@drawable/network_neighborhood_disconnect" />
 
             <TextView
