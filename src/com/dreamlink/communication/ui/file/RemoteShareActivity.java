@@ -35,6 +35,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -335,11 +336,7 @@ public class RemoteShareActivity extends Activity implements
 			mCurrentConnectUser = mRemoteShareList.get(position);
 			setTitle("已连接到" + mCurrentConnectUser.getUserName());
 			sendMsgToSingle(cmdMsg);
-
-			mNoConnectionTips.setVisibility(View.INVISIBLE);
-			mServerListLayout.setVisibility(View.INVISIBLE);
-			mRemoteFileListLayout.setVisibility(View.VISIBLE);
-			mStopServerBtn.setVisibility(View.INVISIBLE);
+			updateRemoteFileList();
 			break;
 		case R.id.file_listview:
 			// Click a file to browse the file's sub directory. Process as
@@ -859,14 +856,32 @@ public class RemoteShareActivity extends Activity implements
 	}
 
 	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (mRemoteFileListLayout.getVisibility() == View.VISIBLE) {
+				// If connected to a server, disconnect it.
+				disconnectServer();
+				return true;
+			} else {
+				return super.onKeyDown(keyCode, event);
+			}
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
+	private void disconnectServer() {
+		mCurrentConnectUser = null;
+		updateRemoteFileList();
+		mLoadingLayout.setVisibility(View.VISIBLE);
+		getShareServerList();
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_disconnect:
 			// 断开连接
-			mCurrentConnectUser = null;
-			updateRemoteFileList();
-			mLoadingLayout.setVisibility(View.VISIBLE);
-			getShareServerList();
+			disconnectServer();
 			break;
 		default:
 			break;
