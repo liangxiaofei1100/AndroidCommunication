@@ -20,7 +20,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.text.NoCopySpan.Concrete;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.dreamlink.communication.SocketCommunicationManager;
@@ -31,6 +30,7 @@ import com.dreamlink.communication.aidl.PlatformManagerCallback;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.lib.util.ArrayUtil;
 import com.dreamlink.communication.server.SocketServer;
+import com.dreamlink.communication.util.Log;
 
 @SuppressWarnings("unused")
 public class PlatformManager implements OnCommunicationListenerExternal {
@@ -194,7 +194,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			try {
 				callback.hostHasCreated(hostIo);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -247,7 +246,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 				entry.getValue().hostInfoChange(
 						ArrayUtil.objectToByteArray(allHostInfo));
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -371,7 +369,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			try {
 				callback.joinGroupResult(hostInfo, flag);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -419,7 +416,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 				callback.groupMemberUpdate(hostId,
 						ArrayUtil.objectToByteArray(tem));
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -513,7 +509,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			try {
 				callback.hasExitGroup(hostInfo.hostId);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -570,7 +565,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 				try {
 					callback.hasExitGroup(hostInfo.hostId);
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -705,7 +699,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 				try {
 					callback.startGroupBusiness(joinedGroup.get(hostId));
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -750,7 +743,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		data = ArrayUtil.join(tempData, data);
 		byte[] target = platformProtocol.encodePlatformProtocol(
 				platformProtocol.MESSAGE_CMD_CODE, data);
-		mSocketCommunicationManager.sendMessageToSingle(data, user, appId);
+		mSocketCommunicationManager.sendMessageToSingle(target, user, appId);
 	}
 
 	public void receiverData(byte[] data, User sendUser, boolean allFlag,
@@ -763,7 +756,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 					callback.receiverMessage(data, sendUser, allFlag,
 							joinedGroup.get(hostId));
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

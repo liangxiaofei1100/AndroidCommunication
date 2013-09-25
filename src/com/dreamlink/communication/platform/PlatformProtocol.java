@@ -3,17 +3,15 @@ package com.dreamlink.communication.platform;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
-
-import android.util.Log;
-
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.aidl.HostInfo;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.lib.util.ArrayUtil;
+import com.dreamlink.communication.util.Log;
 
 public class PlatformProtocol {
 
-	private PlatformManager mPlatformManagerService;
+	private PlatformManager mPlatformManager;
 	/**
 	 * 下面这些CMD不一定全部都会用
 	 * 
@@ -41,23 +39,22 @@ public class PlatformProtocol {
 	public final int GROUP_MEMBER_UPDATE_CMD_CODE = 11;
 	public final int GET_ALL_GROUP_MEMBER_CMD_CODE = 12;
 	public final int MESSAGE_CMD_CODE = 13;
-	public final int RECEIVER_MESSAGE_CMD_CODE = -13;
+	private final String TAG="ArbiterLiu-PlatformProtocol";
 
 	public PlatformProtocol(PlatformManager platformManagerService) {
-		mPlatformManagerService = platformManagerService;
+		mPlatformManager = platformManagerService;
 	}
 
 	public boolean decodePlatformProtocol(byte[] sourceData, User user) {
 		int leng = CMD_HEAD.getBytes().length;
 		String tem_head = new String(Arrays.copyOfRange(sourceData, 0, leng));
-		if (!CMD_HEAD.endsWith(tem_head)) {
+		if (!CMD_HEAD.equals(tem_head)) {
 			return false;
 		}
-
 		byte[] cmdByte = Arrays.copyOfRange(sourceData, leng, leng + 4);
 		leng += 4;
 		int cmdCode = ArrayUtil.byteArray2Int(cmdByte);
-		Log.e("ArbiterLiu", "***********************************" + cmdCode);
+		Log.d(TAG, "***********************************" + cmdCode);
 		byte[] data = Arrays.copyOfRange(sourceData, leng, sourceData.length);
 		switch (cmdCode) {
 		case GROUP_INFO_CHANGE_CMD_CODE:
@@ -114,9 +111,7 @@ public class PlatformProtocol {
 		case FINISH_GROUP_BUSINESS_CMD_CODE:
 			break;
 		case MESSAGE_CMD_CODE:
-			groupMessagePass(data, user);
-			break;
-		case RECEIVER_MESSAGE_CMD_CODE:
+			groupMessageCommunication(data, user);
 			break;
 		default:
 			break;
@@ -126,14 +121,14 @@ public class PlatformProtocol {
 
 	private void joinGroup(byte[] data, User user) {
 		int hostId = ArrayUtil.byteArray2Int(data);
-		mPlatformManagerService.requestJoinGroup(hostId, user);
+		mPlatformManager.requestJoinGroup(hostId, user);
 	}
 
 	/**
 	 * 信息格式：cmdCode+info.信息长度在传送的时候会编码，这里避免这些数据重复
 	 * */
 	public byte[] encodePlatformProtocol(int cmdCode, byte[] sourceData) {
-		Log.e("ArbiterLiu", "encodePlatformProtocol--------*"+cmdCode);
+		Log.d(TAG, "encodePlatformProtocol--------*"+cmdCode);
 		byte[] target = ArrayUtil.int2ByteArray(cmdCode);
 		if (sourceData != null)
 			target = ArrayUtil.join(target, sourceData);
@@ -145,9 +140,9 @@ public class PlatformProtocol {
 		try {
 			HostInfo hostInfo = (HostInfo) ArrayUtil.byteArrayToObject(data);
 			if (hostInfo != null) {
-				mPlatformManagerService.requestCreateHost(hostInfo);
+				mPlatformManager.requestCreateHost(hostInfo);
 			} else {
-				Log.e("ArbiterLiu", "createHost receiver data is exception");
+				Log.e(TAG, "createHost receiver data is exception");
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -157,9 +152,9 @@ public class PlatformProtocol {
 	private void createHostAck(byte[] data) {
 		HostInfo hostInfo = (HostInfo) ArrayUtil.byteArrayToObject(data);
 		if (hostInfo != null) {
-			mPlatformManagerService.createHostAck(hostInfo);
+			mPlatformManager.createHostAck(hostInfo);
 		} else {
-			Log.e("ArbiterLiu", "createHostAck receiver data is exception");
+			Log.e(TAG, "createHostAck receiver data is exception");
 		}
 	}
 
@@ -167,9 +162,9 @@ public class PlatformProtocol {
 		try {
 			HostInfo hostInfo = (HostInfo) ArrayUtil.byteArrayToObject(data);
 			if (hostInfo != null) {
-				mPlatformManagerService.updateHostInfo(hostInfo);
+				mPlatformManager.updateHostInfo(hostInfo);
 			} else {
-				Log.e("ArbiterLiu",
+				Log.e(TAG,
 						"hostChangeForManager receiver data is exception");
 			}
 		} catch (Exception e) {
@@ -182,15 +177,15 @@ public class PlatformProtocol {
 		ConcurrentHashMap<Integer, HostInfo> allHostInfo = (ConcurrentHashMap<Integer, HostInfo>) ArrayUtil
 				.byteArrayToObject(data);
 		if (allHostInfo != null) {
-			mPlatformManagerService.receiverAllHostInfo(allHostInfo);
+			mPlatformManager.receiverAllHostInfo(allHostInfo);
 		} else {
-			Log.e("ArbiterLiu", "hostChangeForUser receiver data is exception");
+			Log.e(TAG, "hostChangeForUser receiver data is exception");
 		}
 	}
 
 	private void getAllHostInfo(byte[] data, User user) {
 		int appId = ArrayUtil.byteArray2Int(data);
-		mPlatformManagerService.requestAllHost(appId, user);
+		mPlatformManager.requestAllHost(appId, user);
 	}
 
 	private void recevierJoinAck(byte[] data) {
@@ -198,9 +193,9 @@ public class PlatformProtocol {
 		HostInfo hostInfo = (HostInfo) ArrayUtil.byteArrayToObject(Arrays
 				.copyOfRange(data, 1, data.length));
 		if (flag == 1) {
-			mPlatformManagerService.receiverJoinAck(true, hostInfo);
+			mPlatformManager.receiverJoinAck(true, hostInfo);
 		} else {
-			mPlatformManagerService.receiverJoinAck(false, hostInfo);
+			mPlatformManager.receiverJoinAck(false, hostInfo);
 		}
 	}
 
@@ -210,9 +205,9 @@ public class PlatformProtocol {
 		ArrayList<Integer> userList = (ArrayList<Integer>) ArrayUtil
 				.byteArrayToObject(Arrays.copyOfRange(data, 4, data.length));
 		if (userList != null) {
-			mPlatformManagerService.receiverGroupMemberUpdat(hostId, userList);
+			mPlatformManager.receiverGroupMemberUpdat(hostId, userList);
 		} else {
-			Log.e("ArbiterLiu", "groupMemberUpdate receiver data is exception");
+			Log.e(TAG, "groupMemberUpdate receiver data is exception");
 		}
 
 	}
@@ -220,7 +215,7 @@ public class PlatformProtocol {
 	private void cancelHost(byte[] data, User user) {
 		try {
 			HostInfo hostInfo = (HostInfo) ArrayUtil.byteArrayToObject(data);
-			mPlatformManagerService.receiverCancelHost(hostInfo, user);
+			mPlatformManager.receiverCancelHost(hostInfo, user);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -230,7 +225,7 @@ public class PlatformProtocol {
 	private void removeUser(byte[] data) {
 		try {
 			HostInfo hostInfo = (HostInfo) ArrayUtil.byteArrayToObject(data);
-			mPlatformManagerService.receiverRemoveUser(hostInfo);
+			mPlatformManager.receiverRemoveUser(hostInfo);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -239,31 +234,31 @@ public class PlatformProtocol {
 	private void exitGroup(byte[] data, User user) {
 		try {
 			int hostId = ArrayUtil.byteArray2Int(data);
-			mPlatformManagerService.requestExitGroup(hostId, user);
+			mPlatformManager.requestExitGroup(hostId, user);
 		} catch (Exception e) {
 			// TODO: handle exception
-			Log.e("ArbiterLiu", "" + e.toString());
+			Log.e(TAG, "" + e.toString());
 		}
 	}
 
 	private void getGroupMember(byte[] data, User user) {
 		try {
 			int hostId = ArrayUtil.byteArray2Int(data);
-			mPlatformManagerService.requetsGetGroupMember(hostId, user);
+			mPlatformManager.requetsGetGroupMember(hostId, user);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
 	}
 
-	private void groupMessagePass(byte[] data, User user) {
+	private void groupMessageCommunication(byte[] data, User user) {
 		byte flag = data[0];
 		int hostId = ArrayUtil.byteArray2Int(Arrays.copyOfRange(data, 1, 5));
 		byte[] targetData = Arrays.copyOfRange(data, 5, data.length);
 		if (flag == 1) {
-			mPlatformManagerService
+			mPlatformManager
 					.receiverData(targetData, user, true, hostId);
 		} else {
-			mPlatformManagerService.receiverData(targetData, user, false,
+			mPlatformManager.receiverData(targetData, user, false,
 					hostId);
 		}
 	}
