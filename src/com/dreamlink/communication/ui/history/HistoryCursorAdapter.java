@@ -386,7 +386,6 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		mDeleteOnClick.setId(id);
 		mDeleteOnClick.setFile(file);
 		new AlertDialog.Builder(mContext)
-		.setIcon(R.drawable.ic_delete)
         .setTitle(R.string.delete_history_msg)
         .setSingleChoiceItems(resId, defaultSelectItem, mDeleteOnClick)
         .setPositiveButton(R.string.ok, mDeleteOnClick)
@@ -418,7 +417,6 @@ public class HistoryCursorAdapter extends CursorAdapter {
 			if (which >= 0) {
 				//如果单击的是列表项，保存索引
 				index = which;
-				System.out.println("index=" + index);
 			}else {
 				//单击的是按钮，这里只可能是确定按钮
 				switch (index) {
