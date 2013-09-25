@@ -52,7 +52,9 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
+                android:scaleType="fitCenter"
                 android:src="@drawable/icon_refresh_normal" />
+
         </LinearLayout>
 
         <ListView
