@@ -277,6 +277,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			long id) {
 		if (mFileInfoAdapter.isHome) {
 			mNavBarLayout.setVisibility(View.VISIBLE);
+			mRefreshView.setVisibility(View.VISIBLE);
 			mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
 			mFileListView.setAdapter(mFileInfoAdapter);
 			mStatus = STATUS_FILE;
@@ -819,6 +820,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void goToHome(){
 		mStatus = STATUS_HOME;
 		mNavBarLayout.setVisibility(View.GONE);
+		mRefreshView.setVisibility(View.GONE);
 		mFileInfoAdapter = new FileInfoAdapter(mContext, true, mHomeList);
 		mFileListView.setAdapter(mFileInfoAdapter);
 		updateUI(mHomeList.size());
