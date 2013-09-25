@@ -121,6 +121,14 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		
 		initTitleVIews(rootView);
 		
+		Log.d(TAG, "onCreate end");
+		
+		return rootView;
+	}
+	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		mScan = new MediaInfoManager(mContext);
 		
 		if (null != mVideosTask && mVideosTask.getStatus() == AsyncTask.Status.RUNNING) {
@@ -133,15 +141,6 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 				
 		VideoContent videoContent  = new VideoContent(new Handler());
 		getActivity().getContentResolver().registerContentObserver(mScan.videoUri, true, videoContent);
-		Log.d(TAG, "onCreate end");
-		
-		return rootView;
-	}
-	
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		super.onActivityCreated(savedInstanceState);
 	}
 	
 	private void initTitleVIews(View view){
