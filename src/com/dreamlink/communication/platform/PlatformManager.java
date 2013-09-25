@@ -576,6 +576,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	}
 
 	public void getGroupUser(HostInfo hostInfo) {
+		if (!joinedGroup.containsKey(hostInfo.hostId)) {
+			return;
+		}
 		if (userManager.getLocalUser().getUserID() == hostInfo.ownerID) {
 			receiverGroupMemberUpdat(hostInfo.hostId,
 					groupMember.get(hostInfo.hostId));
@@ -761,6 +764,22 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 				}
 			}
 		}
+	}
+
+	/** this is for application ,when they do not save the joined host */
+	public ArrayList<HostInfo> getJoinedHost(int appId) {
+		ArrayList<HostInfo> temp = new ArrayList<HostInfo>();
+		if (appId == 0) {
+			for (Entry<Integer, HostInfo> entry : joinedGroup.entrySet()) {
+				temp.add(entry.getValue());
+			}
+		} else {
+			for (Entry<Integer, HostInfo> entry : joinedGroup.entrySet()) {
+				if (entry.getValue().app_id == appId)
+					temp.add(entry.getValue());
+			}
+		}
+		return temp;
 	}
 
 	@Override

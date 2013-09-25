@@ -81,74 +81,69 @@ public class SocketCommunicationService extends Service {
 		@Override
 		public void createHost(String arg0, String arg1, int arg2, int arg3)
 				throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.createHost(arg0, arg1, arg2, arg3);
 
 		}
 
 		@Override
 		public void exitGroup(HostInfo arg0) throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.exitGroup(arg0);
 		}
 
 		@Override
 		public void getAllHost(int arg0) throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.getAllHost(arg0);
 		}
 
 		@Override
 		public void getGroupUser(HostInfo arg0) throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.getGroupUser(arg0);
 		}
 
 		@Override
 		public void joinGroup(HostInfo arg0) throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.joinGroup(arg0);
 		}
 
 		@Override
 		public void removeGroupMember(int arg0, int arg1)
 				throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.removeGroupMember(arg0, arg1);
 		}
 
 		@Override
 		public void sendDataAll(byte[] arg0, HostInfo arg1)
 				throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.sendDataAll(arg0, arg1);
 		}
 
 		@Override
 		public void sendDataSingle(byte[] arg0, HostInfo arg1, User arg2)
 				throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.sendDataSingle(arg0, arg1, arg2);
 		}
 
 		@Override
 		public void startGroupBusiness(int arg0) throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.startGroupBusiness(arg0);
 		}
 
 		@Override
 		public void regitserPlatformCallback(PlatformManagerCallback arg0,
 				int arg1) throws RemoteException {
-			// TODO Auto-generated method stub
 			if (arg0 != null)
 				mPlatformManager.register(arg0, arg1);
 		}
 
 		@Override
 		public void unregitserPlatformCallback(int arg0) throws RemoteException {
-			// TODO Auto-generated method stub
 			mPlatformManager.unregister(arg0);
+		}
+
+		@Override
+		public List<HostInfo> getJoinedHostInfo(int arg0)
+				throws RemoteException {
+			return mPlatformManager.getJoinedHost(arg0);
 		}
 
 	}
