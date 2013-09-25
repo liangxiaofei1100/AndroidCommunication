@@ -15,19 +15,20 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/layout_title"
+        android:adjustViewBounds="true"
         android:src="@drawable/tiandi_logo" />
 
     <LinearLayout
         android:id="@+id/ll_money_title"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="45dp"
         android:layout_below="@+id/iv_logo"
         android:background="@color/main_title"
         android:gravity="center_vertical" >
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_margin="10dp"
             android:src="@drawable/logo" />
 
@@ -87,14 +88,14 @@
     <LinearLayout
         android:id="@+id/ll_game_title"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="45dp"
         android:layout_below="@+id/rl_money"
         android:background="@color/main_title"
         android:gravity="center_vertical" >
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_margin="10dp"
             android:src="@drawable/logo" />
 

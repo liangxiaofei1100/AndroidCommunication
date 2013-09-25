@@ -71,7 +71,7 @@ public class SettingsFragment extends BaseFragment implements View.OnClickListen
 		RelativeLayout titleLayout = (RelativeLayout) view
 				.findViewById(R.id.layout_title);
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.title_help);
+		mTitleIcon.setImageResource(R.drawable.title_setting);
 		
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText(R.string.settings_title);
