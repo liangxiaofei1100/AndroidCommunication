@@ -98,4 +98,13 @@
          <item>@string/menu_delete</item>
     </string-array>
     
+    <string-array name="send_history_delete_menu">
+        <item>删除记录</item>
+    </string-array>
+    
+    <string-array name="receive_history_delete_menu">
+        <item>删除记录</item>
+        <item>删除记录及文件</item>
+    </string-array>
+    
 </resources>

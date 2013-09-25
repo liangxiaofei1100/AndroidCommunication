@@ -242,6 +242,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			mTabManager.refreshTab(mCurrent_root_path, storge_type);
 			break;
 		case R.id.iv_refresh:
+			browserTo(mCurrentFile);
 			break;
 		case R.id.iv_history:
 			Intent intent = new Intent();

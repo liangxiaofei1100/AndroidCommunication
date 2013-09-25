@@ -29,7 +29,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class HistoryCursorAdapter extends CursorAdapter {
-	private static final String TAG = "HistoryMsgAdapter";
+	private static final String TAG = "HistoryCursorAdapter";
 	private LayoutInflater mLayoutInflater = null;
 	private int mStatus = -1;
 	private Notice mNotice = null;
@@ -37,6 +37,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 	private AsyncImageLoader bitmapLoader = null;
 	private boolean scrollFlag = true;
 	private MsgOnClickListener mClickListener = new MsgOnClickListener();
+	private DeleteOnClick mDeleteOnClick = new DeleteOnClick(0);
 	
 	public HistoryCursorAdapter(Context context) {
 		super(context, null, true);
@@ -84,6 +85,8 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		holder.position = cursor.getPosition();
 
 		int id = cursor.getInt(cursor.getColumnIndex(MetaData.History._ID));
+		int type = cursor.getInt(cursor
+				.getColumnIndex(MetaData.History.MSG_TYPE));
 		long time = cursor
 				.getLong(cursor.getColumnIndex(MetaData.History.DATE));
 		String filePath = cursor.getString(cursor
@@ -108,7 +111,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		holder.fileNameView.setText(fileName);
 		holder.fileSizeView.setTextColor(Color.BLACK);
 		holder.receiveUserNameView.setTextColor(Color.BLACK);
-		holder.msgLayout.setTag(new MsgData(id, fileName, filePath));
+		holder.msgLayout.setTag(new MsgData(id, fileName, filePath, type));
 
 		setIconView(holder.iconView, filePath, fileType);
 		setSendReceiveStatus(holder, status, reveiveUserName, fileSize,
@@ -263,11 +266,13 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		int itemID;
 		String fileName;
 		String filePath;
+		int type;
 
-		public MsgData(int itemID, String fileName, String filePath) {
+		public MsgData(int itemID, String fileName, String filePath, int type) {
 			this.itemID = itemID;
 			this.fileName = fileName;
 			this.filePath = filePath;
+			this.type = type;
 		}
 	}
 
@@ -281,6 +286,8 @@ public class HistoryCursorAdapter extends CursorAdapter {
 			final int id = data.itemID;
 			final String filePath = data.filePath;
 			String fileName = data.fileName;
+			final int type = data.type;
+			
 
 			new AlertDialog.Builder(mContext)
 					.setTitle(fileName)
@@ -314,7 +321,8 @@ public class HistoryCursorAdapter extends CursorAdapter {
 										break;
 									case 2:
 										// delete
-										delete(new File(filePath), id);
+//										delete(new File(filePath), id);
+										showDeleteDialog(new File(filePath), id, type);
 										break;
 									}
 								}
@@ -325,18 +333,106 @@ public class HistoryCursorAdapter extends CursorAdapter {
 
 	/**
 	 * Delete the transfer record in DB.
-	 * @param file
-	 * @param id
+	 * @param id the transfer record id id db
 	 */
-	private void delete(File file, int id) {
+	private void deleteHistory(int id) {
 		// Do not delete file current.
 		String selection = MetaData.History._ID + "=" + id;
 		int result = mContext.getContentResolver().delete(
 				MetaData.History.CONTENT_URI, selection, null);
 		if (result > 0) {
-			mNotice.showToast("已刪除");
+			mNotice.showToast("已刪除记录");
 		} else {
-			mNotice.showToast("刪除失败");
+			mNotice.showToast("刪除记录失败");
 		}
+	}
+	
+	/**
+	 * Delete the tranfser record in DB and delelte the file
+	 * @param file the file that need to delete
+	 * @param id the transfer record id id db
+	 */
+	private void deleteFileAndHistory(File file, int id){
+		deleteHistory(id);
+		
+		boolean ret = false;
+		if (file.exists()) {
+			ret = file.delete();
+			if (!ret) {
+				mNotice.showToast("删除文件失败：" + file.getAbsolutePath());
+			}
+		}else {
+			mNotice.showToast("文件不存在：" + file.getAbsolutePath());
+		}
+		
+	}
+	
+	/**
+	 * show delete transfer record dialog</br>
+	 * if the record is send to others,user only can delete record</br>
+	 * if the record is receive from others,user can delete record and delete file in system
+	 * @param file
+	 * @param id
+	 * @param type send or receive
+	 */
+	public void showDeleteDialog(File file, int id, int type){
+		int resId = -1;
+		if (HistoryManager.TYPE_SEND == type) {
+			resId = R.array.send_history_delete_menu;
+		}else {
+			resId = R.array.receive_history_delete_menu;
+		}
+		int defaultSelectItem = 0;
+		mDeleteOnClick.setId(id);
+		mDeleteOnClick.setFile(file);
+		new AlertDialog.Builder(mContext)
+		.setIcon(R.drawable.ic_delete)
+        .setTitle(R.string.delete_history_msg)
+        .setSingleChoiceItems(resId, defaultSelectItem, mDeleteOnClick)
+        .setPositiveButton(R.string.ok, mDeleteOnClick)
+        .setNegativeButton(R.string.cancel, null)
+        .create().show();
+	}
+	
+	private class DeleteOnClick implements DialogInterface.OnClickListener{
+
+		private int index;
+		private int id;
+		private File file;
+		
+		public DeleteOnClick(int index){
+			this.index = index;
+		}
+		
+		public void setId(int id){
+			this.id = id;
+		}
+		
+		public void setFile(File file){
+			this.file = file;
+		}
+		
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			//which表示单击的按钮索引，所有的列表选项的索引都是大于0的，按钮的索引都是小于0的
+			if (which >= 0) {
+				//如果单击的是列表项，保存索引
+				index = which;
+				System.out.println("index=" + index);
+			}else {
+				//单击的是按钮，这里只可能是确定按钮
+				switch (index) {
+				case 0:
+					deleteHistory(id);
+					break;
+				case 1:
+					deleteFileAndHistory(file, id);
+					//init the index to 0,because default select is 0
+					index = 0;
+					break;
+				}
+			}
+		}
+		
 	}
 }
