@@ -80,6 +80,8 @@ public class FileBrowserFragment extends BaseFragment implements
 	// save files
 	private List<FileInfo> mFileLists = new ArrayList<FileInfo>();
 	private List<Integer> mHomeList = new ArrayList<Integer>();
+	//save the file paths that checked
+	private List<String> mCheckedPaths = new ArrayList<String>();
 
 	// 用来保存ListView中每个Item的图片，以便释放
 	public static Map<String, Bitmap> bitmapCaches = new HashMap<String, Bitmap>();
@@ -114,6 +116,13 @@ public class FileBrowserFragment extends BaseFragment implements
 	
 	private String sdcard_path;
 	private String internal_path;
+	
+	//transfer all layout view
+	private LinearLayout mTransferAllLayout;
+	//cancel multi transfer button
+	private Button mCancelBtn;
+	//confirm multi transfer button
+	private Button mTransferAllBtn;
 	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
@@ -174,6 +183,11 @@ public class FileBrowserFragment extends BaseFragment implements
 				.findViewById(R.id.iv_home);
 		mSwitchImageView.setOnClickListener(this);
 
+		mTransferAllLayout = (LinearLayout) rootView.findViewById(R.id.ll_transfer_all);
+		mCancelBtn = (Button) rootView.findViewById(R.id.btn_cancel);
+		mTransferAllBtn = (Button) rootView.findViewById(R.id.btn_transfer_all);
+		mCancelBtn.setOnClickListener(this);
+		mTransferAllBtn.setOnClickListener(this);
 		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
@@ -208,6 +222,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			goToHome();
 		}
 		
+		updateTransferAllUI(true);
 	}
 
 	private void initTitleVIews(View view){
@@ -238,6 +253,22 @@ public class FileBrowserFragment extends BaseFragment implements
 			intent.setClass(mContext, HistoryActivity.class);
 			startActivity(intent);
 			break;
+		case R.id.btn_cancel:
+			updateTransferAllUI(false);
+			break;
+		case R.id.btn_transfer_all:
+			ArrayList<String> checkedList = (ArrayList<String>) mFileInfoAdapter.getCheckedFiles();
+			if (null == checkedList || checkedList.size() <= 0) {
+				mNotice.showToast("至少选中一个文件");
+				return;
+			}
+			
+			//send
+			FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
+			fileTransferUtil.sendFiles(checkedList);
+			
+			updateTransferAllUI(false);
+			break;
 		default:
 			mTabManager.updateNavigationBar(v.getId(), storge_type);
 			break;
@@ -248,6 +279,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		if (mFileInfoAdapter.isHome) {
+			mNavBarLayout.setVisibility(View.VISIBLE);
 			mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
 			mFileListView.setAdapter(mFileInfoAdapter);
 			mStatus = STATUS_FILE;
@@ -274,6 +306,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			boolean checked = mFileInfoAdapter.isChecked(position);
 			mFileInfoAdapter.setChecked(position, !checked);
 			mFileInfoAdapter.notifyDataSetChanged();
+			updateTransferAllUI(true);
 		}
 	}
 	
@@ -316,8 +349,8 @@ public class FileBrowserFragment extends BaseFragment implements
 					break;
 				case 1:
 					//send
-					FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-					fileSendUtil.sendFile(fileInfo.filePath);
+					FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
+					fileTransferUtil.sendFile(fileInfo.filePath);
 					break;
 				case 2:
 					//delete
@@ -362,6 +395,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			
 			mFileInfoAdapter.selectAll(false);
 			updateUI(mAllLists.size());
+			updateTransferAllUI(true);
 			mTabManager.refreshTab(mCurrentPath, storge_type);
 		} else {
 			Log.e(TAG, "It is a file");
@@ -760,8 +794,24 @@ public class FileBrowserFragment extends BaseFragment implements
 		message.sendToTarget();
 	}
 	
+	public void updateTransferAllUI(boolean visible){
+		if (visible) {
+			int num = mFileInfoAdapter.getCheckedItems();
+			if (num > 0) {
+				mTransferAllLayout.setVisibility(View.VISIBLE);
+				mTransferAllBtn.setText(getResources().getString(R.string.transfer_all, num));
+			}else {
+				mTransferAllLayout.setVisibility(View.GONE);
+			}
+		}else {
+			mFileInfoAdapter.selectAll(false);
+			mTransferAllLayout.setVisibility(View.GONE);
+		}
+	}
+	
 	public void goToHome(){
 		mStatus = STATUS_HOME;
+		mNavBarLayout.setVisibility(View.GONE);
 		mFileInfoAdapter = new FileInfoAdapter(mContext, true, mHomeList);
 		mFileListView.setAdapter(mFileInfoAdapter);
 		updateUI(mHomeList.size());

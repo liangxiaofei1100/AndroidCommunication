@@ -31,7 +31,6 @@ public class FileInfoAdapter extends BaseAdapter {
 	private SparseBooleanArray mIsSelected = null;
 	
 	private AsyncImageLoader bitmapLoader;
-	private int size = 0;
 	
 	private boolean flag = true;
 	public boolean isHome = true;
@@ -40,14 +39,12 @@ public class FileInfoAdapter extends BaseAdapter {
 		isHome = home;
 		mInflater = LayoutInflater.from(context);
 		homeList = list;
-		size = list.size();
 	}
 	
 	public FileInfoAdapter(Context context, List<FileInfo> list){
 		isHome = false;
 		mInflater = LayoutInflater.from(context);
 		this.mList = list;
-		size = list.size();
 		this.mContext = context;
 		mIsSelected = new SparseBooleanArray();
 		//init checkbox
@@ -82,6 +79,39 @@ public class FileInfoAdapter extends BaseAdapter {
 	 */
 	public boolean isChecked(int position){
 		return mIsSelected.get(position);
+	}
+	
+	/**
+	 * get how many item that has cheked
+	 * @return checked items num.
+	 */
+	public int getCheckedItems(){
+		if (isHome) {
+			return 0;
+		}
+		
+		int count = 0;
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				count ++;
+			}
+		}
+		return count;
+	}
+	
+	public List<String> getCheckedFiles(){
+		if (isHome) {
+			return null;
+		}
+		
+		List<String> pathList = new ArrayList<String>();
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				pathList.add(mList.get(i).filePath);
+			}
+		}
+		
+		return pathList;
 	}
 	
 	public void setFlag(boolean flag){
@@ -131,7 +161,8 @@ public class FileInfoAdapter extends BaseAdapter {
 			view = convertView;
 			holder = (ViewHolder) view.getTag();
 		}
-		Log.i(TAG, "getView.isHome:" + isHome);
+		
+		//home view ui
 		if (isHome) {
 			holder.checkBox.setVisibility(View.GONE);
 			holder.dateAndSizeView.setVisibility(View.GONE);
