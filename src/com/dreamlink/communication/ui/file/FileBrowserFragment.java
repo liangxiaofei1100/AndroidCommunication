@@ -304,6 +304,16 @@ public class FileBrowserFragment extends BaseFragment implements
 		} else {
 			// file set file checked
 			boolean checked = mFileInfoAdapter.isChecked(position);
+			if (checked) {
+				//cancel checked do not limit
+			}else {
+				// do not support more than five files tranfser at a time.
+				//so need judge
+				if (mFileInfoAdapter.getCheckedItems() >= 5) {
+					mNotice.showToast("最多支持同时发送5个文件");
+					return;
+				}
+			}
 			mFileInfoAdapter.setChecked(position, !checked);
 			mFileInfoAdapter.notifyDataSetChanged();
 			updateTransferAllUI(true);
