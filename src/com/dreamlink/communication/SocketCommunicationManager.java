@@ -25,6 +25,7 @@ import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.client.SocketClientTask;
 import com.dreamlink.communication.client.SocketClientTask.OnConnectedToServerListener;
 import com.dreamlink.communication.lib.util.Notice;
+import com.dreamlink.communication.platform.PlatformManager;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.protocol.ProtocolDecoder;
 import com.dreamlink.communication.protocol.ProtocolEncoder;
@@ -141,7 +142,6 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		mCommunications = new Vector<SocketCommunication>();
 
 		mUserManager.registerOnUserChangedListener(this);
-
 		mProtocolDecoder = new ProtocolDecoder(this);
 		mProtocolDecoder.setLoginRequestCallBack(this);
 		mProtocolDecoder.setLoginRespondCallback(this);
@@ -561,6 +561,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 		SocketServerTask serverTask = new SocketServerTask(context);
 		serverTask.setOnClientConnectedListener(this);
 		serverTask.execute(new String[] { SocketCommunication.PORT });
+		PlatformManager platformManager=PlatformManager.getInstance(mContext);
 	}
 
 	/**

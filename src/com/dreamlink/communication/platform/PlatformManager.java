@@ -44,7 +44,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	private int appId = 115;;
 	private String TAG = "ArbiterLiu-PlatformManagerService";
 	private ConcurrentHashMap<Integer, PlatformManagerCallback> callbackList;
-	private Map<Integer, HostInfo> joinedGroup;
+	private ConcurrentHashMap<Integer, HostInfo> joinedGroup;
 	private Context mContext;
 	private static PlatformManager mPlatformManager;
 
@@ -77,7 +77,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		userManager = UserManager.getInstance();
 		mSocketCommunicationManager = SocketCommunicationManager
 				.getInstance(mContext);
-		joinedGroup = new HashMap<Integer, HostInfo>();
+		joinedGroup = new ConcurrentHashMap<Integer, HostInfo>();
 		allHostList = new ConcurrentHashMap<Integer, HostInfo>();
 		mSocketCommunicationManager.registerOnCommunicationListenerExternal(
 				this, appId);
@@ -101,6 +101,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			int app_id) {
 		HostInfo hostInfo = new HostInfo();
 		hostInfo.ownerID = userManager.getLocalUser().getUserID();
+		hostInfo.ownerName = userManager.getLocalUser().getUserName();
 		hostInfo.personLimit = numberLimit;
 		hostInfo.packageName = pakcageName;
 		hostInfo.appName = appName;
