@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <resources> 
-<<<<<<< HEAD
-<string name="version_name">1.0.0.20130926.105951</string> 
-=======
-<string name="version_name">1.0.0.20130926. 93242</string> 
->>>>>>> 4ca986c2506b3e23cfbf62d8b0920acb6ce8a992
+<string name="version_name">1.0.0.20130926.155200</string> 
 </resources> 

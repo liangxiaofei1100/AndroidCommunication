@@ -16,6 +16,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
+/**
+ * @unuse 先观察CursorAdapter的使用情况，再决定是否删除
+ * */
 public class ImageAdapter extends BaseAdapter{
 	private LayoutInflater inflater;
 	private List<ImageInfo> mImageLists = new ArrayList<ImageInfo>();
@@ -73,7 +76,7 @@ public class ImageAdapter extends BaseAdapter{
 					AsyncImageLoader.bitmapCache.get(imageUrl) != null) {
 				holder.imageView.setImageBitmap(AsyncImageLoader.bitmapCache.get(imageUrl).get());
 			}else {
-				holder.imageView.setImageResource(R.drawable.zapya_data_photo_l);
+				holder.imageView.setImageResource(R.drawable.photo_l);
 			}
 		}else {
 			Bitmap bitmap = asyncImageLoader.loadImage(imageUrl, FileInfoManager.TYPE_IMAGE, ImageFragment.bitmapCaches, 
@@ -88,7 +91,7 @@ public class ImageAdapter extends BaseAdapter{
 			if (null != bitmap) {
 				holder.imageView.setImageBitmap(bitmap);
 			}else {
-				holder.imageView.setImageResource(R.drawable.zapya_data_photo_l);
+				holder.imageView.setImageResource(R.drawable.photo_l);
 			}
 		}
 		

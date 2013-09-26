@@ -26,17 +26,14 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
-/**
- * @unuse 先观察CursorAdapter的使用情况，再决定是否删除
- * */
 /**全屏查看图片*/
-public class ImagePagerActivity extends Activity {
+public class PicturePagerActivity extends Activity {
 
 	private static final String STATE_POSITION = "STATE_POSITION";
 	private static ImageLoader imageLoader = ImageLoader.getInstance();
-	DisplayImageOptions options;
-	ViewPager pager;
-	private List<ImageInfo> imageList = new ArrayList<ImageInfo>();
+	private DisplayImageOptions options;
+	private ViewPager pager;
+	private List<String> imageList = new ArrayList<String>();
 
 	public void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -44,7 +41,7 @@ public class ImagePagerActivity extends Activity {
 		setContentView(R.layout.ui_image_pager);
 
 		Bundle bundle = getIntent().getExtras();
-		imageList = bundle.getParcelableArrayList(Extra.IMAGE_INFO);
+		imageList = bundle.getStringArrayList(Extra.IMAGE_INFO);
 		int pagerPosition = bundle.getInt(Extra.IMAGE_POSITION, 0);
 
 		// if (savedInstanceState != null) {
@@ -70,9 +67,9 @@ public class ImagePagerActivity extends Activity {
 	private class ImagePagerAdapter extends PagerAdapter {
 
 		private LayoutInflater inflater;
-		private List<ImageInfo> list;
+		private List<String> list;
 
-		ImagePagerAdapter(List<ImageInfo> data) {
+		ImagePagerAdapter(List<String> data) {
 			this.list = data;
 			inflater = getLayoutInflater();
 		}
@@ -97,7 +94,7 @@ public class ImagePagerActivity extends Activity {
 			ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image_pager);
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading_image);
 
-			String path = "file://" + list.get(position).getPath();
+			String path = "file://" + list.get(position);
 			imageLoader.displayImage(path, imageView, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingStarted(String imageUri, View view) {
@@ -124,7 +121,7 @@ public class ImagePagerActivity extends Activity {
 						message = "Unknown error";
 						break;
 					}
-					Toast.makeText(ImagePagerActivity.this, message, Toast.LENGTH_SHORT).show();
+					Toast.makeText(PicturePagerActivity.this, message, Toast.LENGTH_SHORT).show();
 
 					spinner.setVisibility(View.GONE);
 				}

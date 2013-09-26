@@ -1,4 +1,4 @@
-package com.dreamlink.communication.ui.media;
+package com.dreamlink.communication.ui.image;
 
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
@@ -12,20 +12,20 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 
-public class AsyncVideoLoader {
+public class AsyncPictureLoader {
 	// SoftReference是软引用，是为了更好的为了系统回收变量
 		public static HashMap<Long, SoftReference<Bitmap>> bitmapCaches;
 		private ContentResolver contentResolver = null;
 		
-		public AsyncVideoLoader(Context context) {
+		public AsyncPictureLoader(Context context) {
 			bitmapCaches = new HashMap<Long, SoftReference<Bitmap>>();
 			contentResolver = context.getContentResolver();
 		}
 		
-	public Bitmap loadBitmap(final long videoId, final ILoadVideoCallback videoCallback) {
-		if (bitmapCaches.containsKey(videoId)) {
+	public Bitmap loadBitmap(final long id, final ILoadImagesCallback videoCallback) {
+		if (bitmapCaches.containsKey(id)) {
 			// 从缓存中获取
-			SoftReference<Bitmap> softReference = bitmapCaches.get(videoId);
+			SoftReference<Bitmap> softReference = bitmapCaches.get(id);
 			Bitmap bitmap = softReference.get();
 			if (null != bitmap) {
 				return bitmap;
@@ -34,7 +34,7 @@ public class AsyncVideoLoader {
 
 		final Handler handler = new Handler() {
 			public void handleMessage(Message message) {
-				videoCallback.onObtainBitmap((Bitmap) message.obj, videoId);
+				videoCallback.onObtainBitmap((Bitmap) message.obj, id);
 			}
 		};
 
@@ -42,11 +42,11 @@ public class AsyncVideoLoader {
 			@Override
 			public void run() {
 				BitmapFactory.Options options = new BitmapFactory.Options();
-				options.inDither = false;
-				options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-				// get video thumbail
-				Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(contentResolver, videoId, Images.Thumbnails.MICRO_KIND, options);
-				bitmapCaches.put(videoId, new SoftReference<Bitmap>(bitmap));
+				options.inDither = false;//采用默认值
+				options.inPreferredConfig = Bitmap.Config.ARGB_8888;//采用默认值
+				// get images thumbail
+				Bitmap bitmap = MediaStore.Images.Thumbnails.getThumbnail(contentResolver, id, Images.Thumbnails.MINI_KIND, options);
+				bitmapCaches.put(id, new SoftReference<Bitmap>(bitmap));
 				Message message = handler.obtainMessage(0, bitmap);
 				handler.sendMessage(message);
 			}
@@ -58,7 +58,7 @@ public class AsyncVideoLoader {
 	/**
 	 * 异步加载的回调接口
 	 */
-	public interface ILoadVideoCallback {
+	public interface ILoadImagesCallback {
 		public void onObtainBitmap(Bitmap bitmap, long id);
 	}
 }

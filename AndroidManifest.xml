@@ -164,8 +164,10 @@
                 android:name="app_id"
                 android:value="112" />
         </service>
-        <activity android:name="com.dreamlink.communication.ui.image.ImagePagerActivity" />
-
+        <activity android:name="com.dreamlink.communication.ui.image.ImagePagerActivity" 
+            android:screenOrientation="portrait"/>
+	 	<activity android:name="com.dreamlink.communication.ui.image.PicturePagerActivity" 
+	 	    android:screenOrientation="portrait"/>
         <service android:name="com.dreamlink.communication.ui.service.FileManagerService" />
 
         <activity android:name="com.dreamlink.communication.ui.history.HistoryActivity" >

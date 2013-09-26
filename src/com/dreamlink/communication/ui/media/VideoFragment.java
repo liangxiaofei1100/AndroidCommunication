@@ -1,8 +1,5 @@
 package com.dreamlink.communication.ui.media;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
