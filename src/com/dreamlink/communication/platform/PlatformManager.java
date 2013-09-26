@@ -656,7 +656,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		} else {
 			for (Entry<Integer, HostInfo> entry : joinedGroup.entrySet()) {
 				HostInfo hostInfo = entry.getValue();
-				if (hostInfo.ownerID == arg0.getUserID()) {
+				if (hostInfo == null) {
+					continue;
+				} else if (hostInfo.ownerID == arg0.getUserID()) {
 					Log.e(TAG, "hostInfo.ownerID == arg0.getUserID()");
 					hostId = hostInfo.hostId;
 					receiverCancelHost(hostInfo, arg0);
@@ -664,14 +666,19 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			}
 			for (Entry<Integer, HostInfo> entry : createHost.entrySet()) {
 				HostInfo hostInfo = entry.getValue();
-				removeGroupMember(hostInfo.hostId, arg0.getUserID());
+				if (hostInfo == null) {
+					continue;
+				} else
+					removeGroupMember(hostInfo.hostId, arg0.getUserID());
 			}
 		}
 		if (userManager.getLocalUser().getUserID() == -1) {
 			if (!disconnect) {
 				for (Entry<Integer, HostInfo> entry : allHostList.entrySet()) {
 					HostInfo hostInfo = entry.getValue();
-					if (hostInfo.ownerID == arg0.getUserID()) {
+					if (hostInfo == null) {
+						continue;
+					} else if (hostInfo.ownerID == arg0.getUserID()) {
 						hostId = hostInfo.hostId;
 						receiverCancelHost(allHostList.get(hostId), arg0);
 					}

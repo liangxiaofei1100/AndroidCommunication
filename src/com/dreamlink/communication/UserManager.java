@@ -59,6 +59,7 @@ public class UserManager {
 			mLocalUser = new User();
 		}
 		mLocalUser.setUserID(DEFAULT_USER_ID);
+		clear();
 	}
 
 	private UserManager() {
