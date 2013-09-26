@@ -361,8 +361,6 @@ public class HistoryCursorAdapter extends CursorAdapter {
 			if (!ret) {
 				mNotice.showToast("删除文件失败：" + file.getAbsolutePath());
 			}
-		}else {
-			mNotice.showToast("文件不存在：" + file.getAbsolutePath());
 		}
 		
 	}

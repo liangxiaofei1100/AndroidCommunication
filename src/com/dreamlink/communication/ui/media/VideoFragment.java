@@ -16,14 +16,18 @@ import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
+import android.content.AsyncQueryHandler;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.ContentObserver;
-import android.os.AsyncTask;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
+import android.provider.MediaStore.MediaColumns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,20 +41,13 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 
-/**
- * @unuse 先观察几天再删除，如果VideoFragment没有什么问题，就可以删除了
- * */
-public class MediaVideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
-	private static final String TAG = "MediaVideoFragment";
+public class VideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
+	private static final String TAG = "VideoFragment";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
 	
-	private MediaVideoAdapter mAdapter;
-	private List<MediaInfo> mVideoLists = new ArrayList<MediaInfo>();
-	
-	private GetVideosTask mVideosTask = null;
-	
-	private MediaInfoManager mScan;
+	private VideoCursorAdapter mAdapter;
+	private QueryHandler mQueryHandler = null;
 	
 	private FileInfoManager mFileInfoManager;
 	private Context mContext;
@@ -61,6 +58,12 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
+	
+	private int mAppId = -1;
+	
+	private static final String[] PROJECTION = new String[] {MediaStore.Video.Media._ID, 
+		MediaStore.Video.Media.DURATION, MediaStore.Video.Media.SIZE,
+		MediaColumns.DATA, MediaStore.Video.Media.DISPLAY_NAME};
 		
 	//video contentObserver listener
 	class VideoContent extends ContentObserver{
@@ -72,8 +75,8 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		@Override
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
-//			GetVideosTask getVideosTask = new GetVideosTask();
-//			getVideosTask.execute();
+			int count = mAdapter.getCount();
+			updateUI(count);
 		}
 	}
 	
@@ -91,14 +94,12 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		};
 	};
 	
-	private int mAppId = -1;
-	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
 	 * argument.
 	 */
-	public static MediaVideoFragment newInstance(int appid) {
-		MediaVideoFragment f = new MediaVideoFragment();
+	public static VideoFragment newInstance(int appid) {
+		VideoFragment f = new VideoFragment();
 
 		Bundle args = new Bundle();
 		args.putInt(Extra.APP_ID, appid);
@@ -114,36 +115,34 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Log.d(TAG, "onCreate begin");
 		mContext = getActivity();
 		View rootView = inflater.inflate(R.layout.ui_media_video, container, false);
 		mGridView = (GridView) rootView.findViewById(R.id.video_gridview);
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_video_loading);
+		mAdapter = new VideoCursorAdapter(mContext);
+		mGridView.setAdapter(mAdapter);
 		
 		initTitleVIews(rootView);
-		
-		Log.d(TAG, "onCreate end");
-		
 		return rootView;
 	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mScan = new MediaInfoManager(mContext);
-		
-		if (null != mVideosTask && mVideosTask.getStatus() == AsyncTask.Status.RUNNING) {
-		}else {
-			mVideosTask = new GetVideosTask();
-			mVideosTask.execute();
-		}
 		
 		mFileInfoManager = new FileInfoManager(mContext);
+		mQueryHandler = new QueryHandler(getActivity().getContentResolver());
 				
+		query();
 		VideoContent videoContent  = new VideoContent(new Handler());
-		getActivity().getContentResolver().registerContentObserver(mScan.videoUri, true, videoContent);
+		getActivity().getContentResolver().registerContentObserver(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, videoContent);
+	}
+	
+	public void query() {
+		mQueryHandler.startQuery(0, null, MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+				PROJECTION, null, null, MediaStore.Video.Media.DEFAULT_SORT_ORDER);
 	}
 	
 	private void initTitleVIews(View view){
@@ -165,69 +164,70 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		mHistoryView.setOnClickListener(this);
 	}
 	
-	public  class GetVideosTask extends AsyncTask<Void, String, Integer>{
+	// query db
+	public class QueryHandler extends AsyncQueryHandler {
+
+		public QueryHandler(ContentResolver cr) {
+			super(cr);
+		}
 
 		@Override
-		protected Integer doInBackground(Void... params) {
-			Log.d(TAG, "start get video src:" + System.currentTimeMillis());
-			mVideoLists = mScan.getVideoInfo();
-			Log.d(TAG, "end get video src:" + System.currentTimeMillis());
-			return mVideoLists.size();
-		}
-		
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			mLoadingBar.setVisibility(View.VISIBLE);
-		}
-		
-		@Override
-		protected void onPostExecute(Integer result) {
-			super.onPostExecute(result);
-			mLoadingBar.setVisibility(View.GONE);
-			if (result <= 0) {
-				result= 0;
-			}else {
-				mAdapter = new MediaVideoAdapter(mContext, mVideoLists);
-				mGridView.setAdapter(mAdapter);
+		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+			Log.d(TAG, "onQueryComplete");
+			mLoadingBar.setVisibility(View.INVISIBLE);
+			int num = 0;
+			if (null != cursor) {
+				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
+				mAdapter.swapCursor(cursor);
+				num = cursor.getCount();
 			}
-			
-			updateUI(result);
+			updateUI(num);
 		}
-		
+
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		MediaInfo mediaInfo = mVideoLists.get(position);
-		mFileInfoManager.openFile(mediaInfo.getUrl());
+		Cursor cursor = mAdapter.getCursor();
+		cursor.moveToPosition(position);
+		String url = cursor.getString(cursor
+				.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
+		mFileInfoManager.openFile(url);
 	}
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-		final MediaInfo mediaInfo = mVideoLists.get(position);
+		Cursor cursor = mAdapter.getCursor();
+		cursor.moveToPosition(position);
+//		final long videoId = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
+		final long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.DURATION)); // 时长
+		final long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.SIZE)); // 文件大小
+		final String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
+		final String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
+			
+			
 		new AlertDialog.Builder(mContext)
-		.setTitle(mediaInfo.getDisplayName())
+		.setTitle(displayName)
 		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case 0:
 						//open
-						mFileInfoManager.openFile(mediaInfo.getUrl());
+						mFileInfoManager.openFile(url);
 						break;
 					case 1:
 						//send
 						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(mediaInfo.getUrl());
+						fileSendUtil.sendFile(url);
 						break;
 					case 2:
 						//delete
-						showDeleteDialog(position, mediaInfo.getUrl());
+						showDeleteDialog(position, url);
 						break;
 					case 3:
 						//info
-						String info = getVideoInfo(mediaInfo);
+						String info = getVideoInfo(displayName, url, size, duration);
 						DreamUtil.showInfoDialog(mContext, info);
 						break;
 
@@ -266,23 +266,18 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 			mNotice.showToast(R.string.delete_fail);
 			Log.e(TAG, path + " delete failed");
 		}else {
-			mVideoLists.remove(position);
-			mAdapter.notifyDataSetChanged();
-			
-			Message message = mHandler.obtainMessage();
-			message.arg1 = mVideoLists.size();
-			message.what = MSG_UPDATE_UI;
-			message.sendToTarget();
+			int num = mAdapter.getCount();
+			updateUI(num);
 		}
 	}
     
-    public String getVideoInfo(MediaInfo mediaInfo){
+    public String getVideoInfo(String name, String url, long size, long duration){
     	String result = "";
-		result = "名称:" + mediaInfo.getDisplayName()+ DreamConstant.ENTER
+		result = "名称:" + name + DreamConstant.ENTER
 				+ "类型:" + "视频" + DreamConstant.ENTER
-				+ "位置:" + mediaInfo.getUrl() + DreamConstant.ENTER
-				+ "大小:" + mediaInfo.getFormatSize()+ DreamConstant.ENTER
-				+ "修改日期:" + mediaInfo.getFormatDate();
+				+ "位置:" + url + DreamConstant.ENTER
+				+ "大小:" + DreamUtil.getFormatSize(size) + DreamConstant.ENTER
+				+ "时长:" + DreamUtil.mediaTimeFormat(duration);
 		return result;
     }
     
@@ -295,10 +290,9 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.iv_refresh:
-			
+			query();
 			break;
 			
 		case R.id.iv_history:
@@ -309,6 +303,15 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 
 		default:
 			break;
+		}
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Cursor cursor = mAdapter.getCursor();
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
 		}
 	}
 	
