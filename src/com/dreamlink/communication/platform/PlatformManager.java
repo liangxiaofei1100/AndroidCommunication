@@ -479,6 +479,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		if (createHost.containsKey(hostId)) {
 			HostInfo hostInfo = createHost.get(hostId);
 			ArrayList<Integer> temUserList = groupMember.get(hostId);
+			if (temUserList == null) {
+				return;
+			}
 			index = temUserList.indexOf(userId);
 			Log.e(TAG, "REMOVE group member");
 			if (index != -1) {
