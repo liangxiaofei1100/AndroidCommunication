@@ -8,10 +8,8 @@ import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.lib.util.Notice;
 
 import android.app.AlertDialog;
@@ -20,7 +18,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.os.Bundle;
-import android.provider.MediaStore.Files;
 
 public class FileTransferUtil {
 	private static final String TAG = "FileSendUtil";
@@ -30,6 +27,8 @@ public class FileTransferUtil {
 	public static final int TYPE_IMAGE = 1;
 	public static final int TYPE_MEDIA = 2;
 	public static final int TYPE_FILE = 2;
+	
+	public static final int MAX_TRANSFER_NUM = 5;
 	
 	private UserManager mUserManager = null;
 	private Notice mNotice = null;

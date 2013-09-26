@@ -10,6 +10,7 @@ import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Environment;
@@ -77,6 +78,20 @@ public class HistoryActivity extends FragmentActivity implements
 			}
 		};
 	};
+	
+	class HistoryContent extends ContentObserver{
+		public HistoryContent(Handler handler) {
+			super(handler);
+			// TODO Auto-generated constructor stub
+		}
+		
+		@Override
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
+			int count = mAdapter.getCount();
+			updateUI(count);
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +104,9 @@ public class HistoryActivity extends FragmentActivity implements
 		initTitleVIews();
 		initView();
 		queryHandler = new QueryHandler(getContentResolver());
+		
+		HistoryContent historyContent = new HistoryContent(new Handler());
+		getContentResolver().registerContentObserver(MetaData.History.CONTENT_URI, true, historyContent);
 	}
 
 	@Override
@@ -155,19 +173,23 @@ public class HistoryActivity extends FragmentActivity implements
 		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
 			Log.d(TAG, "onQueryComplete");
 			mLoadingBar.setVisibility(View.INVISIBLE);
-			Message message = mHandler.obtainMessage();
+			int num = 0;
 			if (null != cursor) {
 				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
 				mAdapter.swapCursor(cursor);
-				message.arg1 = cursor.getCount();
-			} else {
-				message.arg1 = 0;
+				num = cursor.getCount();
 			}
 
-			message.what = MSG_UPDATE_UI;
-			message.sendToTarget();
+			updateUI(num);
 		}
 
+	}
+	
+	private void updateUI(int num){
+		Message message = mHandler.obtainMessage();
+		message.arg1 = num;
+		message.what = MSG_UPDATE_UI;
+		message.sendToTarget();
 	}
 
 	@Override

@@ -10,8 +10,6 @@ import java.util.Map;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.ListContextMenu;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
@@ -22,6 +20,7 @@ import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
+import com.readystatesoftware.viewbadger.BadgeView;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -34,14 +33,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
@@ -80,8 +77,6 @@ public class FileBrowserFragment extends BaseFragment implements
 	// save files
 	private List<FileInfo> mFileLists = new ArrayList<FileInfo>();
 	private List<Integer> mHomeList = new ArrayList<Integer>();
-	//save the file paths that checked
-	private List<String> mCheckedPaths = new ArrayList<String>();
 
 	// 用来保存ListView中每个Item的图片，以便释放
 	public static Map<String, Bitmap> bitmapCaches = new HashMap<String, Bitmap>();
@@ -247,6 +242,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			mTabManager.refreshTab(mCurrent_root_path, storge_type);
 			break;
 		case R.id.iv_refresh:
+			browserTo(mCurrentFile);
 			break;
 		case R.id.iv_history:
 			Intent intent = new Intent();
@@ -259,7 +255,7 @@ public class FileBrowserFragment extends BaseFragment implements
 		case R.id.btn_transfer_all:
 			ArrayList<String> checkedList = (ArrayList<String>) mFileInfoAdapter.getCheckedFiles();
 			if (null == checkedList || checkedList.size() <= 0) {
-				mNotice.showToast("至少选中一个文件");
+				mNotice.showToast(R.string.check_one_please);
 				return;
 			}
 			
@@ -268,6 +264,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			fileTransferUtil.sendFiles(checkedList);
 			
 			updateTransferAllUI(false);
+			
 			break;
 		default:
 			mTabManager.updateNavigationBar(v.getId(), storge_type);
@@ -280,6 +277,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			long id) {
 		if (mFileInfoAdapter.isHome) {
 			mNavBarLayout.setVisibility(View.VISIBLE);
+			mRefreshView.setVisibility(View.VISIBLE);
 			mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
 			mFileListView.setAdapter(mFileInfoAdapter);
 			mStatus = STATUS_FILE;
@@ -304,6 +302,16 @@ public class FileBrowserFragment extends BaseFragment implements
 		} else {
 			// file set file checked
 			boolean checked = mFileInfoAdapter.isChecked(position);
+			if (checked) {
+				//cancel checked do not limit
+			}else {
+				// do not support more than five files tranfser at a time.
+				//so need judge
+				if (mFileInfoAdapter.getCheckedItems() >= FileTransferUtil.MAX_TRANSFER_NUM) {
+					mNotice.showToast(R.string.transfer_limit);
+					return;
+				}
+			}
 			mFileInfoAdapter.setChecked(position, !checked);
 			mFileInfoAdapter.notifyDataSetChanged();
 			updateTransferAllUI(true);
@@ -812,6 +820,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void goToHome(){
 		mStatus = STATUS_HOME;
 		mNavBarLayout.setVisibility(View.GONE);
+		mRefreshView.setVisibility(View.GONE);
 		mFileInfoAdapter = new FileInfoAdapter(mContext, true, mHomeList);
 		mFileListView.setAdapter(mFileInfoAdapter);
 		updateUI(mHomeList.size());
