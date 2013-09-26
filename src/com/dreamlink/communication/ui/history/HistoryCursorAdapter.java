@@ -18,6 +18,7 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -361,8 +362,6 @@ public class HistoryCursorAdapter extends CursorAdapter {
 			if (!ret) {
 				mNotice.showToast("删除文件失败：" + file.getAbsolutePath());
 			}
-		}else {
-			mNotice.showToast("文件不存在：" + file.getAbsolutePath());
 		}
 		
 	}

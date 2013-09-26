@@ -321,6 +321,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	@Override
 	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, final int position,
 			long arg3) {
+		mCurrentPosition = position;
 		if (mFileInfoAdapter.isHome) {
 			return false;
 		}

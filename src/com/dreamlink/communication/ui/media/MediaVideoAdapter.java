@@ -13,6 +13,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+/**
+ * @unuse 先观察几天再删除，如果VideoFragment没有什么问题，就可以删除了
+ * */
 public class MediaVideoAdapter extends BaseAdapter{
 	private List<MediaInfo> mList = new ArrayList<MediaInfo>();
 	private LayoutInflater mInflater = null;

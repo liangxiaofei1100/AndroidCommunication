@@ -12,8 +12,10 @@ import com.dreamlink.communication.ui.app.TiandiFragment;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
 import com.dreamlink.communication.ui.help.HelpFragment;
 import com.dreamlink.communication.ui.image.ImageFragment;
+import com.dreamlink.communication.ui.image.PictureFragment;
 import com.dreamlink.communication.ui.media.MediaAudioFragment;
 import com.dreamlink.communication.ui.media.MediaVideoFragment;
+import com.dreamlink.communication.ui.media.VideoFragment;
 import com.dreamlink.communication.ui.network.NetworkFragment;
 import com.dreamlink.communication.ui.settings.SettingsFragment;
 import com.dreamlink.communication.util.Log;
@@ -47,7 +49,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		int position = getIntent().getIntExtra("position", 0);
 		viewPager = (ViewPager) findViewById(R.id.vp_main_frame);
 		//考虑到内存消耗问题，缓存页面不应该设置这么大
-		viewPager.setOffscreenPageLimit(1);
+		viewPager.setOffscreenPageLimit(2);
 		
 		int appid = AppUtil.getAppID(this);
 		List<Fragment> fragments = new ArrayList<Fragment>();
@@ -55,15 +57,14 @@ public class MainFragmentActivity extends FragmentActivity {
 		fragments.add(TiandiFragment.newInstance(appid));//朝颜天地
 		fragments.add(NetworkFragment.newInstance(appid));//网上邻居
 		fragments.add(RecommendFragment.newInstance(appid));//精品推荐
-		fragments.add(ImageFragment.newInstance(3));//图库
+		fragments.add(PictureFragment.newInstance(appid));//图库
 		fragments.add(MediaAudioFragment.newInstance(appid));//音频
-		fragments.add(MediaVideoFragment.newInstance(appid));//视频
+		fragments.add(VideoFragment.newInstance(appid));//视频
 		fragments.add(AppFragment.newInstance(appid));//应用
 		fragments.add(GameFragment.newInstance(appid));//游戏
 		fragments.add(FileBrowserFragment.newInstance(appid));//批量传输
 		fragments.add(SettingsFragment.newInstance(appid));//设置
 		fragments.add(HelpFragment.newInstance(appid));//帮助
-//		fragments.add(HistoryFragment.newInstance(appid));//传输记录
 		mAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragments);
 		viewPager.setAdapter(mAdapter);
 		viewPager.setCurrentItem(position);

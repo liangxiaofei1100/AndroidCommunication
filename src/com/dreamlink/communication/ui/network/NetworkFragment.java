@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.http.impl.cookie.BestMatchSpec;
+
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -42,6 +44,7 @@ import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
+import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
@@ -147,7 +150,8 @@ public class NetworkFragment extends BaseFragment implements
 		mRefreshView.setVisibility(View.GONE);
 		// History icon
 		mHistoryView = (ImageView) view.findViewById(R.id.iv_history);
-		mHistoryView.setVisibility(View.GONE);
+		mHistoryView.setOnClickListener(this);
+		mHistoryView.setVisibility(View.VISIBLE);
 	}
 
 	private void initView(View view) {
@@ -211,6 +215,10 @@ public class NetworkFragment extends BaseFragment implements
 		case R.id.ll_network_disconnect:
 			disconnect();
 			updateNetworkStatus();
+			break;
+		case R.id.iv_history:
+			intent.setClass(mContext, HistoryActivity.class);
+			startActivity(intent);
 			break;
 		default:
 			break;
