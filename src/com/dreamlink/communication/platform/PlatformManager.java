@@ -635,7 +635,6 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	@Override
 	public void onUserDisconnected(User arg0) throws RemoteException {
 		int hostId = -1;
-		boolean disconnect = false;
 		if (!mSocketCommunicationManager.isConnected()) {
 			// this mean local lost connect
 			if (createHost != null) {
@@ -651,14 +650,11 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			}
 			if (allHostList != null)
 				allHostList.clear();
-			disconnect = true;
 			receiverAllHostInfo(allHostList);
 		} else {
 			for (Entry<Integer, HostInfo> entry : joinedGroup.entrySet()) {
 				HostInfo hostInfo = entry.getValue();
-				if (hostInfo == null) {
-					continue;
-				} else if (hostInfo.ownerID == arg0.getUserID()) {
+				if (hostInfo != null && hostInfo.ownerID == arg0.getUserID()) {
 					Log.e(TAG, "hostInfo.ownerID == arg0.getUserID()");
 					hostId = hostInfo.hostId;
 					receiverCancelHost(hostInfo, arg0);
@@ -666,19 +662,14 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			}
 			for (Entry<Integer, HostInfo> entry : createHost.entrySet()) {
 				HostInfo hostInfo = entry.getValue();
-				if (hostInfo == null) {
-					continue;
-				} else
+				if (hostInfo != null)
 					removeGroupMember(hostInfo.hostId, arg0.getUserID());
 			}
-		}
-		if (userManager.getLocalUser().getUserID() == -1) {
-			if (!disconnect) {
+			if (userManager.getLocalUser().getUserID() == -1) {
 				for (Entry<Integer, HostInfo> entry : allHostList.entrySet()) {
 					HostInfo hostInfo = entry.getValue();
-					if (hostInfo == null) {
-						continue;
-					} else if (hostInfo.ownerID == arg0.getUserID()) {
+					if (hostInfo != null
+							&& hostInfo.ownerID == arg0.getUserID()) {
 						hostId = hostInfo.hostId;
 						receiverCancelHost(allHostList.get(hostId), arg0);
 					}
