@@ -123,6 +123,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 
 	public void requestCreateHost(HostInfo hostInfo) {
 		Log.e(TAG, "requestCreateHost ");
+		boolean isexsit = false;
 		if (!UserManager.isManagerServer(userManager.getLocalUser())) {
 			/** this is no possible */
 			return;
@@ -134,34 +135,40 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 					&& temp.appName.equals(hostInfo.appName)
 					&& temp.packageName.equals(hostInfo.packageName)) {
 				/* do nothing or return the old hostInfo */
+				isexsit = true;
+				if (hostInfo.ownerID == userManager.getLocalUser().getUserID()) {
+					createHostAck(temp);
+				} else {
+					User tem = userManager.getAllUser().get(hostInfo.ownerID);
+					if (tem != null) {
+						byte[] target = platformProtocol
+								.encodePlatformProtocol(
+										platformProtocol.CREATE_HOST_ACK_CMD_CODE,
+										ArrayUtil.objectToByteArray(temp));
+						mSocketCommunicationManager.sendMessageToSingle(target,
+								tem, appId);
+					}
+				}
+			}
+		}
+		if (!isexsit) {
+			hostInfo.hostId = incId;
+			incId++;
+			hostInfo.isAlive = 1;
+			if (UserManager.isManagerServer(userManager.getAllUser().get(
+					hostInfo.ownerID))) {
+				createHostAck(hostInfo);
+			} else {
 				User tem = userManager.getAllUser().get(hostInfo.ownerID);
 				if (tem != null) {
 					byte[] target = platformProtocol.encodePlatformProtocol(
 							platformProtocol.CREATE_HOST_ACK_CMD_CODE,
-							ArrayUtil.objectToByteArray(temp));
+							ArrayUtil.objectToByteArray(hostInfo));
 					mSocketCommunicationManager.sendMessageToSingle(target,
 							tem, appId);
+				} else {
+					/** this is mean the communication has lost,do nothing */
 				}
-				return;
-			}
-		}
-		hostInfo.hostId = incId;
-		incId++;
-		hostInfo.isAlive = 1;
-		if (UserManager.isManagerServer(userManager.getAllUser().get(
-				hostInfo.ownerID))) {
-			createHostAck(hostInfo);
-		} else {
-			User tem = userManager.getAllUser().get(hostInfo.ownerID);
-			if (tem != null) {
-				byte[] target = platformProtocol.encodePlatformProtocol(
-						platformProtocol.CREATE_HOST_ACK_CMD_CODE,
-						ArrayUtil.objectToByteArray(hostInfo));
-				mSocketCommunicationManager.sendMessageToSingle(target, tem,
-						appId);
-			} else {
-				/** this is mean the communication has lost,do nothing */
-				return;
 			}
 		}
 		updateHostInfo(hostInfo);
