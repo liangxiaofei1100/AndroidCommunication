@@ -305,11 +305,11 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
 		Cursor cursor = mAdapter.getCursor();
 		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
+		super.onDestroy();
 	}
 	
 }

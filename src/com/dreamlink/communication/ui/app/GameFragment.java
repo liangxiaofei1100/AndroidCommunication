@@ -336,8 +336,10 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
     
 	@Override
 	public void onDestroy() {
+		if (mContext != null && mAppReceiver != null) {
+			mContext.unregisterReceiver(mAppReceiver);
+		}
 		super.onDestroy();
-		mContext.unregisterReceiver(mAppReceiver);
 	}
 
 	@Override
