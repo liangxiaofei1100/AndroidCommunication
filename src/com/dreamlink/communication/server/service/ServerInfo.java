@@ -61,4 +61,11 @@ public class ServerInfo {
 	public void setServer_ssid(String server_ssid) {
 		this.server_ssid = server_ssid;
 	}
+
+	@Override
+	public String toString() {
+		return "ServerInfo [server_name=" + server_name + ", server_type="
+				+ server_type + ", server_ip=" + server_ip + ", server_device="
+				+ server_device + ", server_ssid=" + server_ssid + "]";
+	}
 }
