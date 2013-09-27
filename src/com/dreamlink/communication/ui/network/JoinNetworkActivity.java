@@ -62,7 +62,6 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	private UserManager mUserManager;
 	private ConnectHelper mConnectHelper;
 
-	private boolean mIsSever = false;
 	/**
 	 * save server data Map structure: </br> KEY_NAME - server name</br>
 	 * KEY_TYPE - server network type: IP, AP, WiFi Direct</br> KEY_IP - server
@@ -176,13 +175,7 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 		mServerListView = (ListView) findViewById(R.id.server_listview);
 		mServerListView.setEmptyView(findViewById(R.id.no_server_view));
 		mSearchView.setOnClickListener(this);
-		mServerListView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-					long arg3) {
-
-			}
-		});
+		mServerListView.setOnItemClickListener(this);
 		mServerAdapter = new ServerAdapter(mContext, mServerData);
 		mServerListView.setAdapter(mServerAdapter);
 	}
@@ -322,7 +315,8 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	private void addServer(ServerInfo info) {
 		if (info.getServerType().equals(ConnectHelper.SERVER_TYPE_WIFI)) {
 			addWifiServer(info);
-		} else if (info.getServerType().equals(ConnectHelper.SERVER_TYPE_WIFI_AP)) {
+		} else if (info.getServerType().equals(
+				ConnectHelper.SERVER_TYPE_WIFI_AP)) {
 			addWifiApServer(info);
 		} else {
 			if (isServerAlreadyAdded(info.getServerName(),
@@ -344,14 +338,12 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 			mServerAdapter.notifyDataSetChanged();
 		}
 	}
-	
+
 	private void addWifiApServer(ServerInfo info) {
-		if (isServerAlreadyAdded(info.getServerName(),
-				info.getServerSsid())) {
+		if (isServerAlreadyAdded(info.getServerName(), info.getServerSsid())) {
 			// TODO if two server has the same name, How to do?
 			Log.d(TAG,
-					"wifiAp.addServer()	ignore, name = "
-							+ info.getServerName());
+					"wifiAp.addServer()	ignore, name = " + info.getServerName());
 			return;
 		}
 		// Found a AP, add the user name to the server list.
@@ -364,14 +356,13 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 				"type:" + info.getServerType() + ",name:"
 						+ info.getServerName() + "    mServerData.size:"
 						+ mServerData.size());
-		mServerAdapter.notifyDataSetChanged();		
+		mServerAdapter.notifyDataSetChanged();
 	}
 
 	private void addWifiServer(ServerInfo info) {
 		if (isServerAlreadyAdded(info.getServerName(), info.getServerIp())) {
 			Log.d(TAG,
-					"wifi.addServer()	ignore, name = "
-							+ info.getServerName());
+					"wifi.addServer()	ignore, name = " + info.getServerName());
 			return;
 		}
 		if (Search.ANDROID_AP_ADDRESS.equals(info.getServerIp())) {
@@ -475,15 +466,14 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
-	public void finish() {
-		super.finish();
+	protected void onDestroy() {
+		super.onDestroy();
 		if (null != mStopSearchTimer) {
 			mStopSearchTimer.cancel();
+			mStopSearchTimer = null;
 		}
 		mIsAPSelected = false;
-		if (!mIsSever) {
-			mConnectHelper.stopSearch();
-		}
+		mConnectHelper.stopSearch();
 	}
 
 }
