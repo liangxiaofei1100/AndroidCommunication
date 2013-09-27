@@ -353,10 +353,10 @@ public class WifiOrAPService extends Service {
 						}
 					}
 					ServerInfo info = new ServerInfo();
-					info.setServer_name(WiFiNameEncryption
+					info.setServerName(WiFiNameEncryption
 							.getUserName(result.SSID));
-					info.setServer_type("wifi-ap");
-					info.setServer_ssid(result.SSID);
+					info.setServerType("wifi-ap");
+					info.setServerSsid(result.SSID);
 					onSearchListener.onSearchSuccess(info);
 				}
 			}
@@ -379,13 +379,13 @@ public class WifiOrAPService extends Service {
 	public boolean connectToServer(ServerInfo info) {
 		if (info == null) {
 			return false;
-		} else if (info.getServer_type().equals("wifi")) {
+		} else if (info.getServerType().equals("wifi")) {
 			SocketCommunicationManager.getInstance(getApplicationContext())
 					.connectServer(this.getApplicationContext(),
-							info.getServer_ip());
+							info.getServerIp());
 			return true;
-		} else if (info.getServer_type().equals("wifi-ap")) {
-			connetAP(info.getServer_ssid());
+		} else if (info.getServerType().equals("wifi-ap")) {
+			connetAP(info.getServerSsid());
 			return true;
 		}
 		return false;

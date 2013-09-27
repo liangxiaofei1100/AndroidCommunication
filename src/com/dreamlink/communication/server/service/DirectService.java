@@ -199,9 +199,9 @@ public class DirectService extends Service {
 									 */
 									serverList.add(device);
 									ServerInfo info = new ServerInfo();
-									info.setServer_type("wifi-direct");
-									info.setServer_device(device);
-									info.setServer_name(device.deviceName);
+									info.setServerType("wifi-direct");
+									info.setServerDevice(device);
+									info.setServerName(device.deviceName);
 									onSearchListener.onSearchSuccess(info);
 								}
 							}
@@ -309,10 +309,10 @@ public class DirectService extends Service {
 	};
 
 	public boolean connectToServer(ServerInfo info) {
-		if (info == null || !info.getServer_type().equals("wifi-direct")) {
+		if (info == null || !info.getServerType().equals("wifi-direct")) {
 			return false;
 		}
-		WifiP2pDevice device = info.getServer_device();
+		WifiP2pDevice device = info.getServerDevice();
 		WifiP2pConfig config = new WifiP2pConfig();
 		config.deviceAddress = device.deviceAddress;
 		config.groupOwnerIntent = 0;

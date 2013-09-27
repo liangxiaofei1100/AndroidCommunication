@@ -225,11 +225,11 @@ public class ConnectHelper {
 
 	public void connenctToServer(ServerInfo info) {
 		Log.d(TAG, "connenctToServer");
-		if (info.getServer_type().equals("wifi-direct")) {
+		if (info.getServerType().equals("wifi-direct")) {
 			if (directService != null)
 				directService.connectToServer(info);
-		} else if (info.getServer_type().equals("wifi")
-				|| info.getServer_type().equals("wifi-ap")) {
+		} else if (info.getServerType().equals("wifi")
+				|| info.getServerType().equals("wifi-ap")) {
 			if (wifiOrAPService != null)
 				wifiOrAPService.connectToServer(info);
 		}
