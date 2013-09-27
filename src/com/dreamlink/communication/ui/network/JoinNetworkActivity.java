@@ -10,7 +10,6 @@ import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.data.UserHelper;
-import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.Search;
 import com.dreamlink.communication.server.SocketServer;
@@ -21,55 +20,49 @@ import com.dreamlink.communication.util.NetWorkUtil;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /***
  * use this class to search server and connect
  */
 @TargetApi(14)
 public class JoinNetworkActivity extends Activity implements OnClickListener,
-		OnSearchListener {
+		OnSearchListener, OnItemClickListener {
 	private static final String TAG = "ConnectFriendActivity";
+
+	// Views
+
 	private ProgressBar mSearchBar;
 	private TextView mSearchView;
-
-	private ListView mServerListView;// show server list
-
-	// Title
+	private ListView mServerListView;
+	private ServerAdapter mServerAdapter;
 	private ImageView mTitleIcon;
 	private TextView mTitleView;
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
-	
-	private Notice mNotice;
+
+	// Members
+
 	private Context mContext;
-	private boolean sever_flag = false;
+	private UserManager mUserManager;
+	private ConnectHelper mConnectHelper;
 
-	private ServerAdapter mServerAdapter;
-
+	private boolean mIsSever = false;
 	/**
 	 * save server data Map structure: </br> KEY_NAME - server name</br>
 	 * KEY_TYPE - server network type: IP, AP, WiFi Direct</br> KEY_IP - server
@@ -82,39 +75,26 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	private static final String KEY_TYPE = "type";
 	/** Server type IP, value is IP. Server type AP, value is AP SSID */
 	private static final String KEY_VALUE = "value";
-
 	/** Server is a WiFi STA */
 	private static final int SERVER_TYPE_IP = 1;
-
 	/** Server is a WiFi AP */
 	private static final int SERVER_TYPE_AP = 2;
 	/** Flag for decide to auto connect AP or not. */
-
 	private boolean mIsAPSelected = false;
-	private WifiManager mWifiManager;
-
-	private UserManager mUserManager;
 
 	private static final int MSG_SEARCH_SUCCESS = 1;
-	private static final int MSG_SEARCH_FAIL = 2;
-	/** Connect to the server and launch app list activity. */
 	private static final int MSG_CONNECT_SERVER = 3;
 	private static final int MSG_SEARCH_WIFI_DIRECT_FOUND = 4;
-	private static final int MSG_LOGIN_REQEUST = 5;
 	private static final int MSG_SEARCH_STOP = 6;
 	private static final int MSG_SEARCHING = 7;
 
-	private static final int SEARCHING = 0;
-	private static final int SEARCHED = 1;
-	private static final int SEARCH_FAILED = 2;
-	private static final int SEARCH_OVER = 3;
-	private static final int CONNECTING = 4;
+	private static final int STATUS_SEARCHING = 0;
+	private static final int STATUS_SEARCH_OVER = 3;
+	private static final int STATUS_CONNECTING = 4;
 
-	private Timer mTimeoutTimer = null;
+	private Timer mStopSearchTimer = null;
 	/** set search time out 15s */
-	private static final int TIME_OUT = 15 * 1000;
-
-	private ConnectHelper connectHelper;
+	private static final int SEARCH_TIME_OUT = 15 * 1000;
 
 	private Handler mHandler = new Handler() {
 
@@ -123,26 +103,20 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 			case MSG_SEARCH_SUCCESS:
 				addServer((ServerInfo) msg.obj);
 				break;
-			case MSG_SEARCH_FAIL:
-				updateUI(SEARCH_FAILED);
-				mNotice.showToast("Search failed");
-				updateUI(SEARCH_FAILED);
-				break;
 			case MSG_SEARCH_STOP:
-				// mNotice.showToast("Search Stop");
-				updateUI(SEARCH_OVER);
+				updateUI(STATUS_SEARCH_OVER);
 				break;
 			case MSG_SEARCHING:
-				updateUI(SEARCHING);
+				updateUI(STATUS_SEARCHING);
 				break;
 			case MSG_CONNECT_SERVER:
-				updateUI(CONNECTING);
+				updateUI(STATUS_CONNECTING);
 				ServerInfo info = (ServerInfo) msg.obj;
-				connectHelper.connenctToServer(info);
+				mConnectHelper.connenctToServer(info);
 				if (!info.getServer_type().equals("wifi-ap")) {
 					// connecting
 					Intent intent = new Intent();
-//					intent.putExtra("status", MainUIFrame.CONNECTING);
+					// intent.putExtra("status", MainUIFrame.CONNECTING);
 					setResult(RESULT_OK, intent);
 					finish();
 				}
@@ -161,16 +135,20 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_join_network);
 		mContext = this;
-		mNotice = new Notice(mContext);
-		connectHelper = ConnectHelper.getInstance(getApplicationContext());
+		mConnectHelper = ConnectHelper.getInstance(getApplicationContext());
 		initTitle();
 		initViews();
 
 		mUserManager = UserManager.getInstance();
+
+		resetLocalUser();
+		startSearch();
+	}
+
+	private void resetLocalUser() {
 		UserHelper userHelper = new UserHelper(mContext);
 		User localUser = userHelper.loadUser();
 		mUserManager.setLocalUser(localUser);
-		startSearch();
 	}
 
 	private void initTitle() {
@@ -202,12 +180,7 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				ServerInfo info = (ServerInfo) mServerData.get(arg2).get(
-						KEY_VALUE);
-				if (info.getServer_type().equals("wifi-ap"))
-					mIsAPSelected = true;
-				mHandler.obtainMessage(MSG_CONNECT_SERVER, info).sendToTarget();
-				// clearServerList();
+
 			}
 		});
 		mServerAdapter = new ServerAdapter(mContext, mServerData);
@@ -224,16 +197,15 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	 *            search status
 	 */
 	private void updateUI(int status) {
-		if (SEARCHING == status) {// searching
+		if (STATUS_SEARCHING == status) {
 			mSearchBar.setVisibility(View.VISIBLE);
 			mSearchView.setText(R.string.searching_sever);
 			mSearchView.setClickable(false);
-		} else if (SEARCH_OVER == status) {// found
+		} else if (STATUS_SEARCH_OVER == status) {
 			mSearchBar.setVisibility(View.INVISIBLE);
 			mSearchView.setText(R.string.search_sever);
 			mSearchView.setClickable(true);
-		} else if (SEARCH_FAILED == status) {// not found
-		} else if (CONNECTING == status) {
+		} else if (STATUS_CONNECTING == status) {
 			mSearchBar.setVisibility(View.INVISIBLE);
 			mSearchView.setText(R.string.connecting);
 			mSearchView.setClickable(false);
@@ -249,19 +221,33 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 			SocketServer.getInstance().stopServer();
 		}
 
-		connectHelper.searchServer(this);
+		mConnectHelper.searchServer(this);
+		
 		Message message = mHandler.obtainMessage(MSG_SEARCHING);
 		mHandler.sendMessage(message);
 
-		mTimeoutTimer = new Timer();
-		mTimeoutTimer.schedule(new TimerTask() {
+		setStopSearchTimer();
+	}
+
+	private void setStopSearchTimer() {
+		if (mStopSearchTimer != null) {
+			try {
+				mStopSearchTimer.cancel();
+			} catch (Exception e) {
+				Log.d(TAG, "setStopSearchTimer cancel time." + e);
+			}
+			
+		}
+		mStopSearchTimer = new Timer();
+		mStopSearchTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				connectHelper.stopSearch(false);
+				mStopSearchTimer = null;
+				mConnectHelper.stopSearch(false);
 				Message message = mHandler.obtainMessage(MSG_SEARCH_STOP);
 				mHandler.sendMessage(message);
 			}
-		}, TIME_OUT);
+		}, SEARCH_TIME_OUT);
 	}
 
 	/**
@@ -430,6 +416,14 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
+	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+		ServerInfo info = (ServerInfo) mServerData.get(arg2).get(KEY_VALUE);
+		if (info.getServer_type().equals("wifi-ap"))
+			mIsAPSelected = true;
+		mHandler.obtainMessage(MSG_CONNECT_SERVER, info).sendToTarget();
+	}
+
+	@Override
 	public void onSearchSuccess(String serverIP, String serverName) {
 		Log.d(TAG, "mIsApSelected:" + mIsAPSelected + "\n" + "serverIP:"
 				+ serverIP + "\n" + "serverName:" + serverName);
@@ -474,12 +468,13 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	@Override
 	public void finish() {
 		super.finish();
-		if (null != mTimeoutTimer) {
-			mTimeoutTimer.cancel();
+		if (null != mStopSearchTimer) {
+			mStopSearchTimer.cancel();
 		}
 		mIsAPSelected = false;
-		if (!sever_flag) {
-			connectHelper.stopSearch();
+		if (!mIsSever) {
+			mConnectHelper.stopSearch();
 		}
 	}
+
 }
