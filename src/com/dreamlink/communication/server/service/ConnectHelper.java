@@ -312,4 +312,39 @@ public class ConnectHelper {
 		}
 	}
 
+	/**
+	 * Release listener object.
+	 * 
+	 * @param listener
+	 */
+	public void releaseListener(OnSearchListener listener) {
+		// TODO to avoid null point exception, set a default listener.
+		// The best way is set the listener to null.
+		if (this.listener == listener) {
+			this.listener = mDefaultSearchListener;
+		}
+
+		if (this.direcrListener == listener) {
+			this.direcrListener = mDefaultSearchListener;
+		}
+	}
+
+	private OnSearchListener mDefaultSearchListener = new OnSearchListener() {
+
+		@Override
+		public void onSearchSuccess(ServerInfo serverInfo) {
+			Log.d(TAG, "mDefaultSearchListener onSearchSuccess " + serverInfo);
+		}
+
+		@Override
+		public void onSearchSuccess(String serverIP, String name) {
+			Log.d(TAG, "mDefaultSearchListener onSearchSuccess " + serverIP
+					+ ", " + name);
+		}
+
+		@Override
+		public void onSearchStop() {
+			Log.d(TAG, "mDefaultSearchListener onSearchStop");
+		}
+	};
 }
