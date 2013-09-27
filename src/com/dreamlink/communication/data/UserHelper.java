@@ -18,7 +18,7 @@ public class UserHelper {
 	private Context mContext;
 
 	public UserHelper(Context context) {
-		mContext = context;
+		mContext = context.getApplicationContext();
 	}
 
 	/**
