@@ -20,16 +20,17 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.text.NoCopySpan.Concrete;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.aidl.HostInfo;
 import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.PlatformManagerCallback;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.lib.util.ArrayUtil;
 import com.dreamlink.communication.server.SocketServer;
+import com.dreamlink.communication.util.Log;
 
 @SuppressWarnings("unused")
 public class PlatformManager implements OnCommunicationListenerExternal {
@@ -43,34 +44,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	private int appId = 115;;
 	private String TAG = "ArbiterLiu-PlatformManagerService";
 	private ConcurrentHashMap<Integer, PlatformManagerCallback> callbackList;
-	private Map<Integer, HostInfo> joinedGroup;
+	private ConcurrentHashMap<Integer, HostInfo> joinedGroup;
 	private Context mContext;
 	private static PlatformManager mPlatformManager;
-
-	/** test interface ,final will be define start */
-	public interface PlatformManagerCallback {
-		/** please check the return value,with the create parameters */
-		public void hostHasCreated(HostInfo hostInfo);
-
-		/** the flag true mean joined ,false mean refused */
-		public void joinGroupResult(HostInfo hostInfo, boolean flag);
-
-		public void groupMemberUpdate(int hostId, ArrayList<Integer> userList);
-
-		public void hostInfoChange(ConcurrentHashMap<Integer, HostInfo> hostList);
-
-		public void hasExitGroup(int hostId);
-
-		/** the network disconnect clear all data */
-		public void disconnect();
-
-		public void receiverMessage(byte[] data, User sendUser,
-				boolean allFlag, HostInfo info);
-
-		public void startGroupBusiness(HostInfo hostInfo);
-	}
-
-	/** test interface ,final will be define end */
 
 	private PlatformManager(Context context) {
 		mContext = context;
@@ -89,7 +65,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		callbackList.remove(app_id);
 	}
 
-	public PlatformManager getInstance(Context context) {
+	public static PlatformManager getInstance(Context context) {
 		if (mPlatformManager == null) {
 			mPlatformManager = new PlatformManager(context);
 		}
@@ -101,14 +77,14 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		userManager = UserManager.getInstance();
 		mSocketCommunicationManager = SocketCommunicationManager
 				.getInstance(mContext);
-		joinedGroup = new HashMap<Integer, HostInfo>();
+		joinedGroup = new ConcurrentHashMap<Integer, HostInfo>();
 		allHostList = new ConcurrentHashMap<Integer, HostInfo>();
 		mSocketCommunicationManager.registerOnCommunicationListenerExternal(
 				this, appId);
 		platformProtocol = new PlatformProtocol(this);
 		createHost = new HashMap<Integer, HostInfo>();
 
-		callbackList = new ConcurrentHashMap<Integer, PlatformManager.PlatformManagerCallback>();
+		callbackList = new ConcurrentHashMap<Integer, PlatformManagerCallback>();
 	}
 
 	/**
@@ -125,17 +101,18 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			int app_id) {
 		HostInfo hostInfo = new HostInfo();
 		hostInfo.ownerID = userManager.getLocalUser().getUserID();
+		hostInfo.ownerName = userManager.getLocalUser().getUserName();
 		hostInfo.personLimit = numberLimit;
 		hostInfo.packageName = pakcageName;
 		hostInfo.appName = appName;
 		hostInfo.app_id = app_id;
 		hostInfo.personNumber = 1;
-		byte[] tartgetData = platformProtocol.encodePlatformProtocol(
-				platformProtocol.CREATE_HOST_CMD_CODE,
-				ArrayUtil.objectToByteArray(hostInfo));
 		if (!UserManager.isManagerServer(userManager.getLocalUser())) {
 			User temUser = userManager.getAllUser().get(-1);
 			if (temUser != null) {
+				byte[] tartgetData = platformProtocol.encodePlatformProtocol(
+						platformProtocol.CREATE_HOST_CMD_CODE,
+						ArrayUtil.objectToByteArray(hostInfo));
 				mSocketCommunicationManager.sendMessageToSingle(tartgetData,
 						temUser, appId);
 			}
@@ -145,7 +122,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	}
 
 	public void requestCreateHost(HostInfo hostInfo) {
-		if (UserManager.isManagerServer(userManager.getLocalUser())) {
+		Log.e(TAG, "requestCreateHost ");
+		boolean isexsit = false;
+		if (!UserManager.isManagerServer(userManager.getLocalUser())) {
 			/** this is no possible */
 			return;
 		}
@@ -156,34 +135,40 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 					&& temp.appName.equals(hostInfo.appName)
 					&& temp.packageName.equals(hostInfo.packageName)) {
 				/* do nothing or return the old hostInfo */
+				isexsit = true;
+				if (hostInfo.ownerID == userManager.getLocalUser().getUserID()) {
+					createHostAck(temp);
+				} else {
+					User tem = userManager.getAllUser().get(hostInfo.ownerID);
+					if (tem != null) {
+						byte[] target = platformProtocol
+								.encodePlatformProtocol(
+										platformProtocol.CREATE_HOST_ACK_CMD_CODE,
+										ArrayUtil.objectToByteArray(temp));
+						mSocketCommunicationManager.sendMessageToSingle(target,
+								tem, appId);
+					}
+				}
+			}
+		}
+		if (!isexsit) {
+			hostInfo.hostId = incId;
+			incId++;
+			hostInfo.isAlive = 1;
+			if (UserManager.isManagerServer(userManager.getAllUser().get(
+					hostInfo.ownerID))) {
+				createHostAck(hostInfo);
+			} else {
 				User tem = userManager.getAllUser().get(hostInfo.ownerID);
 				if (tem != null) {
 					byte[] target = platformProtocol.encodePlatformProtocol(
 							platformProtocol.CREATE_HOST_ACK_CMD_CODE,
-							ArrayUtil.objectToByteArray(temp));
+							ArrayUtil.objectToByteArray(hostInfo));
 					mSocketCommunicationManager.sendMessageToSingle(target,
 							tem, appId);
+				} else {
+					/** this is mean the communication has lost,do nothing */
 				}
-				return;
-			}
-		}
-		hostInfo.hostId = incId;
-		incId++;
-		hostInfo.isAlive = 1;
-		if (UserManager.isManagerServer(userManager.getAllUser().get(
-				hostInfo.ownerID))) {
-			createHostAck(hostInfo);
-		} else {
-			User tem = userManager.getAllUser().get(hostInfo.ownerID);
-			if (tem != null) {
-				byte[] target = platformProtocol.encodePlatformProtocol(
-						platformProtocol.CREATE_HOST_ACK_CMD_CODE,
-						ArrayUtil.objectToByteArray(hostInfo));
-				mSocketCommunicationManager.sendMessageToSingle(target, tem,
-						appId);
-			} else {
-				/** this is mean the communication has lost,do nothing */
-				return;
 			}
 		}
 		updateHostInfo(hostInfo);
@@ -203,6 +188,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		if (groupMember == null) {
 			groupMember = new HashMap<Integer, ArrayList<Integer>>();
 		}
+		joinedGroup.put(hostInfo.hostId, hostInfo);
 		ArrayList<Integer> temList = new ArrayList<Integer>();
 		temList.add(userManager.getLocalUser().getUserID());
 		groupMember.put(hostInfo.hostId, temList);
@@ -213,7 +199,11 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		int app_id = hostIo.app_id;
 		PlatformManagerCallback callback = callbackList.get(app_id);
 		if (callback != null) {
-			callback.hostHasCreated(hostIo);
+			try {
+				callback.hostHasCreated(hostIo);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -258,14 +248,14 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 
 	public void receiverAllHostInfo(
 			ConcurrentHashMap<Integer, HostInfo> allHostInfo) {
-		// allHostList.clear();
-		// for (Entry<Integer, HostInfo> entry : allHostInfo.entrySet()) {
-		// HostInfo hostInfo = entry.getValue();
-		// allHostList.put(hostInfo.ownerID, hostInfo);
-		// }
 		for (Entry<Integer, PlatformManagerCallback> entry : callbackList
 				.entrySet()) {
-			entry.getValue().hostInfoChange(allHostInfo);
+			try {
+				entry.getValue().hostInfoChange(
+						ArrayUtil.objectToByteArray(allHostInfo));
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -384,7 +374,11 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		}
 		PlatformManagerCallback callback = callbackList.get(hostInfo.app_id);
 		if (callback != null) {
-			callback.joinGroupResult(hostInfo, flag);
+			try {
+				callback.joinGroupResult(hostInfo, flag);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -418,10 +412,20 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			groupMember = new HashMap<Integer, ArrayList<Integer>>();
 		}
 		groupMember.put(hostId, userList);
+		ArrayList<User> tem = new ArrayList<User>();
+		Map<Integer, User> userMap = userManager.getAllUser();
+		for (int id : userList) {
+			tem.add(userMap.get(id));
+		}
 		HostInfo hostInfo = joinedGroup.get(hostId);
 		PlatformManagerCallback callback = callbackList.get(hostInfo.app_id);
 		if (callback != null) {
-			callback.groupMemberUpdate(hostId, userList);
+			try {
+				callback.groupMemberUpdate(hostId,
+						ArrayUtil.objectToByteArray(tem));
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -482,6 +486,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		if (createHost.containsKey(hostId)) {
 			HostInfo hostInfo = createHost.get(hostId);
 			ArrayList<Integer> temUserList = groupMember.get(hostId);
+			if (temUserList == null) {
+				return;
+			}
 			index = temUserList.indexOf(userId);
 			Log.e(TAG, "REMOVE group member");
 			if (index != -1) {
@@ -503,13 +510,20 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	}
 
 	public void receiverRemoveUser(HostInfo hostInfo) {
+		if (!joinedGroup.containsKey(hostInfo.hostId)) {
+			return;
+		}
 		joinedGroup.remove(hostInfo.hostId);
 		groupMember.remove(hostInfo.hostId);
 		PlatformManagerCallback callback = callbackList.get(hostInfo.app_id);
 		if (callback != null) {
-			callback.hasExitGroup(hostInfo.hostId);
+			try {
+				callback.hasExitGroup(hostInfo.hostId);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
-		Log.d(TAG, "you are removed by form " + hostInfo.hostId);
+		Log.e(TAG, "you are removed by form " + hostInfo.hostId);
 	}
 
 	/**
@@ -559,7 +573,11 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			PlatformManagerCallback callback = callbackList
 					.get(hostInfo.app_id);
 			if (callback != null) {
-				callback.hasExitGroup(hostInfo.hostId);
+				try {
+					callback.hasExitGroup(hostInfo.hostId);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		if (userManager.getLocalUser().getUserID() == -1) {
@@ -568,6 +586,9 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	}
 
 	public void getGroupUser(HostInfo hostInfo) {
+		if (!joinedGroup.containsKey(hostInfo.hostId)) {
+			return;
+		}
 		if (userManager.getLocalUser().getUserID() == hostInfo.ownerID) {
 			receiverGroupMemberUpdat(hostInfo.hostId,
 					groupMember.get(hostInfo.hostId));
@@ -621,29 +642,26 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	@Override
 	public void onUserDisconnected(User arg0) throws RemoteException {
 		int hostId = -1;
-		boolean disconnect = false;
 		if (!mSocketCommunicationManager.isConnected()) {
 			// this mean local lost connect
 			if (createHost != null) {
 				createHost.clear();
 			}
 			if (joinedGroup != null) {
+				for (Entry<Integer, HostInfo> entry : joinedGroup.entrySet()) {
+					receiverRemoveUser(entry.getValue());
+				}
 				joinedGroup.clear();
 				if (groupMember != null)
 					groupMember.clear();
 			}
-			for (Entry<Integer, PlatformManagerCallback> entry : callbackList
-					.entrySet()) {
-				entry.getValue().disconnect();
-			}
 			if (allHostList != null)
 				allHostList.clear();
-			disconnect = true;
 			receiverAllHostInfo(allHostList);
 		} else {
 			for (Entry<Integer, HostInfo> entry : joinedGroup.entrySet()) {
 				HostInfo hostInfo = entry.getValue();
-				if (hostInfo.ownerID == arg0.getUserID()) {
+				if (hostInfo != null && hostInfo.ownerID == arg0.getUserID()) {
 					Log.e(TAG, "hostInfo.ownerID == arg0.getUserID()");
 					hostId = hostInfo.hostId;
 					receiverCancelHost(hostInfo, arg0);
@@ -651,14 +669,14 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			}
 			for (Entry<Integer, HostInfo> entry : createHost.entrySet()) {
 				HostInfo hostInfo = entry.getValue();
-				removeGroupMember(hostInfo.hostId, arg0.getUserID());
+				if (hostInfo != null)
+					removeGroupMember(hostInfo.hostId, arg0.getUserID());
 			}
-		}
-		if (userManager.getLocalUser().getUserID() == -1) {
-			if (!disconnect && hostId == -1) {
+			if (userManager.getLocalUser().getUserID() == -1) {
 				for (Entry<Integer, HostInfo> entry : allHostList.entrySet()) {
 					HostInfo hostInfo = entry.getValue();
-					if (hostInfo.ownerID == arg0.getUserID()) {
+					if (hostInfo != null
+							&& hostInfo.ownerID == arg0.getUserID()) {
 						hostId = hostInfo.hostId;
 						receiverCancelHost(allHostList.get(hostId), arg0);
 					}
@@ -690,7 +708,11 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			PlatformManagerCallback callback = callbackList.get(joinedGroup
 					.get(hostId).app_id);
 			if (callback != null) {
-				callback.startGroupBusiness(joinedGroup.get(hostId));
+				try {
+					callback.startGroupBusiness(joinedGroup.get(hostId));
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -733,7 +755,7 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 		data = ArrayUtil.join(tempData, data);
 		byte[] target = platformProtocol.encodePlatformProtocol(
 				platformProtocol.MESSAGE_CMD_CODE, data);
-		mSocketCommunicationManager.sendMessageToSingle(data, user, appId);
+		mSocketCommunicationManager.sendMessageToSingle(target, user, appId);
 	}
 
 	public void receiverData(byte[] data, User sendUser, boolean allFlag,
@@ -742,10 +764,30 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			PlatformManagerCallback callback = callbackList.get(joinedGroup
 					.get(hostId).app_id);
 			if (callback != null) {
-				callback.receiverMessage(data, sendUser, allFlag,
-						joinedGroup.get(hostId));
+				try {
+					callback.receiverMessage(data, sendUser, allFlag,
+							joinedGroup.get(hostId));
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+	}
+
+	/** this is for application ,when they do not save the joined host */
+	public ArrayList<HostInfo> getJoinedHost(int appId) {
+		ArrayList<HostInfo> temp = new ArrayList<HostInfo>();
+		if (appId == 0) {
+			for (Entry<Integer, HostInfo> entry : joinedGroup.entrySet()) {
+				temp.add(entry.getValue());
+			}
+		} else {
+			for (Entry<Integer, HostInfo> entry : joinedGroup.entrySet()) {
+				if (entry.getValue().app_id == appId)
+					temp.add(entry.getValue());
+			}
+		}
+		return temp;
 	}
 
 	@Override
