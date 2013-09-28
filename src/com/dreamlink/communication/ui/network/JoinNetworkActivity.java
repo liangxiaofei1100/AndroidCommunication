@@ -18,9 +18,9 @@ import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -50,6 +50,7 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	private TextView mSearchView;
 	private ListView mServerListView;
 	private ServerAdapter mServerAdapter;
+	private Vector<ServerInfo> mServerData = new Vector<ServerInfo>();
 	private ImageView mTitleIcon;
 	private TextView mTitleView;
 	private TextView mTitleNum;
@@ -62,23 +63,6 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	private UserManager mUserManager;
 	private ConnectHelper mConnectHelper;
 
-	/**
-	 * save server data Map structure: </br> KEY_NAME - server name</br>
-	 * KEY_TYPE - server network type: IP, AP, WiFi Direct</br> KEY_IP - server
-	 * IP. This is only used in WiFi network.
-	 */
-	private Vector<Map<String, Object>> mServerData = new Vector<Map<String, Object>>();
-	/** Server name */
-	private static final String KEY_NAME = "name";
-	/** Server type */
-	private static final String KEY_TYPE = "type";
-	/** Server type IP, value is IP. Server type AP, value is AP SSID */
-	private static final String KEY_VALUE = "value";
-	/** Server is a WiFi STA */
-	private static final int SERVER_TYPE_IP = 1;
-	/** Server is a WiFi AP */
-	private static final int SERVER_TYPE_AP = 2;
-	/** Flag for decide to auto connect AP or not. */
 	private boolean mIsAPSelected = false;
 
 	private static final int MSG_SEARCH_SUCCESS = 1;
@@ -95,6 +79,7 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	/** set search time out 15s */
 	private static final int SEARCH_TIME_OUT = 15 * 1000;
 
+	@SuppressLint("HandlerLeak")
 	private Handler mHandler = new Handler() {
 
 		public void handleMessage(android.os.Message msg) {
@@ -243,155 +228,49 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 		}, SEARCH_TIME_OUT);
 	}
 
-	/**
-	 * catch broadcast not register exception.
-	 * 
-	 * @param receiver
-	 */
-	@SuppressWarnings("unused")
-	private void unregisterReceiverSafe(BroadcastReceiver receiver) {
-		try {
-			unregisterReceiver(receiver);
-		} catch (Exception e) {
-			Log.e(TAG, e.toString());
-		}
-	}
-
-	/**
-	 * add found server to server list. If server type is IP, just add and wait
-	 * user to choose. If server is AP, show the user name.
-	 * 
-	 * @param name
-	 *            user name.
-	 * @param type
-	 * @param value
-	 *            Server type IP, value is IP. Server type AP, value is AP SSID.
-	 */
-	@SuppressWarnings("unused")
-	private void addServer(String name, int type, String value) {
-		Log.i(TAG, "addServer.name:" + name + "-->type:" + type);
-		switch (type) {
-		case SERVER_TYPE_IP:
-			if (isServerAlreadyAdded(name, value)) {
-				Log.d(TAG, "addServer()	ignore, name = " + name);
-				break;
-			}
-			if (Search.ANDROID_AP_ADDRESS.equals(value)) {
-				Log.d(TAG, "This ip is android wifi ap, ignore, name = " + name);
-				break;
-			}
-			// This device is connected to WiFi, So add the server IP.
-			HashMap<String, Object> ipServer = new HashMap<String, Object>();
-			ipServer.put(KEY_NAME, name);
-			ipServer.put(KEY_TYPE, SERVER_TYPE_IP);
-			ipServer.put(KEY_VALUE, value);
-			mServerData.add(ipServer);
-			Log.i(TAG,
-					"type:" + type + "    mServerData.size:"
-							+ mServerData.size());
-			mServerAdapter.notifyDataSetChanged();
-			break;
-		case SERVER_TYPE_AP:
-			if (isServerAlreadyAdded(name, value)) {
-				// TODO if two server has the same name, How to do?
-				Log.d(TAG, "addServer()	ignore, name = " + name);
-				return;
-			}
-			// Found a AP, add the user name to the server list.
-			HashMap<String, Object> apServer = new HashMap<String, Object>();
-			apServer.put(KEY_NAME, name);
-			apServer.put(KEY_TYPE, SERVER_TYPE_AP);
-			apServer.put(KEY_VALUE, value);
-			mServerData.add(apServer);
-			Log.i(TAG,
-					"type:" + type + "    mServerData.size:"
-							+ mServerData.size());
-			mServerAdapter.notifyDataSetChanged();
-		default:
-			break;
-		}
-	}
-
 	private void addServer(ServerInfo info) {
-		if (info.getServerType().equals(ConnectHelper.SERVER_TYPE_WIFI)) {
-			addWifiServer(info);
-		} else if (info.getServerType().equals(
-				ConnectHelper.SERVER_TYPE_WIFI_AP)) {
-			addWifiApServer(info);
-		} else {
-			if (isServerAlreadyAdded(info.getServerName(),
-					info.getServerDevice().deviceAddress)) {
-				Log.d(TAG,
-						"another.addServer()	ignore, name = "
-								+ info.getServerName());
-				return;
-			}
-			HashMap<String, Object> apServer = new HashMap<String, Object>();
-			apServer.put(KEY_NAME, info.getServerName());
-			apServer.put(KEY_TYPE, info.getServerDevice().deviceAddress);
-			apServer.put(KEY_VALUE, info);
-			mServerData.add(apServer);
-			Log.i(TAG,
-					"type:" + info.getServerType() + ",name:"
-							+ info.getServerName() + "    mServerData.size:"
-							+ mServerData.size());
-			mServerAdapter.notifyDataSetChanged();
-		}
-	}
-
-	private void addWifiApServer(ServerInfo info) {
-		if (isServerAlreadyAdded(info.getServerName(), info.getServerSsid())) {
-			// TODO if two server has the same name, How to do?
-			Log.d(TAG,
-					"wifiAp.addServer()	ignore, name = " + info.getServerName());
+		if (isServerAlreadyAdded(info)) {
+			Log.d(TAG, "Server is already added. " + info);
 			return;
 		}
-		// Found a AP, add the user name to the server list.
-		HashMap<String, Object> apServer = new HashMap<String, Object>();
-		apServer.put(KEY_NAME, info.getServerName());
-		apServer.put(KEY_TYPE, info.getServerSsid());
-		apServer.put(KEY_VALUE, info);
-		mServerData.add(apServer);
-		Log.i(TAG,
-				"type:" + info.getServerType() + ",name:"
-						+ info.getServerName() + "    mServerData.size:"
-						+ mServerData.size());
+		mServerData.add(info);
+		Log.i(TAG, "addServer:" + info);
 		mServerAdapter.notifyDataSetChanged();
 	}
 
-	private void addWifiServer(ServerInfo info) {
-		if (isServerAlreadyAdded(info.getServerName(), info.getServerIp())) {
-			Log.d(TAG,
-					"wifi.addServer()	ignore, name = " + info.getServerName());
-			return;
-		}
-		if (Search.ANDROID_AP_ADDRESS.equals(info.getServerIp())) {
-			Log.d(TAG,
-					"This ip is android wifi ap, ignore, name = "
-							+ info.getServerName());
-			return;
-		}
-		// This device is connected to WiFi, So add the server IP.
-		HashMap<String, Object> ipServer = new HashMap<String, Object>();
-		ipServer.put(KEY_NAME, info.getServerName());
-		ipServer.put(KEY_TYPE, info.getServerIp());
-		ipServer.put(KEY_VALUE, info);
-		mServerData.add(ipServer);
-		Log.i(TAG,
-				"type:" + info.getServerType() + ",name:"
-						+ info.getServerName() + "    mServerData.size:"
-						+ mServerData.size());
-		mServerAdapter.notifyDataSetChanged();
-	}
+	private boolean isServerAlreadyAdded(ServerInfo info) {
+		boolean result = false;
 
-	private boolean isServerAlreadyAdded(String name, String ip) {
-		for (Map<String, Object> map : mServerData) {
-			if (name.equals(map.get(KEY_NAME)) && ip.equals(map.get(KEY_TYPE))) {
-				// The server is already added to list.
-				return true;
+		for (ServerInfo serverInfo : mServerData) {
+			if (info.getServerType().equals(ConnectHelper.SERVER_TYPE_WIFI)) {
+				if (serverInfo.getServerName().equals(info.getServerName())
+						&& serverInfo.getServerIp().equals(info.getServerIp())) {
+					// The server is already added to list.
+					result = true;
+					break;
+				}
+			} else if (info.getServerType().equals(
+					ConnectHelper.SERVER_TYPE_WIFI_AP)) {
+				if (serverInfo.getServerName().equals(info.getServerName())
+						&& serverInfo.getServerSsid().equals(
+								info.getServerSsid())) {
+					// The server is already added to list.
+					result = true;
+					break;
+				}
+			} else if (info.getServerType().equals(
+					ConnectHelper.SERVER_TYPE_WIFI_DIRECT)) {
+				if (serverInfo.getServerName().equals(info.getServerName())
+						&& serverInfo.getServerDevice().deviceAddress
+								.equals(info.getServerDevice().deviceAddress)) {
+					// The server is already added to list.
+					result = true;
+					break;
+				}
 			}
 		}
-		return false;
+
+		return result;
 	}
 
 	private void clearServerList() {
@@ -417,7 +296,7 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-		ServerInfo info = (ServerInfo) mServerData.get(arg2).get(KEY_VALUE);
+		ServerInfo info = mServerData.get(arg2);
 		if (info.getServerType().equals("wifi-ap"))
 			mIsAPSelected = true;
 		mHandler.obtainMessage(MSG_CONNECT_SERVER, info).sendToTarget();
@@ -467,13 +346,16 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 
 	@Override
 	protected void onDestroy() {
-		super.onDestroy();
 		if (null != mStopSearchTimer) {
 			mStopSearchTimer.cancel();
 			mStopSearchTimer = null;
 		}
 		mIsAPSelected = false;
-		mConnectHelper.stopSearch();
+		if (mConnectHelper != null) {
+			mConnectHelper.stopSearch();
+			mConnectHelper.releaseListener(this);
+		}
+		super.onDestroy();
 	}
 
 }
