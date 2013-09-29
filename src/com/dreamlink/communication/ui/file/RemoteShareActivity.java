@@ -18,6 +18,7 @@ import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.DreamConstant.Cmd;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.common.SingleMediaScanner;
 import com.dreamlink.communication.ui.dialog.FileExistDialog;
 import com.dreamlink.communication.ui.dialog.FileExistDialog.onMenuItemClickListener;
 import com.dreamlink.communication.ui.dialog.FileTransferDialog;
@@ -801,6 +802,8 @@ public class RemoteShareActivity extends Activity implements
 								.setState(FileTransferDialog.STATE_COPY_OK);
 						doClear();
 						mSpeedTimer.cancel();
+						//update mediaProvider
+						new SingleMediaScanner(mContext, mLocalFile);
 					}
 				}
 			}, 1000, 500);
