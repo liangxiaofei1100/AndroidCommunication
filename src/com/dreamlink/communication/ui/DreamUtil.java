@@ -123,8 +123,13 @@ public class DreamUtil {
 	}
 	
 	public static void showInfoDialog(Context context, String info){
+		String title = context.getResources().getString(R.string.menu_info);
+		showInfoDialog(context, title, info);
+	}
+	
+	public static void showInfoDialog(Context context, String title, String info){
 		new AlertDialog.Builder(context)
-		.setTitle(R.string.menu_info)
+		.setTitle(title)
 		.setMessage(info)
 		.setPositiveButton(android.R.string.ok, null)
 		.create().show();
@@ -162,4 +167,13 @@ public class DreamUtil {
 		return null;
 	}
 	
+	/**
+	 * get parent path
+	 * @param path current file path
+	 * @return parent path
+	 */
+	public static String getParentPath(String path){
+		File file = new File(path);
+		return file.getParent();
+	}
 }

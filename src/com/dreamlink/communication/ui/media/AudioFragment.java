@@ -206,7 +206,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
 		final Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
-		String title = cursor.getString((cursor
+		final String title = cursor.getString((cursor
 				.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
 		final String url = cursor.getString(cursor
 				.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
@@ -232,7 +232,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 					case 3:
 						//info
 						String info = getAudioInfo(cursor);
-						DreamUtil.showInfoDialog(mContext, info);
+						DreamUtil.showInfoDialog(mContext, title, info);
 						break;
 
 					default:
@@ -276,8 +276,6 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	}
 	
 	public String getAudioInfo(Cursor cursor) {
-		String title = cursor.getString((cursor
-				.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
 		long size = cursor.getLong(cursor
 				.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
 		String url = cursor.getString(cursor
@@ -285,8 +283,8 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		long date = cursor.getLong(cursor
 				.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED));
 		String result = "";
-		result = "名称:" + title + DreamConstant.ENTER + "类型:" + "音频"
-				+ DreamConstant.ENTER + "位置:" + url + DreamConstant.ENTER
+		result = "类型:" + "音频" + DreamConstant.ENTER
+				+ "位置:" + DreamUtil.getParentPath(url) + DreamConstant.ENTER
 				+ "大小:" + DreamUtil.getFormatSize(size) + DreamConstant.ENTER
 				+ "修改日期:" + DreamUtil.getFormatDate(date);
 		return result;

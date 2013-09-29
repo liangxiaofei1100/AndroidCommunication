@@ -197,11 +197,9 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-		Cursor cursor = mAdapter.getCursor();
+		final Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
 //		final long videoId = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
-		final long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.DURATION)); // 时长
-		final long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.SIZE)); // 文件大小
 		final String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
 		final String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
 			
@@ -227,8 +225,8 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 						break;
 					case 3:
 						//info
-						String info = getVideoInfo(displayName, url, size, duration);
-						DreamUtil.showInfoDialog(mContext, info);
+						String info = getVideoInfo(cursor);
+						DreamUtil.showInfoDialog(mContext, displayName, info);
 						break;
 
 					default:
@@ -271,11 +269,13 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		}
 	}
     
-    public String getVideoInfo(String name, String url, long size, long duration){
+    public String getVideoInfo(Cursor cursor){
+    	long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.DURATION)); // 时长
+		long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.SIZE)); // 文件大小
+		String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
     	String result = "";
-		result = "名称:" + name + DreamConstant.ENTER
-				+ "类型:" + "视频" + DreamConstant.ENTER
-				+ "位置:" + url + DreamConstant.ENTER
+		result = "类型:" + "视频" + DreamConstant.ENTER
+				+ "位置:" + DreamUtil.getParentPath(url) + DreamConstant.ENTER
 				+ "大小:" + DreamUtil.getFormatSize(size) + DreamConstant.ENTER
 				+ "时长:" + DreamUtil.mediaTimeFormat(duration);
 		return result;

@@ -255,7 +255,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 					case 3:
 						//info
 						String info = getImageInfo(cursor);
-						DreamUtil.showInfoDialog(mContext, info);
+						DreamUtil.showInfoDialog(mContext, name, info);
 						break;
 
 					default:
@@ -278,7 +278,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 				.getColumnIndex(MediaStore.MediaColumns.DATA));
 		long size = cursor.getLong(cursor.getColumnIndex(MediaColumns.SIZE));
 		long date = cursor.getLong(cursor.getColumnIndex(MediaColumns.DATE_MODIFIED));
-		String name = cursor.getString(cursor.getColumnIndex(MediaColumns.DISPLAY_NAME));
 		long width = 0;
 		long height = 0;
 		if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -286,17 +285,15 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			height = cursor.getLong(cursor.getColumnIndex("height"));
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			result = "名称:" + name + DreamConstant.ENTER
-					+ "类型:" + "图片" + DreamConstant.ENTER
-					+ "位置:" + url + DreamConstant.ENTER
+			result = "类型:" + "图片" + DreamConstant.ENTER
+					+ "位置:" + DreamUtil.getParentPath(url) + DreamConstant.ENTER
 					+ "大小:" + DreamUtil.getFormatSize(size) + DreamConstant.ENTER
 					+ "宽度:" +  width + DreamConstant.ENTER
 					+ "高度:" + height + DreamConstant.ENTER
 					+ "修改日期:" + DreamUtil.getFormatDate(date);
 		}else {
-			result = "名称:" + name + DreamConstant.ENTER
-					+ "类型:" + "图片" + DreamConstant.ENTER
-					+ "位置:" + url + DreamConstant.ENTER
+			result = "类型:" + "图片" + DreamConstant.ENTER
+					+ "位置:" + DreamUtil.getParentPath(url) + DreamConstant.ENTER
 					+ "大小:" + size + DreamConstant.ENTER
 					+ "修改日期:" + date;
 		}

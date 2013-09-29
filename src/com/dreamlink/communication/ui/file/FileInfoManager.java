@@ -654,24 +654,21 @@ public class FileInfoManager {
 
 	public void showInfoDialog(FileInfo fileInfo) {
 		String info = getFileInfo(fileInfo);
-		DreamUtil.showInfoDialog(context, info);
+		DreamUtil.showInfoDialog(context, fileInfo.fileName, info);
 	}
 
 	private String getFileInfo(FileInfo fileInfo) {
 		String path = fileInfo.filePath.substring(0, fileInfo.filePath.lastIndexOf("/"));
-		String result = "";
+		String type = "";
 		if (fileInfo.isDir) {
-			result = "名称:" + fileInfo.fileName + DreamConstant.ENTER
-					+ "类型:文件夹" + DreamConstant.ENTER
-					+ "位置:" + path + DreamConstant.ENTER
-					+ "修改日期:"+ fileInfo.getFormateDate();
+			type = "文件夹";
 		}else {
-			result = "名称:" + fileInfo.fileName + DreamConstant.ENTER
-					+ "类型:文件" + DreamConstant.ENTER
-					+ "位置:" + path + DreamConstant.ENTER
-					+ "大小:" + fileInfo.getFormatFileSize() + DreamConstant.ENTER
-					+ "修改日期:" + fileInfo.getFormateDate();
+			type = "文件";
 		}
+		String result = "类型:" + type + DreamConstant.ENTER
+				+ "位置:" + path + DreamConstant.ENTER
+				+ "大小:" + fileInfo.getFormatFileSize() + DreamConstant.ENTER
+				+ "修改日期:" + fileInfo.getFormateDate();
 		return result;
 	}
 	
