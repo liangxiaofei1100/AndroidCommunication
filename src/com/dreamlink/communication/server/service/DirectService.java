@@ -83,6 +83,7 @@ public class DirectService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		initReceiver();
 	}
 
 	@Override
@@ -152,7 +153,6 @@ public class DirectService extends Service {
 		wifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
 		channel = wifiP2pManager.initialize(getApplicationContext(),
 				getMainLooper(), null);
-		initReceiver();
 		this.registerReceiver(wifiDirectReceiver, mWifiDirectIntentFilter);
 		if (flag) {
 			setDeviceName(wifiP2pManager, channel,
