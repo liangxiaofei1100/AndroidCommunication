@@ -480,6 +480,10 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	 * 创建者调用之后，平台从当前保存的列表中移除成员，并向该成员通讯告知其已经被踢出，并向主server更新数目变化 ，和向其他成员更新成员列表变化
 	 * */
 	public void removeGroupMember(int hostId, int userId) {
+		if (mUserManager.getLocalUser().getUserID() == userId) {
+			Log.e(TAG, "You can not remove yourself");
+			return;
+		}
 		int index = -1;
 		if (createHost.containsKey(hostId)) {
 			HostInfo hostInfo = createHost.get(hostId);
@@ -501,9 +505,10 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 				notifyGroupInfoChangeForMember(hostId);
 				prepareUpdateHostInfo(hostInfo);
 			}
-		}
-		Log.e(TAG, "you are not the host owner ,the host id is " + hostId
-				+ " or the user is not in the group. the user id is " + userId);
+		} else
+			Log.e(TAG, "you are not the host owner ,the host id is " + hostId
+					+ " or the user is not in the group. the user id is "
+					+ userId);
 	}
 
 	public void receiverRemoveUser(HostInfo hostInfo) {
@@ -545,8 +550,8 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 							appId);
 				}
 			}
-			mSocketCommunicationManager.sendMessageToSingle(target, mUserManager
-					.getAllUser().get(-1), appId);
+			mSocketCommunicationManager.sendMessageToSingle(target,
+					mUserManager.getAllUser().get(-1), appId);
 		}
 
 	}
