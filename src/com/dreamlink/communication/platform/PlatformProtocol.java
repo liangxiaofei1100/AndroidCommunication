@@ -54,7 +54,7 @@ public class PlatformProtocol {
 		byte[] cmdByte = Arrays.copyOfRange(sourceData, leng, leng + 4);
 		leng += 4;
 		int cmdCode = ArrayUtil.byteArray2Int(cmdByte);
-		Log.d(TAG, "***********************************" + cmdCode);
+		Log.d(TAG, "receiver cmd code is" + cmdCode);
 		byte[] data = Arrays.copyOfRange(sourceData, leng, sourceData.length);
 		switch (cmdCode) {
 		case GROUP_INFO_CHANGE_CMD_CODE:
@@ -94,6 +94,7 @@ public class PlatformProtocol {
 		case EXIT_GROUP_ACK_CMD_CODE:
 			break;
 		case Start_GROUP_CMD_CODE:
+			startGameCmd(data);
 			break;
 		case REGISTER_ACK_CMD_CODE:
 			break;
@@ -128,7 +129,7 @@ public class PlatformProtocol {
 	 * 信息格式：cmdCode+info.信息长度在传送的时候会编码，这里避免这些数据重复
 	 * */
 	public byte[] encodePlatformProtocol(int cmdCode, byte[] sourceData) {
-		Log.d(TAG, "encodePlatformProtocol--------*"+cmdCode);
+		Log.d(TAG, "encodePlatformProtocol cmd code is "+cmdCode);
 		byte[] target = ArrayUtil.int2ByteArray(cmdCode);
 		if (sourceData != null)
 			target = ArrayUtil.join(target, sourceData);
@@ -145,7 +146,6 @@ public class PlatformProtocol {
 				Log.e(TAG, "createHost receiver data is exception");
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 	}
 
@@ -168,7 +168,6 @@ public class PlatformProtocol {
 						"hostChangeForManager receiver data is exception");
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 	}
 
@@ -217,7 +216,6 @@ public class PlatformProtocol {
 			HostInfo hostInfo = (HostInfo) ArrayUtil.byteArrayToObject(data);
 			mPlatformManager.receiverCancelHost(hostInfo, user);
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 
 	}
@@ -227,7 +225,6 @@ public class PlatformProtocol {
 			HostInfo hostInfo = (HostInfo) ArrayUtil.byteArrayToObject(data);
 			mPlatformManager.receiverRemoveUser(hostInfo);
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 	}
 
@@ -236,7 +233,6 @@ public class PlatformProtocol {
 			int hostId = ArrayUtil.byteArray2Int(data);
 			mPlatformManager.requestExitGroup(hostId, user);
 		} catch (Exception e) {
-			// TODO: handle exception
 			Log.e(TAG, "" + e.toString());
 		}
 	}
@@ -246,7 +242,6 @@ public class PlatformProtocol {
 			int hostId = ArrayUtil.byteArray2Int(data);
 			mPlatformManager.requetsGetGroupMember(hostId, user);
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 	}
 
@@ -261,5 +256,9 @@ public class PlatformProtocol {
 			mPlatformManager.receiverData(targetData, user, false,
 					hostId);
 		}
+	}
+	private void startGameCmd(byte[] data) {
+		int hostId = ArrayUtil.byteArray2Int(data);
+		mPlatformManager.receiverStartGroupBusiness(hostId);
 	}
 }
