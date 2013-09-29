@@ -20,6 +20,7 @@ import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.app.AppInfo;
 import com.dreamlink.communication.ui.app.AppManager;
+import com.dreamlink.communication.ui.common.SingleMediaScanner;
 import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileInfoManager;
@@ -297,8 +298,12 @@ public class FileTransferService extends Service implements OnFileTransportListe
 		int status;
 		if (success) {
 			status = HistoryManager.STATUS_SEND_SUCCESS;
+			new SingleMediaScanner(getApplicationContext(), file);
 		}else {
 			status = HistoryManager.STATUS_SEND_FAIL;
+			if (file.exists()) {
+				file.delete();
+			}
 		}
 		
 		ContentValues values = new ContentValues();

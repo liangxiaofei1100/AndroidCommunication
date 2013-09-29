@@ -59,7 +59,7 @@ public class MediaAudioAdapter extends BaseAdapter {
 		this.current_position = position;
 	}
 
-	class ViewHolder {
+	private class ViewHolder {
 		ImageView iconView;
 		TextView titleView;
 		TextView timeView;

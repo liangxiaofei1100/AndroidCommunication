@@ -24,29 +24,28 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.provider.MediaStore.MediaColumns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.GridView;
 
-public class VideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
-	private static final String TAG = "VideoFragment";
-	private GridView mGridView;
+public class AudioFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
+	private static final String TAG = "AudioFragment";
+	private ListView mListView;
+	private AudioCursorAdapter mAdapter;
 	private ProgressBar mLoadingBar;
+	private FileInfoManager mFileInfoManager = null;
 	
-	private VideoCursorAdapter mAdapter;
 	private QueryHandler mQueryHandler = null;
 	
-	private FileInfoManager mFileInfoManager;
 	private Context mContext;
 	
 	//title views
@@ -56,15 +55,16 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
 	
-	private int mAppId = -1;
+	private static final String[] PROJECTION = {
+		MediaStore.Audio.Media._ID, MediaStore.Audio.Media.TITLE,
+		MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.ALBUM,
+		MediaStore.Audio.Media.ALBUM_ID, MediaStore.Audio.Media.DURATION,
+		MediaStore.Audio.Media.SIZE, MediaStore.Audio.Media.DATA,
+		MediaStore.Audio.Media.IS_MUSIC, MediaStore.Audio.Media.DATE_MODIFIED
+	};
 	
-	private static final String[] PROJECTION = new String[] {MediaStore.Video.Media._ID, 
-		MediaStore.Video.Media.DURATION, MediaStore.Video.Media.SIZE,
-		MediaColumns.DATA, MediaStore.Video.Media.DISPLAY_NAME};
-		
-	//video contentObserver listener
-	class VideoContent extends ContentObserver{
-		public VideoContent(Handler handler) {
+	private class AudioContent extends ContentObserver{
+		public AudioContent(Handler handler) {
 			super(handler);
 			// TODO Auto-generated constructor stub
 		}
@@ -72,8 +72,8 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		@Override
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
-			int count = mAdapter.getCount();
-			updateUI(count);
+			//when audio db changed,update num
+			updateUI(mAdapter.getCount());
 		}
 	}
 	
@@ -94,12 +94,14 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		};
 	};
 	
+	private int mAppId = -1;
+	
 	/**
-	 * Create a new instance of AppFragment, providing "appid" as an
+	 * Create a new instance of AudioFragment, providing "appid" as an
 	 * argument.
 	 */
-	public static VideoFragment newInstance(int appid) {
-		VideoFragment f = new VideoFragment();
+	public static AudioFragment newInstance(int appid) {
+		AudioFragment f = new AudioFragment();
 
 		Bundle args = new Bundle();
 		args.putInt(Extra.APP_ID, appid);
@@ -115,52 +117,56 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		Log.d(TAG, "onCreate begin");
+		View rootView = inflater.inflate(R.layout.ui_media_audio, container, false);
 		mContext = getActivity();
-		View rootView = inflater.inflate(R.layout.ui_media_video, container, false);
-		mGridView = (GridView) rootView.findViewById(R.id.video_gridview);
-		mGridView.setOnItemClickListener(this);
-		mGridView.setOnItemLongClickListener(this);
-		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_video_loading);
-		mAdapter = new VideoCursorAdapter(mContext);
-		mGridView.setAdapter(mAdapter);
+		
+		mListView = (ListView) rootView.findViewById(R.id.audio_listview);
+		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.audio_progressbar);
+		mListView.setOnItemClickListener(this);
+		mListView.setOnItemLongClickListener(this);
+		mAdapter = new AudioCursorAdapter(mContext);
+		mListView.setAdapter(mAdapter);
 		
 		initTitleVIews(rootView);
+		
+		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
 		mFileInfoManager = new FileInfoManager(mContext);
+		
 		mQueryHandler = new QueryHandler(getActivity().getContentResolver());
-				
 		query();
-		VideoContent videoContent  = new VideoContent(new Handler());
-		getActivity().getContentResolver().registerContentObserver(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, videoContent);
+		AudioContent audioContent = new AudioContent(new Handler());
+		getActivity().getContentResolver().registerContentObserver(DreamConstant.AUDIO_URI, true, audioContent);
+		
 	}
 	
 	public void query() {
-		mQueryHandler.startQuery(0, null, DreamConstant.VIDEO_URI,
-				PROJECTION, null, null, MediaStore.Video.Media.DEFAULT_SORT_ORDER);
+		mQueryHandler.startQuery(0, null, DreamConstant.AUDIO_URI,
+				PROJECTION, null, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
 	}
 	
 	private void initTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
 		//title icon
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.title_video);
-		//refresh button
+		mTitleIcon.setImageResource(R.drawable.title_audio);
+		// refresh button
 		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
-		//go to history button
+		// go to history button
 		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
-		//title name
+		// title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText(R.string.video);
-		//show current page's item num
+		mTitleView.setText(R.string.audio);
+		// show current page's item num
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
 		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
-		mRefreshView.setOnClickListener(this)	;
+		mRefreshView.setOnClickListener(this);
 		mHistoryView.setOnClickListener(this);
 	}
 	
@@ -188,24 +194,24 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		//open audio
 		Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
 		String url = cursor.getString(cursor
-				.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
+				.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
 		mFileInfoManager.openFile(url);
-	}
+	} 
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
 		final Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
-//		final long videoId = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
-		final String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
-		final String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
-			
-			
+		final String title = cursor.getString((cursor
+				.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
+		final String url = cursor.getString(cursor
+				.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
 		new AlertDialog.Builder(mContext)
-		.setTitle(displayName)
+		.setTitle(title)
 		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -225,8 +231,8 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 						break;
 					case 3:
 						//info
-						String info = getVideoInfo(cursor);
-						DreamUtil.showInfoDialog(mContext, displayName, info);
+						String info = getAudioInfo(cursor);
+						DreamUtil.showInfoDialog(mContext, title, info);
 						break;
 
 					default:
@@ -259,7 +265,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
     }
     
     private void doDelete(int position, String path) {
-		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.VIDEO_URI, path);
+		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI, path);
 		if (!ret) {
 			mNotice.showToast(R.string.delete_fail);
 			Log.e(TAG, path + " delete failed");
@@ -268,20 +274,23 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 			updateUI(num);
 		}
 	}
-    
-    public String getVideoInfo(Cursor cursor){
-    	long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.DURATION)); // 时长
-		long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.SIZE)); // 文件大小
-		String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
-    	String result = "";
-		result = "类型:" + "视频" + DreamConstant.ENTER
+	
+	public String getAudioInfo(Cursor cursor) {
+		long size = cursor.getLong(cursor
+				.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
+		String url = cursor.getString(cursor
+				.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
+		long date = cursor.getLong(cursor
+				.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED));
+		String result = "";
+		result = "类型:" + "音频" + DreamConstant.ENTER
 				+ "位置:" + DreamUtil.getParentPath(url) + DreamConstant.ENTER
 				+ "大小:" + DreamUtil.getFormatSize(size) + DreamConstant.ENTER
-				+ "时长:" + DreamUtil.mediaTimeFormat(duration);
+				+ "修改日期:" + DreamUtil.getFormatDate(date);
 		return result;
-    }
-    
-    public void updateUI(int num){
+	}
+	 
+	public void updateUI(int num) {
 		Message message = mHandler.obtainMessage();
 		message.arg1 = num;
 		message.what = MSG_UPDATE_UI;
@@ -290,9 +299,10 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 
 	@Override
 	public void onClick(View v) {
+		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.iv_refresh:
-			query();
+			mAdapter.getCursor().requery();
 			break;
 			
 		case R.id.iv_history:
@@ -305,14 +315,4 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 			break;
 		}
 	}
-	
-	@Override
-	public void onDestroy() {
-		Cursor cursor = mAdapter.getCursor();
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-		super.onDestroy();
-	}
-	
 }

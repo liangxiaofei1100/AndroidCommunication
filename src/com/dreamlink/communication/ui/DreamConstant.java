@@ -84,8 +84,11 @@ public class DreamConstant {
 
 	public static final boolean CACHE = false;
 
+	// SD卡中的图片保存数据库Uri
 	public static final Uri AUDIO_URI = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+	// SD卡中的Audio保存数据库Uri
 	public static final Uri VIDEO_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+	// SD卡中的Video保存数据库Uri
 	public static final Uri IMAGE_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 
 	/** package name for this app */

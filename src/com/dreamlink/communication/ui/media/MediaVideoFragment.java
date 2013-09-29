@@ -143,7 +143,7 @@ public class MediaVideoFragment extends BaseFragment implements OnItemClickListe
 		mFileInfoManager = new FileInfoManager(mContext);
 				
 		VideoContent videoContent  = new VideoContent(new Handler());
-		getActivity().getContentResolver().registerContentObserver(mScan.videoUri, true, videoContent);
+		getActivity().getContentResolver().registerContentObserver(DreamConstant.VIDEO_URI, true, videoContent);
 	}
 	
 	private void initTitleVIews(View view){

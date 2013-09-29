@@ -13,6 +13,7 @@ import com.dreamlink.communication.ui.file.FileBrowserFragment;
 import com.dreamlink.communication.ui.help.HelpFragment;
 import com.dreamlink.communication.ui.image.ImageFragment;
 import com.dreamlink.communication.ui.image.PictureFragment;
+import com.dreamlink.communication.ui.media.AudioFragment;
 import com.dreamlink.communication.ui.media.MediaAudioFragment;
 import com.dreamlink.communication.ui.media.MediaVideoFragment;
 import com.dreamlink.communication.ui.media.VideoFragment;
@@ -58,7 +59,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		fragments.add(NetworkFragment.newInstance(appid));//网上邻居
 		fragments.add(RecommendFragment.newInstance(appid));//精品推荐
 		fragments.add(PictureFragment.newInstance(appid));//图库
-		fragments.add(MediaAudioFragment.newInstance(appid));//音频
+		fragments.add(AudioFragment.newInstance(appid));//音频
 		fragments.add(VideoFragment.newInstance(appid));//视频
 		fragments.add(AppFragment.newInstance(appid));//应用
 		fragments.add(GameFragment.newInstance(appid));//游戏

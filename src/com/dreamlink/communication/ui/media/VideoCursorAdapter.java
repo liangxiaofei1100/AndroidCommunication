@@ -63,7 +63,7 @@ public class VideoCursorAdapter extends CursorAdapter {
 		return view;
 	}
 	
-	class ViewHolder{
+	private class ViewHolder{
 		ImageView iconView;
 		TextView timeView;
 	}

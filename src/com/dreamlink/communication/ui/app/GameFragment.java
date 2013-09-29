@@ -93,6 +93,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
+				Log.i(TAG, "handleMessage");
 				int size = msg.arg1;
 				if (isAdded()) {
 					mTitleNum.setText(getString(R.string.num_format, size));
@@ -181,7 +182,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	}
 	
 	//query db
-	public class QueryHandler extends AsyncQueryHandler {
+	private class QueryHandler extends AsyncQueryHandler {
 
 		public QueryHandler(ContentResolver cr) {
 			super(cr);
