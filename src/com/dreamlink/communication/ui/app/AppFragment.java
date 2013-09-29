@@ -2,7 +2,6 @@ package com.dreamlink.communication.ui.app;
 
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -10,14 +9,10 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.db.AppData;
-import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.history.HistoryCursorAdapter;
-import com.dreamlink.communication.ui.history.HistoryManager;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -33,11 +28,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -103,7 +93,9 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
 				int size = msg.arg1;
-				mTitleNum.setText(getResources().getString(R.string.num_format, size));
+				if (isAdded()) {
+					mTitleNum.setText(getString(R.string.num_format, size));
+				}
 				break;
 
 			default:
