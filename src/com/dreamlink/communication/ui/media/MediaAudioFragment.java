@@ -134,7 +134,7 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 		}
 		
 		AudioContent audioContent = new AudioContent(new Handler());
-		getActivity().getContentResolver().registerContentObserver(mScanMgr.audioUri, true, audioContent);
+		getActivity().getContentResolver().registerContentObserver(DreamConstant.AUDIO_URI, true, audioContent);
 		Log.d(TAG, "onCreate end");
 		return rootView;
 	}

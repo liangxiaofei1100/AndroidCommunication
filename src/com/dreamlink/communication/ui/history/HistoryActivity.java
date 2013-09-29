@@ -6,6 +6,7 @@ import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.util.Log;
 
+import android.annotation.SuppressLint;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -68,6 +69,7 @@ public class HistoryActivity extends FragmentActivity implements
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
+				Log.i(TAG, "handleMessage");
 				int num = msg.arg1;
 				mTitleNum.setText(getResources().getString(R.string.num_format,
 						num));
@@ -143,6 +145,7 @@ public class HistoryActivity extends FragmentActivity implements
 		mHistoryView.setVisibility(View.GONE);
 	}
 
+	@SuppressLint("NewApi")
 	private void initView() {
 		mStorageTV = (TextView) findViewById(R.id.tv_storage);
 		String space = getResources().getString(
@@ -163,7 +166,7 @@ public class HistoryActivity extends FragmentActivity implements
 	}
 
 	// query db
-	public class QueryHandler extends AsyncQueryHandler {
+	private class QueryHandler extends AsyncQueryHandler {
 
 		public QueryHandler(ContentResolver cr) {
 			super(cr);

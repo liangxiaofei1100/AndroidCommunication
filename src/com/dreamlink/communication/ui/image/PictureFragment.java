@@ -95,6 +95,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
+				Log.i(TAG, "handleMessage");
 				int size = msg.arg1;
 				if (isAdded()) {
 					mTitleNum.setText(getString(R.string.num_format, size));
@@ -180,12 +181,12 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 			projection = PROJECTION2;
 		}
-		mQueryHandler.startQuery(1, null, MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+		mQueryHandler.startQuery(1, null, DreamConstant.IMAGE_URI,
 				projection, null, null, SORT_ORDER_DATE);
 	}
 	
 		// query db
-	protected class QueryHandler extends AsyncQueryHandler {
+	private class QueryHandler extends AsyncQueryHandler {
 
 		public QueryHandler(ContentResolver cr) {
 			super(cr);

@@ -82,6 +82,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
+				Log.i(TAG, "handleMessage");
 				int size = msg.arg1;
 				if (isAdded()) {
 					mTitleNum.setText(getString(R.string.num_format, size));
@@ -140,7 +141,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	}
 	
 	public void query() {
-		mQueryHandler.startQuery(0, null, MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+		mQueryHandler.startQuery(0, null, DreamConstant.VIDEO_URI,
 				PROJECTION, null, null, MediaStore.Video.Media.DEFAULT_SORT_ORDER);
 	}
 	
@@ -164,7 +165,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	}
 	
 	// query db
-	public class QueryHandler extends AsyncQueryHandler {
+	private class QueryHandler extends AsyncQueryHandler {
 
 		public QueryHandler(ContentResolver cr) {
 			super(cr);

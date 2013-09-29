@@ -155,29 +155,29 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	}
 	
 	//query db
-		public class QueryHandler extends AsyncQueryHandler {
+	private class QueryHandler extends AsyncQueryHandler {
 
-			public QueryHandler(ContentResolver cr) {
-				super(cr);
-				// TODO Auto-generated constructor stub
-			}
+		public QueryHandler(ContentResolver cr) {
+			super(cr);
+			// TODO Auto-generated constructor stub
+		}
 
-			@Override
-			protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
-				// super.onQueryComplete(token, cookie, cursor);
-				Log.d(TAG, "onQueryComplete");
-				mLoadingBar.setVisibility(View.INVISIBLE);
-				if (null != cursor && cursor.getCount() > 0) {
-					mCursor = cursor;
-					Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
-					mAdapter = new AppCursorAdapter(mContext);
-					mAdapter.changeCursor(cursor);
-					mGridView.setAdapter(mAdapter);
-				} 
-
+		@Override
+		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+			// super.onQueryComplete(token, cookie, cursor);
+			Log.d(TAG, "onQueryComplete");
+			mLoadingBar.setVisibility(View.INVISIBLE);
+			if (null != cursor && cursor.getCount() > 0) {
+				mCursor = cursor;
+				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
+				mAdapter = new AppCursorAdapter(mContext);
+				mAdapter.changeCursor(cursor);
+				mGridView.setAdapter(mAdapter);
 			}
 
 		}
+
+	}
 	 
 	/**
 	 * Perform alphabetical comparison of application entry objects.

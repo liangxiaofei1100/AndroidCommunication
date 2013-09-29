@@ -98,6 +98,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
+				Log.i(TAG, "handleMessage");
 				int size = msg.arg1;
 				mTitleNum.setText(getResources().getString(R.string.num_format, size));
 				break;

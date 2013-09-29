@@ -23,6 +23,7 @@ import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.file.FileInfo;
 import com.dreamlink.communication.ui.image.ImageInfo;
 import com.dreamlink.communication.util.Log;
@@ -42,13 +43,6 @@ public class MediaInfoManager {
 	// 保存扫描到的音频文件
 	public static List<FileInfo> musicList = new ArrayList<FileInfo>();
 
-	// SD卡中的图片保存数据库Uri
-	public static Uri imagesUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-	// SD卡中的Audio保存数据库Uri
-	public static Uri audioUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-	// SD卡中的Video保存数据库Uri
-	public static Uri videoUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-
 	public MediaInfoManager(Context context) {
 		this.context = context;
 	}
@@ -56,7 +50,7 @@ public class MediaInfoManager {
 	/** get audios form {@link MediaStore.Audio.Media.EXTERNAL_CONTENT_URI} */
 	public List<MediaInfo> getAudioInfo() {
 		List<MediaInfo> list = new ArrayList<MediaInfo>();
-		Cursor cursor = context.getContentResolver().query(audioUri, null,
+		Cursor cursor = context.getContentResolver().query(DreamConstant.AUDIO_URI, null,
 				null, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
 
 		if (null == cursor) {
@@ -108,7 +102,7 @@ public class MediaInfoManager {
 	public List<MediaInfo> getVideoInfo() {
 		List<MediaInfo> list = new ArrayList<MediaInfo>();
 		ContentResolver contentResolver = context.getContentResolver();
-		Cursor cursor = contentResolver.query(videoUri, null, null, null,
+		Cursor cursor = contentResolver.query(DreamConstant.VIDEO_URI, null, null, null,
 				MediaStore.Video.Media.DEFAULT_SORT_ORDER);
 
 		if (null == cursor) {
@@ -157,7 +151,7 @@ public class MediaInfoManager {
 		Log.d(TAG, "getImageInfo.start:" + System.currentTimeMillis());
 		List<ImageInfo> imageInfos = new ArrayList<ImageInfo>();
 		ContentResolver contentResolver = context.getContentResolver();
-		Cursor cursor = contentResolver.query(imagesUri, null, null, null,
+		Cursor cursor = contentResolver.query(DreamConstant.IMAGE_URI, null, null, null,
 				MediaStore.MediaColumns.DATE_MODIFIED);
 
 		if(null == cursor){
