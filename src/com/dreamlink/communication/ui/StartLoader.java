@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.dreamlink.communication.ui.db.MetaData;
-import com.dreamlink.communication.ui.service.FileTransferService;
 import com.dreamlink.communication.util.Log;
 
 import android.app.Activity;
@@ -25,6 +24,7 @@ import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.KeyEvent;
 
 /**
  * This is the first ui to show logo, initialize application and load resource.
@@ -259,6 +259,15 @@ public class StartLoader extends Activity {
 	public void insertToDb(AppInfo entry) {
 		ContentValues values = appManager.getValuesByAppInfo(entry);
 		getContentResolver().insert(AppData.App.CONTENT_URI, values);
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			// Not allow exit when loading, just wait loading jobs to be done.
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 
 }
