@@ -34,7 +34,7 @@
                 android:layout_width="45dp"
                 android:layout_height="45dp"
                 android:adjustViewBounds="true"
-                android:background="@drawable/ic_home"
+                android:background="@drawable/file_browser_home"
                 android:scaleType="fitXY" />
 
             <com.dreamlink.communication.ui.SlowHorizontalScrollView
