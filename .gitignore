@@ -18,6 +18,3 @@ local.properties
 # Eclipse project files
 .classpath
 .project
-
-# Version xml file
-res/values/version.xml
