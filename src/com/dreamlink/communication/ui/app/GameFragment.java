@@ -94,7 +94,9 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
 				int size = msg.arg1;
-				mTitleNum.setText(getResources().getString(R.string.num_format, size));
+				if (isAdded()) {
+					mTitleNum.setText(getString(R.string.num_format, size));
+				}
 				break;
 
 			default:

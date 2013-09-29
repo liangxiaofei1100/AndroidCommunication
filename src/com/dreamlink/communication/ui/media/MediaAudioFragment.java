@@ -25,6 +25,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -79,7 +80,9 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
 				int size = msg.arg1;
-				mTitleNum.setText("(" + size + ")");
+				if (isAdded()) {
+					mTitleNum.setText("(" + size + ")");
+				}
 				break;
 			default:
 				break;
@@ -248,7 +251,7 @@ public class MediaAudioFragment extends BaseFragment implements OnItemClickListe
     }
     
     private void doDelete(int position, String path) {
-		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.VIDEO_URI, path);
+		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI, path);
 		if (!ret) {
 			mNotice.showToast(R.string.delete_fail);
 			Log.e(TAG, path + " delete failed");
