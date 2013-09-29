@@ -22,7 +22,11 @@ import com.dreamlink.communication.util.NetWorkUtil;
 
 public class ConnectHelper {
 	private final String TAG = "CreateServer";
-	private final String[] SERVER_TYPE = { "wifi", "wifi-ap", "wifi-direct" };
+	public final static String SERVER_TYPE_WIFI = "wifi";
+	public final static String SERVER_TYPE_WIFI_AP = "wifi-ap";
+	public final static String SERVER_TYPE_WIFI_DIRECT = "wifi-direct";
+	private final String[] SERVER_TYPE = { SERVER_TYPE_WIFI,
+			SERVER_TYPE_WIFI_AP, SERVER_TYPE_WIFI_DIRECT };
 	private Context mContext;
 	private final String WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED";
 	private DirectService directService;
@@ -192,7 +196,7 @@ public class ConnectHelper {
 		if (wifiOrAPService != null) {
 			wifiOrAPService.stopSearch();
 		}
-		if(directService!=null){
+		if (directService != null) {
 			directService.stopSearch();
 		}
 		unbindServer(wifiConnection);
@@ -204,7 +208,7 @@ public class ConnectHelper {
 			if (wifiOrAPService != null) {
 				wifiOrAPService.stopSearch();
 			}
-			if(directService!=null){
+			if (directService != null) {
 				directService.stopSearch();
 			}
 			unbindServer(wifiConnection);
@@ -213,7 +217,7 @@ public class ConnectHelper {
 			if (wifiOrAPService != null) {
 				wifiOrAPService.stopSearch();
 			}
-			if(directService!=null){
+			if (directService != null) {
 				directService.stopSearch();
 			}
 		}
@@ -221,11 +225,11 @@ public class ConnectHelper {
 
 	public void connenctToServer(ServerInfo info) {
 		Log.d(TAG, "connenctToServer");
-		if (info.getServer_type().equals("wifi-direct")) {
+		if (info.getServerType().equals("wifi-direct")) {
 			if (directService != null)
 				directService.connectToServer(info);
-		} else if (info.getServer_type().equals("wifi")
-				|| info.getServer_type().equals("wifi-ap")) {
+		} else if (info.getServerType().equals("wifi")
+				|| info.getServerType().equals("wifi-ap")) {
 			if (wifiOrAPService != null)
 				wifiOrAPService.connectToServer(info);
 		}
@@ -308,4 +312,39 @@ public class ConnectHelper {
 		}
 	}
 
+	/**
+	 * Release listener object.
+	 * 
+	 * @param listener
+	 */
+	public void releaseListener(OnSearchListener listener) {
+		// TODO to avoid null point exception, set a default listener.
+		// The best way is set the listener to null.
+		if (this.listener == listener) {
+			this.listener = mDefaultSearchListener;
+		}
+
+		if (this.direcrListener == listener) {
+			this.direcrListener = mDefaultSearchListener;
+		}
+	}
+
+	private OnSearchListener mDefaultSearchListener = new OnSearchListener() {
+
+		@Override
+		public void onSearchSuccess(ServerInfo serverInfo) {
+			Log.d(TAG, "mDefaultSearchListener onSearchSuccess " + serverInfo);
+		}
+
+		@Override
+		public void onSearchSuccess(String serverIP, String name) {
+			Log.d(TAG, "mDefaultSearchListener onSearchSuccess " + serverIP
+					+ ", " + name);
+		}
+
+		@Override
+		public void onSearchStop() {
+			Log.d(TAG, "mDefaultSearchListener onSearchStop");
+		}
+	};
 }

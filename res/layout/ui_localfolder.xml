@@ -80,7 +80,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_weight="1"
-            android:src="@drawable/ic_home" />
+            android:src="@drawable/file_browser_home" />
 
         <TextView
             android:layout_width="wrap_content"

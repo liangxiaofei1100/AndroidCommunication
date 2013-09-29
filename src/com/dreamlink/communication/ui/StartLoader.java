@@ -59,6 +59,7 @@ public class StartLoader extends Activity {
 	 */
 	private void load() {
 		Log.d(TAG, "Load start");
+		Log.startSaveToFile();
 		createFileSaveFolder();
 		initMountManager();
 		// Do not use game DB now.

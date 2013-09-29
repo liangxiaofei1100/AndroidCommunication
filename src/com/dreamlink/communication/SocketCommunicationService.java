@@ -9,15 +9,20 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.dreamlink.communication.aidl.Communication;
+import com.dreamlink.communication.aidl.HostInfo;
 import com.dreamlink.communication.aidl.OnCommunicationListenerExternal;
+import com.dreamlink.communication.aidl.PlatformManagerCallback;
 import com.dreamlink.communication.aidl.User;
+import com.dreamlink.communication.platform.PlatformManager;
 
 public class SocketCommunicationService extends Service {
 	private SocketCommunicationManager mSocketCommunicationManager;
 	private SocketCommunicationMananerRemote mRemote = new SocketCommunicationMananerRemote();
 	public static RemoteCallbackList<OnCommunicationListenerExternal> mCallBackList = new RemoteCallbackList<OnCommunicationListenerExternal>();
+	private PlatformManager mPlatformManager;
 
 	private class SocketCommunicationMananerRemote extends Communication.Stub {
 
@@ -28,10 +33,8 @@ public class SocketCommunicationService extends Service {
 		@Override
 		public void registListener(OnCommunicationListenerExternal lis,
 				int appid) throws RemoteException {
-			if (lis != null)
-				mCallBackList.register(lis, appid);
-			// socketCommunicationManager.registerOnCommunicationListenerExternal(
-			// lis, appid);
+			mSocketCommunicationManager
+					.registerOnCommunicationListenerExternal(lis, appid);
 		}
 
 		/** if user is null ,mean send all */
@@ -58,12 +61,10 @@ public class SocketCommunicationService extends Service {
 		}
 
 		@Override
-		public void unRegistListener(OnCommunicationListenerExternal lis)
-				throws RemoteException {
-			if (lis != null)
-				mCallBackList.unregister(lis);
-			// socketCommunicationManager
-			// .unregisterOnCommunicationListenerExternal(lis);
+		public void unRegistListener(int appId) throws RemoteException {
+			mSocketCommunicationManager
+					.unregisterOnCommunicationListenerExternal(appId);
+			mPlatformManager.unregister(appId);
 		}
 
 		@Override
@@ -77,7 +78,73 @@ public class SocketCommunicationService extends Service {
 			mSocketCommunicationManager.sendMessageToAll(msg, appID);
 		}
 
-		
+		@Override
+		public void createHost(String arg0, String arg1, int arg2, int arg3)
+				throws RemoteException {
+			mPlatformManager.createHost(arg0, arg1, arg2, arg3);
+
+		}
+
+		@Override
+		public void exitGroup(HostInfo arg0) throws RemoteException {
+			mPlatformManager.exitGroup(arg0);
+		}
+
+		@Override
+		public void getAllHost(int arg0) throws RemoteException {
+			mPlatformManager.getAllHost(arg0);
+		}
+
+		@Override
+		public void getGroupUser(HostInfo arg0) throws RemoteException {
+			mPlatformManager.getGroupUser(arg0);
+		}
+
+		@Override
+		public void joinGroup(HostInfo arg0) throws RemoteException {
+			mPlatformManager.joinGroup(arg0);
+		}
+
+		@Override
+		public void removeGroupMember(int arg0, int arg1)
+				throws RemoteException {
+			mPlatformManager.removeGroupMember(arg0, arg1);
+		}
+
+		@Override
+		public void sendDataAll(byte[] arg0, HostInfo arg1)
+				throws RemoteException {
+			mPlatformManager.sendDataAll(arg0, arg1);
+		}
+
+		@Override
+		public void sendDataSingle(byte[] arg0, HostInfo arg1, User arg2)
+				throws RemoteException {
+			mPlatformManager.sendDataSingle(arg0, arg1, arg2);
+		}
+
+		@Override
+		public void startGroupBusiness(int arg0) throws RemoteException {
+			mPlatformManager.startGroupBusiness(arg0);
+		}
+
+		@Override
+		public void regitserPlatformCallback(PlatformManagerCallback arg0,
+				int arg1) throws RemoteException {
+			if (arg0 != null)
+				mPlatformManager.register(arg0, arg1);
+		}
+
+		@Override
+		public void unregitserPlatformCallback(int arg0) throws RemoteException {
+			mPlatformManager.unregister(arg0);
+		}
+
+		@Override
+		public List<HostInfo> getJoinedHostInfo(int arg0)
+				throws RemoteException {
+			return mPlatformManager.getJoinedHost(arg0);
+		}
 
 	}
 
@@ -85,6 +152,7 @@ public class SocketCommunicationService extends Service {
 	public IBinder onBind(Intent arg0) {
 		mSocketCommunicationManager = SocketCommunicationManager
 				.getInstance(this);
+		mPlatformManager = PlatformManager.getInstance(getApplicationContext());
 		return mRemote;
 	}
 

@@ -387,9 +387,11 @@ public class NetworkFragment extends BaseFragment implements
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
 		unregisterReceiverSafe(mReceiver);
-		mUserManager.unregisterOnUserChangedListener(this);
+		if (mUserManager != null) {
+			mUserManager.unregisterOnUserChangedListener(this);
+		}
+		super.onDestroy();
 	}
 
 	private void unregisterReceiverSafe(BroadcastReceiver receiver) {
