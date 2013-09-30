@@ -3,63 +3,43 @@ package com.dreamlink.communication.server.service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.widget.Toast;
 
 import com.dreamlink.communication.aidl.User;
-import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
-import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.server.service.DirectService.DirectBinder;
 import com.dreamlink.communication.server.service.WifiOrAPService.WifiOrAPBinder;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 public class ConnectHelper {
-	private final String TAG = "CreateServer";
+	private final String TAG = "ConnectHelper";
 	public final static String SERVER_TYPE_WIFI = "wifi";
 	public final static String SERVER_TYPE_WIFI_AP = "wifi-ap";
 	public final static String SERVER_TYPE_WIFI_DIRECT = "wifi-direct";
 	private final String[] SERVER_TYPE = { SERVER_TYPE_WIFI,
 			SERVER_TYPE_WIFI_AP, SERVER_TYPE_WIFI_DIRECT };
+
 	private Context mContext;
-	private final String WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED";
-	private DirectService directService;
-	private WifiOrAPService wifiOrAPService;
-	private User user;
-	private boolean flag;
-	private String type;
-	private OnSearchListener listener;
-	private OnSearchListener direcrListener;
-	private boolean is_wifi_on_before = false;
-	private boolean is_ap_on_before = false;
-	public static ConnectHelper mConnectHelper;
+
+	private WifiOrAPService mWifiOrAPService;
+	private WifiOrAPServiceConnection mWifiOrAPServiceConnection;
+	private DirectService mDirectService;
+	private DirectServiceConnection mDirectServiceConnection;
+
+	private static ConnectHelper mInstance;
 
 	private ConnectHelper(Context context) {
 		this.mContext = context;
-		WifiManager wifiManager = (WifiManager) mContext
-				.getSystemService(Context.WIFI_SERVICE);
-		is_wifi_on_before = wifiManager.isWifiEnabled();
-		is_ap_on_before = NetWorkUtil.isAndroidAPNetwork(mContext);
 	}
 
-	/**
-	 * the param please use {@link Context#getApplicationContext()} ,maybe
-	 * better. Thank you
-	 */
-	public static ConnectHelper getInstance(Context context) {
-		if (mConnectHelper == null) {
-			synchronized (context) {
-				mConnectHelper = new ConnectHelper(
-						context.getApplicationContext());
-			}
+	public synchronized static ConnectHelper getInstance(Context context) {
+		if (mInstance == null) {
+			mInstance = new ConnectHelper(context.getApplicationContext());
 		}
-		return mConnectHelper;
+		return mInstance;
 	}
 
 	public String[] getServerType() {
@@ -75,148 +55,167 @@ public class ConnectHelper {
 	 *            {@link OnSearchListener}
 	 * */
 	public void createServer(String type, OnSearchListener searchListener) {
-		flag = true;
 		if (type == null) {
-			type = "wifi-ap";// default ap server
+			// default ap server
+			type = SERVER_TYPE_WIFI_AP;
 		}
-		this.type = type.toLowerCase();
-		this.listener = searchListener;
-		this.direcrListener = searchListener;
-		if (type.equals(SERVER_TYPE[0])) {
-			startWifiServer();
-		} else if (type.equals(SERVER_TYPE[1])) {
-			startWifiAPserver();
-		} else if (type.equals(SERVER_TYPE[2])) {
-			startWifiDirectServer(null);
+		if (type.equals(SERVER_TYPE_WIFI)) {
+			startWifiServer(searchListener);
+		} else if (type.equals(SERVER_TYPE_WIFI_AP)) {
+			startWifiAPserver(searchListener);
+		} else if (type.equals(SERVER_TYPE_WIFI_DIRECT)) {
+			startWifiDirectServer(null, searchListener);
 		} else {
 			Log.e(TAG, "Unknow type!");
 		}
 	}
 
 	/**
+	 * Start as a client to search WiFi and WiFi AP server.
+	 * 
 	 * @param user
 	 *            which user do you want to search,just for direct ,in wifi
 	 *            &wifi-ap case,this param is must be null
 	 */
 	public void searchServer(OnSearchListener searchListener) {
+		// Close WiFi AP if AP is enabled.
 		if (NetWorkUtil.isWifiApEnabled(mContext)) {
-			NetWorkUtil.setWifiAPEnabled(mContext, "", false);
-		}// close wifi-ap server
-		this.flag = false;
-		this.listener = searchListener;
-		if (wifiOrAPService != null) {
-			wifiOrAPService.startSearch(searchListener);
+			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
+		}
+
+		if (mWifiOrAPService != null) {
+			mWifiOrAPService.startSearch(searchListener);
 		} else {
 			Intent intent = new Intent();
 			intent.setClass(mContext, WifiOrAPService.class);
-			bindServer(intent, wifiConnection);
+			bindService(intent, new WifiOrAPServiceConnection(false, null,
+					searchListener));
 		}
 	}
 
+	/**
+	 * Start as a client to search WiFi Direct server.
+	 * 
+	 * @param searchListener
+	 * @param user
+	 */
 	public void searchDirectServer(OnSearchListener searchListener, User user) {
-		if (!mContext.getPackageManager().hasSystemFeature(
-				PackageManager.FEATURE_WIFI_DIRECT)) {
-			/*
-			 * is support wifi-direct. Reference:
-			 * http://blog.csdn.net/snow25bz/article/details/8004106
-			 */
+		// TODO This method is not be called
+		if (!NetWorkUtil.isWifiDirectSupport(mContext)) {
 			Toast.makeText(mContext, "Not support wifi-direct",
 					Toast.LENGTH_SHORT).show();
 			return;
 		}
-		this.direcrListener = searchListener;
-		this.flag = false;
-		this.user = user;
+
+		// Disable WiFi AP if WiFi AP is enabled.
 		if (NetWorkUtil.isWifiApEnabled(mContext)) {
 			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
-			if (wifiOrAPService != null)
-				mContext.unbindService(wifiConnection);
 		}
-		if (directService != null) {
-			mContext.unbindService(directConnection);
+
+		if (mDirectService != null) {
+			mDirectService.startDirect(false, user, searchListener);
+		} else {
+			Intent intent = new Intent();
+			intent.setClass(mContext, DirectService.class);
+			bindService(intent, new DirectServiceConnection(false, user,
+					searchListener));
 		}
-		Intent intent = new Intent();
-		intent.setClass(mContext, DirectService.class);
-		bindServer(intent, directConnection);
 	}
 
-	private void startWifiDirectServer(User user) {
-		if (!mContext.getPackageManager().hasSystemFeature(
-				PackageManager.FEATURE_WIFI_DIRECT)) {
+	private void startWifiDirectServer(User user,
+			OnSearchListener searchListener) {
+		if (!NetWorkUtil.isWifiDirectSupport(mContext)) {
 			Toast.makeText(mContext, "Not support wifi-direct",
 					Toast.LENGTH_SHORT).show();
 			return;
 		}
-		this.user = user;
+
+		// Unbind wifiOrAPService
+		if (mWifiOrAPServiceConnection != null) {
+			unbindService(mWifiOrAPServiceConnection);
+		}
+
+		// Disable WiFi AP if AP is enabled.
 		if (NetWorkUtil.isWifiApEnabled(mContext)) {
 			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
 		}
-		if (directService != null) {
-			unbindServer(directConnection);
+
+		if (mDirectService != null) {
+			mDirectService.startDirect(true, user, searchListener);
 		}
-		if (NetWorkUtil.isAndroidAPNetwork(mContext)) {
-			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
-			if (wifiOrAPService != null)
-				unbindServer(wifiConnection);
-		}
+
 		Intent intent = new Intent();
 		intent.setClass(mContext, DirectService.class);
-		bindServer(intent, directConnection);
+		bindService(intent, new DirectServiceConnection(true, user,
+				searchListener));
 	}
 
-	private void startWifiAPserver() {
-		if (directService != null) {
-			unbindServer(directConnection);
+	private void startWifiAPserver(OnSearchListener searchListener) {
+		// Unbind WiFi direct service.
+		if (mDirectServiceConnection != null) {
+			unbindService(mDirectServiceConnection);
 		}
-		if (wifiOrAPService != null) {
-			wifiOrAPService.startServer("wifi-ap", listener);
+
+		if (mWifiOrAPService != null) {
+			mWifiOrAPService.startServer(SERVER_TYPE_WIFI_AP, searchListener);
 		} else {
 			Intent intent = new Intent();
 			intent.setClass(mContext, WifiOrAPService.class);
-			bindServer(intent, wifiConnection);
+			bindService(intent, new WifiOrAPServiceConnection(true,
+					SERVER_TYPE_WIFI_AP, searchListener));
 		}
 	}
 
-	private void startWifiServer() {
+	private void startWifiServer(OnSearchListener searchListener) {
+		// Unbind WiFi direct service.
+		if (mDirectServiceConnection != null) {
+			unbindService(mDirectServiceConnection);
+		}
+
+		// Close WiFi AP if AP is enabled.
 		if (NetWorkUtil.isWifiApEnabled(mContext)) {
-			NetWorkUtil.setWifiAPEnabled(mContext, "", false);
-		}// close wifi-ap server
-		if (wifiOrAPService != null) {
-			wifiOrAPService.startServer("wifi", listener);
+			NetWorkUtil.setWifiAPEnabled(mContext, null, false);
+		}
+
+		if (mWifiOrAPService != null) {
+			mWifiOrAPService.startServer(SERVER_TYPE_WIFI, searchListener);
 		} else {
 			Intent intent = new Intent();
 			intent.setClass(mContext, WifiOrAPService.class);
-			bindServer(intent, wifiConnection);
+			bindService(intent, new WifiOrAPServiceConnection(true,
+					SERVER_TYPE_WIFI, searchListener));
 		}
 	}
 
+	/**
+	 * Stop all search and unbind search service.
+	 */
 	public void stopSearch() {
-		if (wifiOrAPService != null) {
-			wifiOrAPService.stopSearch();
-		}
-		if (directService != null) {
-			directService.stopSearch();
-		}
-		unbindServer(wifiConnection);
-		unbindServer(directConnection);
+		stopSearch(true);
 	}
 
-	public void stopSearch(boolean flag) {
-		if (flag) {
-			if (wifiOrAPService != null) {
-				wifiOrAPService.stopSearch();
+	/**
+	 * Stop all search.
+	 * 
+	 * @param unbindService
+	 *            If you want start search later, set unbindService false. If
+	 *            you don't
+	 */
+	public void stopSearch(boolean unbindService) {
+		if (mWifiOrAPService != null) {
+			mWifiOrAPService.stopSearch();
+		}
+		if (mDirectService != null) {
+			mDirectService.stopSearch();
+		}
+
+		if (unbindService) {
+			if (mWifiOrAPServiceConnection != null) {
+				unbindService(mWifiOrAPServiceConnection);
 			}
-			if (directService != null) {
-				directService.stopSearch();
-			}
-			unbindServer(wifiConnection);
-			unbindServer(directConnection);
-		} else {
-			if (wifiOrAPService != null) {
-				wifiOrAPService.stopSearch();
-			}
-			if (directService != null) {
-				directService.stopSearch();
+
+			if (mDirectServiceConnection != null) {
+				unbindService(mDirectServiceConnection);
 			}
 		}
 	}
@@ -224,90 +223,26 @@ public class ConnectHelper {
 	public void connenctToServer(ServerInfo info) {
 		Log.d(TAG, "connenctToServer");
 		if (info.getServerType().equals("wifi-direct")) {
-			if (directService != null)
-				directService.connectToServer(info);
+			if (mDirectService != null)
+				mDirectService.connectToServer(info);
 		} else if (info.getServerType().equals("wifi")
 				|| info.getServerType().equals("wifi-ap")) {
-			if (wifiOrAPService != null)
-				wifiOrAPService.connectToServer(info);
+			if (mWifiOrAPService != null)
+				mWifiOrAPService.connectToServer(info);
 		}
 	}
 
-	private ServiceConnection directConnection = new ServiceConnection() {
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			directService = null;
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			if (service instanceof DirectBinder) {
-				DirectBinder binder = (DirectBinder) service;
-				directService = binder.getService();
-				directService.startDirect(flag, user, direcrListener);
-			} else if (service instanceof WifiOrAPBinder) {
-				WifiOrAPBinder binder = (WifiOrAPBinder) service;
-				wifiOrAPService = binder.getService();
-				if (flag) {
-					wifiOrAPService.startServer(type.toUpperCase(), listener);
-				} else {
-					wifiOrAPService.startSearch(listener);
-				}
-			}
-		}
-	};
-
-	private ServiceConnection wifiConnection = new ServiceConnection() {
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			wifiOrAPService = null;
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			if (service instanceof DirectBinder) {
-				DirectBinder binder = (DirectBinder) service;
-				directService = binder.getService();
-				directService.startDirect(flag, user, direcrListener);
-			} else if (service instanceof WifiOrAPBinder) {
-				WifiOrAPBinder binder = (WifiOrAPBinder) service;
-				wifiOrAPService = binder.getService();
-				if (flag) {
-					wifiOrAPService.startServer(type.toUpperCase(), listener);
-				} else {
-					wifiOrAPService.startSearch(listener);
-				}
-			}
-		}
-	};
-
-	private void bindServer(Intent intent, ServiceConnection connection) {
+	private void bindService(Intent intent, ServiceConnection connection) {
 		mContext.bindService(intent, connection, Context.BIND_AUTO_CREATE);
 	}
 
-	private void unbindServer(ServiceConnection connection) {
+	private void unbindService(ServiceConnection connection) {
 		try {
 			mContext.unbindService(connection);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e(TAG, "unbindServer error. " + e);
 		}
-	}
-
-	/** when exit program ,use this disconnect and close wifi or wifi-ap */
-	public void exitConnect() {
-		stopSearch();
-		SocketCommunicationManager.getInstance(mContext)
-				.closeAllCommunication();
-		if (!is_ap_on_before) {
-			NetWorkUtil.setWifiAPEnabled(mContext, "", false);
-		}
-		if (!is_wifi_on_before) {
-			WifiManager wifiManager = (WifiManager) mContext
-					.getSystemService(Context.WIFI_SERVICE);
-			wifiManager.setWifiEnabled(false);
-		}
+		connection = null;
 	}
 
 	/**
@@ -318,31 +253,87 @@ public class ConnectHelper {
 	public void releaseListener(OnSearchListener listener) {
 		// TODO to avoid null point exception, set a default listener.
 		// The best way is set the listener to null.
-		if (this.listener == listener) {
-			this.listener = mDefaultSearchListener;
-		}
-
-		if (this.direcrListener == listener) {
-			this.direcrListener = mDefaultSearchListener;
-		}
+		// TODO This does not work, need implement later.
 	}
 
-	private OnSearchListener mDefaultSearchListener = new OnSearchListener() {
+	/**
+	 * Service connection for {@link #WifiOrAPService}.
+	 */
+	private class DirectServiceConnection implements ServiceConnection {
+		private boolean mIsStartServer = false;
+		private User mUser;
+		private OnSearchListener mListener;
 
-		@Override
-		public void onSearchSuccess(ServerInfo serverInfo) {
-			Log.d(TAG, "mDefaultSearchListener onSearchSuccess " + serverInfo);
+		/**
+		 * 
+		 * @param isStartServer
+		 *            true means start a server to search clients, false means
+		 *            start a client to search servers.
+		 * @param user
+		 */
+		public DirectServiceConnection(boolean isStartServer, User user,
+				OnSearchListener listener) {
+			mIsStartServer = isStartServer;
+			mUser = user;
+			mListener = listener;
 		}
 
 		@Override
-		public void onSearchSuccess(String serverIP, String name) {
-			Log.d(TAG, "mDefaultSearchListener onSearchSuccess " + serverIP
-					+ ", " + name);
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			mDirectServiceConnection = this;
+
+			DirectBinder binder = (DirectBinder) service;
+			mDirectService = binder.getService();
+			mDirectService.startDirect(mIsStartServer, mUser, mListener);
 		}
 
 		@Override
-		public void onSearchStop() {
-			Log.d(TAG, "mDefaultSearchListener onSearchStop");
+		public void onServiceDisconnected(ComponentName name) {
+			mWifiOrAPService = null;
+			mDirectServiceConnection = null;
 		}
-	};
+
+	}
+
+	/**
+	 * Service connection for {@link #WifiOrAPService}.
+	 */
+	private class WifiOrAPServiceConnection implements ServiceConnection {
+		private boolean mIsStartServer = false;
+		private String mServerType;
+		private OnSearchListener mListener;
+
+		/**
+		 * 
+		 * @param isStartServer
+		 *            true means start a server to search clients, false means
+		 *            start a client to search servers.
+		 * @param type
+		 */
+		public WifiOrAPServiceConnection(boolean isStartServer, String type,
+				OnSearchListener onSearchListener) {
+			mIsStartServer = isStartServer;
+			mServerType = type;
+			mListener = onSearchListener;
+		}
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			mWifiOrAPServiceConnection = this;
+			WifiOrAPBinder binder = (WifiOrAPBinder) service;
+			mWifiOrAPService = binder.getService();
+			if (mIsStartServer) {
+				mWifiOrAPService.startServer(mServerType, mListener);
+			} else {
+				mWifiOrAPService.startSearch(mListener);
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			mWifiOrAPService = null;
+			mWifiOrAPServiceConnection = null;
+		}
+
+	}
 }

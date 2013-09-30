@@ -99,11 +99,12 @@ public class DirectService extends Service {
 		}
 	}
 
-	public void stopSearch(){
-		if(wifiP2pManager!=null){
+	public void stopSearch() {
+		if (wifiP2pManager != null) {
 			wifiP2pManager.stopPeerDiscovery(channel, null);
 		}
 	}
+
 	private DirectBinder myBinder = new DirectBinder();
 
 	public void regitserListener(DeviceNotify deviceNotify) {
@@ -199,7 +200,7 @@ public class DirectService extends Service {
 									 */
 									serverList.add(device);
 									ServerInfo info = new ServerInfo();
-									info.setServerType("wifi-direct");
+									info.setServerType(ConnectHelper.SERVER_TYPE_WIFI_DIRECT);
 									info.setServerDevice(device);
 									info.setServerName(device.deviceName);
 									onSearchListener.onSearchSuccess(info);
@@ -309,7 +310,9 @@ public class DirectService extends Service {
 	};
 
 	public boolean connectToServer(ServerInfo info) {
-		if (info == null || !info.getServerType().equals("wifi-direct")) {
+		if (info == null
+				|| !info.getServerType().equals(
+						ConnectHelper.SERVER_TYPE_WIFI_DIRECT)) {
 			return false;
 		}
 		WifiP2pDevice device = info.getServerDevice();

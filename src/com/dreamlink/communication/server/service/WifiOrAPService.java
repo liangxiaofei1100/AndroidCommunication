@@ -19,7 +19,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
@@ -36,6 +35,8 @@ import android.text.TextUtils;
  * server,please remember unbind another one
  */
 public class WifiOrAPService extends Service {
+	private final String TAG = "CreateAPServer";
+
 	private static final String WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED";
 	private static final String EXTRA_WIFI_AP_STATE = "wifi_state";
 	private static final int WIFI_AP_STATE_ENABLING = 12;
@@ -43,9 +44,9 @@ public class WifiOrAPService extends Service {
 	private static final int WIFI_AP_STATE_DISABLING = 10;
 	private static final int WIFI_AP_STATE_DISABLED = 11;
 	private static final int WIFI_AP_STATE_FAILED = 14;
-	private final String TAG = "CreateAPServer";
+
 	private SearchClient mSearchClient;
-	private WifiOrAPBinder myBinder = new WifiOrAPBinder();
+	private WifiOrAPBinder mBinder = new WifiOrAPBinder();
 	private WifiManager mWifiManager;
 	private IntentFilter mWiFiFilter;
 	private SearchSever mSearchServer;
@@ -63,7 +64,7 @@ public class WifiOrAPService extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		return myBinder;
+		return mBinder;
 	}
 
 	@Override
@@ -122,9 +123,10 @@ public class WifiOrAPService extends Service {
 		if (searchListener != null) {
 			mSearchClient.setOnSearchListener(searchListener);
 		}
-		if (serverType != null && serverType.toUpperCase().equals("WIFI")) {
+		if (serverType != null
+				&& ConnectHelper.SERVER_TYPE_WIFI.equals(serverType)) {
 			if (NetWorkUtil.isWifiApEnabled(this)) {
-				NetWorkUtil.setWifiAPEnabled(this, "", false);
+				NetWorkUtil.setWifiAPEnabled(this, null, false);
 			}
 			ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 			if (mWifiManager.isWifiEnabled()
@@ -379,7 +381,7 @@ public class WifiOrAPService extends Service {
 					ServerInfo info = new ServerInfo();
 					info.setServerName(WiFiNameEncryption
 							.getUserName(result.SSID));
-					info.setServerType("wifi-ap");
+					info.setServerType(ConnectHelper.SERVER_TYPE_WIFI_AP);
 					info.setServerSsid(result.SSID);
 					onSearchListener.onSearchSuccess(info);
 				}
@@ -403,12 +405,13 @@ public class WifiOrAPService extends Service {
 	public boolean connectToServer(ServerInfo info) {
 		if (info == null) {
 			return false;
-		} else if (info.getServerType().equals("wifi")) {
+		} else if (info.getServerType().equals(ConnectHelper.SERVER_TYPE_WIFI)) {
 			SocketCommunicationManager.getInstance(getApplicationContext())
 					.connectServer(this.getApplicationContext(),
 							info.getServerIp());
 			return true;
-		} else if (info.getServerType().equals("wifi-ap")) {
+		} else if (info.getServerType().equals(
+				ConnectHelper.SERVER_TYPE_WIFI_AP)) {
 			connetAP(info.getServerSsid());
 			return true;
 		}
