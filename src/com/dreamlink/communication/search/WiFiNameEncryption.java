@@ -24,18 +24,38 @@ public class WiFiNameEncryption {
 	 * @return
 	 */
 	public static String generateWiFiName(String userName) {
+		return userName + "@" + generateWiFiNameSuffix();
+	}
+
+	/**
+	 * Generate a WiFi name suffix.
+	 * 
+	 * @return
+	 */
+	public static String generateWiFiNameSuffix() {
 		Random random = new Random();
 		// Get a random position from 0 to 11.
 		int wifiNameKeyPosition = random.nextInt(WIFI_NAME_SUFFIX_LENGTH
 				- WIFI_NAME_SUFFIX_KEY.length() - 1);
-		// Get the WiFi name.
+		// Get the WiFi name suffix.
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(generateRandomUperCaseChar(wifiNameKeyPosition));
 		stringBuilder.append(WIFI_NAME_SUFFIX_KEY);
 		stringBuilder.append(generateRandomUperCaseChar(WIFI_NAME_SUFFIX_LENGTH
 				- wifiNameKeyPosition - WIFI_NAME_SUFFIX_KEY.length()));
-		// Get the encrypted WiFi name.
-		return userName + "@" + Encryption.encrypt(stringBuilder.toString());
+		// Get the encrypted WiFi name suffix.
+		return Encryption.encrypt(stringBuilder.toString());
+	}
+
+	/**
+	 * Generate WiFi name with user name and an exist suffix.
+	 * 
+	 * @param userName
+	 * @param suffix
+	 * @return
+	 */
+	public static String generateWiFiName(String userName, String suffix) {
+		return userName + "@" + suffix;
 	}
 
 	/**
@@ -47,6 +67,16 @@ public class WiFiNameEncryption {
 	public static String getUserName(String wifiName) {
 		return wifiName.substring(0, wifiName.length()
 				- WIFI_NAME_SUFFIX_LENGTH - 1);
+	}
+
+	/**
+	 * Get suffix from WiFi name.
+	 * 
+	 * @return
+	 */
+	public static String getSuffix(String wifiName) {
+		return wifiName.substring(wifiName.length() - WIFI_NAME_SUFFIX_LENGTH,
+				wifiName.length());
 	}
 
 	/**
@@ -98,7 +128,6 @@ public class WiFiNameEncryption {
 	 */
 	public static String getWiFiPassword(String wifiName) {
 		// Get the last WIFI_PASSWORD_LENGTH string.
-		return Encryption.encrypt(wifiName.substring(wifiName.length()
-				- WIFI_PASSWORD_LENGTH, wifiName.length()));
+		return Encryption.encrypt(getSuffix(wifiName));
 	}
 }

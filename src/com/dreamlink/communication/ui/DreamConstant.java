@@ -15,7 +15,7 @@ public class DreamConstant {
 	public static final int ACTION_MENU_MORE = 0x05;
 	public static final int ACTION_MENU_PLAY = 0x06;
 	public static final int ACTION_MENU_RENAME = 0x07;
-	
+
 	public static final int REQUEST_FOR_MODIFY_NAME = 0x12;
 
 	// context action menu id
@@ -29,47 +29,48 @@ public class DreamConstant {
 
 		public static final String CAMERA_SIZE = "camera_size";
 		public static final String GALLERY_SIZE = "gallery_size";
-		
+
 		public static final String IS_SERVER = "is_server";
-		
+
 		public static final String IS_FIRST_START = "is_first_start";
-		
+
 		public static final String COPY_PATH = "copy_path";
-		
+
 		public static final String SEND_FILE = "send_file";
 		public static final String SEND_FILES = "send_files";
 		public static final String RECEIVE_FILE = "receive_file";
-		public static final String SEND_USERS ="send_users";
-		
+		public static final String SEND_USERS = "send_users";
+
 		public static final String SHARED_PERFERENCE_NAME = "my_shared";
 		public static final String DEFAULT_SAVE_PATH = "DEFAULT_SAVE_PATH";
 		public static final String SDCARD_PATH = "sdcard_path";
 		public static final String INTERNAL_PATH = "internal_path";
-		
+		public static final String WIFI_NAME_SUFFIX = "wifi_name_suffix";
+
 		public static final String APP_ID = "app_id";
-		
+
 	}
-	
-	public static class Cmd{
+
+	public static class Cmd {
 		/** List files of current directory */
 		public static final int LS = 100;
-		/**copy command*/
+		/** copy command */
 		public static final int COPY = 101;
-		/**stop send file command*/
+		/** stop send file command */
 		public static final int STOP_SEND_FILE = 102;
-		/**LRETN*/
+		/** LRETN */
 		public static final int LSRETN = 103;
-		/**stop return*/
+		/** stop return */
 		public static final int STOP_RETN = 104;
-		/**end flag*/
+		/** end flag */
 		public static final int END_FLAG = 105;
-		/**ask for get remote file share service*/
+		/** ask for get remote file share service */
 		public static final int GET_REMOTE_SHARE_SERVICE = 106;
-		/**return for get remote file share service*/
+		/** return for get remote file share service */
 		public static final int RETURN_REMOTE_SHARE_SERVICE = 107;
-		/**send file command*/
+		/** send file command */
 		public static final int SEND_FILE = 108;
-		/**ask for get remote file share service*/
+		/** ask for get remote file share service */
 		public static final int REMOTE_SHARE_SERVICE_STOPPED = 109;
 	}
 
@@ -93,14 +94,15 @@ public class DreamConstant {
 
 	/** package name for this app */
 	public static final String PACKAGE_NAME = "com.dreamlink.communication";
-	
+
 	public static final String EXIT_ACTION = "intent.exit.aciton";
 	public static final String APP_ACTION = "com.dreamlink.communication.action.app";
 	public static final String APP_CATEGORY = "com.dreamlink.communication.category.app";
 
-	/**test for yuri,only for yuri*/
+	/** test for yuri,only for yuri */
 	public static final boolean UREY_TEST = true;
-	
-	/**the default folder that save the receive files*/
-	public static final String DEFAULT_SAVE_FOLDER = Environment.getExternalStorageDirectory() + "/dreamLink";
+
+	/** the default folder that save the receive files */
+	public static final String DEFAULT_SAVE_FOLDER = Environment
+			.getExternalStorageDirectory() + "/dreamLink";
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.ui.app.AppInfo;
 import com.dreamlink.communication.ui.app.AppManager;
 import com.dreamlink.communication.ui.db.AppData;
@@ -17,7 +18,10 @@ import com.dreamlink.communication.util.Log;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -62,6 +66,7 @@ public class StartLoader extends Activity {
 		Log.startSaveToFile();
 		createFileSaveFolder();
 		initMountManager();
+		createNewWifiSuffixName();
 		// Do not use game DB now.
 		// importGameKeyDb();
 
@@ -73,6 +78,19 @@ public class StartLoader extends Activity {
 		LoadAppThread thread = new LoadAppThread();
 		thread.start();
 		Log.d(TAG, "Load end");
+	}
+
+	/**
+	 * Used by WiFi AP name.
+	 */
+	private void createNewWifiSuffixName() {
+		SharedPreferences preferences = getSharedPreferences(
+				DreamConstant.Extra.SHARED_PERFERENCE_NAME,
+				Context.MODE_PRIVATE);
+		Editor editor = preferences.edit();
+		String wifiNameSuffix = WiFiNameEncryption.generateWiFiNameSuffix();
+		editor.putString(DreamConstant.Extra.WIFI_NAME_SUFFIX, wifiNameSuffix);
+		editor.commit();
 	}
 
 	/**

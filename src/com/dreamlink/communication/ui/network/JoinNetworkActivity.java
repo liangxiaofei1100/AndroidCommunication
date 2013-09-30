@@ -242,27 +242,33 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 		boolean result = false;
 
 		for (ServerInfo serverInfo : mServerData) {
-			if (info.getServerType().equals(ConnectHelper.SERVER_TYPE_WIFI)) {
-				if (serverInfo.getServerName().equals(info.getServerName())
-						&& serverInfo.getServerIp().equals(info.getServerIp())) {
+			if (ConnectHelper.SERVER_TYPE_WIFI.equals(info.getServerType())
+					&& ConnectHelper.SERVER_TYPE_WIFI.equals(serverInfo
+							.getServerType())) {
+				if (info.getServerName().equals(serverInfo.getServerName())
+						&& info.getServerIp().equals(serverInfo.getServerIp())) {
 					// The server is already added to list.
 					result = true;
 					break;
 				}
-			} else if (info.getServerType().equals(
-					ConnectHelper.SERVER_TYPE_WIFI_AP)) {
-				if (serverInfo.getServerName().equals(info.getServerName())
-						&& serverInfo.getServerSsid().equals(
-								info.getServerSsid())) {
+			} else if (ConnectHelper.SERVER_TYPE_WIFI_AP.equals(info
+					.getServerType())
+					&& ConnectHelper.SERVER_TYPE_WIFI_AP.equals(serverInfo
+							.getServerType())) {
+				if (info.getServerName().equals(serverInfo.getServerName())
+						&& info.getServerSsid().equals(
+								serverInfo.getServerSsid())) {
 					// The server is already added to list.
 					result = true;
 					break;
 				}
-			} else if (info.getServerType().equals(
-					ConnectHelper.SERVER_TYPE_WIFI_DIRECT)) {
-				if (serverInfo.getServerName().equals(info.getServerName())
-						&& serverInfo.getServerDevice().deviceAddress
-								.equals(info.getServerDevice().deviceAddress)) {
+			} else if (ConnectHelper.SERVER_TYPE_WIFI_DIRECT.equals(info
+					.getServerType())
+					&& ConnectHelper.SERVER_TYPE_WIFI_DIRECT.equals(serverInfo
+							.getServerType())) {
+				if (info.getServerName().equals(serverInfo.getServerName())
+						&& info.getServerDevice().deviceAddress
+								.equals(serverInfo.getServerDevice().deviceAddress)) {
 					// The server is already added to list.
 					result = true;
 					break;

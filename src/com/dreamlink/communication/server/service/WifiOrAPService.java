@@ -18,6 +18,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
@@ -26,6 +28,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.text.TextUtils;
 
 /**
  * this start wifi or wifi-AP server or search ,this server method can not run
@@ -143,8 +146,16 @@ public class WifiOrAPService extends Service {
 			/** start wifi-ap server ,and it is default server */
 			setWifiEnabled(false);
 			if (!NetWorkUtil.isWifiApEnabled(getApplicationContext())) {
-				String wifiAPName = WiFiNameEncryption
-						.generateWiFiName(UserHelper.getUserName(this));
+				String wifiNameSuffix = getWifiNameSuffixFromSharedPreferences();
+				String wifiAPName = null;
+				if (TextUtils.isEmpty(wifiNameSuffix)) {
+					wifiAPName = WiFiNameEncryption.generateWiFiName(UserHelper
+							.getUserName(this));
+				} else {
+					wifiAPName = WiFiNameEncryption.generateWiFiName(
+							UserHelper.getUserName(this), wifiNameSuffix);
+				}
+
 				String wifiAPPassword = WiFiNameEncryption
 						.getWiFiPassword(wifiAPName);
 				NetWorkUtil.setWifiAPEnabled(this, wifiAPName, wifiAPPassword,
@@ -157,6 +168,15 @@ public class WifiOrAPService extends Service {
 				mSearchClient.startSearch();
 			}
 		}
+	}
+
+	private String getWifiNameSuffixFromSharedPreferences() {
+		SharedPreferences preferences = getSharedPreferences(
+				DreamConstant.Extra.SHARED_PERFERENCE_NAME,
+				Context.MODE_PRIVATE);
+		String wifiNameSuffix = preferences.getString(
+				DreamConstant.Extra.WIFI_NAME_SUFFIX, "");
+		return wifiNameSuffix;
 	}
 
 	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
