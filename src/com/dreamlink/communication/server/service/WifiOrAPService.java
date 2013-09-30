@@ -143,8 +143,12 @@ public class WifiOrAPService extends Service {
 			/** start wifi-ap server ,and it is default server */
 			setWifiEnabled(false);
 			if (!NetWorkUtil.isWifiApEnabled(getApplicationContext())) {
-				NetWorkUtil.setWifiAPEnabled(this, WiFiNameEncryption
-						.generateWiFiName(UserHelper.getUserName(this)), true);
+				String wifiAPName = WiFiNameEncryption
+						.generateWiFiName(UserHelper.getUserName(this));
+				String wifiAPPassword = WiFiNameEncryption
+						.getWiFiPassword(wifiAPName);
+				NetWorkUtil.setWifiAPEnabled(this, wifiAPName, wifiAPPassword,
+						true);
 				IntentFilter filter = new IntentFilter();
 				filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
 				registerReceiver(mBroadcastReceiver, filter);
@@ -254,11 +258,11 @@ public class WifiOrAPService extends Service {
 			unregisterReceiver(mWifiBroadcastReceiver);
 			client_register = false;
 		}
-//		mSearchServer = SearchSever.getInstance(this);
-//		mSearchServer.setOnSearchListener(onSearchListener);
-//		if (mWifiManager.isWifiEnabled()) {
-//			mSearchServer.startSearch();
-//		}
+		// mSearchServer = SearchSever.getInstance(this);
+		// mSearchServer.setOnSearchListener(onSearchListener);
+		// if (mWifiManager.isWifiEnabled()) {
+		// mSearchServer.startSearch();
+		// }
 		mWiFiFilter = new IntentFilter();
 		mWiFiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		mWiFiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -314,8 +318,8 @@ public class WifiOrAPService extends Service {
 			Log.d(TAG, "WIFI_STATE_ENABLED");
 			Log.d(TAG, "Start WiFi scan.");
 			mWifiManager.startScan();
-//			if (mSearchServer != null)
-//				mSearchServer.startSearch();
+			// if (mSearchServer != null)
+			// mSearchServer.startSearch();
 			break;
 		case WifiManager.WIFI_STATE_DISABLING:
 			Log.d(TAG, "WIFI_STATE_DISABLING");
@@ -416,7 +420,23 @@ public class WifiOrAPService extends Service {
 
 		WifiConfiguration configuration = new WifiConfiguration();
 		configuration.SSID = "\"" + SSID + "\"";
-		configuration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+		configuration.preSharedKey = "\""
+				+ WiFiNameEncryption.getWiFiPassword(SSID) + "\"";
+		configuration.hiddenSSID = true;
+		configuration.allowedAuthAlgorithms
+				.set(WifiConfiguration.AuthAlgorithm.OPEN);
+		configuration.allowedKeyManagement
+				.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+		configuration.allowedGroupCiphers
+				.set(WifiConfiguration.GroupCipher.TKIP);
+		configuration.allowedPairwiseCiphers
+				.set(WifiConfiguration.PairwiseCipher.TKIP);
+		configuration.allowedGroupCiphers
+				.set(WifiConfiguration.GroupCipher.CCMP);
+		configuration.allowedPairwiseCiphers
+				.set(WifiConfiguration.PairwiseCipher.CCMP);
+		configuration.status = WifiConfiguration.Status.ENABLED;
+
 		int netId = mWifiManager.addNetwork(configuration);
 		mWifiManager.saveConfiguration();
 		boolean result = mWifiManager.enableNetwork(netId, true);

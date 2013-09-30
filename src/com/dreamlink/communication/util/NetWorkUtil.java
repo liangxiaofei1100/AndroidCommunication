@@ -14,6 +14,8 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiConfiguration.AuthAlgorithm;
+import android.net.wifi.WifiConfiguration.KeyMgmt;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
@@ -167,21 +169,17 @@ public class NetWorkUtil {
 	}
 
 	/**
-	 * Enable WiFi AP or close
+	 * Enable WiFi AP with password or close.
 	 * 
 	 * @param context
 	 * @param apName
-	 *            If enable, apName is needed. If disable, apName is not needed,
-	 *            just set null.
+	 * @param password
 	 * @param enabled
-	 *            ? enable AP : close AP.
 	 * @return
 	 */
 	public static boolean setWifiAPEnabled(Context context, String apName,
-			boolean enabled) {
-		// TODO If disable wifi ap, should get ap name from ap info in case of
-		// the name is different from the enabled name.
-		WifiManager wifiManager = (WifiManager) context
+			String password, boolean enabled) {
+		WifiManager wifiManager = (WifiManager) context.getApplicationContext()
 				.getSystemService(Context.WIFI_SERVICE);
 
 		WifiConfiguration configuration = null;
@@ -194,8 +192,19 @@ public class NetWorkUtil {
 			}
 			configuration = new WifiConfiguration();
 			configuration.SSID = apName;
-			configuration.allowedKeyManagement
-					.set(WifiConfiguration.KeyMgmt.NONE);
+			if (TextUtils.isEmpty(password)) {
+				Log.d(TAG, "setWifiAPEnabled no password.");
+				// No password.
+				configuration.allowedKeyManagement
+						.set(WifiConfiguration.KeyMgmt.NONE);
+			} else {
+				Log.d(TAG, "setWifiAPEnabled has password.");
+				// Has password.
+				configuration.allowedKeyManagement.set(KeyMgmt.WPA_PSK);
+				configuration.allowedAuthAlgorithms.set(AuthAlgorithm.OPEN);
+				configuration.preSharedKey = password;
+			}
+
 		} else {
 			try {
 				Method method = wifiManager.getClass().getMethod(
@@ -216,6 +225,22 @@ public class NetWorkUtil {
 			Log.e(TAG, "Can not set WiFi AP state, " + e);
 			return false;
 		}
+	}
+
+	/**
+	 * Enable WiFi AP without password or close.
+	 * 
+	 * @param context
+	 * @param apName
+	 *            If enable, apName is needed. If disable, apName is not needed,
+	 *            just set null.
+	 * @param enabled
+	 *            ? enable AP : close AP.
+	 * @return
+	 */
+	public static boolean setWifiAPEnabled(Context context, String apName,
+			boolean enabled) {
+		return setWifiAPEnabled(context, apName, null, enabled);
 	}
 
 	public static void clearWifiConnectHistory(Context context) {

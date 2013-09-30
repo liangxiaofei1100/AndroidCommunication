@@ -15,6 +15,7 @@ import java.util.Random;
 public class WiFiNameEncryption {
 	public static final String WIFI_NAME_SUFFIX_KEY = "WLAN";
 	public static final int WIFI_NAME_SUFFIX_LENGTH = 16;
+	public static final int WIFI_PASSWORD_LENGTH = 10;
 
 	/**
 	 * Generate a encrypted name.
@@ -56,7 +57,7 @@ public class WiFiNameEncryption {
 	 */
 	public static boolean checkWiFiName(String wifiName) {
 		// Check total length.
-		if (wifiName.length() < WIFI_NAME_SUFFIX_LENGTH) {
+		if (wifiName == null || wifiName.length() < WIFI_NAME_SUFFIX_LENGTH) {
 			return false;
 		}
 		// Check WiFi name suffix whether all chars are from 'A' to 'Z'.
@@ -85,5 +86,19 @@ public class WiFiNameEncryption {
 			array[i] = (char) ('A' + random.nextInt(25));
 		}
 		return array;
+	}
+
+	/**
+	 * Get a WiFi password base on WiFi name.
+	 * 
+	 * @param wifiName
+	 *            Name of wiFi AP, and it must be checked by
+	 *            {@link #checkWiFiName(String)}.
+	 * @return
+	 */
+	public static String getWiFiPassword(String wifiName) {
+		// Get the last WIFI_PASSWORD_LENGTH string.
+		return Encryption.encrypt(wifiName.substring(wifiName.length()
+				- WIFI_PASSWORD_LENGTH, wifiName.length()));
 	}
 }

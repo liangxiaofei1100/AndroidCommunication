@@ -165,8 +165,6 @@ public class ConnectHelper {
 	}
 
 	private void startWifiAPserver() {
-		NetWorkUtil.setWifiAPEnabled(mContext, WiFiNameEncryption
-				.generateWiFiName(UserHelper.getUserName(mContext)), true);
 		if (directService != null) {
 			unbindServer(directConnection);
 		}
