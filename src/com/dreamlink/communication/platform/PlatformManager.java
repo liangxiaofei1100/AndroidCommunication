@@ -47,6 +47,16 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 	private ConcurrentHashMap<Integer, HostInfo> joinedGroup;
 	private Context mContext;
 	private static PlatformManager mPlatformManager;
+	private HostNumberInterface mHostNumberInterface;
+
+	public interface HostNumberInterface {
+		public void returnHostInfo(List<HostInfo> hostList);
+	}
+
+	public void registerHostNumberInterface(
+			HostNumberInterface hostNumberInterface) {
+		mHostNumberInterface = hostNumberInterface;
+	}
 
 	private PlatformManager(Context context) {
 		mContext = context;
@@ -247,15 +257,23 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 
 	public void receiverAllHostInfo(
 			ConcurrentHashMap<Integer, HostInfo> allHostInfo) {
+		ArrayList<HostInfo> tem = new ArrayList<HostInfo>();
+		for (java.util.Map.Entry<Integer, HostInfo> entry : allHostInfo
+				.entrySet()) {
+			HostInfo hostInfo = entry.getValue();
+			tem.add(hostInfo);
+		}
 		for (Entry<Integer, PlatformManagerCallback> entry : callbackList
 				.entrySet()) {
 			try {
 				entry.getValue().hostInfoChange(
-						ArrayUtil.objectToByteArray(allHostInfo));
+						ArrayUtil.objectToByteArray(tem));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+		/** for platform get all host callback */
+		mHostNumberInterface.returnHostInfo(tem);
 	}
 
 	/**
