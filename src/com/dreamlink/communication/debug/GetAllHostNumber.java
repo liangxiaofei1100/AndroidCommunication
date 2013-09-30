@@ -14,6 +14,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 public class GetAllHostNumber extends Activity implements HostNumberInterface {
 	private PlatformManager mPlatformManager;
@@ -32,7 +33,8 @@ public class GetAllHostNumber extends Activity implements HostNumberInterface {
 			mHostNumberMap = (Map<String, Integer>) msg.obj;
 			for (Entry<String, Integer> entry : mHostNumberMap.entrySet()) {
 				// TODO do something to update the number
-
+				Log.e("ArbiterLiu",
+						entry.getKey() + "  number is  " + entry.getValue());
 			}
 		}
 
@@ -42,6 +44,7 @@ public class GetAllHostNumber extends Activity implements HostNumberInterface {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mPlatformManager = PlatformManager.getInstance(getApplicationContext());
+		mPlatformManager.registerHostNumberInterface(this);
 		mPlatformManager.getAllHost(0);// get all host info ,need to parse
 	}
 

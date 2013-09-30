@@ -273,7 +273,8 @@ public class PlatformManager implements OnCommunicationListenerExternal {
 			}
 		}
 		/** for platform get all host callback */
-		mHostNumberInterface.returnHostInfo(tem);
+		if (mHostNumberInterface != null)
+			mHostNumberInterface.returnHostInfo(tem);
 	}
 
 	/**
