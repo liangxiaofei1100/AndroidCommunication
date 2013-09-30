@@ -11,6 +11,7 @@ import com.dreamlink.communication.search.Search;
 import com.dreamlink.communication.search.WiFiNameEncryption;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
@@ -19,6 +20,7 @@ import android.net.wifi.WifiConfiguration.KeyMgmt;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.os.Build;
 import android.text.TextUtils;
 
 public class NetWorkUtil {
@@ -261,5 +263,16 @@ public class NetWorkUtil {
 				wifiManager.removeNetwork(configuration.networkId);
 			}
 		}
+	}
+
+	public static boolean isWifiDirectSupport(Context context) {
+		boolean result = false;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			result = context.getApplicationContext().getPackageManager()
+					.hasSystemFeature(PackageManager.FEATURE_WIFI_DIRECT);
+		} else {
+			result = false;
+		}
+		return result;
 	}
 }

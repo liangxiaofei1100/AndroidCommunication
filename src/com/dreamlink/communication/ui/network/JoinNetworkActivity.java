@@ -1,7 +1,5 @@
 package com.dreamlink.communication.ui.network;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
