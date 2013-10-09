@@ -1,24 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="45dp"
-    android:background="@color/main_title" >
-
-    <ImageView
-        android:id="@+id/iv_title_icon"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
+    android:background="@color/main_title"
+    tools:ignore="HardcodedText" >
+    
+    <LinearLayout
+        android:id="@+id/ll_menu_select"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:layout_margin="5dp"
-        android:src="@drawable/title_image" />
+        android:background="@drawable/menu_background"
+        android:gravity="center_vertical" >
+        <ImageView
+            android:id="@+id/iv_title_icon"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:adjustViewBounds="true"
+            android:src="@drawable/title_image" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tv_title_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/iv_title_icon"
+        android:layout_toRightOf="@+id/ll_menu_select"
         android:text="标题"
         android:textColor="@color/white"
         android:textSize="20sp" />
@@ -33,28 +42,56 @@
         android:gravity="center_vertical"
         android:text="(2)"
         android:textColor="#2e8b57" />
-
+    
     <LinearLayout
+        android:id="@+id/ll_refresh"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_alignParentRight="true"
+        android:layout_toLeftOf="@+id/ll_history"
+        android:background="@drawable/menu_background"
+        android:gravity="center_vertical" >
+        <ImageView
+            android:id="@+id/iv_refresh"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:adjustViewBounds="true"
+            android:src="@drawable/icon_refresh" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_history"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@+id/ll_more"
+        android:background="@drawable/menu_background"
         android:gravity="center_vertical" >
 
         <ImageView
-            android:id="@+id/iv_refresh"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
+            android:id="@+id/iv_history"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:adjustViewBounds="true"
-            android:src="@drawable/icon_refresh" />
+            android:scaleType="fitXY"
+            android:src="@drawable/icon_transfer_history" />
+
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/ll_more"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/menu_background"
+        android:gravity="center_vertical" >
 
         <ImageView
-            android:id="@+id/iv_history"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
+            android:id="@+id/iv_more"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:adjustViewBounds="true"
-            android:src="@drawable/icon_transfer_history" />
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_more" />
+
     </LinearLayout>
 
 </RelativeLayout>

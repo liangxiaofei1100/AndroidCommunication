@@ -2,11 +2,16 @@ package com.dreamlink.communication.ui.settings;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -14,16 +19,20 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.LoginActivity;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.UserInfoSetting;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.util.Log;
 
-public class SettingsFragment extends BaseFragment implements View.OnClickListener{
+public class SettingsFragment extends BaseFragment implements View.OnClickListener, OnMenuItemClickListener{
 
 	private ImageView mTitleIcon;
 	private TextView mTitleView;
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
+	private View mMoreView;
+	private View mMenuView;
 	private int mAppId = -1;
 	
 	private View mUserInfoSettingView;
@@ -87,6 +96,12 @@ public class SettingsFragment extends BaseFragment implements View.OnClickListen
 		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
 		mHistoryView.setOnClickListener(this);
 		mHistoryView.setVisibility(View.GONE);
+		
+		mMenuView = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
+		mMenuView.setOnClickListener(this);
+		
+		mMoreView = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
+		mMoreView.setOnClickListener(this);
 	}
 
 	@Override
@@ -112,11 +127,31 @@ public class SettingsFragment extends BaseFragment implements View.OnClickListen
 			intent.setClass(getActivity(), UserInfoSetting.class);
 			startActivity(intent);
 			break;
+			
+		case R.id.ll_menu_select:
+			PopupMenu popupMenu = new PopupMenu(getActivity(), mMenuView);
+			popupMenu.setOnMenuItemClickListener(this);
+			MenuInflater inflater = popupMenu.getMenuInflater();
+			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
+			popupMenu.show();
+			break;
+		case R.id.ll_more:
+			PopupMenu popupMenu2 = new PopupMenu(getActivity(), mMoreView);
+			popupMenu2.setOnMenuItemClickListener(this);
+			MenuInflater inflater2 = popupMenu2.getMenuInflater();
+			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
+			popupMenu2.show();
+			break;
 
 		default:
 			break;
 		}
 	}
 
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		return true;
+	}
 
 }

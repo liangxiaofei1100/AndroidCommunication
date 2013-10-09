@@ -107,4 +107,18 @@
         <item>删除记录及文件</item>
     </string-array>
     
+    <string-array name="main_menu_item">
+        <item>朝颜天地</item>
+        <item>网上邻居</item>
+        <item>精品推荐</item>
+        <item>@string/image</item>
+        <item>@string/audio</item>
+        <item>@string/video</item>
+        <item>@string/app</item>
+        <item>@string/game</item>
+<!--         <item>批量传输</item> -->
+<!--         <item>@string/settings_title</item> -->
+<!--         <item>@string/help_title</item> -->
+    </string-array>
+    
 </resources>

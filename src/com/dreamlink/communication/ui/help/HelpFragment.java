@@ -5,21 +5,27 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
 
-public class HelpFragment extends BaseFragment implements OnClickListener {
+public class HelpFragment extends BaseFragment implements OnClickListener, OnMenuItemClickListener {
 	private static final String TAG = "HelpFragment";
 	private Context mContext;
 	private ImageView mTitleIcon;
@@ -27,6 +33,8 @@ public class HelpFragment extends BaseFragment implements OnClickListener {
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
+	private View mMoreView;
+	private View mMenuView;
 	private int mAppId = -1;
 
 	private View mAboutView;
@@ -111,6 +119,12 @@ public class HelpFragment extends BaseFragment implements OnClickListener {
 		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
 		mHistoryView.setOnClickListener(this);
 		mHistoryView.setVisibility(View.GONE);
+		
+		mMenuView = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
+		mMenuView.setOnClickListener(this);
+		
+		mMoreView = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
+		mMoreView.setOnClickListener(this);
 	}
 
 	@Override
@@ -131,10 +145,32 @@ public class HelpFragment extends BaseFragment implements OnClickListener {
 			intent.setClass(getActivity(), AboutActivity.class);
 			startActivity(intent);
 			break;
+			
+		case R.id.ll_menu_select:
+			PopupMenu popupMenu = new PopupMenu(getActivity(), mMenuView);
+			popupMenu.setOnMenuItemClickListener(this);
+			MenuInflater inflater = popupMenu.getMenuInflater();
+			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
+			popupMenu.show();
+			break;
+		case R.id.ll_more:
+			PopupMenu popupMenu2 = new PopupMenu(getActivity(), mMoreView);
+			popupMenu2.setOnMenuItemClickListener(this);
+			MenuInflater inflater2 = popupMenu2.getMenuInflater();
+			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
+			popupMenu2.show();
+			break;
 
 		default:
 			break;
 		}
 	}
+	
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		return true;
+	}
+
 
 }
