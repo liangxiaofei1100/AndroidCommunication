@@ -143,6 +143,9 @@ public class HistoryActivity extends FragmentActivity implements
 		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
 		mRefreshView.setVisibility(View.GONE);
 		mHistoryView.setVisibility(View.GONE);
+		
+		View moreView = titleLayout.findViewById(R.id.ll_more);
+		moreView.setVisibility(View.GONE);
 	}
 
 	@SuppressLint("NewApi")
