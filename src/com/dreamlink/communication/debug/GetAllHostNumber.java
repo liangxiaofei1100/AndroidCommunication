@@ -52,12 +52,20 @@ public class GetAllHostNumber extends Activity implements HostNumberInterface {
 	public void returnHostInfo(List<HostInfo> hostList) {
 		/**
 		 * when host info change ,will invoke here
-		 * 
-		 * please do it in other thread
 		 * */
-		new ParseThread(hostList).start();
+		HashMap<String, Integer> temMap = new HashMap<String, Integer>();
+		for (HostInfo info : hostList) {
+			String packageName = info.packageName;
+			int num = 1;
+			if (temMap.containsKey(packageName)) {
+				num = temMap.get(packageName) + 1;
+			}
+			temMap.put(packageName, num);
+		}
+		mHandler.obtainMessage(0, temMap).sendToTarget();
 	}
 
+	@SuppressWarnings("unused")
 	private class ParseThread extends Thread {
 		private List<HostInfo> allHostList;
 
