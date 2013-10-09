@@ -27,6 +27,7 @@ public class InviteBluetoothActivity extends Activity implements
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
+	private ImageView mMoreView;
 	
 	private Button mSendBtn;
 
@@ -56,6 +57,9 @@ public class InviteBluetoothActivity extends Activity implements
 		// History icon
 		mHistoryView = (ImageView) findViewById(R.id.iv_history);
 		mHistoryView.setVisibility(View.GONE);
+		// menu more icon
+		mMoreView = (ImageView) findViewById(R.id.iv_more);
+		mMoreView.setVisibility(View.GONE);
 	}
 
 	private void initView() {
