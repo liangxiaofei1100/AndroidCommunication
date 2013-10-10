@@ -163,7 +163,7 @@ public class HistoryActivity extends FragmentActivity implements
 		mHistoryMsgLV.setOnScrollListener(this);
 		mHistoryMsgLV.setOnItemClickListener(this);
 
-		mAdapter = new HistoryCursorAdapter(mContext);
+		mAdapter = new HistoryCursorAdapter(mContext, mHistoryMsgLV);
 		mHistoryMsgLV.setAdapter(mAdapter);
 		mHistoryMsgLV.setSelection(0);
 	}
@@ -201,12 +201,7 @@ public class HistoryActivity extends FragmentActivity implements
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
-		// 注释：firstVisibleItem为第一个可见的Item的position，从0开始，随着拖动会改变
-		// visibleItemCount为当前页面总共可见的Item的项数
-		// totalItemCount为当前总共已经出现的Item的项数
-		// recycleBitmapCaches(0, firstVisibleItem);
-		// recycleBitmapCaches(firstVisibleItem + visibleItemCount,
-		// totalItemCount);
+		// TODO
 	}
 
 	@Override
@@ -217,7 +212,21 @@ public class HistoryActivity extends FragmentActivity implements
 
 	@Override
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		switch (scrollState) {
+		case OnScrollListener.SCROLL_STATE_FLING:
+			mAdapter.setIdleFlag(false);
+			break;
+		case OnScrollListener.SCROLL_STATE_IDLE:
+			mAdapter.setIdleFlag(true);
+			break;
+		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+			mAdapter.setIdleFlag(false);
+			break;
 
+		default:
+			break;
+		}
+		mAdapter.notifyDataSetChanged();
 	}
 	
 	public static void launch(Context context){

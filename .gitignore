@@ -21,3 +21,6 @@ local.properties
 
 #version.xml
 res/values/version.xml
+
+#yuri.txt
+yuri.txt
