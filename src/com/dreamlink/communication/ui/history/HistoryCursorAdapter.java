@@ -4,9 +4,9 @@ import java.io.File;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
-import com.dreamlink.communication.ui.AsyncImageLoader;
+import com.dreamlink.communication.ui.AsyncImageLoader2;
+import com.dreamlink.communication.ui.AsyncImageLoader2.ILoadImageCallback;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.ui.file.FileInfoManager;
@@ -18,7 +18,6 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +25,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -35,17 +35,19 @@ public class HistoryCursorAdapter extends CursorAdapter {
 	private int mStatus = -1;
 	private Notice mNotice = null;
 	private Context mContext;
-	private AsyncImageLoader bitmapLoader = null;
-	private boolean scrollFlag = true;
+	private AsyncImageLoader2 bitmapLoader2 = null;
+	private boolean mIdleFlag = true;
 	private MsgOnClickListener mClickListener = new MsgOnClickListener();
 	private DeleteOnClick mDeleteOnClick = new DeleteOnClick(0);
+	private ListView mListView; 
 	
-	public HistoryCursorAdapter(Context context) {
+	public HistoryCursorAdapter(Context context, ListView listView) {
 		super(context, null, true);
 		this.mContext = context;
+		mListView = listView;
 		mNotice = new Notice(context);
 		mLayoutInflater = LayoutInflater.from(context);
-		bitmapLoader = new AsyncImageLoader(context);
+		bitmapLoader2 = new AsyncImageLoader2(context);
 	}
 
 	@Override
@@ -75,8 +77,8 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		this.mStatus = status;
 	}
 
-	public void setFlag(boolean flag) {
-		this.scrollFlag = flag;
+	public void setIdleFlag(boolean flag) {
+		this.mIdleFlag = flag;
 	}
 
 	@Override
@@ -107,6 +109,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		int fileType = cursor.getInt(cursor
 				.getColumnIndex(MetaData.History.FILE_TYPE));
 
+		holder.iconView.setTag(filePath);
 		holder.dateView.setText(DreamUtil.getFormatDate(time));
 		holder.userNameView.setText(sendUserName);
 		holder.fileNameView.setText(fileName);
@@ -114,7 +117,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 		holder.receiveUserNameView.setTextColor(Color.BLACK);
 		holder.msgLayout.setTag(new MsgData(id, fileName, filePath, type));
 
-		setIconView(holder.iconView, filePath, fileType);
+		setIconView(holder, holder.iconView, filePath, fileType);
 		setSendReceiveStatus(holder, status, reveiveUserName, fileSize,
 				progress);
 	}
@@ -179,35 +182,39 @@ public class HistoryCursorAdapter extends CursorAdapter {
 	 * @param filePath
 	 * @param fileType
 	 */
-	private void setIconView(ImageView iconView, String filePath, int fileType) {
-		Log.d(TAG, "scroll flag=" + scrollFlag);
-		if (!scrollFlag) {
-			if (AsyncImageLoader.bitmapCache.size() > 0
-					&& AsyncImageLoader.bitmapCache.get(filePath) != null) {
-				iconView.setImageBitmap(AsyncImageLoader.bitmapCache.get(
+	private void setIconView(ViewHolder holder, final ImageView iconView, final String filePath, int fileType) {
+		Log.d(TAG, "scroll flag=" + mIdleFlag);
+		if (!mIdleFlag) {
+			if (AsyncImageLoader2.bitmapCache.size() > 0
+					&& AsyncImageLoader2.bitmapCache.get(filePath) != null) {
+				iconView.setImageBitmap(AsyncImageLoader2.bitmapCache.get(
 						filePath).get());
 			} else {
 				iconView.setImageResource(R.drawable.default_document_icon);
 			}
+			return;
 		} else {
 			// just load image,video,apk file icon;others use default icon
 			if (FileInfoManager.TYPE_IMAGE == fileType
 					|| FileInfoManager.TYPE_APK == fileType
 					|| FileInfoManager.TYPE_VIDEO == fileType) {
-				Bitmap bitmap = bitmapLoader.loadImage(filePath, fileType,
-						iconView, new ILoadImageCallback() {
-							@Override
-							public void onObtainBitmap(Bitmap bitmap,
-									ImageView imageView) {
-								imageView.setImageBitmap(bitmap);
-							}
-						});
-				if (null != bitmap) {
-					iconView.setImageBitmap(bitmap);
-				} else {
-					Log.d(TAG, "set icon view is fail. " + filePath + ", "
-							+ fileType);
+				Log.i(TAG, filePath + ":444");
+				Bitmap bitmap = bitmapLoader2.loadImage(filePath, fileType, new ILoadImageCallback() {
+					
+					@Override
+					public void onObtainBitmap(Bitmap bitmap, String url) {
+						// TODO Auto-generated method stub
+						ImageView imageView = (ImageView) mListView.findViewWithTag(filePath);
+						if (null != bitmap) {
+							imageView.setImageBitmap(bitmap);
+						}
+					}
+				});
+				
+				if (null == bitmap) {
 					iconView.setImageResource(R.drawable.default_document_icon);
+				} else {
+					iconView.setImageBitmap(bitmap);
 				}
 			} else {
 				iconView.setImageResource(R.drawable.default_document_icon);

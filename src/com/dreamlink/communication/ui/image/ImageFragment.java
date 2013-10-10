@@ -20,7 +20,6 @@ import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.media.MediaInfoManager;
 import com.dreamlink.communication.util.Log;
 
-import android.R.integer;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -43,6 +42,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -59,8 +59,9 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	private ImageView mTitleIcon;
 	private TextView mTitleView;
 	private TextView mTitleNum;
-	private ImageView mRefreshView;
-	private ImageView mHistoryView;
+	private LinearLayout mRefreshLayout;
+	private LinearLayout mHistoryLayout;
+	private LinearLayout mMenuLayout;
 
 	private ImageAdapter mAdapter;
 
@@ -120,17 +121,20 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_image);
 		// refresh button
-		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
+		mRefreshLayout.setVisibility(View.GONE);
 		// go to history button
-		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
+		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
+		mMenuLayout.setOnClickListener(this);
+		mRefreshLayout.setOnClickListener(this);
+		mHistoryLayout.setOnClickListener(this);
 		// title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText(R.string.image);
 		// show current page's item num
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
 		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
-		mRefreshView.setOnClickListener(this);
-		mHistoryView.setOnClickListener(this);
 	}
 
 	@Override

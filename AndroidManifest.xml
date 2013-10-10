@@ -43,6 +43,7 @@
         <activity
             android:name="com.dreamlink.communication.ui.MainFragmentActivity"
             android:launchMode="singleTask"
+            android:theme="@style/MainFragmet"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="app_id"

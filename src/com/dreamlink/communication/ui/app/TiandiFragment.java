@@ -25,7 +25,11 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -35,6 +39,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -43,13 +48,14 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
 
-public class TiandiFragment extends BaseFragment implements OnClickListener, OnItemClickListener, OnItemLongClickListener {
+public class TiandiFragment extends BaseFragment implements OnClickListener, OnItemClickListener, OnItemLongClickListener, OnMenuItemClickListener {
 	private static final String TAG = "TiandiFragment2";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
@@ -70,8 +76,10 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	private ImageView mTitleIcon;
 	private TextView mTitleView;
 	private TextView mTitleNum;
-	private ImageView mRefreshView;
-	private ImageView mHistoryView;
+	private LinearLayout mRefreshLayout;
+	private LinearLayout mHistoryLayout;
+	private LinearLayout mMenuLayout;
+	private LinearLayout mMoreLayout;
 	
 	private int mAppId = -1;
 	private Cursor mCursor;
@@ -114,14 +122,19 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_tiandi);
-		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
-		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
+		mRefreshLayout.setVisibility(View.GONE);
+		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
+		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
+		mMenuLayout.setOnClickListener(this);
+		mRefreshLayout.setOnClickListener(this);
+		mHistoryLayout.setOnClickListener(this);
+		mMoreLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
+		mMoreLayout.setOnClickListener(this);
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText("朝颜天地");
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
 		mTitleNum.setText("");
-		mRefreshView.setOnClickListener(this);
-		mHistoryView.setOnClickListener(this);
 	}
 	
 	@Override
@@ -195,19 +208,40 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
-		case R.id.iv_refresh:
+		case R.id.ll_refresh:
 			mNotice.showToast("refresh");
 			//get user app
 			break;
-		case R.id.iv_history:
+		case R.id.ll_history:
 			Intent intent = new Intent();
 			intent.setClass(mContext, HistoryActivity.class);
 			startActivity(intent);
+			break;
+		case R.id.ll_menu_select:
+			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
+			popupMenu.setOnMenuItemClickListener(this);
+			MenuInflater inflater = popupMenu.getMenuInflater();
+			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
+			popupMenu.show();
+			break;
+		case R.id.ll_more:
+			PopupMenu popupMenu2 = new PopupMenu(mContext, mMoreLayout);
+			popupMenu2.setOnMenuItemClickListener(this);
+			MenuInflater inflater2 = popupMenu2.getMenuInflater();
+			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
+			popupMenu2.show();
 			break;
 
 		default:
 			break;
 		}
+	}
+	
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
+		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		return true;
 	}
 
 	@Override

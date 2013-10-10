@@ -1,17 +1,5 @@
 package com.dreamlink.communication.ui.media;
 
-import com.dreamlink.communication.R;
-import com.dreamlink.communication.ui.BaseFragment;
-import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.common.FileTransferUtil;
-import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
-import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
-import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.util.Log;
-
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
@@ -25,20 +13,38 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-public class VideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
+import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.BaseFragment;
+import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
+import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
+import com.dreamlink.communication.ui.file.FileInfoManager;
+import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.util.Log;
+
+public class VideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener, OnMenuItemClickListener {
 	private static final String TAG = "VideoFragment";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
@@ -53,8 +59,11 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	private ImageView mTitleIcon;
 	private TextView mTitleView;
 	private TextView mTitleNum;
-	private ImageView mRefreshView;
-	private ImageView mHistoryView;
+	private LinearLayout mRefreshLayout;
+	private LinearLayout mHistoryLayout;
+	private LinearLayout mMenuLayout;
+	private LinearLayout mMoreLayout;
+
 	
 	private int mAppId = -1;
 	
@@ -151,17 +160,22 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_video);
 		//refresh button
-		mRefreshView = (ImageView) titleLayout.findViewById(R.id.iv_refresh);
+		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
+		mRefreshLayout.setVisibility(View.GONE);
 		//go to history button
-		mHistoryView = (ImageView) titleLayout.findViewById(R.id.iv_history);
+		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
+		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
+		mMenuLayout.setOnClickListener(this);
+		mRefreshLayout.setOnClickListener(this);
+		mHistoryLayout.setOnClickListener(this);
+		mMoreLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
+		mMoreLayout.setOnClickListener(this);
 		//title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText(R.string.video);
 		//show current page's item num
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
 		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
-		mRefreshView.setOnClickListener(this)	;
-		mHistoryView.setOnClickListener(this);
 	}
 	
 	// query db
@@ -291,19 +305,41 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.iv_refresh:
-			query();
+		case R.id.ll_refresh:
+			mAdapter.getCursor().requery();
 			break;
 			
-		case R.id.iv_history:
+		case R.id.ll_history:
 			Intent intent = new Intent();
 			intent.setClass(mContext, HistoryActivity.class);
 			startActivity(intent);
 			break;
+			
+		case R.id.ll_menu_select:
+			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
+			popupMenu.setOnMenuItemClickListener(this);
+			MenuInflater inflater = popupMenu.getMenuInflater();
+			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
+			popupMenu.show();
+			break;
+		case R.id.ll_more:
+			PopupMenu popupMenu2 = new PopupMenu(mContext, mMoreLayout);
+			popupMenu2.setOnMenuItemClickListener(this);
+			MenuInflater inflater2 = popupMenu2.getMenuInflater();
+			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
+			popupMenu2.show();
+			break;
+			
 
 		default:
 			break;
 		}
+	}
+	
+	public boolean onMenuItemClick(MenuItem item) {
+		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
+		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		return true;
 	}
 	
 	@Override

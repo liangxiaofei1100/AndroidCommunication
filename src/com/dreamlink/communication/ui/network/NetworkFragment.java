@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.http.impl.cookie.BestMatchSpec;
-
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,23 +15,28 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dreamlink.communication.AllowLoginDialog;
+import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
+import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
+import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunication;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.AllowLoginDialog.AllowLoginCallBack;
-import com.dreamlink.communication.CallBacks.ILoginRequestCallBack;
-import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.data.UserHelper;
@@ -43,6 +46,7 @@ import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
@@ -50,7 +54,7 @@ import com.dreamlink.communication.util.NetWorkUtil;
 
 public class NetworkFragment extends BaseFragment implements
 		View.OnClickListener, OnSearchListener, ILoginRequestCallBack,
-		ILoginRespondCallback, OnUserChangedListener {
+		ILoginRespondCallback, OnUserChangedListener, OnMenuItemClickListener {
 	@SuppressWarnings("unused")
 	private static final String TAG = "NetworkFragment";
 	private Context mContext;
@@ -58,8 +62,10 @@ public class NetworkFragment extends BaseFragment implements
 	private ImageView mTitleIcon;
 	private TextView mTitleView;
 	private TextView mTitleNum;
-	private ImageView mRefreshView;
-	private ImageView mHistoryView;
+	private LinearLayout mRefreshLayout;
+	private LinearLayout mHistoryLayout;
+	private LinearLayout mMenuLayout;
+	private LinearLayout mMoreLayout;
 
 	private View mBluetoothInviteView;
 	private View mCreateNetworkView;
@@ -141,12 +147,16 @@ public class NetworkFragment extends BaseFragment implements
 		mTitleNum = (TextView) view.findViewById(R.id.tv_title_num);
 		mTitleNum.setVisibility(View.GONE);
 		// Refresh icon
-		mRefreshView = (ImageView) view.findViewById(R.id.iv_refresh);
-		mRefreshView.setVisibility(View.GONE);
+		mRefreshLayout = (LinearLayout) view.findViewById(R.id.ll_refresh);
+		mRefreshLayout.setVisibility(View.GONE);
 		// History icon
-		mHistoryView = (ImageView) view.findViewById(R.id.iv_history);
-		mHistoryView.setOnClickListener(this);
-		mHistoryView.setVisibility(View.VISIBLE);
+		mHistoryLayout = (LinearLayout) view.findViewById(R.id.ll_history);
+		mMenuLayout = (LinearLayout) view.findViewById(R.id.ll_menu_select);
+		mMenuLayout.setOnClickListener(this);
+		mRefreshLayout.setOnClickListener(this);
+		mHistoryLayout.setOnClickListener(this);
+		mMoreLayout = (LinearLayout) view.findViewById(R.id.ll_more);
+		mMoreLayout.setOnClickListener(this);
 	}
 
 	private void initView(View view) {
@@ -211,14 +221,35 @@ public class NetworkFragment extends BaseFragment implements
 			disconnect();
 			updateNetworkStatus();
 			break;
-		case R.id.iv_history:
+		case R.id.ll_history:
 			intent.setClass(mContext, HistoryActivity.class);
 			startActivity(intent);
+			break;
+		case R.id.ll_menu_select:
+			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
+			popupMenu.setOnMenuItemClickListener(this);
+			MenuInflater inflater = popupMenu.getMenuInflater();
+			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
+			popupMenu.show();
+			break;
+		case R.id.ll_more:
+			PopupMenu popupMenu2 = new PopupMenu(mContext, mMoreLayout);
+			popupMenu2.setOnMenuItemClickListener(this);
+			MenuInflater inflater2 = popupMenu2.getMenuInflater();
+			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
+			popupMenu2.show();
 			break;
 		default:
 			break;
 		}
 
+	}
+	
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
+		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		return true;
 	}
 
 	private void disconnect() {

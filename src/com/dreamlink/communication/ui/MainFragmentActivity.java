@@ -11,11 +11,8 @@ import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.app.TiandiFragment;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
 import com.dreamlink.communication.ui.help.HelpFragment;
-import com.dreamlink.communication.ui.image.ImageFragment;
 import com.dreamlink.communication.ui.image.PictureFragment;
 import com.dreamlink.communication.ui.media.AudioFragment;
-import com.dreamlink.communication.ui.media.MediaAudioFragment;
-import com.dreamlink.communication.ui.media.MediaVideoFragment;
 import com.dreamlink.communication.ui.media.VideoFragment;
 import com.dreamlink.communication.ui.network.NetworkFragment;
 import com.dreamlink.communication.ui.settings.SettingsFragment;
@@ -34,14 +31,13 @@ import android.view.Window;
 
 public class MainFragmentActivity extends FragmentActivity {
 	private static final String TAG = "MainFragmentActivity";
-	ViewPager viewPager;
+	public ViewPager viewPager;
 	MyFragmentPagerAdapter mAdapter;
 	MyPageAdapter myPageAdapter;
 	public static MainFragmentActivity instance;
 	
 	@Override
 	protected void onCreate(Bundle arg0) {
-		// TODO Auto-generated method stub
 		super.onCreate(arg0);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_main_fragment);
@@ -94,8 +90,8 @@ public class MainFragmentActivity extends FragmentActivity {
 		
 	}
 	
-	public void goToHistory(){
-		viewPager.setCurrentItem(9);
+	public void setCurrentItem(int position){
+		viewPager.setCurrentItem(position, false);
 	}
 	
 	public class MyPageAdapter extends PagerAdapter {

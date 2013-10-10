@@ -54,6 +54,7 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
+	private ImageView mMoreView;
 
 	// Members
 
@@ -149,6 +150,9 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 		// History icon
 		mHistoryView = (ImageView) findViewById(R.id.iv_history);
 		mHistoryView.setVisibility(View.GONE);
+		// menu more icon
+		mMoreView = (ImageView) findViewById(R.id.iv_more);
+		mMoreView.setVisibility(View.GONE);
 	}
 
 	private void initViews() {
