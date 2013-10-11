@@ -129,7 +129,7 @@ public class NetworkFragment extends BaseFragment implements
 		mUserManager = UserManager.getInstance();
 		mUserManager.registerOnUserChangedListener(this);
 
-		mFilter.addAction(DreamConstant.SERVER_CREATED_ACTION);
+		mFilter.addAction(ConnectHelper.ACTION_SERVER_CREATED);
 		mContext.registerReceiver(mReceiver, mFilter);
 
 		Log.d(TAG, "onCreate end");
@@ -244,7 +244,7 @@ public class NetworkFragment extends BaseFragment implements
 		}
 
 	}
-	
+
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
@@ -356,7 +356,7 @@ public class NetworkFragment extends BaseFragment implements
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
-			if (DreamConstant.SERVER_CREATED_ACTION.equals(action)) {
+			if (ConnectHelper.ACTION_SERVER_CREATED.equals(action)) {
 				updateNetworkStatus();
 				updateUserList();
 			}

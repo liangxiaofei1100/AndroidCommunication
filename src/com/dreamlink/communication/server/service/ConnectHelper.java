@@ -22,6 +22,9 @@ public class ConnectHelper {
 	private final String[] SERVER_TYPE = { SERVER_TYPE_WIFI,
 			SERVER_TYPE_WIFI_AP, SERVER_TYPE_WIFI_DIRECT };
 
+	/** Intent action for server created broadcast. */
+	public static final String ACTION_SERVER_CREATED = "com.dreamlink.communication.server.created";
+
 	private Context mContext;
 
 	private WifiOrAPService mWifiOrAPService;

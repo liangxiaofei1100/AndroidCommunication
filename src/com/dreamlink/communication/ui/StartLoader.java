@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.search.WiFiNameEncryption;
+import com.dreamlink.communication.search.WifiNameSuffixLoader;
 import com.dreamlink.communication.ui.app.AppInfo;
 import com.dreamlink.communication.ui.app.AppManager;
 import com.dreamlink.communication.ui.db.AppData;
@@ -84,13 +85,7 @@ public class StartLoader extends Activity {
 	 * Used by WiFi AP name.
 	 */
 	private void createNewWifiSuffixName() {
-		SharedPreferences preferences = getSharedPreferences(
-				DreamConstant.Extra.SHARED_PERFERENCE_NAME,
-				Context.MODE_PRIVATE);
-		Editor editor = preferences.edit();
-		String wifiNameSuffix = WiFiNameEncryption.generateWiFiNameSuffix();
-		editor.putString(DreamConstant.Extra.WIFI_NAME_SUFFIX, wifiNameSuffix);
-		editor.commit();
+		WifiNameSuffixLoader.createNewWifiSuffixName(getApplicationContext());
 	}
 
 	/**
