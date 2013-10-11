@@ -122,14 +122,6 @@ public class NetworkFragment extends BaseFragment implements
 		initTitle(rootView);
 		initView(rootView);
 
-		Log.d(TAG, "onCreate end");
-		return rootView;
-	}
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-
 		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
 		mSocketComMgr.setLoginRequestCallBack(this);
 		mSocketComMgr.setLoginRespondCallback(this);
@@ -141,6 +133,9 @@ public class NetworkFragment extends BaseFragment implements
 
 		mFilter.addAction(DreamConstant.SERVER_CREATED_ACTION);
 		mContext.registerReceiver(mReceiver, mFilter);
+
+		Log.d(TAG, "onCreate end");
+		return rootView;
 	}
 
 	private void initTitle(View view) {
@@ -335,7 +330,10 @@ public class NetworkFragment extends BaseFragment implements
 									mConnectHelper.createServer("wifi-direct",
 											listener);
 								}
-								Toast.makeText(mContext, getString(R.string.creating_network, networkType),
+								Toast.makeText(
+										mContext,
+										getString(R.string.creating_network,
+												networkType),
 										Toast.LENGTH_SHORT).show();
 							}
 						})
@@ -431,12 +429,12 @@ public class NetworkFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void onDestroy() {
+	public void onDestroyView() {
 		unregisterReceiverSafe(mReceiver);
 		if (mUserManager != null) {
 			mUserManager.unregisterOnUserChangedListener(this);
 		}
-		super.onDestroy();
+		super.onDestroyView();
 	}
 
 	private void unregisterReceiverSafe(BroadcastReceiver receiver) {

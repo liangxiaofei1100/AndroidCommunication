@@ -222,6 +222,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity 
+            android:name="com.dreamlink.communication.debug.GetAllHostNumber"
+            android:label="Get All host"
+            >
+            <intent-filter>
+                <action android:name="com.dreamlink.communication.action.debug" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity
             android:name="com.dreamlink.communication.debug.NetworkStatus"
             android:label="Network status"

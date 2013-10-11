@@ -119,11 +119,13 @@ public class HistoryActivity extends FragmentActivity implements
 
 	@Override
 	protected void onDestroy() {
-		super.onDestroy();
-		Cursor cursor = mAdapter.getCursor();
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
+		if (mAdapter != null) {
+			Cursor cursor = mAdapter.getCursor();
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
 		}
+		super.onDestroy();
 	}
 
 	public void query() {

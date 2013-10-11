@@ -338,7 +338,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		}
 	}
 	
-	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		Intent intent = null;
 		switch (item.getItemId()) {
@@ -358,12 +357,14 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	}
 	
 	@Override
-	public void onDestroy() {
-		Cursor cursor = mAdapter.getCursor();
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
+	public void onDestroyView() {
+		if (mAdapter != null) {
+			Cursor cursor = mAdapter.getCursor();
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
 		}
-		super.onDestroy();
+		super.onDestroyView();
 	}
 	
 }

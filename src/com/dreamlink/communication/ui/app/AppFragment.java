@@ -370,11 +370,11 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
     };
     
 	@Override
-	public void onDestroy() {
+	public void onDestroyView() {
 		if (mContext != null && mAppReceiver != null) {
 			mContext.unregisterReceiver(mAppReceiver);
 		}
-		super.onDestroy();
+		super.onDestroyView();
 	}
 
 	@Override
