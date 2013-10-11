@@ -360,8 +360,8 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 		}
 		mIsAPSelected = false;
 		if (mConnectHelper != null) {
+			// Stop search will release listener.
 			mConnectHelper.stopSearch();
-			mConnectHelper.releaseListener(this);
 		}
 		super.onDestroy();
 	}

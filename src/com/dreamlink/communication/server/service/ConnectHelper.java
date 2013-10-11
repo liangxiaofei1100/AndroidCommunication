@@ -248,16 +248,6 @@ public class ConnectHelper {
 		connection = null;
 	}
 
-	/**
-	 * Release listener object.
-	 * 
-	 * @param listener
-	 */
-	public void releaseListener(OnSearchListener listener) {
-		// TODO to avoid null point exception, set a default listener.
-		// The best way is set the listener to null.
-		// TODO This does not work, need implement later.
-	}
 
 	/**
 	 * Service connection for {@link #WifiOrAPService}.
