@@ -5,30 +5,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.search.WifiNameSuffixLoader;
 import com.dreamlink.communication.ui.app.AppInfo;
 import com.dreamlink.communication.ui.app.AppManager;
 import com.dreamlink.communication.ui.db.AppData;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
-import com.dreamlink.communication.ui.db.MetaData;
 import com.dreamlink.communication.util.Log;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.KeyEvent;
 
 /**
@@ -39,20 +30,11 @@ public class StartLoader extends Activity {
 	private static final String TAG = "StartLoader";
 	/** The minimum time(ms) of loading page. */
 	private static final int MIN_LOADING_TIME = 1500;
-	private PackageManager pm = null;
-	private AppManager appManager = null;
-
-	private static final String DB_PATH = "/data"
-			+ Environment.getDataDirectory().getAbsolutePath()
-			+ "/com.dreamlink.communication" + "/databases";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui_loader);
-
-		appManager = new AppManager(StartLoader.this);
-		pm = getPackageManager();
 
 		LoadAsyncTask loadAsyncTask = new LoadAsyncTask();
 		loadAsyncTask.execute();
@@ -64,18 +46,16 @@ public class StartLoader extends Activity {
 	 */
 	private void load() {
 		Log.d(TAG, "Load start");
+		// Start log to save log to file.
 		Log.startSaveToFile();
+		// Create folder for file transportation.
 		createFileSaveFolder();
+		// Init MountManager.
 		initMountManager();
+		// Create WiFi Name suffix
 		createNewWifiSuffixName();
-		// Do not use game DB now.
-		// importGameKeyDb();
-
-		// List<String> zyPkgList = loadZYAppToDb();
-		// loadAppToDb(zyPkgList);
-		// delete table
+		// Delete old APP Database table and refresh it.
 		getContentResolver().delete(AppData.App.CONTENT_URI, null, null);
-		// 实在太耗时间了，还是开个线程吧，不然一直卡在加载界面，如果应用多的话，待继续优化
 		LoadAppThread thread = new LoadAppThread();
 		thread.start();
 		Log.d(TAG, "Load end");
@@ -97,39 +77,6 @@ public class StartLoader extends Activity {
 		overridePendingTransition(R.anim.push_right_in, R.anim.push_left_out);
 	}
 
-	// import game key db
-	private void importGameKeyDb() {
-		// copy game_app.db to database
-		if (!new File(DB_PATH).exists()) {
-			if (new File(DB_PATH).mkdirs()) {
-			} else {
-				Log.e(TAG, "can not create " + DB_PATH);
-			}
-		}
-
-		String dbstr = DB_PATH + "/" + MetaData.DATABASE_NAME;
-		File dbFile = new File(dbstr);
-		if (dbFile.exists()) {
-			return;
-		}
-
-		// import
-		InputStream is;
-		try {
-			is = getResources().openRawResource(R.raw.game_app);
-			FileOutputStream fos = new FileOutputStream(dbFile);
-			byte[] buffer = new byte[4 * 1024];
-			int count = 0;
-			while ((count = is.read(buffer)) > 0) {
-				fos.write(buffer, 0, count);
-			}
-			fos.close();// 关闭输出流
-			is.close();// 关闭输入流
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	private void createFileSaveFolder() {
 		File file = new File(DreamConstant.DEFAULT_SAVE_FOLDER);
 		if (!file.exists()) {
@@ -138,7 +85,7 @@ public class StartLoader extends Activity {
 	}
 
 	private void initMountManager() {
-		// get sdcards
+		// Get sdcards
 		MountManager mountManager = new MountManager(this);
 		mountManager.init();
 	}
@@ -173,30 +120,35 @@ public class StartLoader extends Activity {
 		}
 	};
 
-	public void launchLogin() {
+	private void launchLogin() {
 		Intent intent = new Intent();
 		intent.setClass(this, LoginActivity.class);
 		startActivity(intent);
 	}
 
-	public class LoadAppThread extends Thread {
+	private class LoadAppThread extends Thread {
 		@Override
 		public void run() {
-			List<String> zyPkgList = loadZYAppToDb();
-			loadAppToDb(zyPkgList);
+			AppManager appManager = new AppManager(StartLoader.this);
+			List<String> zyPkgList = loadZYAppToDb(appManager);
+			loadAppToDb(appManager, zyPkgList);
 		}
 	}
 
-	public List<String> loadZYAppToDb() {
+	private List<String> loadZYAppToDb(AppManager appManager) {
 		long start = System.currentTimeMillis();
-		List<String> zyList = new ArrayList<String>();
-		// get zhaoyan app list
+
 		Intent appIntent = new Intent(DreamConstant.APP_ACTION);
 		appIntent.addCategory(Intent.CATEGORY_DEFAULT);
 		// 通过查询，获得所有ResolveInfo对象.
+		PackageManager pm = getPackageManager();
 		List<ResolveInfo> resolveInfos = pm.queryIntentActivities(appIntent, 0);
+
+		// get zhaoyan app list
+		List<String> zyList = new ArrayList<String>();
 		AppInfo appInfo = null;
 		ContentValues[] values = new ContentValues[resolveInfos.size()];
+
 		for (int i = 0; i < resolveInfos.size(); i++) {
 			ApplicationInfo info = resolveInfos.get(i).activityInfo.applicationInfo;
 			appInfo = new AppInfo(StartLoader.this, info);
@@ -207,19 +159,21 @@ public class StartLoader extends Activity {
 			appInfo.setType(AppManager.ZHAOYAN_APP);
 			values[i] = appManager.getValuesByAppInfo(appInfo);
 			zyList.add(resolveInfos.get(i).activityInfo.packageName);
-			// insertToDb(appInfo);
 		}
 		// get zhaoyan app list end
+
 		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, values);
 		Log.d(TAG, "loadZYAppToDb cost time = "
 				+ (System.currentTimeMillis() - start));
 		return zyList;
 	}
 
-	public void loadAppToDb(List<String> zylist) {
+	private void loadAppToDb(AppManager appManager, List<String> zylist) {
 		long start = System.currentTimeMillis();
+
 		List<ContentValues> valuesList = new ArrayList<ContentValues>();
 		// Retrieve all known applications.
+		PackageManager pm = getPackageManager();
 		List<ApplicationInfo> apps = pm.getInstalledApplications(0);
 		if (apps == null) {
 			apps = new ArrayList<ApplicationInfo>();
@@ -267,11 +221,6 @@ public class StartLoader extends Activity {
 		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, contentValues);
 		Log.d(TAG, "loadAppToDb cost time = "
 				+ (System.currentTimeMillis() - start));
-	}
-
-	public void insertToDb(AppInfo entry) {
-		ContentValues values = appManager.getValuesByAppInfo(entry);
-		getContentResolver().insert(AppData.App.CONTENT_URI, values);
 	}
 
 	@Override
