@@ -38,7 +38,7 @@ public class FileInfoManager {
 	public static final int VIDEO = 0x08;
 	public static final int CHM = 0x09;
 	public static final int APK = 0x10;
-	public static final int ZIP = 0x11;
+	public static final int ARCHIVE = 0x11;
 	public static final int IMAGE = 0x12;
 	public static final int UNKNOW = 0x20;
 
@@ -47,7 +47,7 @@ public class FileInfoManager {
 	public static final int TYPE_VIDEO = 0x22;
 	public static final int TYPE_DOC = 0x23;
 	public static final int TYPE_APK = 0x24;//36
-	public static final int TYPE_ZIP = 0x25;
+	public static final int TYPE_ARCHIVE = 0x25;
 	public static final int TYPE_BIG_FILE = 0x26;
 	public static final int TYPE_IMAGE = 0x27;
 	public static final int TYPE_AUDIO = 0x28;//40
@@ -259,10 +259,10 @@ public class FileInfoManager {
 					R.drawable.icon_pdf);
 			fileType = FileInfoManager.TYPE_DOC;
 			break;
-		case ZIP:
+		case ARCHIVE:
 			currentIcon = context.getResources().getDrawable(
 					R.drawable.icon_rar);
-			fileType = FileInfoManager.TYPE_ZIP;
+			fileType = FileInfoManager.TYPE_ARCHIVE;
 			break;
 		case APK:
 			currentIcon = context.getResources().getDrawable(
@@ -339,10 +339,10 @@ public class FileInfoManager {
 						R.drawable.icon_pdf);
 				fileType = FileInfoManager.TYPE_DOC;
 				break;
-			case ZIP:
+			case ARCHIVE:
 				currentIcon = context.getResources().getDrawable(
 						R.drawable.icon_rar);
-				fileType = FileInfoManager.TYPE_ZIP;
+				fileType = FileInfoManager.TYPE_ARCHIVE;
 				break;
 			case APK:
 				currentIcon = context.getResources().getDrawable(
@@ -445,7 +445,7 @@ public class FileInfoManager {
 		int ret;
 
 		if (checkEndsWithInStringArray(fileName, context.getResources()
-				.getStringArray(R.array.fileEndingTxt))) {
+				.getStringArray(R.array.fileEndingEbook))) {
 			// text
 			ret = TEXT;
 		}
@@ -471,7 +471,7 @@ public class FileInfoManager {
 			// apk
 			ret = APK;
 		} else if (checkEndsWithInStringArray(fileName, context.getResources()
-				.getStringArray(R.array.fileEndingDoc))) {
+				.getStringArray(R.array.fileEndingWord))) {
 			// word
 			ret = WORD;
 		} else if (checkEndsWithInStringArray(fileName, context.getResources()
@@ -483,9 +483,9 @@ public class FileInfoManager {
 			// excel
 			ret = EXCEL;
 		} else if (checkEndsWithInStringArray(fileName, context.getResources()
-				.getStringArray(R.array.fileEndingPackage))) {
+				.getStringArray(R.array.fileEndingArchive))) {
 			// packages
-			ret = ZIP;
+			ret = ARCHIVE;
 		} else if (checkEndsWithInStringArray(fileName, context.getResources()
 				.getStringArray(R.array.fileEndingPdf))) {
 			// pdf
@@ -545,7 +545,7 @@ public class FileInfoManager {
 		case PDF:
 			intent = getPdfFileIntent(filePath);
 			break;
-		case ZIP:
+		case ARCHIVE:
 			// 待实现
 			break;
 		case APK:

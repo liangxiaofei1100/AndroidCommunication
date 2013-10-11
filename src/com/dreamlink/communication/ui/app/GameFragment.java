@@ -48,7 +48,9 @@ import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.db.AppData;
+import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -293,10 +295,10 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 				}else if (current_menus[2].equals(currentMenu)) {
 					//uninstall
 					mAppManager.uninstallApp(appInfo.getPackageName());
-				}else if (current_menus[3].equals(currentMenu)) {
+				}else if (current_menus[4].equals(currentMenu)) {
 					//app info
 					mAppManager.showInfoDialog(appInfo);
-				}else if (current_menus[4].equals(currentMenu)) {
+				}else if (current_menus[3].equals(currentMenu)) {
 					//move to app
 					//1，删除game表中的数据
 					//2，将app表中的type改为app
@@ -396,8 +398,20 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
-		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		Intent intent = null;
+		switch (item.getItemId()) {
+		case R.id.setting:
+			intent = new Intent(mContext, SettingsActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.help:
+			intent = new Intent(mContext, HelpActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			break;
+		}
 		return true;
 	}
 	

@@ -31,9 +31,10 @@ import android.view.Window;
 
 public class MainFragmentActivity extends FragmentActivity {
 	private static final String TAG = "MainFragmentActivity";
-	public ViewPager viewPager;
-	MyFragmentPagerAdapter mAdapter;
-	MyPageAdapter myPageAdapter;
+	private ViewPager viewPager;
+	private MyFragmentPagerAdapter mAdapter;
+//	private MyPageAdapter myPageAdapter;
+	private FileBrowserFragment mBrowserFragment;
 	public static MainFragmentActivity instance;
 	
 	@Override
@@ -46,7 +47,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		int position = getIntent().getIntExtra("position", 0);
 		viewPager = (ViewPager) findViewById(R.id.vp_main_frame);
 		//考虑到内存消耗问题，缓存页面不应该设置这么大
-		viewPager.setOffscreenPageLimit(2);
+		viewPager.setOffscreenPageLimit(8);
 		
 		int appid = AppUtil.getAppID(this);
 		List<Fragment> fragments = new ArrayList<Fragment>();
@@ -59,9 +60,10 @@ public class MainFragmentActivity extends FragmentActivity {
 		fragments.add(VideoFragment.newInstance(appid));//视频
 		fragments.add(AppFragment.newInstance(appid));//应用
 		fragments.add(GameFragment.newInstance(appid));//游戏
-		fragments.add(FileBrowserFragment.newInstance(appid));//批量传输
-		fragments.add(SettingsFragment.newInstance(appid));//设置
-		fragments.add(HelpFragment.newInstance(appid));//帮助
+		mBrowserFragment = FileBrowserFragment.newInstance(appid);
+		fragments.add(mBrowserFragment);//批量传输
+//		fragments.add(SettingsFragment.newInstance(appid));//设置
+//		fragments.add(HelpFragment.newInstance(appid));//帮助
 		mAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragments);
 		viewPager.setAdapter(mAdapter);
 		viewPager.setCurrentItem(position);
@@ -85,7 +87,7 @@ public class MainFragmentActivity extends FragmentActivity {
 
 		@Override
 		public int getCount() {
-			return fragments.size()  ;
+			return fragments.size();
 		}
 		
 	}
@@ -132,7 +134,7 @@ public class MainFragmentActivity extends FragmentActivity {
 			//8 is instead of FileBrowserFragment,fixed
 			int position = viewPager.getCurrentItem();
 			if (8 == position) {
-				FileBrowserFragment.mInstance.onBackPressed();
+				mBrowserFragment.onBackPressed();
 				return false;
 			}
 			break;

@@ -8,8 +8,10 @@ import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.notification.NotificationMgr;
 import com.dreamlink.communication.ui.db.MetaData;
+import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryManager;
 import com.dreamlink.communication.ui.service.FileTransferService;
+import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
@@ -169,13 +171,17 @@ public class MainUIFrame extends Activity implements OnClickListener,
 			startActivity(intent);
 			break;
 		case R.id.iv_setting:
-			intent.setClass(this, MainFragmentActivity.class);
-			intent.putExtra("position", 9);
+//			intent.setClass(this, MainFragmentActivity.class);
+//			intent.putExtra("position", 9);
+//			startActivity(intent);
+			intent.setClass(this, SettingsActivity.class);
 			startActivity(intent);
 			break;
 		case R.id.iv_help:
-			intent.setClass(this, MainFragmentActivity.class);
-			intent.putExtra("position", 10);
+//			intent.setClass(this, MainFragmentActivity.class);
+//			intent.putExtra("position", 10);
+//			startActivity(intent);
+			intent.setClass(this, HelpActivity.class);
 			startActivity(intent);
 			break;
 		default:

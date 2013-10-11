@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
@@ -19,21 +21,24 @@ import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
+import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
-import com.readystatesoftware.viewbadger.BadgeView;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
@@ -66,9 +71,9 @@ public class FileBrowserFragment extends BaseFragment implements
 	private TextView mNoSDcardView;
 	private LinearLayout mNavBarLayout;
 
-	// sdcard & 手机存储 切换按钮
-	private ImageView mSwitchImageView;
 	// 快速回到根目录
+	private ImageView mHomeBtn;
+	
 	private TabManager mTabManager;
 	private View rootView = null;
 	private MountManager mountManager;
@@ -83,6 +88,29 @@ public class FileBrowserFragment extends BaseFragment implements
 	// save files
 	private List<FileInfo> mFileLists = new ArrayList<FileInfo>();
 	private List<Integer> mHomeList = new ArrayList<Integer>();
+	//save classify file list
+	//办公文档
+	private List<FileInfo> mDocList = new ArrayList<FileInfo>();
+	//电子书籍
+	private List<FileInfo> mEbookList = new ArrayList<FileInfo>();
+	//安装包
+	private List<FileInfo> mApkList = new ArrayList<FileInfo>();
+	//压缩包
+	private List<FileInfo> mArchiveList = new ArrayList<FileInfo>();
+	private List<List<FileInfo>> mCLassifyList = new ArrayList<List<FileInfo>>();
+	
+	private GetFilesTask mFilesTask = null;
+	
+	public static String[] file_types;
+	public static String[] file_types_tips;
+	public static final int INTERNAL = MountManager.INTERNAL;
+	public static final int SDCARD = MountManager.SDCARD;
+	public static final int DOC = FileInfoManager.TYPE_DOC;
+	public static final int EBOOK = FileInfoManager.TYPE_EBOOK;
+	public static final int APK = FileInfoManager.TYPE_APK;
+	public static final int ARCHIVE = FileInfoManager.TYPE_ARCHIVE;
+	
+	private Timer mClassifyTimer;
 
 	// 用来保存ListView中每个Item的图片，以便释放
 	public static Map<String, Bitmap> bitmapCaches = new HashMap<String, Bitmap>();
@@ -109,7 +137,6 @@ public class FileBrowserFragment extends BaseFragment implements
 	private LinearLayout mMoreLayout;
 	
 	private int mAppId = -1;
-	public static FileBrowserFragment mInstance = null;
 	private SharedPreferences sp = null;
 	
 	//two status
@@ -142,6 +169,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	}
 	
 	private static final int MSG_UPDATE_UI = 0;
+	private static final int MSG_UPDATE_CLASSIFY = 1;
 	Handler mHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
@@ -152,6 +180,11 @@ public class FileBrowserFragment extends BaseFragment implements
 					mTitleNum.setText(getString(R.string.num_format, size));
 				}
 				break;
+			case MSG_UPDATE_CLASSIFY:
+				mFileInfoAdapter.notifyDataSetChanged();
+				break;
+				
+				
 			default:
 				break;
 			}
@@ -161,7 +194,6 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		mInstance = this;
 	};
 	
 	@Override
@@ -185,9 +217,9 @@ public class FileBrowserFragment extends BaseFragment implements
 			mNavigationBar.setHorizontalScrollBarEnabled(false);
 			mTabManager = new TabManager();
 		}
-		mSwitchImageView = (ImageView) rootView
+		mHomeBtn = (ImageView) rootView
 				.findViewById(R.id.iv_home);
-		mSwitchImageView.setOnClickListener(this);
+		mHomeBtn.setOnClickListener(this);
 
 		mTransferAllLayout = (LinearLayout) rootView.findViewById(R.id.ll_transfer_all);
 		mCancelBtn = (Button) rootView.findViewById(R.id.btn_cancel);
@@ -206,6 +238,9 @@ public class FileBrowserFragment extends BaseFragment implements
 		
 		mFileInfoManager = new FileInfoManager(mContext);
 		mountManager = new MountManager(getActivity());
+		
+		file_types = getResources().getStringArray(R.array.file_classify);
+		file_types_tips = getResources().getStringArray(R.array.file_classify_tip);
 
 		sdcard_path = sp.getString(Extra.SDCARD_PATH, MountManager.NO_EXTERNAL_SDCARD);
 		internal_path = sp.getString(Extra.INTERNAL_PATH, MountManager.NO_INTERNAL_SDCARD);
@@ -214,12 +249,18 @@ public class FileBrowserFragment extends BaseFragment implements
 		mHomeList.clear();
 		// init
 		if (!MountManager.NO_INTERNAL_SDCARD.equals(internal_path)) {
-			mHomeList.add(MountManager.INTERNAL);
+			mHomeList.add(INTERNAL);
 		}
 		
 		if (!MountManager.NO_EXTERNAL_SDCARD.equals(sdcard_path)) {
-			mHomeList.add(MountManager.SDCARD);
+			mHomeList.add(SDCARD);
 		} 
+		
+		//为了在onItemClick处理方便，这里将4中type一起加到HomeList中
+		mHomeList.add(DOC);
+		mHomeList.add(EBOOK);
+		mHomeList.add(APK);
+		mHomeList.add(ARCHIVE);
 		
 		if (mHomeList.size() <= 0) {
 			mNavBarLayout.setVisibility(View.GONE);
@@ -229,6 +270,13 @@ public class FileBrowserFragment extends BaseFragment implements
 		}
 		
 		updateTransferAllUI(true);
+		
+		if (null != mFilesTask && mFilesTask.getStatus() == AsyncTask.Status.RUNNING) {
+			mFilesTask.cancel(true);
+		}else {
+			mFilesTask = new GetFilesTask();
+			mFilesTask.execute(DOC);
+		}
 	}
 
 	private void initTitleVIews(View view){
@@ -254,7 +302,6 @@ public class FileBrowserFragment extends BaseFragment implements
 		switch (v.getId()) {
 		case R.id.iv_home:
 			goToHome();
-			mTabManager.refreshTab(mCurrent_root_path, storge_type);
 			break;
 		case R.id.ll_refresh:
 			browserTo(mCurrentFile);
@@ -303,8 +350,20 @@ public class FileBrowserFragment extends BaseFragment implements
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
-		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		Intent intent = null;
+		switch (item.getItemId()) {
+		case R.id.setting:
+			intent = new Intent(mContext, SettingsActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.help:
+			intent = new Intent(mContext, HelpActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			break;
+		}
 		return true;
 	}
 
@@ -314,44 +373,79 @@ public class FileBrowserFragment extends BaseFragment implements
 		if (mFileInfoAdapter.isHome) {
 			mNavBarLayout.setVisibility(View.VISIBLE);
 			mRefreshLayout.setVisibility(View.VISIBLE);
-			mFileInfoAdapter = new FileInfoAdapter(mContext, mAllLists);
-			mFileListView.setAdapter(mFileInfoAdapter);
 			mStatus = STATUS_FILE;
 			switch (mHomeList.get(position)) {
-			case MountManager.INTERNAL:
+			case INTERNAL:
+				stopUpdateClassifyUI();
+				setAdapter(INTERNAL, mAllLists);
 				doInternal();
 				break;
-			case MountManager.SDCARD:
+			case SDCARD:
+				stopUpdateClassifyUI();
+				setAdapter(SDCARD, mAllLists);
 				doSdcard();
+				break;
+			case DOC:
+				//get doc documents
+				mTabManager.refreshTab(null, DOC);
+				setAdapter(DOC, mDocList);
+				break;
+			case EBOOK:
+				mTabManager.refreshTab(null, EBOOK);
+				setAdapter(EBOOK, mEbookList);
+				break;
+			case APK:
+				mTabManager.refreshTab(null, APK);
+				setAdapter(APK, mApkList);
+				break;
+			case ARCHIVE:
+				mTabManager.refreshTab(null, ARCHIVE);
+				setAdapter(ARCHIVE, mArchiveList);
 				break;
 			default:
 				break;
 			}
-			return;
+		}else {
+			FileInfo fileInfo = mAllLists.get(position);
+			int top = view.getTop();
+			if (fileInfo.isDir) {
+				addToNavigationList(mCurrentPath, top, fileInfo);
+				browserTo(new File(mAllLists.get(position).filePath));
+			} else {
+				// file set file checked
+				boolean checked = mFileInfoAdapter.isChecked(position);
+				if (checked) {
+					//cancel checked do not limit
+				}else {
+					// do not support more than five files tranfser at a time.
+					//so need judge
+					if (mFileInfoAdapter.getCheckedItems() >= FileTransferUtil.MAX_TRANSFER_NUM) {
+						mNotice.showToast(R.string.transfer_limit);
+						return;
+					}
+				}
+				mFileInfoAdapter.setChecked(position, !checked);
+				mFileInfoAdapter.notifyDataSetChanged();
+				updateTransferAllUI(true);
+			}
+		}
+	}
+	
+	private void setAdapter(int type, List<FileInfo> list){
+		switch (type) {
+		case DOC:
+		case EBOOK:
+		case APK:
+		case ARCHIVE:
+			mRefreshLayout.setVisibility(View.GONE);
+			break;
+		default:
+			mRefreshLayout.setVisibility(View.VISIBLE);
+			break;
 		}
 		
-		FileInfo fileInfo = mAllLists.get(position);
-		int top = view.getTop();
-		if (fileInfo.isDir) {
-			addToNavigationList(mCurrentPath, top, fileInfo);
-			browserTo(new File(mAllLists.get(position).filePath));
-		} else {
-			// file set file checked
-			boolean checked = mFileInfoAdapter.isChecked(position);
-			if (checked) {
-				//cancel checked do not limit
-			}else {
-				// do not support more than five files tranfser at a time.
-				//so need judge
-				if (mFileInfoAdapter.getCheckedItems() >= FileTransferUtil.MAX_TRANSFER_NUM) {
-					mNotice.showToast(R.string.transfer_limit);
-					return;
-				}
-			}
-			mFileInfoAdapter.setChecked(position, !checked);
-			mFileInfoAdapter.notifyDataSetChanged();
-			updateTransferAllUI(true);
-		}
+		mFileInfoAdapter = new FileInfoAdapter(mContext, list);
+		mFileListView.setAdapter(mFileInfoAdapter);
 	}
 	
 	@Override
@@ -599,7 +693,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			mTabsHolder.addView(mBlankTab);
 		}
 
-		protected void updateHomeButton() {
+		protected void updateHomeButton(int type) {
 			Button homeBtn = (Button) mTabsHolder.getChildAt(0);
 			if (homeBtn == null) {
 				Log.e(TAG, "HomeBtm is null,return.");
@@ -610,10 +704,27 @@ public class FileBrowserFragment extends BaseFragment implements
 			homeBtn.setPadding(
 					(int) resources.getDimension(R.dimen.home_btn_padding), 0,
 					(int) resources.getDimension(R.dimen.home_btn_padding), 0);
-			if (storge_type == MountManager.INTERNAL) {
-				homeBtn.setText("手机存储");
-			} else if (storge_type == MountManager.SDCARD) {
-				homeBtn.setText("SD卡");
+			switch (type) {
+			case INTERNAL:
+				homeBtn.setText(R.string.internal_sdcard);
+				break;
+			case SDCARD:
+				homeBtn.setText(R.string.sdcard);
+				break;
+			case DOC:
+				homeBtn.setText(R.string.doc_type);
+				break;
+			case EBOOK:
+				homeBtn.setText(R.string.ebook_type);
+				break;
+			case APK:
+				homeBtn.setText(R.string.apk_type);
+				break;
+			case ARCHIVE:
+				homeBtn.setText(R.string.archive_type);
+				break;
+			default:
+				break;
 			}
 		}
 
@@ -623,17 +734,29 @@ public class FileBrowserFragment extends BaseFragment implements
 			mTabNameList.clear();
 
 			curFilePath = initFileInfo;
-			if (curFilePath != null) {
-				String[] result = mountManager.getShowPath(mCurrent_root_path, curFilePath, type)
-						.split(MountManager.SEPERATOR);
-				for (String string : result) {
-					// add string to tab
-					addTab(string);
+			
+			switch (type) {
+			case DOC:
+			case EBOOK:
+			case APK:
+			case ARCHIVE:
+				addTab("");
+				break;
+			case INTERNAL:
+			case SDCARD:
+				if (curFilePath != null) {
+					String[] result = mountManager.getShowPath(mCurrent_root_path, curFilePath, type)
+							.split(MountManager.SEPERATOR);
+					for (String string : result) {
+						// add string to tab
+						addTab(string);
+					}
+					startActionBarScroll();
 				}
-				startActionBarScroll();
+				break;
 			}
 
-			updateHomeButton();
+			updateHomeButton(type);
 		}
 
 		private void startActionBarScroll() {
@@ -758,7 +881,7 @@ public class FileBrowserFragment extends BaseFragment implements
 				}
 				browserTo(new File(curFilePath));
 				// addToNavigationList(mCurrentPath, top, selectedFileInfo);
-				updateHomeButton();
+				updateHomeButton(type);
 			}
 		}
 		// end tab manager
@@ -812,8 +935,8 @@ public class FileBrowserFragment extends BaseFragment implements
 		// 注释：firstVisibleItem为第一个可见的Item的position，从0开始，随着拖动会改变
 		// visibleItemCount为当前页面总共可见的Item的项数
 		// totalItemCount为当前总共已经出现的Item的项数
-		recycleBitmapCaches(0, firstVisibleItem);
-		recycleBitmapCaches(firstVisibleItem + visibleItemCount, totalItemCount);
+//		recycleBitmapCaches(0, firstVisibleItem);
+//		recycleBitmapCaches(firstVisibleItem + visibleItemCount, totalItemCount);
 	}
 
 	// 释放图片
@@ -839,6 +962,12 @@ public class FileBrowserFragment extends BaseFragment implements
 		message.sendToTarget();
 	}
 	
+	public void updateClssifyUI(){
+		Message message = mHandler.obtainMessage();
+		message.what = MSG_UPDATE_CLASSIFY;
+		message.sendToTarget();
+	}
+	
 	public void updateTransferAllUI(boolean visible){
 		if (visible) {
 			int num = mFileInfoAdapter.getCheckedItems();
@@ -855,12 +984,133 @@ public class FileBrowserFragment extends BaseFragment implements
 	}
 	
 	public void goToHome(){
-		mStatus = STATUS_HOME;
+		Log.i(TAG, "goToHome");
 		mNavBarLayout.setVisibility(View.GONE);
 		mRefreshLayout.setVisibility(View.GONE);
-		mFileInfoAdapter = new FileInfoAdapter(mContext, true, mHomeList);
+		
+		if (null != mFilesTask && mFilesTask.getStatus() == AsyncTask.Status.RUNNING) {
+			startUpdateClassifyUI();
+		}
+		
+		mStatus = STATUS_HOME;
+		mTitleNum.setVisibility(View.GONE);
+		mFileInfoAdapter = new FileInfoAdapter(mContext, mHomeList, mCLassifyList);
 		mFileListView.setAdapter(mFileInfoAdapter);
-		updateUI(mHomeList.size());
+	}
+	
+	//get type files
+	class GetFilesTask extends AsyncTask<Integer, Integer, String>{
+		long start;
+		long end;
+		ProgressDialog progressDialog = null;
+		private final String DEFAULT_SDCARD = Environment.getExternalStorageDirectory().getAbsolutePath();
+		@Override
+		protected String doInBackground(Integer... params) {
+			File file = new File(DEFAULT_SDCARD);
+			if (!file.exists()) {
+				Log.e(TAG, DEFAULT_SDCARD + " is not exist");
+			}else {
+//				mAllLists.clear();
+//				mCLassifyList.clear();
+//				mDocList.clear();
+//				mEbookList.clear();
+//				mApkList.clear();
+//				mArchiveList.clear();
+				
+				mCLassifyList.add(mDocList);
+				mCLassifyList.add(mEbookList);
+				mCLassifyList.add(mApkList);
+				mCLassifyList.add(mArchiveList);
+				
+				String[] nameTypes = getResources().getStringArray(R.array.classify_files_ending);
+				ClassifyFilenameFileter filenameFileter = new ClassifyFilenameFileter(nameTypes);
+				listFiles(filenameFileter, file, params[0]);
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			start = System.currentTimeMillis();
+			startUpdateClassifyUI();
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			super.onPostExecute(result);
+			end = System.currentTimeMillis();
+			Log.d(TAG, "total cost " + (end - start) / 1000 + "s");
+			//when loading finish,cancel timer
+			updateClssifyUI();
+			stopUpdateClassifyUI();
+		}
+		
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			super.onProgressUpdate(values);
+		}
+	}
+	
+	private void listFiles(ClassifyFilenameFileter fileter,File file, int type){
+		File[] files = file.listFiles(fileter);
+		FileInfo fileInfo = null;
+		if (null == files) {
+			return;
+		}
+
+		for(File file2 : files){
+			if (file2.isHidden()) {
+				//do not handler hide file
+			}else {
+				if (file2.isDirectory()) {
+					listFiles(fileter, file2, type);
+				}else {
+					fileInfo = mFileInfoManager.getFileInfo(file2);
+					int fileType = fileInfo.type;
+					switch (fileType) {
+					case DOC:
+						mDocList.add(fileInfo);
+						break;
+					case EBOOK:
+						mEbookList.add(fileInfo);
+						break;
+					case APK:
+						mApkList.add(fileInfo);
+						break;
+					case ARCHIVE:
+						mArchiveList.add(fileInfo);
+						break;
+					default:
+						break;
+					}
+				}
+				mFilesTask.onProgressUpdate(0);
+			}
+		}
+	}
+	
+	public void startUpdateClassifyUI(){
+		if (null == mClassifyTimer) {
+			mClassifyTimer = new Timer();
+		}
+		
+		mClassifyTimer.schedule(new ClassifyUpdateTask(), 1000, 1000);
+	}
+	
+	public void stopUpdateClassifyUI(){
+		if (null != mClassifyTimer) {
+			mClassifyTimer.cancel();
+			mClassifyTimer = null;
+		}
+	}
+	
+	/**当加载各种类型文件数量的时候，需要一个定时器，定时更新数量显示*/
+	class ClassifyUpdateTask extends TimerTask{
+		@Override
+		public void run() {
+			updateClssifyUI();
+		}
 	}
 	
 	public void onBackPressed(){
@@ -869,7 +1119,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			getActivity().finish();
 			break;
 		case STATUS_FILE:
-			if (mCurrent_root_path.equals(mCurrentPath)) {
+			if (null == mCurrent_root_path || mCurrent_root_path.equals(mCurrentPath)) {
 				goToHome();
 				return;
 			}

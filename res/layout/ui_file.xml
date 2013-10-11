@@ -77,9 +77,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
+            android:layout_below="@+id/bar_loading_file"
             android:text="@string/no_sdcard"
             android:visibility="gone"
              />
+        
+        <ProgressBar
+            android:id="@+id/bar_loading_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:indeterminateDrawable="@drawable/loading_progressbar"
+            android:visibility="gone" />
+        
         <LinearLayout 
             android:id="@+id/ll_transfer_all"
             android:layout_width="fill_parent"
