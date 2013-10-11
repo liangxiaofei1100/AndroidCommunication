@@ -11,8 +11,8 @@ import java.net.UnknownHostException;
 import android.content.Context;
 import android.util.Log;
 
+import com.dreamlink.communication.UserHelper;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.util.NetWorkUtil;
 

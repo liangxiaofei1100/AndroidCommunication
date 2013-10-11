@@ -6,8 +6,8 @@ import java.util.Vector;
 
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.UserHelper;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.Search;
 import com.dreamlink.communication.server.SocketServer;

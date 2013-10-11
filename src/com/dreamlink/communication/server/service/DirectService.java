@@ -25,7 +25,7 @@ import android.util.Log;
 
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.SocketCommunicationManager;
-import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.UserHelper;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.WiFiNameEncryption;
 import com.dreamlink.communication.wifip2p.WifiDirectReciver;

@@ -3,8 +3,8 @@ package com.dreamlink.communication.server.service;
 import java.util.List;
 
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.UserHelper;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchClient;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.SearchSever;

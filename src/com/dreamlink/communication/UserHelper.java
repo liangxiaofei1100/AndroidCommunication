@@ -1,4 +1,4 @@
-package com.dreamlink.communication.data;
+package com.dreamlink.communication;
 
 import android.content.Context;
 import android.content.SharedPreferences;

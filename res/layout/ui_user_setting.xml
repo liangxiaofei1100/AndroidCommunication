@@ -62,10 +62,16 @@
             	    />
             	
             	<TextView 
-            	    android:id="@+id/ip_version_view"
+            	    android:id="@+id/ip_view"
             	    android:layout_width="wrap_content"
             	    android:layout_height="wrap_content"
             	    android:layout_below="@+id/set_tip"
+            	    />
+            	<TextView 
+            	    android:id="@+id/android_version_view"
+            	    android:layout_width="wrap_content"
+            	    android:layout_height="wrap_content"
+            	    android:layout_below="@+id/ip_view"
             	    />
             </RelativeLayout>
             <!-- 保存按钮 -->

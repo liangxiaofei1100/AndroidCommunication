@@ -9,8 +9,8 @@ import java.util.Map.Entry;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.CallBacks.ILoginRespondCallback;
 import com.dreamlink.communication.SocketCommunication;
+import com.dreamlink.communication.UserHelper;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.lib.util.ArrayUtil;
 import com.dreamlink.communication.util.Log;
 
