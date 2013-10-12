@@ -100,6 +100,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	private List<List<FileInfo>> mCLassifyList = new ArrayList<List<FileInfo>>();
 	
 	private GetFilesTask mFilesTask = null;
+	private String[] fileNameTypes = null;
 	
 	public static String[] file_types;
 	public static String[] file_types_tips;
@@ -142,6 +143,10 @@ public class FileBrowserFragment extends BaseFragment implements
 	//two status
 	private static final int STATUS_FILE = 0;
 	private static final int STATUS_HOME = 1;
+	private static final int STATUS_DOC = 2;
+	private static final int STATUS_EBOOK =3;
+	private static final int STATUS_APK = 4;
+	private static final int STATUS_ARCHIVE = 5;
 	private int mStatus = STATUS_HOME;
 	
 	private String sdcard_path;
@@ -241,6 +246,7 @@ public class FileBrowserFragment extends BaseFragment implements
 		
 		file_types = getResources().getStringArray(R.array.file_classify);
 		file_types_tips = getResources().getStringArray(R.array.file_classify_tip);
+		fileNameTypes = getResources().getStringArray(R.array.classify_files_ending);
 
 		sdcard_path = sp.getString(Extra.SDCARD_PATH, MountManager.NO_EXTERNAL_SDCARD);
 		internal_path = sp.getString(Extra.INTERNAL_PATH, MountManager.NO_INTERNAL_SDCARD);
@@ -275,7 +281,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			mFilesTask.cancel(true);
 		}else {
 			mFilesTask = new GetFilesTask();
-			mFilesTask.execute(DOC);
+			mFilesTask.execute(0);
 		}
 	}
 
@@ -387,18 +393,22 @@ public class FileBrowserFragment extends BaseFragment implements
 				break;
 			case DOC:
 				//get doc documents
+				mStatus = STATUS_DOC;
 				mTabManager.refreshTab(null, DOC);
 				setAdapter(DOC, mDocList);
 				break;
 			case EBOOK:
+				mStatus = STATUS_EBOOK;
 				mTabManager.refreshTab(null, EBOOK);
 				setAdapter(EBOOK, mEbookList);
 				break;
 			case APK:
+				mStatus = STATUS_APK;
 				mTabManager.refreshTab(null, APK);
 				setAdapter(APK, mApkList);
 				break;
 			case ARCHIVE:
+				mStatus = STATUS_ARCHIVE;
 				mTabManager.refreshTab(null, ARCHIVE);
 				setAdapter(ARCHIVE, mArchiveList);
 				break;
@@ -406,11 +416,29 @@ public class FileBrowserFragment extends BaseFragment implements
 				break;
 			}
 		}else {
-			FileInfo fileInfo = mAllLists.get(position);
+			List<FileInfo> list;
+			switch (mStatus) {
+			case STATUS_DOC:
+				list = mDocList;
+				break;
+			case STATUS_EBOOK:
+				list = mEbookList;
+				break;
+			case STATUS_APK:
+				list = mApkList;
+				break;
+			case STATUS_ARCHIVE:
+				list = mArchiveList;
+				break;
+			default:
+				list = mAllLists;
+				break;
+			}
+			FileInfo fileInfo = list.get(position);
 			int top = view.getTop();
 			if (fileInfo.isDir) {
 				addToNavigationList(mCurrentPath, top, fileInfo);
-				browserTo(new File(mAllLists.get(position).filePath));
+				browserTo(new File(list.get(position).filePath));
 			} else {
 				// file set file checked
 				boolean checked = mFileInfoAdapter.isChecked(position);
@@ -456,7 +484,26 @@ public class FileBrowserFragment extends BaseFragment implements
 			return false;
 		}
 		
-		final FileInfo fileInfo = mAllLists.get(position);
+		List<FileInfo> list;
+		switch (mStatus) {
+		case STATUS_DOC:
+			list = mDocList;
+			break;
+		case STATUS_EBOOK:
+			list = mEbookList;
+			break;
+		case STATUS_APK:
+			list = mApkList;
+			break;
+		case STATUS_ARCHIVE:
+			list = mArchiveList;
+			break;
+		default:
+			list = mAllLists;
+			break;
+		}
+		
+		final FileInfo fileInfo = list.get(position);
 		int resId = R.array.file_menu;
 		if (fileInfo.isDir) {
 			resId = R.array.folder_menu;
@@ -1022,8 +1069,7 @@ public class FileBrowserFragment extends BaseFragment implements
 				mCLassifyList.add(mApkList);
 				mCLassifyList.add(mArchiveList);
 				
-				String[] nameTypes = getResources().getStringArray(R.array.classify_files_ending);
-				ClassifyFilenameFileter filenameFileter = new ClassifyFilenameFileter(nameTypes);
+				ClassifyFilenameFileter filenameFileter = new ClassifyFilenameFileter(fileNameTypes);
 				listFiles(filenameFileter, file, params[0]);
 			}
 			return null;
@@ -1130,6 +1176,14 @@ public class FileBrowserFragment extends BaseFragment implements
 
 		default:
 			break;
+		}
+	}
+	
+	@Override
+	public void onStop() {
+		super.onStop();
+		if (null != mFilesTask) {
+			mFilesTask.cancel(true);
 		}
 	}
 	
