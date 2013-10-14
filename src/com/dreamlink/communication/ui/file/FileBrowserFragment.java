@@ -1159,22 +1159,34 @@ public class FileBrowserFragment extends BaseFragment implements
 		}
 	}
 	
+	/**
+	 * back key callback
+	 */
 	public void onBackPressed(){
 		switch (mStatus) {
 		case STATUS_HOME:
 			getActivity().finish();
 			break;
 		case STATUS_FILE:
-			if (null == mCurrent_root_path || mCurrent_root_path.equals(mCurrentPath)) {
+			//if is root path,back to Home view
+			if (mCurrent_root_path.equals(mCurrentPath)) {
 				goToHome();
 				return;
 			}
 			
+			//up to parent path
 			File parentFile = mCurrentFile.getParentFile();
 			browserTo(parentFile.getAbsoluteFile());
 			break;
+		case STATUS_DOC:
+		case STATUS_EBOOK:
+		case STATUS_APK:
+		case STATUS_ARCHIVE:
+			goToHome();
+			break;
 
 		default:
+			Log.d(TAG, "default.status:" + mStatus);
 			break;
 		}
 	}

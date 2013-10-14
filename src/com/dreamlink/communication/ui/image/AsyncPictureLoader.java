@@ -45,7 +45,7 @@ public class AsyncPictureLoader {
 				options.inDither = false;//采用默认值
 				options.inPreferredConfig = Bitmap.Config.ARGB_8888;//采用默认值
 				// get images thumbail
-				Bitmap bitmap = MediaStore.Images.Thumbnails.getThumbnail(contentResolver, id, Images.Thumbnails.MINI_KIND, options);
+				Bitmap bitmap = MediaStore.Images.Thumbnails.getThumbnail(contentResolver, id, Images.Thumbnails.MICRO_KIND, options);
 				bitmapCaches.put(id, new SoftReference<Bitmap>(bitmap));
 				Message message = handler.obtainMessage(0, bitmap);
 				handler.sendMessage(message);

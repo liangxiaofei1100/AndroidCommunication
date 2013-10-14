@@ -35,6 +35,7 @@ public class MainFragmentActivity extends FragmentActivity {
 	private MyFragmentPagerAdapter mAdapter;
 //	private MyPageAdapter myPageAdapter;
 	private FileBrowserFragment mBrowserFragment;
+	private PictureFragment mPictureFragment;
 	public static MainFragmentActivity instance;
 	
 	@Override
@@ -55,7 +56,9 @@ public class MainFragmentActivity extends FragmentActivity {
 		fragments.add(TiandiFragment.newInstance(appid));//朝颜天地
 		fragments.add(NetworkFragment.newInstance(appid));//网上邻居
 		fragments.add(RecommendFragment.newInstance(appid));//精品推荐
-		fragments.add(PictureFragment.newInstance(appid));//图库
+//		fragments.add(PictureFragment.newInstance(appid));//图库
+		mPictureFragment = PictureFragment.newInstance(appid);
+		fragments.add(mPictureFragment);
 		fragments.add(AudioFragment.newInstance(appid));//音频
 		fragments.add(VideoFragment.newInstance(appid));//视频
 		fragments.add(AppFragment.newInstance(appid));//应用
@@ -131,14 +134,20 @@ public class MainFragmentActivity extends FragmentActivity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_BACK:
-			//8 is instead of FileBrowserFragment,fixed
 			int position = viewPager.getCurrentItem();
-			if (8 == position) {
+			switch (position) {
+			case 3:
+				//Picture 
+				mPictureFragment.onBackPressed();
+				return false;
+			case 8:
+				//FileBrowser
 				mBrowserFragment.onBackPressed();
 				return false;
+			default:
+				break;
 			}
 			break;
-
 		default:
 			break;
 		}

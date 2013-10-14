@@ -6,7 +6,7 @@ import com.dreamlink.communication.ui.image.AsyncPictureLoader.ILoadImagesCallba
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.provider.MediaStore;
+import android.provider.MediaStore.MediaColumns;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +33,7 @@ public class PictureCursorAdapter extends CursorAdapter {
 	public void bindView(View view, Context arg1, Cursor cursor) {
 		final ViewHolder holder = (ViewHolder) view.getTag();
 		long id = cursor.getLong(cursor
-				.getColumnIndex(MediaStore.Video.Media._ID));
+				.getColumnIndex(MediaColumns._ID));
 		
 		if (!mIdleFlag) {
 			if (AsyncPictureLoader.bitmapCaches.size() >0 &&
