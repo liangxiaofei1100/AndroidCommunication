@@ -13,6 +13,7 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
@@ -39,9 +40,12 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -135,7 +139,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	private LinearLayout mRefreshLayout;
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
-	private LinearLayout mMoreLayout;
+	private LinearLayout mSettingLayout;
 	
 	private int mAppId = -1;
 	private SharedPreferences sp = null;
@@ -293,8 +297,8 @@ public class FileBrowserFragment extends BaseFragment implements
 		mMenuLayout.setOnClickListener(this);
 		mRefreshLayout.setOnClickListener(this);
 		mHistoryLayout.setOnClickListener(this);
-		mMoreLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
-		mMoreLayout.setOnClickListener(this);
+		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
+		mSettingLayout.setOnClickListener(this);
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.icon_transfer_normal);
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
@@ -324,12 +328,8 @@ public class FileBrowserFragment extends BaseFragment implements
 			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
 			popupMenu.show();
 			break;
-		case R.id.ll_more:
-			PopupMenu popupMenu2 = new PopupMenu(mContext, mMoreLayout);
-			popupMenu2.setOnMenuItemClickListener(this);
-			MenuInflater inflater2 = popupMenu2.getMenuInflater();
-			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
-			popupMenu2.show();
+		case R.id.ll_setting:
+			MainUIFrame.startSetting(mContext);
 			break;
 		case R.id.btn_cancel:
 			updateTransferAllUI(false);
@@ -440,6 +440,7 @@ public class FileBrowserFragment extends BaseFragment implements
 				addToNavigationList(mCurrentPath, top, fileInfo);
 				browserTo(new File(list.get(position).filePath));
 			} else {
+//				((ActionBarActivity)getActivity()).startSupportActionMode(new ActionModeCallBack());
 				// file set file checked
 				boolean checked = mFileInfoAdapter.isChecked(position);
 				if (checked) {
@@ -624,6 +625,11 @@ public class FileBrowserFragment extends BaseFragment implements
 		}
 	}
 	
+	/**
+	 * show rename dialog
+	 * @param fileInfo the file info
+	 * @param position the click position
+	 */
 	public void showRenameDialog(final FileInfo fileInfo, final int position){
 		LayoutInflater inflater = LayoutInflater.from(mContext);
 		View view = inflater.inflate(R.layout.ui_rename_dialog, null);
@@ -1197,6 +1203,49 @@ public class FileBrowserFragment extends BaseFragment implements
 		if (null != mFilesTask) {
 			mFilesTask.cancel(true);
 		}
+	}
+	
+	/**
+	 * ActionMode Callback
+	 */
+	private class ActionModeCallBack implements ActionMode.Callback{
+		private Button mTextSelect = null;
+		private PopupMenu mEditPopupMenu;
+		private PopupMenu mSelectPopupMenu;
+		private boolean mSelectAll = true;
+		
+		@Override
+		public boolean onActionItemClicked(ActionMode arg0, MenuItem arg1) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+		
+		@Override
+		public boolean onPrepareActionMode(ActionMode arg0, Menu arg1) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean onCreateActionMode(ActionMode arg0, Menu arg1) {
+			// TODO Auto-generated method stub
+			System.out.println("testfragemnt");
+			LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+			View customView = layoutInflater.inflate(R.layout.actionbar_edit, null);
+			arg0.setCustomView(customView);
+			
+			MenuInflater menuInflater = arg0.getMenuInflater();
+			menuInflater.inflate(R.menu.file_menu, arg1);
+			return true;
+		}
+
+		@Override
+		public void onDestroyActionMode(ActionMode arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		
 	}
 	
 }

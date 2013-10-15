@@ -151,7 +151,7 @@ public class JoinNetworkActivity extends Activity implements OnClickListener,
 		mHistoryView = (ImageView) findViewById(R.id.iv_history);
 		mHistoryView.setVisibility(View.GONE);
 		// menu more icon
-		mMoreView = (ImageView) findViewById(R.id.iv_more);
+		mMoreView = (ImageView) findViewById(R.id.iv_title_setting);
 		mMoreView.setVisibility(View.GONE);
 	}
 

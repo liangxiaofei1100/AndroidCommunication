@@ -88,7 +88,7 @@ public class HelpActivity extends Activity implements OnClickListener {
 		mHistoryView.setOnClickListener(this);
 		mHistoryView.setVisibility(View.GONE);
 		
-		mMoreView = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
+		mMoreView = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
 		mMoreView.setVisibility(View.GONE);
 	}
 

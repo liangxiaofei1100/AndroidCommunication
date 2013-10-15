@@ -100,7 +100,7 @@ public class SettingsFragment extends BaseFragment implements View.OnClickListen
 		mMenuView = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
 		mMenuView.setOnClickListener(this);
 		
-		mMoreView = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
+		mMoreView = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
 		mMoreView.setOnClickListener(this);
 	}
 
@@ -135,7 +135,7 @@ public class SettingsFragment extends BaseFragment implements View.OnClickListen
 			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
 			popupMenu.show();
 			break;
-		case R.id.ll_more:
+		case R.id.ll_setting:
 			PopupMenu popupMenu2 = new PopupMenu(getActivity(), mMoreView);
 			popupMenu2.setOnMenuItemClickListener(this);
 			MenuInflater inflater2 = popupMenu2.getMenuInflater();

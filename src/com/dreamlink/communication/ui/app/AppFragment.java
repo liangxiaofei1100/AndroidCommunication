@@ -45,6 +45,7 @@ import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.help.HelpActivity;
@@ -80,7 +81,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	private LinearLayout mRefreshLayout;
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
-	private LinearLayout mMoreLayout;
+	private LinearLayout mSettingLayout;
 	
 	private int mAppId = -1;
 	private Cursor mCursor;
@@ -175,11 +176,11 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
 		//item switch
 		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
-		mMoreLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
+		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
 		mMenuLayout.setOnClickListener(this);
 		mRefreshLayout.setOnClickListener(this);
 		mHistoryLayout.setOnClickListener(this);
-		mMoreLayout.setOnClickListener(this);
+		mSettingLayout.setOnClickListener(this);
 		// title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText(R.string.app);
@@ -398,12 +399,8 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
 			popupMenu.show();
 			break;
-		case R.id.ll_more:
-			PopupMenu popupMenu2 = new PopupMenu(mContext, mMoreLayout);
-			popupMenu2.setOnMenuItemClickListener(this);
-			MenuInflater inflater2 = popupMenu2.getMenuInflater();
-			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
-			popupMenu2.show();
+		case R.id.ll_setting:
+			MainUIFrame.startSetting(mContext);
 			break;
 
 		default:

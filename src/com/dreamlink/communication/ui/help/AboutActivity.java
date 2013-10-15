@@ -96,7 +96,7 @@ public class AboutActivity extends Activity implements OnClickListener {
 		mHistoryView.setVisibility(View.GONE);
 		
 		//more menu view
-		mMoreMenuView = findViewById(R.id.ll_more);
+		mMoreMenuView = findViewById(R.id.ll_setting);
 		mMoreMenuView.setVisibility(View.GONE);
 	}
 
