@@ -133,14 +133,12 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mUserIconView = (ImageView) findViewById(R.id.iv_usericon);
 		mTransferView = (ImageView) findViewById(R.id.iv_filetransfer);
 		mSettingView = (ImageView) findViewById(R.id.iv_setting);
-		mHelpView = (ImageView) findViewById(R.id.iv_help);
 		mUserNameView = (TextView) findViewById(R.id.tv_username);
 		mUserNameView.setText(mLocalUser.getUserName());
 		mNetWorkStatusView = (TextView) findViewById(R.id.tv_network_status);
 		mUserIconView.setOnClickListener(this);
 		mTransferView.setOnClickListener(this);
 		mSettingView.setOnClickListener(this);
-		mHelpView.setOnClickListener(this);
 
 		mGridView = (GridView) findViewById(R.id.gv_main_menu);
 		mAdapter = new MainUIAdapter(this, mGridView);
@@ -175,13 +173,6 @@ public class MainUIFrame extends Activity implements OnClickListener,
 //			intent.putExtra("position", 9);
 //			startActivity(intent);
 			intent.setClass(this, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.iv_help:
-//			intent.setClass(this, MainFragmentActivity.class);
-//			intent.putExtra("position", 10);
-//			startActivity(intent);
-			intent.setClass(this, HelpActivity.class);
 			startActivity(intent);
 			break;
 		default:
@@ -320,6 +311,12 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	@Override
 	public void onUserDisconnected(User user) {
 		mHandler.sendEmptyMessage(MSG_USER_DISCONNECTED);
+	}
+	
+	public static void startSetting(Context context){
+		Intent settingIntent = new Intent();
+		settingIntent.setClass(context, SettingsActivity.class);
+		context.startActivity(settingIntent);
 	}
 
 }
