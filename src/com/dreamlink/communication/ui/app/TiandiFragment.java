@@ -1,30 +1,21 @@
 package com.dreamlink.communication.ui.app;
 
-import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Message;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
@@ -47,11 +38,13 @@ import android.widget.TextView;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
-import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
@@ -84,6 +77,8 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	private LinearLayout mMenuLayout;
 	private LinearLayout mSettingLayout;
 	
+	private RelativeLayout mContainLayout;
+	
 	private int mAppId = -1;
 	private Cursor mCursor;
 	
@@ -111,6 +106,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		View rootView = inflater.inflate(R.layout.ui_zytiandi, container, false);
 		mContext = getActivity();
 		
+		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_tiandi_main);
 		mGridView = (GridView) rootView.findViewById(R.id.gv_game);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_progress);
 		mRechargeBtn = (Button) rootView.findViewById(R.id.btn_recharge);
@@ -209,7 +205,6 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.ll_refresh:
 			mNotice.showToast("refresh");
@@ -270,7 +265,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 			appInfo.loadLabel();
 			appInfo.loadVersion();
 
-			showMenuDialog(appInfo);
+			showMenuDialog(appInfo, arg1);
 		} catch (NameNotFoundException e) {
 			Log.e(TAG, e.toString());
 			e.printStackTrace();
@@ -290,7 +285,12 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		startActivity(intent);
 	}
 	
-	public void showMenuDialog(final AppInfo appInfo) {
+	private void showTransportAnimation(ImageView... startViews){
+		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
+		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
+	}
+	
+	public void showMenuDialog(final AppInfo appInfo, final View view) {
 		new AlertDialog.Builder(mContext)
 				.setIcon(appInfo.getAppIcon())
 				.setTitle(appInfo.getLabel())
@@ -304,8 +304,21 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 									// send
 									FileTransferUtil fileSendUtil = new FileTransferUtil(
 											getActivity());
-									fileSendUtil.sendFile(appInfo
-											.getInstallPath());
+									fileSendUtil.sendFile(
+											appInfo.getInstallPath(),
+											new TransportCallback() {
+
+												@Override
+												public void onTransportSuccess() {
+													ViewHolder viewHolder = (ViewHolder) view.getTag();
+													showTransportAnimation(viewHolder.iconView);
+												}
+
+												@Override
+												public void onTransportFail() {
+
+												}
+											});
 									break;
 								case 1:
 									// app info
@@ -319,7 +332,4 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 						}).create().show();
 	}
 	
-	public void onDestroy() {
-		super.onDestroy();
-	};
 }
