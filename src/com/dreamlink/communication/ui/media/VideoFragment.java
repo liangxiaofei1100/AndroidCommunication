@@ -35,15 +35,18 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.media.VideoCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
@@ -66,7 +69,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
 	private LinearLayout mSettingLayout;
-
+	private RelativeLayout mContainLayout;
 	
 	private int mAppId = -1;
 	
@@ -129,6 +132,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mContext = getActivity();
 		View rootView = inflater.inflate(R.layout.ui_media_video, container, false);
+		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_video_main);
 		mGridView = (GridView) rootView.findViewById(R.id.video_gridview);
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
@@ -212,8 +216,13 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		mFileInfoManager.openFile(url);
 	}
 	
+	private void showTransportAnimation(ImageView... startViews){
+		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
+		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
+	}
+	
 	@Override
-	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
 		final Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
 //		final long videoId = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
@@ -234,7 +243,19 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 					case 1:
 						//send
 						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(url);
+						fileSendUtil.sendFile(url, new TransportCallback() {
+							
+							@Override
+							public void onTransportSuccess() {
+								ViewHolder viewHolder = (ViewHolder) view.getTag();
+								showTransportAnimation(viewHolder.iconView);
+							}
+							
+							@Override
+							public void onTransportFail() {
+								
+							}
+						});
 						break;
 					case 2:
 						//delete
