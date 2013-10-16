@@ -30,6 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.webkit.WebView.FindListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -45,9 +46,12 @@ import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
@@ -83,6 +87,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
 	private LinearLayout mSettingLayout;
+	private RelativeLayout mContainLayout;
 	
 	private int mAppId = -1;
 	private Cursor mCursor;
@@ -133,6 +138,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		
 		mNotice = new Notice(mContext);
 		
+		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_ui_app);
 		mGridView = (GridView) rootView.findViewById(R.id.app_normal_gridview);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
 		
@@ -248,6 +254,12 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		}
 	}
 
+	private void showTransportAnimation(ImageView... startViews){
+		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
+		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
+	}
+	
+	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
 		mCursor.moveToPosition(position);
@@ -262,7 +274,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			appInfo.loadLabel();
 			appInfo.loadVersion();
 			
-			showMenuDialog(appInfo);
+			showMenuDialog(appInfo, view);
 		} catch (NameNotFoundException e) {
 			Log.e(TAG, e.toString());
 			e.printStackTrace();
@@ -270,7 +282,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		return true;
 	}
 	
-	public void showMenuDialog(final AppInfo appInfo){
+	public void showMenuDialog(final AppInfo appInfo, final View view){
 		int resId = R.array.app_menu_game;
 		final String[] current_menus = getResources().getStringArray(resId);
 		new AlertDialog.Builder(mContext)
@@ -292,7 +304,20 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 				}else if (current_menus[1].equals(currentMenu)) {
 					//send
 					FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-					fileSendUtil.sendFile(appInfo.getInstallPath());
+					fileSendUtil.sendFile(appInfo.getInstallPath(), new TransportCallback() {
+						
+						@Override
+						public void onTransportSuccess() {
+							ViewHolder viewHolder = (ViewHolder) view.getTag();
+							showTransportAnimation(viewHolder.iconView);
+						}
+						
+						@Override
+						public void onTransportFail() {
+							
+						}
+					});
+					
 				}else if (current_menus[2].equals(currentMenu)) {
 					//uninstall
 					mAppManager.uninstallApp(appInfo.getPackageName());

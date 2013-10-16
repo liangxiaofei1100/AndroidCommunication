@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/main_bg"
+    android:id="@+id/rl_audio_main"
      >
        <include 
         android:id="@+id/layout_title"

@@ -34,15 +34,18 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.media.AudioCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
@@ -65,7 +68,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mSettingLayout;
 	private LinearLayout mMenuLayout;
-
+	private RelativeLayout mContainLayout;
 	
 	private static final String[] PROJECTION = {
 		MediaStore.Audio.Media._ID, MediaStore.Audio.Media.TITLE,
@@ -133,6 +136,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		View rootView = inflater.inflate(R.layout.ui_media_audio, container, false);
 		mContext = getActivity();
 		
+		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_audio_main);
 		mListView = (ListView) rootView.findViewById(R.id.audio_listview);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.audio_progressbar);
 		mListView.setOnItemClickListener(this);
@@ -219,8 +223,13 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		mFileInfoManager.openFile(url);
 	} 
 	
+	private void showTransportAnimation(ImageView... startViews){
+		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
+		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
+	}
+	
 	@Override
-	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
 		final Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
 		final String title = cursor.getString((cursor
@@ -240,7 +249,19 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 					case 1:
 						//send
 						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(url);
+						fileSendUtil.sendFile(url, new TransportCallback() {
+							
+							@Override
+							public void onTransportSuccess() {
+								ViewHolder viewHolder = (ViewHolder) view.getTag();
+								showTransportAnimation(viewHolder.iconView);
+							}
+							
+							@Override
+							public void onTransportFail() {
+								
+							}
+						});
 						break;
 					case 2:
 						//delete
