@@ -146,7 +146,7 @@ public class HistoryActivity extends FragmentActivity implements
 		mRefreshView.setVisibility(View.GONE);
 		mHistoryView.setVisibility(View.GONE);
 		
-		View moreView = titleLayout.findViewById(R.id.ll_more);
+		View moreView = titleLayout.findViewById(R.id.ll_setting);
 		moreView.setVisibility(View.GONE);
 	}
 

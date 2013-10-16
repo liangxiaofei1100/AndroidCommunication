@@ -198,14 +198,11 @@ public class HistoryCursorAdapter extends CursorAdapter {
 			if (FileInfoManager.TYPE_IMAGE == fileType
 					|| FileInfoManager.TYPE_APK == fileType
 					|| FileInfoManager.TYPE_VIDEO == fileType) {
-				Log.i(TAG, filePath + ":444");
 				Bitmap bitmap = bitmapLoader2.loadImage(filePath, fileType, new ILoadImageCallback() {
-					
 					@Override
 					public void onObtainBitmap(Bitmap bitmap, String url) {
-						// TODO Auto-generated method stub
 						ImageView imageView = (ImageView) mListView.findViewWithTag(filePath);
-						if (null != bitmap) {
+						if (null != bitmap && null != imageView) {
 							imageView.setImageBitmap(bitmap);
 						}
 					}

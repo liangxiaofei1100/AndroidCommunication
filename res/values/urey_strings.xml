@@ -68,8 +68,8 @@
     <string name="ebook_type_tip">支持umd,ebk,txt,chm等格式</string>
     <string name="apk_type">应用安装包</string>
     <string name="apk_type_tip">支持apk格式</string>
-    <string name="zip_type">压缩包文件</string>
-    <string name="zip_type_tip">支持7z,rar,zip,iso等格式</string>
+    <string name="archive_type">压缩包文件</string>
+    <string name="archive_type_tip">支持7z,rar,zip,iso等格式</string>
     <string name="big_file_type">大文件</string>
     <string name="big_file_type_tip">支持50M以上任意格式文件</string>
     

@@ -28,6 +28,7 @@ public class AboutActivity extends Activity implements OnClickListener {
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
+	private View mMoreMenuView;
 
 	private ImageView mLogoImageView;
 	private TextView mAppNameVersionTextView;
@@ -93,6 +94,10 @@ public class AboutActivity extends Activity implements OnClickListener {
 		// History icon
 		mHistoryView = (ImageView) findViewById(R.id.iv_history);
 		mHistoryView.setVisibility(View.GONE);
+		
+		//more menu view
+		mMoreMenuView = findViewById(R.id.ll_setting);
+		mMoreMenuView.setVisibility(View.GONE);
 	}
 
 	@Override

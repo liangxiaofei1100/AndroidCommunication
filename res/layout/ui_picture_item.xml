@@ -19,6 +19,7 @@
         android:layout_height="100dp"
         android:adjustViewBounds="true"
         android:scaleType="centerCrop"
+        android:layout_margin="2dp"
         />
 
  </RelativeLayout> 

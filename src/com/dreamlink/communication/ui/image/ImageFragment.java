@@ -141,7 +141,7 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.d(TAG, "onCreateView");
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
-		mGridview = (GridView) rootView.findViewById(R.id.picture_gridview);
+		mGridview = (GridView) rootView.findViewById(R.id.gv_picture_item);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_loading_image);
 
 		initTitleVIews(rootView);

@@ -19,7 +19,10 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
 public class RecommendFragment extends BaseFragment implements OnClickListener, OnMenuItemClickListener {
@@ -30,7 +33,7 @@ public class RecommendFragment extends BaseFragment implements OnClickListener, 
 	private LinearLayout mRefreshLayout;
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
-	private LinearLayout mMoreLayout;
+	private LinearLayout mSettingLayout;
 	private int mAppId = -1;
 	
 	/**
@@ -71,8 +74,8 @@ public class RecommendFragment extends BaseFragment implements OnClickListener, 
 		mMenuLayout.setOnClickListener(this);
 		mRefreshLayout.setOnClickListener(this);
 		mHistoryLayout.setOnClickListener(this);
-		mMoreLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
-		mMoreLayout.setOnClickListener(this);
+		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
+		mSettingLayout.setOnClickListener(this);
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText("精品推荐");
 		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
@@ -100,12 +103,8 @@ public class RecommendFragment extends BaseFragment implements OnClickListener, 
 			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
 			popupMenu.show();
 			break;
-		case R.id.ll_more:
-			PopupMenu popupMenu2 = new PopupMenu(getActivity(), mMoreLayout);
-			popupMenu2.setOnMenuItemClickListener(this);
-			MenuInflater inflater2 = popupMenu2.getMenuInflater();
-			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
-			popupMenu2.show();
+		case R.id.ll_setting:
+			MainUIFrame.startSetting(getActivity());
 			break;
 
 		default:
@@ -115,8 +114,20 @@ public class RecommendFragment extends BaseFragment implements OnClickListener, 
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
-		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		Intent intent = null;
+		switch (item.getItemId()) {
+		case R.id.setting:
+			intent = new Intent(getActivity(), SettingsActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.help:
+			intent = new Intent(getActivity(), HelpActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			break;
+		}
 		return true;
 	}
 }

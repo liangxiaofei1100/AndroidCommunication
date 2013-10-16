@@ -107,6 +107,10 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 		// History icon
 		mHistoryView = (ImageView) findViewById(R.id.iv_history);
 		mHistoryView.setVisibility(View.GONE);
+		
+		//setting
+		View view = findViewById(R.id.ll_setting);
+		view.setVisibility(View.GONE);
 	}
 
 	@Override

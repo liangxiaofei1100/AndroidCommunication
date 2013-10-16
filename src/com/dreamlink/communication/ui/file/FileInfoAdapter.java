@@ -6,8 +6,6 @@ import java.util.List;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
-import com.dreamlink.communication.ui.MountManager;
-import com.dreamlink.communication.util.Log;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -25,6 +23,7 @@ public class FileInfoAdapter extends BaseAdapter {
 	private List<FileInfo> mList = new ArrayList<FileInfo>();
 	private List<Integer> homeList = new ArrayList<Integer>();
 	private LayoutInflater mInflater = null;
+	private List<List<FileInfo>> typeList = new ArrayList<List<FileInfo>>();
 	
 	private Context mContext;
 	
@@ -35,10 +34,14 @@ public class FileInfoAdapter extends BaseAdapter {
 	private boolean flag = true;
 	public boolean isHome = true;
 	
-	public FileInfoAdapter(Context context, boolean home, List<Integer> list){
-		isHome = home;
+	private static final int[] TYPE_ICONS = { R.drawable.default_doc_icon,
+		R.drawable.default_ebook_icon, R.drawable.deafult_apk_icon, R.drawable.default_archive_icon};
+	
+	public FileInfoAdapter(Context context, List<Integer> homeList, List<List<FileInfo>> list){
+		isHome = true;
 		mInflater = LayoutInflater.from(context);
-		homeList = list;
+		this.homeList = homeList;
+		this.typeList = list;
 	}
 	
 	public FileInfoAdapter(Context context, List<FileInfo> list){
@@ -165,14 +168,34 @@ public class FileInfoAdapter extends BaseAdapter {
 		//home view ui
 		if (isHome) {
 			holder.checkBox.setVisibility(View.GONE);
-			holder.dateAndSizeView.setVisibility(View.GONE);
-			if (MountManager.INTERNAL == homeList.get(position)) {
-				holder.iconView.setImageResource(R.drawable.storage_internal_n);
-				holder.nameView.setText(R.string.internal_sdcard);
-			}else {
-				holder.iconView.setImageResource(R.drawable.storage_sd_card_n);
-				holder.nameView.setText(R.string.sdcard);
+			if (position < homeList.size() - 4) {
+				switch (homeList.get(position)) {
+				case FileBrowserFragment.INTERNAL:
+					holder.iconView.setImageResource(R.drawable.storage_internal_n);
+					holder.nameView.setText(R.string.internal_sdcard);
+					holder.dateAndSizeView.setVisibility(View.GONE);
+					break;
+				case FileBrowserFragment.SDCARD:
+					holder.iconView.setImageResource(R.drawable.storage_sd_card_n);
+					holder.nameView.setText(R.string.sdcard);
+					holder.dateAndSizeView.setVisibility(View.GONE);
+					break;
+				}
+				
+				return view;
 			}
+			
+			
+			int size = 0;
+			int pos = 0;
+			if (typeList.size() > 0) {
+				pos = position - (homeList.size() - 4);
+				size = typeList.get(pos).size();
+			}
+			
+			holder.iconView.setImageResource(TYPE_ICONS[pos]);
+			holder.nameView.setText(FileBrowserFragment.file_types[pos] + "(" + size + ")");
+			holder.dateAndSizeView.setText(FileBrowserFragment.file_types_tips[pos]);
 			
 			return view;
 		}

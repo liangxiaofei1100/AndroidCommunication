@@ -44,11 +44,14 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.db.AppData;
+import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -79,7 +82,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	private LinearLayout mRefreshLayout;
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
-	private LinearLayout mMoreLayout;
+	private LinearLayout mSettingLayout;
 	
 	private int mAppId = -1;
 	private Cursor mCursor;
@@ -172,8 +175,8 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		mMenuLayout.setOnClickListener(this);
 		mRefreshLayout.setOnClickListener(this);
 		mHistoryLayout.setOnClickListener(this);
-		mMoreLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
-		mMoreLayout.setOnClickListener(this);
+		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
+		mSettingLayout.setOnClickListener(this);
 		// title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText(R.string.game);
@@ -293,10 +296,10 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 				}else if (current_menus[2].equals(currentMenu)) {
 					//uninstall
 					mAppManager.uninstallApp(appInfo.getPackageName());
-				}else if (current_menus[3].equals(currentMenu)) {
+				}else if (current_menus[4].equals(currentMenu)) {
 					//app info
 					mAppManager.showInfoDialog(appInfo);
-				}else if (current_menus[4].equals(currentMenu)) {
+				}else if (current_menus[3].equals(currentMenu)) {
 					//move to app
 					//1，删除game表中的数据
 					//2，将app表中的type改为app
@@ -381,12 +384,8 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
 			popupMenu.show();
 			break;
-		case R.id.ll_more:
-			PopupMenu popupMenu2 = new PopupMenu(mContext, mMoreLayout);
-			popupMenu2.setOnMenuItemClickListener(this);
-			MenuInflater inflater2 = popupMenu2.getMenuInflater();
-			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
-			popupMenu2.show();
+		case R.id.ll_setting:
+			MainUIFrame.startSetting(mContext);
 			break;
 
 		default:
@@ -396,8 +395,20 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
-		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		Intent intent = null;
+		switch (item.getItemId()) {
+		case R.id.setting:
+			intent = new Intent(mContext, SettingsActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.help:
+			intent = new Intent(mContext, HelpActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			break;
+		}
 		return true;
 	}
 	

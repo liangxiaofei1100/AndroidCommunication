@@ -7,13 +7,16 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
+import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -52,7 +55,8 @@ import android.widget.TextView;
 
 public class PictureFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener, OnScrollListener, OnMenuItemClickListener {
 	private static final String TAG = "PictureFragment";
-	protected GridView mGridview;
+	protected GridView mItemGridView;
+	private GridView mFolderGridView;
 	private ProgressBar mLoadingBar;
 
 	// title views
@@ -62,7 +66,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	private LinearLayout mRefreshLayout;
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
-	private LinearLayout mMoreLayout;
+	private LinearLayout mSettingLayout;
 
 	private Context mContext;
 
@@ -70,22 +74,34 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	private QueryHandler mQueryHandler = null;
 	private PictureCursorAdapter mAdapter = null;
+	private PictureFolderAdapter mFolderAdapter = null;
+	private PictureAdapter mAdapter2 = null;
 
 	private int mAppId;
+	private static final int STATUS_FOLDER = 0;
+	private static final int STATUS_ITEM = 1;
+	private int mStatus = STATUS_FOLDER;
+	
+	private static final int QUERY_TOKEN_FOLDER = 0x11;
+	private static final int QUERY_TOKEN_ITEM = 0x12;
 	
 	private static final String[] PROJECTION = new String[] {MediaColumns._ID, 
-		MediaColumns.DATE_MODIFIED, MediaColumns.SIZE,
+		MediaColumns.DATE_MODIFIED, MediaColumns.SIZE,MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
 		MediaColumns.DATA, MediaColumns.DISPLAY_NAME};
 	
 	private static final String[] PROJECTION2 = new String[] {MediaColumns._ID, 
-		MediaColumns.DATE_MODIFIED, MediaColumns.SIZE,
+		MediaColumns.DATE_MODIFIED, MediaColumns.SIZE,MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
 		MediaColumns.DATA, MediaColumns.DISPLAY_NAME, "width", "height"};
 	
 	/**order by date_modified DESC*/
 	public static final String SORT_ORDER_DATE = MediaColumns.DATE_MODIFIED + " DESC"; 
+	private static final String SORT_ORDER_BUCKET = MediaStore.Images.Media.BUCKET_DISPLAY_NAME + " ASC"; 
+	private List<PictureFolderInfo> mFolderInfosList = new ArrayList<PictureFolderInfo>();
+	
+	private static final String CAMERA = "Camera";
 
 	/**
-	 * Create a new instance of ImageFragment, providing "appid" as an
+	 * Create a new instance of ImageFragment, providing "w" as an
 	 * argument.
 	 */
 	public static PictureFragment newInstance(int appid) {
@@ -99,7 +115,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	}
 	
 	private static final int MSG_UPDATE_UI = 0;
-	Handler mHandler = new Handler(){
+	private Handler mHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
@@ -126,7 +142,10 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
 			int count = mAdapter.getCount();
+			Log.i(TAG, "PictureContent.onChange.count=" + count);
 			updateUI(count);
+			
+			queryFolder();
 		}
 	}
 
@@ -150,8 +169,8 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		mMenuLayout.setOnClickListener(this);
 		mRefreshLayout.setOnClickListener(this);
 		mHistoryLayout.setOnClickListener(this);
-		mMoreLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
-		mMoreLayout.setOnClickListener(this);
+		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
+		mSettingLayout.setOnClickListener(this);
 		// title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText(R.string.image);
@@ -163,7 +182,10 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
-		mGridview = (GridView) rootView.findViewById(R.id.picture_gridview);
+		mItemGridView = (GridView) rootView.findViewById(R.id.gv_picture_item);
+		mFolderGridView = (GridView) rootView.findViewById(R.id.gv_picture_folder);
+		mItemGridView.setVisibility(View.INVISIBLE);
+		mFolderGridView.setVisibility(View.VISIBLE);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_loading_image);
 		initTitleVIews(rootView);
 		return rootView;
@@ -174,28 +196,61 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		super.onActivityCreated(savedInstanceState);
 		mContext = getActivity();
 
-		mGridview.setOnItemClickListener(this);
-		mGridview.setOnItemLongClickListener(this);
-		mGridview.setOnScrollListener(this);
+		mItemGridView.setOnItemClickListener(this);
+		mItemGridView.setOnItemLongClickListener(this);
+		mItemGridView.setOnScrollListener(this);
+		
+		mFolderGridView.setOnItemClickListener(this);
 
 		mFileInfoManager = new FileInfoManager(mContext);
 		mQueryHandler = new QueryHandler(mContext.getContentResolver());
-		query();
 		
 		mAdapter = new PictureCursorAdapter(mContext);
-		mGridview.setAdapter(mAdapter);
+		mItemGridView.setAdapter(mAdapter);
 		
+		mAdapter2 = new PictureAdapter(mContext, mFolderInfosList);
+		mFolderGridView.setAdapter(mAdapter2);
+		
+		queryFolder();
+//		
 		PictureContent pictureContent  = new PictureContent(new Handler());
-		getActivity().getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, pictureContent);
+		getActivity().getContentResolver().registerContentObserver(
+				MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, pictureContent);
 	}
 	
-	public void query() {
+	/***
+	 * get {@link PictureFolderInfo} from {@link mFolderInfosList} accord to the speciy bucketDisplayName}}
+	 * @param bucketDisplayName
+	 * @return {@link PictureFolderInfo}, null if not find
+	 */
+	public PictureFolderInfo getFolderInfo(String bucketDisplayName){
+		for(PictureFolderInfo folderInfo : mFolderInfosList){
+			if (bucketDisplayName.equals(folderInfo.getBucketDisplayName())) {
+				return folderInfo;
+			}
+		}
+		return null;
+	}
+	
+	public void query(int token, String selection, String[] selectionArgs, String orderBy) {
 		String[] projection = PROJECTION;
 		if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 			projection = PROJECTION2;
 		}
-		mQueryHandler.startQuery(1, null, DreamConstant.IMAGE_URI,
-				projection, null, null, SORT_ORDER_DATE);
+		mQueryHandler.startQuery(token, null, DreamConstant.IMAGE_URI,
+				projection, selection, selectionArgs, orderBy);		
+	}
+	
+	/**query all*/
+	public void queryFolder(){
+		mFolderInfosList.clear();
+		query(QUERY_TOKEN_FOLDER, null, null, SORT_ORDER_DATE);
+	}
+	
+	public void queryFolderItem(String bucketName){
+		String selection = MediaStore.Images.Media.BUCKET_DISPLAY_NAME + "=?";
+		String selectionArgs[] = {bucketName};
+		query(QUERY_TOKEN_ITEM, selection, selectionArgs, SORT_ORDER_DATE);
 	}
 	
 		// query db
@@ -212,12 +267,48 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			int num = 0;
 			if (null != cursor) {
 				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
-				mAdapter.swapCursor(cursor);
-				num = cursor.getCount();
+				switch (token) {
+				case QUERY_TOKEN_FOLDER:
+					if (cursor.moveToFirst()) {
+						PictureFolderInfo pictureFolderInfo = null;
+						do {
+							long id = cursor.getLong(cursor.getColumnIndex(MediaColumns._ID));
+							String bucketDisplayName = cursor.getString(cursor.getColumnIndex(
+									MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME));
+							pictureFolderInfo = getFolderInfo(bucketDisplayName);
+							if (null == pictureFolderInfo) {
+								pictureFolderInfo = new PictureFolderInfo();
+								pictureFolderInfo.setBucketDisplayName(bucketDisplayName);
+								pictureFolderInfo.addIdToList(id);
+								if (CAMERA.equals(bucketDisplayName)) {
+									mFolderInfosList.add(0, pictureFolderInfo);
+								}else {
+									mFolderInfosList.add(pictureFolderInfo);
+								}
+								
+							}else {
+								pictureFolderInfo.addIdToList(id);
+							}
+						} while (cursor.moveToNext());
+						cursor.close();
+						if (STATUS_FOLDER == mStatus) {
+							num = mFolderInfosList.size();
+							mAdapter2.notifyDataSetChanged();
+							updateUI(num);
+						}
+					}
+					break;
+				case QUERY_TOKEN_ITEM:
+					mAdapter.changeCursor(cursor);
+					num = cursor.getCount();
+					updateUI(num);
+					break;
+				default:
+					Log.e(TAG, "Error token:" + token);
+					break;
+				}
 			}
-			updateUI(num);
 		}
-
 	}
 
 	@Override
@@ -281,8 +372,20 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		Cursor cursor = mAdapter.getCursor();
-		startPagerActivityByPosition(position, cursor);
+		switch (parent.getId()) {
+		case R.id.gv_picture_folder:
+			mStatus = STATUS_ITEM;
+			String name = mFolderInfosList.get(position).getBucketDisplayName();
+			queryFolderItem(name);
+			mTitleView.setText("图片-" + name);
+			mItemGridView.setVisibility(View.VISIBLE);
+			mFolderGridView.setVisibility(View.INVISIBLE);
+			break;
+		case R.id.gv_picture_item:
+			Cursor cursor = mAdapter.getCursor();
+			startPagerActivityByPosition(position, cursor);
+			break;
+		}
 	}
 	
 	private String getImageInfo(Cursor cursor){
@@ -387,12 +490,8 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
 			popupMenu.show();
 			break;
-		case R.id.ll_more:
-			PopupMenu popupMenu2 = new PopupMenu(mContext, mMoreLayout);
-			popupMenu2.setOnMenuItemClickListener(this);
-			MenuInflater inflater2 = popupMenu2.getMenuInflater();
-			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
-			popupMenu2.show();
+		case R.id.ll_setting:
+			MainUIFrame.startSetting(mContext);
 			break;
 
 		default:
@@ -402,13 +501,41 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
-		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		Intent intent = null;
+		switch (item.getItemId()) {
+		case R.id.setting:
+			intent = new Intent(mContext, SettingsActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.help:
+			intent = new Intent(mContext, HelpActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			break;
+		}
 		return true;
 	}
 
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 		// TODO Auto-generated method stub
+	}
+	
+	public void onBackPressed(){
+		switch (mStatus) {
+		case STATUS_FOLDER:
+			getActivity().finish();
+			break;
+		case STATUS_ITEM:
+			mStatus = STATUS_FOLDER;
+			mAdapter2.notifyDataSetChanged();
+			updateUI(mFolderInfosList.size());
+			mTitleView.setText(R.string.image);
+			mItemGridView.setVisibility(View.INVISIBLE);
+			mFolderGridView.setVisibility(View.VISIBLE);
+			break;
+		}
 	}
 }

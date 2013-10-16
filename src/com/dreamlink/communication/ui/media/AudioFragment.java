@@ -33,6 +33,7 @@ import android.widget.TextView;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainFragmentActivity;
@@ -40,7 +41,9 @@ import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
+import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
 public class AudioFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener, OnMenuItemClickListener {
@@ -60,7 +63,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	private TextView mTitleNum;
 	private LinearLayout mRefreshLayout;
 	private LinearLayout mHistoryLayout;
-	private LinearLayout mMoreLayout;
+	private LinearLayout mSettingLayout;
 	private LinearLayout mMenuLayout;
 
 	
@@ -174,8 +177,8 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		mMenuLayout.setOnClickListener(this);
 		mRefreshLayout.setOnClickListener(this);
 		mHistoryLayout.setOnClickListener(this);
-		mMoreLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_more);
-		mMoreLayout.setOnClickListener(this);
+		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
+		mSettingLayout.setOnClickListener(this);
 		// title name
 		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
 		mTitleView.setText(R.string.audio);
@@ -332,12 +335,8 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
 			popupMenu.show();
 			break;
-		case R.id.ll_more:
-			PopupMenu popupMenu2 = new PopupMenu(mContext, mMoreLayout);
-			popupMenu2.setOnMenuItemClickListener(this);
-			MenuInflater inflater2 = popupMenu2.getMenuInflater();
-			inflater2.inflate(R.menu.more_menu_item, popupMenu2.getMenu());
-			popupMenu2.show();
+		case R.id.ll_setting:
+			MainUIFrame.startSetting(mContext);
 			break;
 
 		default:
@@ -347,8 +346,20 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		Log.d(TAG, "onMenuItemClick.order:" + item.getOrder());
-		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		Intent intent = null;
+		switch (item.getItemId()) {
+		case R.id.setting:
+			intent = new Intent(mContext, SettingsActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.help:
+			intent = new Intent(mContext, HelpActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			break;
+		}
 		return true;
 	}
 }

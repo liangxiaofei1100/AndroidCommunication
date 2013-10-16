@@ -30,10 +30,126 @@
             android:layout_margin="5dp"
             android:orientation="vertical" >
 
+            <!-- user info setting start-->
             <LinearLayout
-                android:id="@+id/ll_settings_user_info"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical" 
+                android:layout_marginTop="5dp"
+                >
+
+                <LinearLayout
+                    android:id="@+id/ll_settings_user_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_user_info"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textView2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_user_info_tips"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+			<!-- user info setting end-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="vertical" >
+				<!-- function introduce start  -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg_top"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/help_introduction"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/help_introduction_tips"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+				<!-- function introduce end  -->
+				<!-- suggest start -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg_middle"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/help_suggestion"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/help_suggestion_tips"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+                <!-- suggest end -->
+				<!-- check update start -->
+                <LinearLayout
+                    android:id="@+id/ll_help_check_update"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg_bottom"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/help_check_update"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_help_current_version"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/help_current_version"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+                <!-- check update end -->
+            </LinearLayout>
+			<!-- About start -->
+            <LinearLayout
+                android:id="@+id/ll_help_about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:background="@drawable/setting_item_bg"
                 android:clickable="true"
                 android:gravity="center_vertical"
@@ -43,18 +159,10 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_user_info" 
-                    android:textSize="14sp"/>
-
-                <TextView
-                    android:id="@+id/textView2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_user_info_tips"
-                    android:textColor="@color/gray"
-                    android:textSize="12sp" />
+                    android:text="@string/help_about"
+                    android:textSize="14sp" />
             </LinearLayout>
-
+            <!-- About end -->
         </LinearLayout>
     </ScrollView>
 
