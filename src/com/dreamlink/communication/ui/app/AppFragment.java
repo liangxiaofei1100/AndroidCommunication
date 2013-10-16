@@ -43,9 +43,11 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.ui.help.HelpActivity;
@@ -82,6 +84,8 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
 	private LinearLayout mSettingLayout;
+	
+	private RelativeLayout mContainLayout;
 	
 	private int mAppId = -1;
 	private Cursor mCursor;
@@ -132,6 +136,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		
 		mNotice = new Notice(mContext);
 		
+		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_ui_app);
 		mGridView = (GridView) rootView.findViewById(R.id.app_normal_gridview);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
 		
@@ -159,7 +164,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		query();
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -268,15 +272,19 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			appInfo.loadLabel();
 			appInfo.loadVersion();
 
-			showMenuDialog(appInfo);
+			showMenuDialog(appInfo, view);
 		} catch (NameNotFoundException e) {
 			Log.e(TAG, e.toString());
-			e.printStackTrace();
 		}
 		return true;
 	}
 	
-	public void showMenuDialog(final AppInfo appInfo){
+	private void showTransportAnimation(ImageView... startViews){
+		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
+		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
+	}
+	
+	private void showMenuDialog(final AppInfo appInfo, final View view){
 		int resId = R.array.app_menu_normal;
 		if (DreamConstant.PACKAGE_NAME.equals(appInfo.getPackageName())) {
 			//本身这个程序不允许卸载，不允许移动到游戏，已经打开了，所以没有打开选项
@@ -304,7 +312,19 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 				}else if (normal_menus[1].equals(currentMenu)) {
 					//send
 					FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-					fileSendUtil.sendFile(appInfo.getInstallPath());
+					fileSendUtil.sendFile(appInfo.getInstallPath(), new FileTransferUtil.TransportCallback() {
+						
+						@Override
+						public void onTransportSuccess() {
+							ViewHolder viewHolder = (ViewHolder)view.getTag();
+							showTransportAnimation(viewHolder.iconView);
+						}
+						
+						@Override
+						public void onTransportFail() {
+							
+						}
+					});
 				}else if (normal_menus[2].equals(currentMenu)) {
 					//uninstall
 					mAppManager.uninstallApp(appInfo.getPackageName());

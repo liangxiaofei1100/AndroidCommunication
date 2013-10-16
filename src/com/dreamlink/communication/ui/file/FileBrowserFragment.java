@@ -1205,47 +1205,4 @@ public class FileBrowserFragment extends BaseFragment implements
 		}
 	}
 	
-	/**
-	 * ActionMode Callback
-	 */
-	private class ActionModeCallBack implements ActionMode.Callback{
-		private Button mTextSelect = null;
-		private PopupMenu mEditPopupMenu;
-		private PopupMenu mSelectPopupMenu;
-		private boolean mSelectAll = true;
-		
-		@Override
-		public boolean onActionItemClicked(ActionMode arg0, MenuItem arg1) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-		
-		@Override
-		public boolean onPrepareActionMode(ActionMode arg0, Menu arg1) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public boolean onCreateActionMode(ActionMode arg0, Menu arg1) {
-			// TODO Auto-generated method stub
-			System.out.println("testfragemnt");
-			LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-			View customView = layoutInflater.inflate(R.layout.actionbar_edit, null);
-			arg0.setCustomView(customView);
-			
-			MenuInflater menuInflater = arg0.getMenuInflater();
-			menuInflater.inflate(R.menu.file_menu, arg1);
-			return true;
-		}
-
-		@Override
-		public void onDestroyActionMode(ActionMode arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-		
-	}
-	
 }

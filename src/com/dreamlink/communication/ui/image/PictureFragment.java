@@ -74,7 +74,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	private QueryHandler mQueryHandler = null;
 	private PictureCursorAdapter mAdapter = null;
-	private PictureFolderAdapter mFolderAdapter = null;
 	private PictureAdapter mAdapter2 = null;
 
 	private int mAppId;

@@ -3,6 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@drawable/main_bg"
+    android:id="@+id/rl_ui_app"
     >
       <include 
         android:id="@+id/layout_title"
