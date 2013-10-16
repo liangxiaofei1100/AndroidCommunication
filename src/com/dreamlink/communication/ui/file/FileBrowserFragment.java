@@ -16,11 +16,14 @@ import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
+import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
+import com.dreamlink.communication.ui.file.FileInfoAdapter.ViewHolder;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
 import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
@@ -141,6 +144,8 @@ public class FileBrowserFragment extends BaseFragment implements
 	private LinearLayout mMenuLayout;
 	private LinearLayout mSettingLayout;
 	
+	private RelativeLayout mContainLayout;
+	
 	private int mAppId = -1;
 	private SharedPreferences sp = null;
 	
@@ -212,7 +217,8 @@ public class FileBrowserFragment extends BaseFragment implements
 		Log.d(TAG, "onCreateView");
 		mContext = getActivity();
 		initTitleVIews(rootView);
-
+		
+		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_file_browser_main);
 		mFileListView = (ListView) rootView.findViewById(R.id.lv_file);
 		mFileListView.setOnItemClickListener(this);
 		mFileListView.setOnScrollListener(this);
@@ -343,7 +349,35 @@ public class FileBrowserFragment extends BaseFragment implements
 			
 			//send
 			FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
-			fileTransferUtil.sendFiles(checkedList);
+			fileTransferUtil.sendFiles(checkedList, new TransportCallback() {
+				
+				@Override
+				public void onTransportSuccess() {
+					int first = mFileListView.getFirstVisiblePosition();
+					int last = mFileListView.getLastVisiblePosition();
+					List<Integer> checkedItems = mFileInfoAdapter.getCheckedItemIds();
+					ArrayList<ImageView> icons = new ArrayList<ImageView>();
+					for(int id : checkedItems) {
+						if (id >= first && id <= last) {
+							View view = mFileListView.getChildAt(id - first);
+							if (view != null) {
+								ViewHolder viewHolder = (ViewHolder) view.getTag();
+								icons.add(viewHolder.iconView);
+							}
+						}
+					}
+					
+					if (icons.size() > 0) {
+						ImageView[] imageViews = new ImageView[0];
+						showTransportAnimation(icons.toArray(imageViews));
+					}
+				}
+				
+				@Override
+				public void onTransportFail() {
+					
+				}
+			});
 			
 			updateTransferAllUI(false);
 			
@@ -477,8 +511,13 @@ public class FileBrowserFragment extends BaseFragment implements
 		mFileListView.setAdapter(mFileInfoAdapter);
 	}
 	
+	private void showTransportAnimation(ImageView... startViews){
+		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
+		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
+	}
+	
 	@Override
-	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, final int position,
+	public boolean onItemLongClick(AdapterView<?> arg0, final View view, final int position,
 			long arg3) {
 		mCurrentPosition = position;
 		if (mFileInfoAdapter.isHome) {
@@ -537,7 +576,19 @@ public class FileBrowserFragment extends BaseFragment implements
 				case 1:
 					//send
 					FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
-					fileTransferUtil.sendFile(fileInfo.filePath);
+					fileTransferUtil.sendFile(fileInfo.filePath, new TransportCallback() {
+						
+						@Override
+						public void onTransportSuccess() {
+							ViewHolder viewHolder = (ViewHolder) view.getTag();
+							showTransportAnimation(viewHolder.iconView);
+						}
+						
+						@Override
+						public void onTransportFail() {
+							
+						}
+					});
 					break;
 				case 2:
 					//delete
