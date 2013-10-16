@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/file_paste" android:title="@string/menu_paste"
-        android:icon="@drawable/ic_menu_paste" android:showAsAction="always" />
-    <item android:id="@+id/menu_cancel" android:title="Cancel"
-        android:icon="@drawable/ic_menu_cancel" android:showAsAction="always"
+<menu xmlns:android="http://schemas.android.com/apk/res/android" 
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <item android:id="@+id/action_send" 
+        android:title="Send"
+        android:orderInCategory="1"
+        android:icon="@drawable/ic_action_send" 
+		app:showAsAction="always"        
+         />
+    <item android:id="@+id/action_delete" 
+        android:title="Cancel"
+        android:orderInCategory="2"
+        android:icon="@drawable/ic_action_delete" 
+		app:showAsAction="always" 
         />
 </menu>

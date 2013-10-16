@@ -23,7 +23,6 @@ import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.settings.SettingsActivity;
-import com.dreamlink.communication.util.Log;
 
 public class RecommendFragment extends BaseFragment implements OnClickListener, OnMenuItemClickListener {
 	private static final String TAG = "RecommendFragment";
@@ -57,7 +56,6 @@ public class RecommendFragment extends BaseFragment implements OnClickListener, 
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		View rootView = inflater.inflate(R.layout.ui_recommend, container, false);
 		getTitleVIews(rootView);
 		return rootView;
@@ -65,6 +63,7 @@ public class RecommendFragment extends BaseFragment implements OnClickListener, 
 	
 	public void getTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		titleLayout.setVisibility(View.GONE);
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_tuijian);
 		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
@@ -84,7 +83,6 @@ public class RecommendFragment extends BaseFragment implements OnClickListener, 
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.ll_refresh:
 			

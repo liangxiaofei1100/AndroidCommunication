@@ -49,6 +49,7 @@ import android.widget.TextView;
 
 /**
  * @unuse 先观察CursorAdapter的使用情况，再决定是否删除
+ * @deprecated {@link PictureFragment}}
  * */
 public class ImageFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnScrollListener, OnClickListener {
 	private static final String TAG = "ImageFragment";
@@ -99,7 +100,6 @@ public class ImageFragment extends BaseFragment implements OnItemClickListener, 
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
-				Log.i(TAG, "handleMessage");
 				int size = msg.arg1;
 				mTitleNum.setText(getResources().getString(R.string.num_format, size));
 				break;

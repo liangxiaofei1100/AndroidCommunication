@@ -6,9 +6,11 @@ import java.util.List;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.AsyncImageLoader;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
+import com.dreamlink.communication.util.Log;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +35,10 @@ public class FileInfoAdapter extends BaseAdapter {
 	
 	private boolean flag = true;
 	public boolean isHome = true;
+	
+	public static final int MODE_NORMAL = 0;
+    public static final int MODE_EDIT = 1;
+	public int mMode = MODE_NORMAL;
 	
 	private static final int[] TYPE_ICONS = { R.drawable.default_doc_icon,
 		R.drawable.default_ebook_icon, R.drawable.deafult_apk_icon, R.drawable.default_archive_icon};
@@ -119,6 +125,41 @@ public class FileInfoAdapter extends BaseAdapter {
 	
 	public void setFlag(boolean flag){
 		this.flag = flag;
+	}
+	
+	/**
+     * This method changes the display mode of adapter between MODE_NORMAL, MODE_EDIT
+     * 
+     * @param mode the mode which will be changed to be.
+     */
+	public void changeMode(int mode){
+		Log.d(TAG, "ChangeMode.mode=" + mode);
+		switch (mode) {
+		case MODE_NORMAL:
+			selectAll(false);
+			break;
+		}
+		mMode = mode;
+		notifyDataSetChanged();
+	}
+	
+	/**
+     * This method gets current display mode of the adapter.
+     * 
+     * @return current display mode of adapter
+     */
+	public int getMode(){
+		return mMode;
+	}
+	
+	/**
+     * This method checks that current mode equals to certain mode, or not.
+     * 
+     * @param mode the display mode of adapter
+     * @return true for equal, and false for not equal
+     */
+	public boolean isMode(int mode){
+		return mMode == mode;
 	}
 	
 	@Override
@@ -272,15 +313,29 @@ public class FileInfoAdapter extends BaseAdapter {
 		
 		if (fileInfo.isDir) {
 			holder.dateAndSizeView.setText(date);
-			holder.checkBox.setVisibility(View.INVISIBLE);
+			holder.checkBox.setVisibility(View.GONE);
 		}else {
 			holder.dateAndSizeView.setText(date + " | " + size);
 			holder.checkBox.setVisibility(View.VISIBLE);
 			holder.checkBox.setChecked(is);
 		}
 		
+		if (mMode == MODE_EDIT) {
+			updateListViewBackground(position, view);
+		}else {
+			view.setBackgroundResource(Color.TRANSPARENT);
+		}
+		
 		
 		return view;
+	}
+	
+	private void updateListViewBackground(int position, View view){
+		if (isChecked(position)) {
+			view.setBackgroundResource(R.color.bright_blue);
+		}else {
+			view.setBackgroundResource(Color.TRANSPARENT);
+		}
 	}
 
 }

@@ -28,8 +28,8 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 /**
  * @unuse 先观察CursorAdapter的使用情况，再决定是否删除
+ * @deprecated {@link PicturePagerActivity}}
  * */
-/**全屏查看图片*/
 public class ImagePagerActivity extends Activity {
 
 	private static final String STATE_POSITION = "STATE_POSITION";

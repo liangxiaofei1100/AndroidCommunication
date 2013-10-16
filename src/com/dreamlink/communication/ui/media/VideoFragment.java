@@ -66,7 +66,8 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
 	private LinearLayout mSettingLayout;
-
+	
+	private MainFragmentActivity mFragmentActivity;
 	
 	private int mAppId = -1;
 	
@@ -94,10 +95,11 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
-				Log.i(TAG, "handleMessage");
 				int size = msg.arg1;
+				count = size;
 				if (isAdded()) {
 					mTitleNum.setText(getString(R.string.num_format, size));
+					mFragmentActivity.setTitleNum(MainFragmentActivity.VIDEO, size);
 				}
 				break;
 			default:
@@ -123,6 +125,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		mFragmentActivity = (MainFragmentActivity)getActivity();
 	};
 	
 	@Override
@@ -159,6 +162,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	
 	private void initTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		titleLayout.setVisibility(View.GONE);
 		//title icon
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_video);

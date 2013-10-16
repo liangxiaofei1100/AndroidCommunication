@@ -74,7 +74,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	private QueryHandler mQueryHandler = null;
 	private PictureCursorAdapter mAdapter = null;
-	private PictureFolderAdapter mFolderAdapter = null;
 	private PictureAdapter mAdapter2 = null;
 
 	private int mAppId;
@@ -99,6 +98,8 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	private List<PictureFolderInfo> mFolderInfosList = new ArrayList<PictureFolderInfo>();
 	
 	private static final String CAMERA = "Camera";
+	
+	private MainFragmentActivity mFragmentActivity;
 
 	/**
 	 * Create a new instance of ImageFragment, providing "w" as an
@@ -119,10 +120,11 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
-				Log.i(TAG, "handleMessage");
 				int size = msg.arg1;
+				count = size;
 				if (isAdded()) {
 					mTitleNum.setText(getString(R.string.num_format, size));
+					mFragmentActivity.setTitleNum(MainFragmentActivity.IMAGE, size);
 				}
 				break;
 			default:
@@ -153,10 +155,12 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		mFragmentActivity = (MainFragmentActivity)getActivity();
 	}
 
 	private void initTitleVIews(View view) {
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		titleLayout.setVisibility(View.GONE);
 		//title icon
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_image);
@@ -523,13 +527,36 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		// TODO Auto-generated method stub
 	}
 	
+	
+	/**
+	 * 我真的不想写这个方法，由由于850,880图片滑动的时候会很卡，所以要求每次滑出图片fragment的时候</br>
+	 * 状态重新回到Folder界面</br>
+	 * 不想写的原因真的是逻辑不好定义啊
+	 * ei。。。
+	 * 
+	 */
+	public void scrollToHomeView() {
+		Log.d(TAG, "scrollToHomeView");
+		if (mStatus == STATUS_ITEM) {
+			mStatus = STATUS_FOLDER;
+			mAdapter.changeCursor(null);
+			mAdapter2.notifyDataSetChanged();
+			mItemGridView.setVisibility(View.INVISIBLE);
+			mFolderGridView.setVisibility(View.VISIBLE);
+		}
+	}
+	
 	public void onBackPressed(){
 		switch (mStatus) {
 		case STATUS_FOLDER:
-			getActivity().finish();
+			mFragmentActivity.finish();
 			break;
 		case STATUS_ITEM:
 			mStatus = STATUS_FOLDER;
+			//850,880的机器更新图片的时候，每次都会显示上一次的图片，所以讲Adpater清空
+			//只在phiee的机器上出现过，好烂的机器，我只想说
+			mAdapter.changeCursor(null);
+			
 			mAdapter2.notifyDataSetChanged();
 			updateUI(mFolderInfosList.size());
 			mTitleView.setText(R.string.image);

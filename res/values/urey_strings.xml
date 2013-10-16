@@ -156,4 +156,6 @@
      <string name="transfer_limit">超过同时发送文件个数上限(5)</string>
      <string name="check_one_please">至少选中一个文件</string>
      <string name="delete_history_msg">删除记录或者文件</string>
+     
+     <string name="select_msg">已选中%1$s</string>
 </resources>

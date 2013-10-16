@@ -1,36 +1,17 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
-    <item
-        android:id="@+id/menu_user_info"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/menu_user_info"/>
-    <!-- main ui start test -->
-    <item
-        android:id="@+id/menu_start_test"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="Start main ui"/>
-    <item
-        android:id="@+id/menu_test_apps"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="Test apps"/>
-    <item
-        android:id="@+id/menu_network_status"
-        android:icon="@android:drawable/ic_menu_info_details"
-        android:orderInCategory="100"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_network_status"/>
-    <item
-        android:id="@+id/menu_listener_status"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="Listener status"/>
-
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" 
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <item android:id="@+id/action_history" 
+        android:title="传输记录"
+        android:orderInCategory="1"
+        android:icon="@drawable/icon_transfer_history_normal" 
+		app:showAsAction="always"        
+         />
+    <item android:id="@+id/action_setting" 
+        android:title="设置"
+        android:orderInCategory="2"
+        android:icon="@drawable/icon_setting_normal" 
+		app:showAsAction="always" 
+        />
 </menu>

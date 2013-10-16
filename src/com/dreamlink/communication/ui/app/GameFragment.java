@@ -87,6 +87,8 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	private int mAppId = -1;
 	private Cursor mCursor;
 	
+	private MainFragmentActivity mFragmentActivity;
+	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
 	 * argument.
@@ -106,10 +108,11 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
-				Log.i(TAG, "handleMessage");
 				int size = msg.arg1;
+				count  = size;
 				if (isAdded()) {
 					mTitleNum.setText(getString(R.string.num_format, size));
+					mFragmentActivity.setTitleNum(MainFragmentActivity.GAME, size);
 				}
 				break;
 
@@ -122,6 +125,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		mFragmentActivity = (MainFragmentActivity)getActivity();
 	};
 	
 	@Override
@@ -156,13 +160,13 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		query();
 		super.onActivityCreated(savedInstanceState);
 	}
 	
 	private void initTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		titleLayout.setVisibility(View.GONE);
 		//title icon
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_game);

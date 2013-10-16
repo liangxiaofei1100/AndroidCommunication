@@ -40,12 +40,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.view.ActionMode;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -163,8 +160,10 @@ public class FileBrowserFragment extends BaseFragment implements
 	//confirm multi transfer button
 	private Button mTransferAllBtn;
 	
+	private MainFragmentActivity mFragmentActivity;
+	
 	/**
-	 * Create a new instance of AppFragment, providing "appid" as an
+	 * Create a new instance of FileBrowserFragment, providing "appid" as an
 	 * argument.
 	 */
 	public static FileBrowserFragment newInstance(int appid) {
@@ -183,10 +182,11 @@ public class FileBrowserFragment extends BaseFragment implements
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
-				Log.i(TAG, "handleMessage");
 				int size = msg.arg1;
+				count = size;
 				if (isAdded()) {
 					mTitleNum.setText(getString(R.string.num_format, size));
+					mFragmentActivity.setTitleNum(MainFragmentActivity.FILE_BROWSER, size);
 				}
 				break;
 			case MSG_UPDATE_CLASSIFY:
@@ -203,6 +203,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		mFragmentActivity = (MainFragmentActivity)getActivity();
 	};
 	
 	@Override
@@ -291,6 +292,7 @@ public class FileBrowserFragment extends BaseFragment implements
 
 	private void initTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		titleLayout.setVisibility(View.GONE);
 		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
 		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
 		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
@@ -440,7 +442,6 @@ public class FileBrowserFragment extends BaseFragment implements
 				addToNavigationList(mCurrentPath, top, fileInfo);
 				browserTo(new File(list.get(position).filePath));
 			} else {
-//				((ActionBarActivity)getActivity()).startSupportActionMode(new ActionModeCallBack());
 				// file set file checked
 				boolean checked = mFileInfoAdapter.isChecked(position);
 				if (checked) {
@@ -1203,49 +1204,6 @@ public class FileBrowserFragment extends BaseFragment implements
 		if (null != mFilesTask) {
 			mFilesTask.cancel(true);
 		}
-	}
-	
-	/**
-	 * ActionMode Callback
-	 */
-	private class ActionModeCallBack implements ActionMode.Callback{
-		private Button mTextSelect = null;
-		private PopupMenu mEditPopupMenu;
-		private PopupMenu mSelectPopupMenu;
-		private boolean mSelectAll = true;
-		
-		@Override
-		public boolean onActionItemClicked(ActionMode arg0, MenuItem arg1) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-		
-		@Override
-		public boolean onPrepareActionMode(ActionMode arg0, Menu arg1) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public boolean onCreateActionMode(ActionMode arg0, Menu arg1) {
-			// TODO Auto-generated method stub
-			System.out.println("testfragemnt");
-			LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-			View customView = layoutInflater.inflate(R.layout.actionbar_edit, null);
-			arg0.setCustomView(customView);
-			
-			MenuInflater menuInflater = arg0.getMenuInflater();
-			menuInflater.inflate(R.menu.file_menu, arg1);
-			return true;
-		}
-
-		@Override
-		public void onDestroyActionMode(ActionMode arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-		
 	}
 	
 }
