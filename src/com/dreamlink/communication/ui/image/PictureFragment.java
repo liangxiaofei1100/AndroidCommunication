@@ -22,6 +22,7 @@ import com.dreamlink.communication.ui.image.PictureCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
@@ -549,7 +550,10 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onBackPressed(){
 		switch (mStatus) {
 		case STATUS_FOLDER:
-			getActivity().finish();
+			Activity activity = getActivity();
+			if (activity != null) {
+				activity.finish();
+			}
 			break;
 		case STATUS_ITEM:
 			mStatus = STATUS_FOLDER;
