@@ -68,7 +68,7 @@ public class PictureCursorAdapter extends CursorAdapter {
 		return view;
 	}
 	
-	private class ViewHolder{
+	public class ViewHolder{
 		ImageView imageView;
 	}
 

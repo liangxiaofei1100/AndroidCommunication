@@ -8,14 +8,17 @@ import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainUIFrame;
+import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
+import com.dreamlink.communication.ui.image.PictureCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
@@ -67,6 +70,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	private LinearLayout mHistoryLayout;
 	private LinearLayout mMenuLayout;
 	private LinearLayout mSettingLayout;
+	private RelativeLayout mContainLayout;
 
 	private Context mContext;
 
@@ -181,6 +185,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
+		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_picture_main);
 		mItemGridView = (GridView) rootView.findViewById(R.id.gv_picture_item);
 		mFolderGridView = (GridView) rootView.findViewById(R.id.gv_picture_folder);
 		mItemGridView.setVisibility(View.INVISIBLE);
@@ -329,8 +334,13 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		mAdapter.notifyDataSetChanged();
 	}
 
+	private void showTransportAnimation(ImageView... startViews){
+		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
+		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
+	}
+	
 	@Override
-	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
 		final Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
 		final String url = cursor.getString(cursor.getColumnIndex(MediaColumns.DATA));
@@ -349,7 +359,21 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 					case 1:
 						//send
 						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(url);
+						fileSendUtil.sendFile(url, new TransportCallback() {
+							
+							@Override
+							public void onTransportSuccess() {
+								ViewHolder viewHolder = (ViewHolder) view.getTag();
+								showTransportAnimation(viewHolder.imageView);
+							}
+							
+							@Override
+							public void onTransportFail() {
+								
+							}
+						});
+						
+						
 						break;
 					case 2:
 						//delete
