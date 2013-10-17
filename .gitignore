@@ -22,5 +22,8 @@ local.properties
 #version.xml
 res/values/version.xml
 
+#.externalToolBuilders
+.externalToolBuilders/
+
 #yuri.txt
 yuri.txt

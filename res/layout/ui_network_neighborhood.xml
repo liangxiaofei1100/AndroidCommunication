@@ -232,7 +232,7 @@
             android:background="@drawable/button_bg"
             android:clickable="true"
             android:gravity="center_horizontal"
-            android:padding="0dp"
+            android:padding="2dp"
             android:orientation="vertical" >
 
             <ImageView
