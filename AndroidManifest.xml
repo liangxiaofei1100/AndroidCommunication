@@ -213,6 +213,10 @@
             android:name="com.dreamlink.communication.ui.settings.SettingsActivity"
             android:screenOrientation="portrait" >
         </activity>
+         <activity
+            android:name="com.dreamlink.communication.ui.network.InviteActivity"
+            android:screenOrientation="portrait" >
+        </activity>
         <activity
             android:name="com.dreamlink.communication.debug.TestListActivity"
             android:label="Test app list"
