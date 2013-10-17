@@ -512,11 +512,6 @@ public class FileBrowserFragment extends BaseFragment implements
 		mFileListView.setAdapter(mFileInfoAdapter);
 	}
 	
-	private void showTransportAnimation(ImageView... startViews){
-		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
-		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
-	}
-	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> arg0, final View view, final int position,
 			long arg3) {

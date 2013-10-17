@@ -228,11 +228,6 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		mFileInfoManager.openFile(url);
 	} 
 	
-	private void showTransportAnimation(ImageView... startViews){
-		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
-		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
-	}
-	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
 		final Cursor cursor = mAdapter.getCursor();

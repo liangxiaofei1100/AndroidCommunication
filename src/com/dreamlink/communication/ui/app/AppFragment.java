@@ -292,11 +292,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		return true;
 	}
 	
-	private void showTransportAnimation(ImageView... startViews){
-		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
-		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
-	}
-	
 	private void showMenuDialog(final AppInfo appInfo, final View view){
 		int resId = R.array.app_menu_normal;
 		if (DreamConstant.PACKAGE_NAME.equals(appInfo.getPackageName())) {

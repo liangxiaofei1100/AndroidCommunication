@@ -258,12 +258,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		}
 	}
 
-	private void showTransportAnimation(ImageView... startViews){
-		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
-		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
-	}
-	
-	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
 		mCursor.moveToPosition(position);

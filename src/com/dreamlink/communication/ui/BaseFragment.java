@@ -2,6 +2,7 @@ package com.dreamlink.communication.ui;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.widget.ImageView;
 
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.lib.util.Notice;
@@ -11,6 +12,7 @@ public class BaseFragment extends Fragment{
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
 	protected UserManager mUserManager = null;
 	protected Notice mNotice = null;
+	protected MainFragmentActivity mMainFragmentActivity;
 	
 	/**
 	 * current fragment file size
@@ -22,7 +24,20 @@ public class BaseFragment extends Fragment{
 		super.onCreate(savedInstanceState);
 		
 		mUserManager = UserManager.getInstance();
-		mNotice = new Notice(getActivity());
+		
+		mMainFragmentActivity = (MainFragmentActivity) getActivity();
+		mNotice = new Notice(mMainFragmentActivity);
+	}
+	
+	/**
+	 * Show transport animation.
+	 * 
+	 * @param startViews The transport item image view.
+	 */
+	public void showTransportAnimation(ImageView... startViews) {
+		if (mMainFragmentActivity != null) {
+			mMainFragmentActivity.showTransportAnimation(startViews);
+		}
 	}
 	
 	/**

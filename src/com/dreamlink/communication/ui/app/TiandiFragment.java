@@ -286,11 +286,6 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		startActivity(intent);
 	}
 	
-	private void showTransportAnimation(ImageView... startViews){
-		TransportAnimationView transportAnimationView = new TransportAnimationView(mContext);
-		transportAnimationView.startTransportAnimation(mContainLayout, mHistoryLayout, startViews);
-	}
-	
 	public void showMenuDialog(final AppInfo appInfo, final View view) {
 		new AlertDialog.Builder(mContext)
 				.setIcon(appInfo.getAppIcon())
