@@ -87,8 +87,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	private int mAppId = -1;
 	private Cursor mCursor;
 	
-	private MainFragmentActivity mFragmentActivity;
-	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
 	 * argument.
@@ -125,12 +123,10 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		mFragmentActivity = (MainFragmentActivity)getActivity();
 	};
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Log.d(TAG, "onCreateView");
 		View rootView = inflater.inflate(R.layout.ui_app, container, false);
 
 		mContext = getActivity();
@@ -154,7 +150,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
 		
-		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 	
@@ -410,7 +405,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			startActivity(intent);
 			break;
 		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			mFragmentActivity.setCurrentItem(item.getOrder());
 			break;
 		}
 		return true;

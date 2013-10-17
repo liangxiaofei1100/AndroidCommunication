@@ -53,7 +53,6 @@ public class MainFragmentActivity extends ActionBarActivity implements OnPageCha
 	private static final String TAG = "MainFragmentActivity";
 	private ViewPager viewPager;
 	private MainFragmentPagerAdapter mPagerAdapter;
-	public static MainFragmentActivity instance;
 	
 	private int mLastPosition = 0;
 	
@@ -109,8 +108,6 @@ public class MainFragmentActivity extends ActionBarActivity implements OnPageCha
 		setContentView(R.layout.ui_main_fragment);
 		
 		getSupportActionBar().hide();
-		
-		instance = this;
 		
 		initTitle();
 		

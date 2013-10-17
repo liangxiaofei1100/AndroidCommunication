@@ -3,6 +3,7 @@ package com.dreamlink.communication.ui.file;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +101,7 @@ public class FileBrowserFragment extends BaseFragment implements
 	private List<FileInfo> mArchiveList = new ArrayList<FileInfo>();
 	private List<List<FileInfo>> mCLassifyList = new ArrayList<List<FileInfo>>();
 	
-	private GetFilesTask mFilesTask = null;
+	private GetFilesTask mGetFileTask = null;
 	private String[] fileNameTypes = null;
 	
 	public static String[] file_types;
@@ -113,9 +114,6 @@ public class FileBrowserFragment extends BaseFragment implements
 	public static final int ARCHIVE = FileInfoManager.TYPE_ARCHIVE;
 	
 	private Timer mClassifyTimer;
-
-	// 用来保存ListView中每个Item的图片，以便释放
-	public static Map<String, Bitmap> bitmapCaches = new HashMap<String, Bitmap>();
 
 	private Context mContext;
 
@@ -160,8 +158,6 @@ public class FileBrowserFragment extends BaseFragment implements
 	//confirm multi transfer button
 	private Button mTransferAllBtn;
 	
-	private MainFragmentActivity mFragmentActivity;
-	
 	/**
 	 * Create a new instance of FileBrowserFragment, providing "appid" as an
 	 * argument.
@@ -203,14 +199,12 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		mFragmentActivity = (MainFragmentActivity)getActivity();
 	};
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.ui_file, container, false);
-		Log.d(TAG, "onCreateView");
 		mContext = getActivity();
 		initTitleVIews(rootView);
 
@@ -236,7 +230,6 @@ public class FileBrowserFragment extends BaseFragment implements
 		mTransferAllBtn = (Button) rootView.findViewById(R.id.btn_transfer_all);
 		mCancelBtn.setOnClickListener(this);
 		mTransferAllBtn.setOnClickListener(this);
-		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 	
@@ -282,11 +275,11 @@ public class FileBrowserFragment extends BaseFragment implements
 		
 		updateTransferAllUI(true);
 		
-		if (null != mFilesTask && mFilesTask.getStatus() == AsyncTask.Status.RUNNING) {
-			mFilesTask.cancel(true);
+		if (null != mGetFileTask && mGetFileTask.getStatus() == AsyncTask.Status.RUNNING) {
+			mGetFileTask.cancel(true);
 		}else {
-			mFilesTask = new GetFilesTask();
-			mFilesTask.execute(0);
+			mGetFileTask = new GetFilesTask();
+			mGetFileTask.execute(0);
 		}
 	}
 
@@ -369,7 +362,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			startActivity(intent);
 			break;
 		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			mFragmentActivity.setCurrentItem(item.getOrder());
 			break;
 		}
 		return true;
@@ -379,10 +372,17 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		if (mFileInfoAdapter.isHome) {
+			int type = mHomeList.get(position);
+			//when get files,the item cannot click,fix the update ui error bug
+			if (INTERNAL != type && SDCARD != type) {
+				if (null != mGetFileTask && mGetFileTask.getStatus() == AsyncTask.Status.RUNNING) {
+					return;
+				}
+			}
 			mNavBarLayout.setVisibility(View.VISIBLE);
 			mRefreshLayout.setVisibility(View.VISIBLE);
 			mStatus = STATUS_FILE;
-			switch (mHomeList.get(position)) {
+			switch (type) {
 			case INTERNAL:
 				stopUpdateClassifyUI();
 				setAdapter(INTERNAL, mAllLists);
@@ -467,6 +467,7 @@ public class FileBrowserFragment extends BaseFragment implements
 		case EBOOK:
 		case APK:
 		case ARCHIVE:
+			updateUI(list.size());
 			mRefreshLayout.setVisibility(View.GONE);
 			break;
 		default:
@@ -986,27 +987,6 @@ public class FileBrowserFragment extends BaseFragment implements
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
-		// 注释：firstVisibleItem为第一个可见的Item的position，从0开始，随着拖动会改变
-		// visibleItemCount为当前页面总共可见的Item的项数
-		// totalItemCount为当前总共已经出现的Item的项数
-//		recycleBitmapCaches(0, firstVisibleItem);
-//		recycleBitmapCaches(firstVisibleItem + visibleItemCount, totalItemCount);
-	}
-
-	// 释放图片
-	private void recycleBitmapCaches(int fromPosition, int toPosition) {
-		Bitmap delBitmap = null;
-		for (int del = fromPosition; del < toPosition; del++) {
-			delBitmap = bitmapCaches.get(mAllLists.get(del));
-			if (delBitmap != null) {
-				// 如果非空则表示有缓存的bitmap，需要清理
-				Log.d(TAG, "release position:" + del);
-				// 从缓存中移除该del->bitmap的映射
-				bitmapCaches.remove(mAllLists.get(del));
-				delBitmap.recycle();
-				delBitmap = null;
-			}
-		}
 	}
 	
 	public void updateUI(int num){
@@ -1042,12 +1022,13 @@ public class FileBrowserFragment extends BaseFragment implements
 		mNavBarLayout.setVisibility(View.GONE);
 		mRefreshLayout.setVisibility(View.GONE);
 		
-		if (null != mFilesTask && mFilesTask.getStatus() == AsyncTask.Status.RUNNING) {
+		if (null != mGetFileTask && mGetFileTask.getStatus() == AsyncTask.Status.RUNNING) {
 			startUpdateClassifyUI();
 		}
 		
 		mStatus = STATUS_HOME;
 		mTitleNum.setVisibility(View.GONE);
+		updateUI(5);
 		mFileInfoAdapter = new FileInfoAdapter(mContext, mHomeList, mCLassifyList);
 		mFileListView.setAdapter(mFileInfoAdapter);
 	}
@@ -1057,20 +1038,12 @@ public class FileBrowserFragment extends BaseFragment implements
 		long start;
 		long end;
 		ProgressDialog progressDialog = null;
-		private final String DEFAULT_SDCARD = Environment.getExternalStorageDirectory().getAbsolutePath();
 		@Override
 		protected String doInBackground(Integer... params) {
-			File file = new File(DEFAULT_SDCARD);
+			File file = new File(DreamConstant.DEFAULT_SDCARD);
 			if (!file.exists()) {
-				Log.e(TAG, DEFAULT_SDCARD + " is not exist");
+				Log.e(TAG, DreamConstant.DEFAULT_SDCARD + " is not exist");
 			}else {
-//				mAllLists.clear();
-//				mCLassifyList.clear();
-//				mDocList.clear();
-//				mEbookList.clear();
-//				mApkList.clear();
-//				mArchiveList.clear();
-				
 				mCLassifyList.add(mDocList);
 				mCLassifyList.add(mEbookList);
 				mCLassifyList.add(mApkList);
@@ -1138,11 +1111,36 @@ public class FileBrowserFragment extends BaseFragment implements
 						break;
 					}
 				}
-				mFilesTask.onProgressUpdate(0);
 			}
 		}
+		
+		Collections.sort(mDocList, DATE_COMPARATOR);
+		Collections.sort(mEbookList, DATE_COMPARATOR);
+		Collections.sort(mApkList, DATE_COMPARATOR);
+		Collections.sort(mArchiveList, DATE_COMPARATOR);
 	}
 	
+	/**
+	 * sort by modify date
+	 */
+	public static final Comparator<FileInfo> DATE_COMPARATOR = new Comparator<FileInfo>() {
+		@Override
+		public int compare(FileInfo object1, FileInfo object2) {
+			long date1 = object1.fileDate;
+			long date2 = object2.fileDate;
+			if (date1 > date2) {
+				return -1;
+			} else if (date1 == date2) {
+				return 0;
+			} else {
+				return 1;
+			}
+		}
+	};
+	
+	/**
+	 * start update classify file ui
+	 */
 	public void startUpdateClassifyUI(){
 		if (null == mClassifyTimer) {
 			mClassifyTimer = new Timer();
@@ -1151,6 +1149,9 @@ public class FileBrowserFragment extends BaseFragment implements
 		mClassifyTimer.schedule(new ClassifyUpdateTask(), 1000, 1000);
 	}
 	
+	/***
+	 * stop update Classify ui timer
+	 */
 	public void stopUpdateClassifyUI(){
 		if (null != mClassifyTimer) {
 			mClassifyTimer.cancel();
@@ -1158,7 +1159,10 @@ public class FileBrowserFragment extends BaseFragment implements
 		}
 	}
 	
-	/**当加载各种类型文件数量的时候，需要一个定时器，定时更新数量显示*/
+	///当加载各种类型文件数量的时候，需要一个定时器，定时更新数量显示
+	/**
+	 * update classify ui timertask
+	 */
 	class ClassifyUpdateTask extends TimerTask{
 		@Override
 		public void run() {
@@ -1201,8 +1205,8 @@ public class FileBrowserFragment extends BaseFragment implements
 	@Override
 	public void onStop() {
 		super.onStop();
-		if (null != mFilesTask) {
-			mFilesTask.cancel(true);
+		if (null != mGetFileTask) {
+			mGetFileTask.cancel(true);
 		}
 	}
 	

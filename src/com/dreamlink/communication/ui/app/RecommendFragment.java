@@ -36,7 +36,7 @@ public class RecommendFragment extends BaseFragment implements OnClickListener, 
 	private int mAppId = -1;
 	
 	/**
-	 * Create a new instance of AppFragment, providing "appid" as an
+	 * Create a new instance of RecommendFragment, providing "appid" as an
 	 * argument.
 	 */
 	public static RecommendFragment newInstance(int appid) {
@@ -123,7 +123,7 @@ public class RecommendFragment extends BaseFragment implements OnClickListener, 
 			startActivity(intent);
 			break;
 		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			mFragmentActivity.setCurrentItem(item.getOrder());
 			break;
 		}
 		return true;

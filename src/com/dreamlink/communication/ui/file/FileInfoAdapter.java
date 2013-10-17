@@ -254,7 +254,7 @@ public class FileInfoAdapter extends BaseAdapter {
 					holder.iconView.setImageDrawable(fileInfo.icon);
 				}
 			}else {
-				Bitmap bitmap = bitmapLoader.loadImage(fileInfo.filePath, fileInfo.type, FileBrowserFragment.bitmapCaches, 
+				Bitmap bitmap = bitmapLoader.loadImage(fileInfo.filePath, fileInfo.type, 
 						holder.iconView, 
 						new ILoadImageCallback() {
 							@Override

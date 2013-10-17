@@ -135,7 +135,6 @@ public class NetworkFragment extends BaseFragment implements
 		mFilter.addAction(DreamConstant.SERVER_CREATED_ACTION);
 		mContext.registerReceiver(mReceiver, mFilter);
 
-		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 
@@ -259,7 +258,7 @@ public class NetworkFragment extends BaseFragment implements
 			startActivity(intent);
 			break;
 		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			mFragmentActivity.setCurrentItem(item.getOrder());
 			break;
 		}
 		return true;

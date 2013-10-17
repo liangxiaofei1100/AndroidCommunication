@@ -98,8 +98,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	private List<PictureFolderInfo> mFolderInfosList = new ArrayList<PictureFolderInfo>();
 	
 	private static final String CAMERA = "Camera";
-	
-	private MainFragmentActivity mFragmentActivity;
 
 	/**
 	 * Create a new instance of ImageFragment, providing "w" as an
@@ -155,7 +153,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		mFragmentActivity = (MainFragmentActivity)getActivity();
 	}
 
 	private void initTitleVIews(View view) {
@@ -516,7 +513,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			startActivity(intent);
 			break;
 		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			mFragmentActivity.setCurrentItem(item.getOrder());
 			break;
 		}
 		return true;

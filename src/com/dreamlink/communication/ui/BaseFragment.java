@@ -11,6 +11,7 @@ public class BaseFragment extends Fragment{
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
 	protected UserManager mUserManager = null;
 	protected Notice mNotice = null;
+	protected MainFragmentActivity mFragmentActivity = null;
 	
 	/**
 	 * current fragment file size
@@ -23,6 +24,7 @@ public class BaseFragment extends Fragment{
 		
 		mUserManager = UserManager.getInstance();
 		mNotice = new Notice(getActivity());
+		mFragmentActivity = (MainFragmentActivity)getActivity();
 	}
 	
 	/**

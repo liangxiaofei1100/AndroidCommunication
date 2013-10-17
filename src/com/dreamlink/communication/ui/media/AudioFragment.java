@@ -66,8 +66,6 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	private LinearLayout mSettingLayout;
 	private LinearLayout mMenuLayout;
 	
-	private MainFragmentActivity mFragmentActivity;
-	
 	private static final String[] PROJECTION = {
 		MediaStore.Audio.Media._ID, MediaStore.Audio.Media.TITLE,
 		MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.ALBUM,
@@ -127,12 +125,10 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		mFragmentActivity = (MainFragmentActivity)getActivity();
 	};
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Log.d(TAG, "onCreate begin");
 		View rootView = inflater.inflate(R.layout.ui_media_audio, container, false);
 		mContext = getActivity();
 		
@@ -144,8 +140,6 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		mListView.setAdapter(mAdapter);
 		
 		initTitleVIews(rootView);
-		
-		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 	
@@ -361,7 +355,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 			startActivity(intent);
 			break;
 		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			mFragmentActivity.setCurrentItem(item.getOrder());
 			break;
 		}
 		return true;

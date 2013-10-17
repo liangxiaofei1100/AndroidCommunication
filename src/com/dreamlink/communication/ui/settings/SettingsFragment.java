@@ -150,7 +150,7 @@ public class SettingsFragment extends BaseFragment implements View.OnClickListen
 
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		mFragmentActivity.setCurrentItem(item.getOrder());
 		return true;
 	}
 

@@ -168,7 +168,7 @@ public class HelpFragment extends BaseFragment implements OnClickListener, OnMen
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+		mFragmentActivity.setCurrentItem(item.getOrder());
 		return true;
 	}
 

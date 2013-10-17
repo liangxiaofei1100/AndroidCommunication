@@ -67,8 +67,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	private LinearLayout mMenuLayout;
 	private LinearLayout mSettingLayout;
 	
-	private MainFragmentActivity mFragmentActivity;
-	
 	private int mAppId = -1;
 	
 	private static final String[] PROJECTION = new String[] {MediaStore.Video.Media._ID, 
@@ -125,7 +123,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		mFragmentActivity = (MainFragmentActivity)getActivity();
 	};
 	
 	@Override
@@ -350,7 +347,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 			startActivity(intent);
 			break;
 		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			mFragmentActivity.setCurrentItem(item.getOrder());
 			break;
 		}
 		return true;

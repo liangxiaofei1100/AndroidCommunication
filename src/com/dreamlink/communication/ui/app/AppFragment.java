@@ -86,8 +86,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	private int mAppId = -1;
 	private Cursor mCursor;
 	
-	private MainFragmentActivity mFragmentActivity;
-	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
 	 * argument.
@@ -124,13 +122,10 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		
-		mFragmentActivity = (MainFragmentActivity)getActivity();
 	};
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Log.d(TAG, "onCreateView");
 		View rootView = inflater.inflate(R.layout.ui_app, container, false);
 
 		mContext = getActivity();
@@ -158,7 +153,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
 		
-		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 	
@@ -434,7 +428,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			startActivity(intent);
 			break;
 		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			mFragmentActivity.setCurrentItem(item.getOrder());
 			break;
 		}
 		return true;

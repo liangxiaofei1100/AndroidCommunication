@@ -88,7 +88,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	private Cursor mCursor;
 	
 	/**
-	 * Create a new instance of AppFragment, providing "appid" as an
+	 * Create a new instance of TiandiFragment, providing "appid" as an
 	 * argument.
 	 */
 	public static TiandiFragment newInstance(int appid) {
@@ -182,7 +182,6 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		@Override
 		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
 			// super.onQueryComplete(token, cookie, cursor);
-			Log.d(TAG, "onQueryComplete");
 			mLoadingBar.setVisibility(View.INVISIBLE);
 			if (null != cursor && cursor.getCount() > 0) {
 				mCursor = cursor;
@@ -250,7 +249,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 			startActivity(intent);
 			break;
 		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
+			mFragmentActivity.setCurrentItem(item.getOrder());
 			break;
 		}
 		return true;
