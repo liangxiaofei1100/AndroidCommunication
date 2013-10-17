@@ -3,17 +3,12 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@drawable/main_bg"
+    android:id="@+id/rl_picture_main"
     >
-    
-    <include 
-        android:id="@+id/layout_title"
-        android:layout_alignParentTop="true"
-        layout="@layout/ui_title"
-        />
     
     <GridView 
     	android:id="@+id/gv_picture_item"
-   		android:layout_below="@+id/layout_title"
+   		android:layout_alignParentTop="true"
     	android:layout_width="fill_parent"
     	android:layout_height="fill_parent"
     	android:gravity="center"
@@ -27,7 +22,7 @@
     
     <GridView 
     	android:id="@+id/gv_picture_folder"
-   		android:layout_below="@+id/layout_title"
+   		android:layout_alignParentTop="true"
     	android:layout_width="fill_parent"
     	android:layout_height="fill_parent"
     	android:gravity="center"

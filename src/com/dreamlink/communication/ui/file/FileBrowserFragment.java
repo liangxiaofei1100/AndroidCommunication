@@ -4,9 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,38 +12,29 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.MainFragmentActivity;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
+import com.dreamlink.communication.ui.file.FileInfoAdapter.ViewHolder;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
-import com.dreamlink.communication.ui.help.HelpActivity;
-import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -59,11 +48,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class FileBrowserFragment extends BaseFragment implements
-		OnClickListener, OnItemClickListener,PopupViewClickListener, OnScrollListener, OnItemLongClickListener, OnMenuItemClickListener {
+public class FileBrowserFragment extends BaseFragment implements OnClickListener,
+		OnItemClickListener, PopupViewClickListener, OnScrollListener,
+		OnItemLongClickListener {
 	private static final String TAG = "FileBrowserFragment";
 
 	// 文件路径导航栏
@@ -127,15 +116,6 @@ public class FileBrowserFragment extends BaseFragment implements
 	// save current sdcard type path
 	private String mCurrent_root_path;
 
-	//title views
-	private ImageView mTitleIcon;
-	private TextView mTitleView;
-	private TextView mTitleNum;
-	private LinearLayout mRefreshLayout;
-	private LinearLayout mHistoryLayout;
-	private LinearLayout mMenuLayout;
-	private LinearLayout mSettingLayout;
-	
 	private int mAppId = -1;
 	private SharedPreferences sp = null;
 	
@@ -181,7 +161,6 @@ public class FileBrowserFragment extends BaseFragment implements
 				int size = msg.arg1;
 				count = size;
 				if (isAdded()) {
-					mTitleNum.setText(getString(R.string.num_format, size));
 					mFragmentActivity.setTitleNum(MainFragmentActivity.FILE_BROWSER, size);
 				}
 				break;
@@ -206,8 +185,7 @@ public class FileBrowserFragment extends BaseFragment implements
 			Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.ui_file, container, false);
 		mContext = getActivity();
-		initTitleVIews(rootView);
-
+		
 		mFileListView = (ListView) rootView.findViewById(R.id.lv_file);
 		mFileListView.setOnItemClickListener(this);
 		mFileListView.setOnScrollListener(this);
@@ -283,48 +261,11 @@ public class FileBrowserFragment extends BaseFragment implements
 		}
 	}
 
-	private void initTitleVIews(View view){
-		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
-		titleLayout.setVisibility(View.GONE);
-		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
-		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
-		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
-		mMenuLayout.setOnClickListener(this);
-		mRefreshLayout.setOnClickListener(this);
-		mHistoryLayout.setOnClickListener(this);
-		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
-		mSettingLayout.setOnClickListener(this);
-		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.icon_transfer_normal);
-		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText("批量传输");
-		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
-	}
-	
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.iv_home:
 			goToHome();
-			break;
-		case R.id.ll_refresh:
-			browserTo(mCurrentFile);
-			break;
-		case R.id.ll_history:
-			Intent intent = new Intent();
-			intent.setClass(mContext, HistoryActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.ll_menu_select:
-			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
-			popupMenu.setOnMenuItemClickListener(this);
-			MenuInflater inflater = popupMenu.getMenuInflater();
-			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
-			popupMenu.show();
-			break;
-		case R.id.ll_setting:
-			MainUIFrame.startSetting(mContext);
 			break;
 		case R.id.btn_cancel:
 			updateTransferAllUI(false);
@@ -338,7 +279,35 @@ public class FileBrowserFragment extends BaseFragment implements
 			
 			//send
 			FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
-			fileTransferUtil.sendFiles(checkedList);
+			fileTransferUtil.sendFiles(checkedList, new TransportCallback() {
+				
+				@Override
+				public void onTransportSuccess() {
+					int first = mFileListView.getFirstVisiblePosition();
+					int last = mFileListView.getLastVisiblePosition();
+					List<Integer> checkedItems = mFileInfoAdapter.getCheckedItemIds();
+					ArrayList<ImageView> icons = new ArrayList<ImageView>();
+					for(int id : checkedItems) {
+						if (id >= first && id <= last) {
+							View view = mFileListView.getChildAt(id - first);
+							if (view != null) {
+								ViewHolder viewHolder = (ViewHolder) view.getTag();
+								icons.add(viewHolder.iconView);
+							}
+						}
+					}
+					
+					if (icons.size() > 0) {
+						ImageView[] imageViews = new ImageView[0];
+						showTransportAnimation(icons.toArray(imageViews));
+					}
+				}
+				
+				@Override
+				public void onTransportFail() {
+					
+				}
+			});
 			
 			updateTransferAllUI(false);
 			
@@ -349,25 +318,6 @@ public class FileBrowserFragment extends BaseFragment implements
 		}
 	}
 	
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		Intent intent = null;
-		switch (item.getItemId()) {
-		case R.id.setting:
-			intent = new Intent(mContext, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.help:
-			intent = new Intent(mContext, HelpActivity.class);
-			startActivity(intent);
-			break;
-		default:
-			mFragmentActivity.setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
-	}
-
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
@@ -380,7 +330,6 @@ public class FileBrowserFragment extends BaseFragment implements
 				}
 			}
 			mNavBarLayout.setVisibility(View.VISIBLE);
-			mRefreshLayout.setVisibility(View.VISIBLE);
 			mStatus = STATUS_FILE;
 			switch (type) {
 			case INTERNAL:
@@ -462,25 +411,14 @@ public class FileBrowserFragment extends BaseFragment implements
 	}
 	
 	private void setAdapter(int type, List<FileInfo> list){
-		switch (type) {
-		case DOC:
-		case EBOOK:
-		case APK:
-		case ARCHIVE:
-			updateUI(list.size());
-			mRefreshLayout.setVisibility(View.GONE);
-			break;
-		default:
-			mRefreshLayout.setVisibility(View.VISIBLE);
-			break;
-		}
+		updateUI(list.size());
 		
 		mFileInfoAdapter = new FileInfoAdapter(mContext, list);
 		mFileListView.setAdapter(mFileInfoAdapter);
 	}
 	
 	@Override
-	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, final int position,
+	public boolean onItemLongClick(AdapterView<?> arg0, final View view, final int position,
 			long arg3) {
 		mCurrentPosition = position;
 		if (mFileInfoAdapter.isHome) {
@@ -539,7 +477,19 @@ public class FileBrowserFragment extends BaseFragment implements
 				case 1:
 					//send
 					FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
-					fileTransferUtil.sendFile(fileInfo.filePath);
+					fileTransferUtil.sendFile(fileInfo.filePath, new TransportCallback() {
+						
+						@Override
+						public void onTransportSuccess() {
+							ViewHolder viewHolder = (ViewHolder) view.getTag();
+							showTransportAnimation(viewHolder.iconView);
+						}
+						
+						@Override
+						public void onTransportFail() {
+							
+						}
+					});
 					break;
 				case 2:
 					//delete
@@ -958,7 +908,6 @@ public class FileBrowserFragment extends BaseFragment implements
 		storge_type = MountManager.SDCARD;
 		mCurrent_root_path = sdcard_path;
 		if (mCurrent_root_path == null) {
-			// TODO Why MountManager.SDCARD_PATH is null?
 			Log.e(TAG, "MountManager.SDCARD_PATH = null.");
 			return;
 		}
@@ -1020,14 +969,12 @@ public class FileBrowserFragment extends BaseFragment implements
 	public void goToHome(){
 		Log.i(TAG, "goToHome");
 		mNavBarLayout.setVisibility(View.GONE);
-		mRefreshLayout.setVisibility(View.GONE);
 		
 		if (null != mGetFileTask && mGetFileTask.getStatus() == AsyncTask.Status.RUNNING) {
 			startUpdateClassifyUI();
 		}
 		
 		mStatus = STATUS_HOME;
-		mTitleNum.setVisibility(View.GONE);
 		updateUI(5);
 		mFileInfoAdapter = new FileInfoAdapter(mContext, mHomeList, mCLassifyList);
 		mFileListView.setAdapter(mFileInfoAdapter);

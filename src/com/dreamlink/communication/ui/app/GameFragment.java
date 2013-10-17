@@ -1,9 +1,7 @@
 package com.dreamlink.communication.ui.app;
 
 import java.text.Collator;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
@@ -22,43 +20,31 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.db.AppData;
-import com.dreamlink.communication.ui.help.HelpActivity;
-import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
 /**
  * use this to load app
  */
-public class GameFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener,
-						OnClickListener, OnMenuItemClickListener {
+public class GameFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
 	private static final String TAG = "GameFragment";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
@@ -67,22 +53,11 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	private AppManager mAppManager = null;
 	private PackageManager pm = null;
 	
-	public static List<AppInfo> mAppLists = new ArrayList<AppInfo>();
-	
 	private Context mContext;
 	
 	private AppReceiver mAppReceiver;
 	private Notice mNotice = null;
 	private QueryHandler mQueryHandler;
-	
-	//title views
-	private ImageView mTitleIcon;
-	private TextView mTitleView;
-	private TextView mTitleNum;
-	private LinearLayout mRefreshLayout;
-	private LinearLayout mHistoryLayout;
-	private LinearLayout mMenuLayout;
-	private LinearLayout mSettingLayout;
 	
 	private int mAppId = -1;
 	private Cursor mCursor;
@@ -109,7 +84,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 				int size = msg.arg1;
 				count  = size;
 				if (isAdded()) {
-					mTitleNum.setText(getString(R.string.num_format, size));
 					mFragmentActivity.setTitleNum(MainFragmentActivity.GAME, size);
 				}
 				break;
@@ -136,8 +110,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		mGridView = (GridView) rootView.findViewById(R.id.app_normal_gridview);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
 		
-		initTitleVIews(rootView);
-		
 		//register broadcast
 		mAppReceiver = new AppReceiver();
 		IntentFilter filter = new IntentFilter(AppManager.ACTION_REFRESH_APP);
@@ -157,31 +129,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	public void onActivityCreated(Bundle savedInstanceState) {
 		query();
 		super.onActivityCreated(savedInstanceState);
-	}
-	
-	private void initTitleVIews(View view){
-		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
-		titleLayout.setVisibility(View.GONE);
-		//title icon
-		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.title_game);
-		// refresh button
-		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
-		mRefreshLayout.setVisibility(View.GONE);
-		// go to history button
-		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
-		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
-		mMenuLayout.setOnClickListener(this);
-		mRefreshLayout.setOnClickListener(this);
-		mHistoryLayout.setOnClickListener(this);
-		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
-		mSettingLayout.setOnClickListener(this);
-		// title name
-		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText(R.string.game);
-		// show current page's item num
-		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
 	}
 	
 	private static final String[] PROJECTION = {
@@ -261,7 +208,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			appInfo.loadLabel();
 			appInfo.loadVersion();
 			
-			showMenuDialog(appInfo);
+			showMenuDialog(appInfo, view);
 		} catch (NameNotFoundException e) {
 			Log.e(TAG, e.toString());
 			e.printStackTrace();
@@ -269,7 +216,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		return true;
 	}
 	
-	public void showMenuDialog(final AppInfo appInfo){
+	public void showMenuDialog(final AppInfo appInfo, final View view){
 		int resId = R.array.app_menu_game;
 		final String[] current_menus = getResources().getStringArray(resId);
 		new AlertDialog.Builder(mContext)
@@ -291,7 +238,20 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 				}else if (current_menus[1].equals(currentMenu)) {
 					//send
 					FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-					fileSendUtil.sendFile(appInfo.getInstallPath());
+					fileSendUtil.sendFile(appInfo.getInstallPath(), new TransportCallback() {
+						
+						@Override
+						public void onTransportSuccess() {
+							ViewHolder viewHolder = (ViewHolder) view.getTag();
+							showTransportAnimation(viewHolder.iconView);
+						}
+						
+						@Override
+						public void onTransportFail() {
+							
+						}
+					});
+					
 				}else if (current_menus[2].equals(currentMenu)) {
 					//uninstall
 					mAppManager.uninstallApp(appInfo.getPackageName());
@@ -362,55 +322,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		super.onDestroyView();
 	}
 
-	@Override
-	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		switch (v.getId()) {
-		case R.id.ll_refresh:
-			reQuery(mCursor);
-			break;
-			
-		case R.id.ll_history:
-			Intent intent = new Intent();
-			intent.setClass(mContext, HistoryActivity.class);
-			startActivity(intent);
-			break;
-			
-		case R.id.ll_menu_select:
-			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
-			popupMenu.setOnMenuItemClickListener(this);
-			MenuInflater inflater = popupMenu.getMenuInflater();
-			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
-			popupMenu.show();
-			break;
-		case R.id.ll_setting:
-			MainUIFrame.startSetting(mContext);
-			break;
-
-		default:
-			break;
-		}
-	}
-	
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		Intent intent = null;
-		switch (item.getItemId()) {
-		case R.id.setting:
-			intent = new Intent(mContext, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.help:
-			intent = new Intent(mContext, HelpActivity.class);
-			startActivity(intent);
-			break;
-		default:
-			mFragmentActivity.setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
-	}
-	
 	public void reQuery(Cursor cursor){
 		if (null == cursor) {
 			query();

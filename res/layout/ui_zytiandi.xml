@@ -3,18 +3,13 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@drawable/main_bg"
-     >
-
-    <include
-        android:id="@+id/layout_title"
-        android:layout_alignParentTop="true"
-        layout="@layout/ui_title" />
+    android:id="@+id/rl_tiandi_main" >
 
     <ImageView
         android:id="@+id/iv_logo"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/layout_title"
+        android:layout_alignParentTop="true"
         android:adjustViewBounds="true"
         android:src="@drawable/tiandi_logo" />
 

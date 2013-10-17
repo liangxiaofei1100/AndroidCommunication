@@ -14,7 +14,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
         android:background="@drawable/button_bg"
         android:text="@string/settings_logout" />
 
@@ -22,7 +25,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/btn_settings_logout"
-        android:layout_below="@+id/layout_title" >
+        android:layout_below="@+id/layout_title"
+        android:layout_margin="5dp" >
 
         <LinearLayout
             android:layout_width="match_parent"

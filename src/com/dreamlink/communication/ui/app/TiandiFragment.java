@@ -1,65 +1,43 @@
 package com.dreamlink.communication.ui.app;
 
-import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Message;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
-import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.MainFragmentActivity;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.db.AppData;
-import com.dreamlink.communication.ui.help.HelpActivity;
-import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
-public class TiandiFragment extends BaseFragment implements OnClickListener, OnItemClickListener, OnItemLongClickListener, OnMenuItemClickListener {
-	private static final String TAG = "TiandiFragment2";
+public class TiandiFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
+	private static final String TAG = "TiandiFragment";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
 	private Button mRechargeBtn;
@@ -74,15 +52,6 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	
 	private Notice mNotice = null;
 	private QueryHandler mQueryHandler;
-	
-	//title views
-	private ImageView mTitleIcon;
-	private TextView mTitleView;
-	private TextView mTitleNum;
-	private LinearLayout mRefreshLayout;
-	private LinearLayout mHistoryLayout;
-	private LinearLayout mMenuLayout;
-	private LinearLayout mSettingLayout;
 	
 	private int mAppId = -1;
 	private Cursor mCursor;
@@ -114,31 +83,8 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		mGridView = (GridView) rootView.findViewById(R.id.gv_game);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_progress);
 		mRechargeBtn = (Button) rootView.findViewById(R.id.btn_recharge);
-		mRechargeBtn.setOnClickListener(this);
-		
-		initTitleVIews(rootView);
 		
 		return rootView;
-	}
-	
-	private void initTitleVIews(View view){
-		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
-		titleLayout.setVisibility(View.GONE);
-		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.title_tiandi);
-		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
-		mRefreshLayout.setVisibility(View.GONE);
-		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
-		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
-		mMenuLayout.setOnClickListener(this);
-		mRefreshLayout.setOnClickListener(this);
-		mHistoryLayout.setOnClickListener(this);
-		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
-		mSettingLayout.setOnClickListener(this);
-		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText("朝颜天地");
-		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("");
 	}
 	
 	@Override
@@ -198,7 +144,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	/**
 	 * Perform alphabetical comparison of application entry objects.
 	 */
-	public static final Comparator<AppInfo> ALPHA_COMPARATOR = new Comparator<AppInfo>() {
+	public static final Comparator<AppInfo> LABEL_COMPARATOR = new Comparator<AppInfo>() {
 		private final Collator sCollator = Collator.getInstance();
 
 		@Override
@@ -206,54 +152,6 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 			return sCollator.compare(object1.getLabel(), object2.getLabel());
 		}
 	};
-
-	@Override
-	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		switch (v.getId()) {
-		case R.id.ll_refresh:
-			mNotice.showToast("refresh");
-			//get user app
-			break;
-		case R.id.ll_history:
-			Intent intent = new Intent();
-			intent.setClass(mContext, HistoryActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.ll_menu_select:
-			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
-			popupMenu.setOnMenuItemClickListener(this);
-			MenuInflater inflater = popupMenu.getMenuInflater();
-			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
-			popupMenu.show();
-			break;
-		case R.id.ll_setting:
-			MainUIFrame.startSetting(mContext);
-			break;
-
-		default:
-			break;
-		}
-	}
-	
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		Intent intent = null;
-		switch (item.getItemId()) {
-		case R.id.setting:
-			intent = new Intent(mContext, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.help:
-			intent = new Intent(mContext, HelpActivity.class);
-			startActivity(intent);
-			break;
-		default:
-			mFragmentActivity.setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
-	}
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int position,
@@ -270,7 +168,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 			appInfo.loadLabel();
 			appInfo.loadVersion();
 
-			showMenuDialog(appInfo);
+			showMenuDialog(appInfo, arg1);
 		} catch (NameNotFoundException e) {
 			Log.e(TAG, e.toString());
 			e.printStackTrace();
@@ -290,7 +188,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		startActivity(intent);
 	}
 	
-	public void showMenuDialog(final AppInfo appInfo) {
+	public void showMenuDialog(final AppInfo appInfo, final View view) {
 		new AlertDialog.Builder(mContext)
 				.setIcon(appInfo.getAppIcon())
 				.setTitle(appInfo.getLabel())
@@ -304,8 +202,21 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 									// send
 									FileTransferUtil fileSendUtil = new FileTransferUtil(
 											getActivity());
-									fileSendUtil.sendFile(appInfo
-											.getInstallPath());
+									fileSendUtil.sendFile(
+											appInfo.getInstallPath(),
+											new TransportCallback() {
+
+												@Override
+												public void onTransportSuccess() {
+													ViewHolder viewHolder = (ViewHolder) view.getTag();
+													showTransportAnimation(viewHolder.iconView);
+												}
+
+												@Override
+												public void onTransportFail() {
+
+												}
+											});
 									break;
 								case 1:
 									// app info
@@ -319,7 +230,4 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 						}).create().show();
 	}
 	
-	public void onDestroy() {
-		super.onDestroy();
-	};
 }

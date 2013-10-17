@@ -3,18 +3,14 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@drawable/main_bg"
+    android:id="@+id/rl_ui_app"
     >
-      <include 
-        android:id="@+id/layout_title"
-        android:layout_alignParentTop="true"
-        layout="@layout/ui_title"
-        />
       
-      <GridView
+    <GridView
         android:id="@+id/app_normal_gridview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/layout_title"
+        android:layout_alignParentTop="true"
         android:gravity="center"
         android:horizontalSpacing="4dip"
         android:numColumns="4"

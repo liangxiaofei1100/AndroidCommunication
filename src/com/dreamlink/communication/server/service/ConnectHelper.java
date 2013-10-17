@@ -22,6 +22,9 @@ public class ConnectHelper {
 	private final String[] SERVER_TYPE = { SERVER_TYPE_WIFI,
 			SERVER_TYPE_WIFI_AP, SERVER_TYPE_WIFI_DIRECT };
 
+	/** Intent action for server created broadcast. */
+	public static final String ACTION_SERVER_CREATED = "com.dreamlink.communication.server.created";
+
 	private Context mContext;
 
 	private WifiOrAPService mWifiOrAPService;
@@ -245,16 +248,6 @@ public class ConnectHelper {
 		connection = null;
 	}
 
-	/**
-	 * Release listener object.
-	 * 
-	 * @param listener
-	 */
-	public void releaseListener(OnSearchListener listener) {
-		// TODO to avoid null point exception, set a default listener.
-		// The best way is set the listener to null.
-		// TODO This does not work, need implement later.
-	}
 
 	/**
 	 * Service connection for {@link #WifiOrAPService}.

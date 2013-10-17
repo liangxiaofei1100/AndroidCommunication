@@ -55,7 +55,7 @@ public class AudioCursorAdapter extends CursorAdapter {
 		return view;
 	}
 	
-	private class ViewHolder {
+	public class ViewHolder {
 		ImageView iconView;
 		TextView titleView;
 		TextView timeView;

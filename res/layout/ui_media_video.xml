@@ -3,14 +3,9 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@drawable/main_bg"
+    android:id="@+id/rl_video_main"
      >
 
-      <include 
-        android:id="@+id/layout_title"
-        android:layout_alignParentTop="true"
-        layout="@layout/ui_title"
-        />
-      
     <GridView
         android:id="@+id/video_gridview"
         android:layout_width="fill_parent"
@@ -20,7 +15,7 @@
         android:numColumns="3"
         android:padding="4dip"
         android:stretchMode="columnWidth"
-        android:layout_below="@+id/layout_title"
+        android:layout_alignParentTop="true"
         android:verticalSpacing="4dip"
          />
     

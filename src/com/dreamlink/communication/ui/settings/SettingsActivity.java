@@ -16,7 +16,6 @@ import android.widget.TextView;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.LoginActivity;
 import com.dreamlink.communication.ui.UserInfoSetting;
-import com.dreamlink.communication.ui.help.AboutActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
 

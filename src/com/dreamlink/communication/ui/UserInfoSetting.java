@@ -2,9 +2,8 @@ package com.dreamlink.communication.ui;
 
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.data.UserHelper;
+import com.dreamlink.communication.UserHelper;
 import com.dreamlink.communication.lib.util.Notice;
-import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 import android.app.Activity;
@@ -20,69 +19,78 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
- * set user infos
- *include:user name,user icon and so on.
+ * Set user information. include:user name,user icon and so on.
  */
 public class UserInfoSetting extends Activity implements OnClickListener {
 	private static final String TAG = "UserInfoSetting";
-	
-	//name edit text
-	private EditText mUserName_Edit;
+
+	public static final String EXTRA_IS_FIRST_START = "is_first_start";
+
+	// name edit text
+	private EditText mUserNameEditText;
 	private Button mSaveButton;
-	private TextView mIpVersionView;
-	
-	private String mUserName;
-	
+	private TextView mIpAddressTextView;
+	private TextView mAndroidVersionTextView;
+
 	private UserHelper mUserHelper;
 	private User mUser;
-	
+
 	private Notice mNotice;
-	
+
 	private boolean mIsFirstStart = false;
-	
+
 	// Title
 	private ImageView mTitleIcon;
 	private TextView mTitleView;
 	private TextView mTitleNum;
 	private ImageView mRefreshView;
 	private ImageView mHistoryView;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_user_setting);
-		
+
 		initTitle();
-		
-		mUserName_Edit = (EditText) findViewById(R.id.name_editview);
-		mSaveButton = (Button) findViewById(R.id.save_button);
-		mIpVersionView = (TextView) findViewById(R.id.ip_version_view);
-		
-		mUserName = android.os.Build.MANUFACTURER;
-		
-		mSaveButton.setOnClickListener(this);
-		
+		initView();
 		mUserHelper = new UserHelper(this);
 		mUser = mUserHelper.loadUser();
+		mNotice = new Notice(this);
+		mIsFirstStart = getIntent()
+				.getBooleanExtra(EXTRA_IS_FIRST_START, false);
+
+		setUserInfo();
+	}
+
+	private void setUserInfo() {
+		String defaultName = android.os.Build.MANUFACTURER;
 		String name = mUser.getUserName();
 		if (!TextUtils.isEmpty(name)
 				&& !UserHelper.KEY_NAME_DEFAULT.equals(name)) {
-			mUserName_Edit.setText(name);
-		}else {
-			mUserName_Edit.setText(mUserName);
+			mUserNameEditText.setText(name);
+		} else {
+			mUserNameEditText.setText(defaultName);
 		}
-		
-		mNotice = new Notice(this);
 
-		mIpVersionView.setText(getString(R.string.userinfo_ip,
-				NetWorkUtil.getLocalIpAddress()) + "\n"
-				+ getString(R.string.userinfo_android_version,
-						mUser.getSystemInfo().mAndroidVersionCode));
-		
-		mIsFirstStart = getIntent().getBooleanExtra(Extra.IS_FIRST_START, false);
+		mIpAddressTextView.setText(getString(R.string.userinfo_ip,
+				NetWorkUtil.getLocalIpAddress()));
+
+		mAndroidVersionTextView.setText(getString(
+				R.string.userinfo_android_version,
+				mUser.getSystemInfo().mAndroidVersionCode));
 	}
-	
+
+	private void initView() {
+		mUserNameEditText = (EditText) findViewById(R.id.name_editview);
+
+		mSaveButton = (Button) findViewById(R.id.save_button);
+		mSaveButton.setOnClickListener(this);
+
+		mIpAddressTextView = (TextView) findViewById(R.id.ip_view);
+		mAndroidVersionTextView = (TextView) findViewById(R.id.android_version_view);
+	}
+
 	private void initTitle() {
 		// Title icon
 		mTitleIcon = (ImageView) findViewById(R.id.iv_title_icon);
@@ -109,26 +117,25 @@ public class UserInfoSetting extends Activity implements OnClickListener {
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.save_button:
-			String name = mUserName_Edit.getText().toString();
+			String name = mUserNameEditText.getText().toString();
 			if (TextUtils.isEmpty(name)) {
-				name = mUserName_Edit.getHint().toString();
-			} 
-			
+				name = mUserNameEditText.getHint().toString();
+			}
+
 			mUser.setUserName(name);
 			mUserHelper.saveUser(mUser);
-			mNotice.showToast("Name saved");
+			mNotice.showToast(R.string.userinfo_message_saved);
 			Intent intent = new Intent();
 			if (mIsFirstStart) {
 				intent.setClass(this, MainUIFrame.class);
 				startActivity(intent);
-			}else {
+			} else {
 				intent.putExtra("user", name);
-				setResult(RESULT_OK,intent);
+				setResult(RESULT_OK, intent);
 			}
-			UserInfoSetting.this.finish();
-			
-			break;
+			finish();
 
+			break;
 		default:
 			break;
 		}

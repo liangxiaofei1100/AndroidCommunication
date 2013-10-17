@@ -1,14 +1,13 @@
 package com.dreamlink.communication.ui;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.UserHelper;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.aidl.User;
-import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.notification.NotificationMgr;
 import com.dreamlink.communication.ui.db.MetaData;
-import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.history.HistoryManager;
 import com.dreamlink.communication.ui.service.FileTransferService;
 import com.dreamlink.communication.ui.settings.SettingsActivity;

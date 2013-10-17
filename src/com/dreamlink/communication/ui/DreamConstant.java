@@ -45,7 +45,6 @@ public class DreamConstant {
 		public static final String DEFAULT_SAVE_PATH = "DEFAULT_SAVE_PATH";
 		public static final String SDCARD_PATH = "sdcard_path";
 		public static final String INTERNAL_PATH = "internal_path";
-		public static final String WIFI_NAME_SUFFIX = "wifi_name_suffix";
 
 		public static final String APP_ID = "app_id";
 
@@ -76,7 +75,6 @@ public class DreamConstant {
 
 	public static final String MEDIA_AUDIO_ACTION = "intent.media.audio.action";
 	public static final String MEDIA_VIDEO_ACTION = "intent.media.video.action";
-	public static final String SERVER_CREATED_ACTION = "com.dreamlink.communication.server.created";
 	public static final String SEND_FILE_ACTION = "com.dreamlink.communication.sendfile";
 	public static final String RECEIVE_FILE_ACTION = "com.dreamlink.communication.receivefile";
 

@@ -5,12 +5,6 @@
     android:background="@drawable/main_bg"
     android:orientation="vertical" >
 
-    <!-- Title -->
-
-    <include 
-        android:id="@+id/title"
-        layout="@layout/ui_title" />
-
     <LinearLayout
         android:id="@+id/ll_network_neighborhood_bluetooth"
         android:layout_width="match_parent"
@@ -238,11 +232,12 @@
             android:background="@drawable/button_bg"
             android:clickable="true"
             android:gravity="center_horizontal"
+            android:padding="2dp"
             android:orientation="vertical" >
 
             <ImageView
-                android:layout_width="35dp"
-                android:layout_height="35dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:src="@drawable/network_neighborhood_disconnect" />
 
             <TextView

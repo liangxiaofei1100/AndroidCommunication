@@ -123,6 +123,20 @@ public class FileInfoAdapter extends BaseAdapter {
 		return pathList;
 	}
 	
+	public List<Integer> getCheckedItemIds() {
+		if (isHome) {
+			return null;
+		}
+		
+		List<Integer> list = new ArrayList<Integer>();
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				list.add(mIsSelected.keyAt(i));
+			}
+		}
+		return list;
+	}
+	
 	public void setFlag(boolean flag){
 		this.flag = flag;
 	}

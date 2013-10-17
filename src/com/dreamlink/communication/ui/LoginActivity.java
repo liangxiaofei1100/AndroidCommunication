@@ -1,8 +1,7 @@
 package com.dreamlink.communication.ui;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.data.UserHelper;
-import com.dreamlink.communication.ui.DreamConstant.Extra;
+import com.dreamlink.communication.UserHelper;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -45,14 +44,14 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 		}
 	}
 
-	public void launchInfo() {
+	private void launchInfo() {
 		Intent intent = new Intent();
-		intent.putExtra(Extra.IS_FIRST_START, true);
+		intent.putExtra(UserInfoSetting.EXTRA_IS_FIRST_START, true);
 		intent.setClass(this, UserInfoSetting.class);
 		startActivity(intent);
 	}
 
-	public void launchMain() {
+	private void launchMain() {
 		Intent intent = new Intent();
 		intent.setClass(this, MainUIFrame.class);
 		startActivity(intent);

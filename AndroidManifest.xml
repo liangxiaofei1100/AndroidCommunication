@@ -198,7 +198,7 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="com.dreamlink.communication.ui.help.AboutActivity"
+            android:name="com.dreamlink.communication.ui.settings.AboutActivity"
             android:screenOrientation="portrait" >
         </activity>
         <activity

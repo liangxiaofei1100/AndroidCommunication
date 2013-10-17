@@ -3,13 +3,13 @@ package com.dreamlink.communication.server.service;
 import java.util.List;
 
 import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.UserHelper;
 import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.data.UserHelper;
 import com.dreamlink.communication.search.SearchClient;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.search.SearchSever;
 import com.dreamlink.communication.search.WiFiNameEncryption;
-import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.search.WifiNameSuffixLoader;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
@@ -18,7 +18,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
@@ -173,12 +172,7 @@ public class WifiOrAPService extends Service {
 	}
 
 	private String getWifiNameSuffixFromSharedPreferences() {
-		SharedPreferences preferences = getSharedPreferences(
-				DreamConstant.Extra.SHARED_PERFERENCE_NAME,
-				Context.MODE_PRIVATE);
-		String wifiNameSuffix = preferences.getString(
-				DreamConstant.Extra.WIFI_NAME_SUFFIX, "");
-		return wifiNameSuffix;
+		return WifiNameSuffixLoader.getWifiNameSuffix(getApplicationContext());
 	}
 
 	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -470,7 +464,7 @@ public class WifiOrAPService extends Service {
 		SocketCommunicationManager.getInstance(getApplicationContext())
 				.startServer(getApplicationContext());
 		UserManager.getInstance().addLocalServerUser();
-		this.sendBroadcast(new Intent(DreamConstant.SERVER_CREATED_ACTION));
+		this.sendBroadcast(new Intent(ConnectHelper.ACTION_SERVER_CREATED));
 	}
 
 	public void stopSearch() {

@@ -7,16 +7,14 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.help.HelpActivity;
-import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
+import com.dreamlink.communication.ui.image.PictureCursorAdapter.ViewHolder;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -33,13 +31,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
@@ -47,26 +40,13 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-public class PictureFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener, OnScrollListener, OnMenuItemClickListener {
+public class PictureFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnScrollListener {
 	private static final String TAG = "PictureFragment";
 	protected GridView mItemGridView;
 	private GridView mFolderGridView;
 	private ProgressBar mLoadingBar;
-
-	// title views
-	private ImageView mTitleIcon;
-	private TextView mTitleView;
-	private TextView mTitleNum;
-	private LinearLayout mRefreshLayout;
-	private LinearLayout mHistoryLayout;
-	private LinearLayout mMenuLayout;
-	private LinearLayout mSettingLayout;
 
 	private Context mContext;
 
@@ -98,9 +78,8 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	private List<PictureFolderInfo> mFolderInfosList = new ArrayList<PictureFolderInfo>();
 	
 	private static final String CAMERA = "Camera";
-
 	/**
-	 * Create a new instance of ImageFragment, providing "w" as an
+	 * Create a new instance of PictureFragment, providing "w" as an
 	 * argument.
 	 */
 	public static PictureFragment newInstance(int appid) {
@@ -121,7 +100,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 				int size = msg.arg1;
 				count = size;
 				if (isAdded()) {
-					mTitleNum.setText(getString(R.string.num_format, size));
 					mFragmentActivity.setTitleNum(MainFragmentActivity.IMAGE, size);
 				}
 				break;
@@ -155,31 +133,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
 	}
 
-	private void initTitleVIews(View view) {
-		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
-		titleLayout.setVisibility(View.GONE);
-		//title icon
-		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.title_image);
-		// refresh button
-		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
-		mRefreshLayout.setVisibility(View.GONE);
-		// go to history button
-		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
-		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
-		mMenuLayout.setOnClickListener(this);
-		mRefreshLayout.setOnClickListener(this);
-		mHistoryLayout.setOnClickListener(this);
-		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
-		mSettingLayout.setOnClickListener(this);
-		// title name
-		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText(R.string.image);
-		// show current page's item num
-		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
-	}
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.ui_picture, container, false);
@@ -188,7 +141,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		mItemGridView.setVisibility(View.INVISIBLE);
 		mFolderGridView.setVisibility(View.VISIBLE);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_loading_image);
-		initTitleVIews(rootView);
 		return rootView;
 	}
 
@@ -332,7 +284,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	}
 
 	@Override
-	public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
 		final Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
 		final String url = cursor.getString(cursor.getColumnIndex(MediaColumns.DATA));
@@ -351,7 +303,21 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 					case 1:
 						//send
 						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(url);
+						fileSendUtil.sendFile(url, new TransportCallback() {
+							
+							@Override
+							public void onTransportSuccess() {
+								ViewHolder viewHolder = (ViewHolder) view.getTag();
+								showTransportAnimation(viewHolder.imageView);
+							}
+							
+							@Override
+							public void onTransportFail() {
+								
+							}
+						});
+						
+						
 						break;
 					case 2:
 						//delete
@@ -378,7 +344,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			mStatus = STATUS_ITEM;
 			String name = mFolderInfosList.get(position).getBucketDisplayName();
 			queryFolderItem(name);
-			mTitleView.setText("图片-" + name);
 			mItemGridView.setVisibility(View.VISIBLE);
 			mFolderGridView.setVisibility(View.INVISIBLE);
 			break;
@@ -473,53 +438,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	}
 
 	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.ll_refresh:
-			mAdapter.getCursor().requery();
-			break;
-			
-		case R.id.ll_history:
-			Intent intent = new Intent();
-			intent.setClass(mContext, HistoryActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.ll_menu_select:
-			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
-			popupMenu.setOnMenuItemClickListener(this);
-			MenuInflater inflater = popupMenu.getMenuInflater();
-			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
-			popupMenu.show();
-			break;
-		case R.id.ll_setting:
-			MainUIFrame.startSetting(mContext);
-			break;
-
-		default:
-			break;
-		}
-	}
-	
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		Intent intent = null;
-		switch (item.getItemId()) {
-		case R.id.setting:
-			intent = new Intent(mContext, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.help:
-			intent = new Intent(mContext, HelpActivity.class);
-			startActivity(intent);
-			break;
-		default:
-			mFragmentActivity.setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
-	}
-
-	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 		// TODO Auto-generated method stub
 	}
@@ -546,7 +464,9 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onBackPressed(){
 		switch (mStatus) {
 		case STATUS_FOLDER:
-			mFragmentActivity.finish();
+			if (mFragmentActivity != null) {
+				mFragmentActivity.finish();
+			}
 			break;
 		case STATUS_ITEM:
 			mStatus = STATUS_FOLDER;
@@ -556,7 +476,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			
 			mAdapter2.notifyDataSetChanged();
 			updateUI(mFolderInfosList.size());
-			mTitleView.setText(R.string.image);
 			mItemGridView.setVisibility(View.INVISIBLE);
 			mFolderGridView.setVisibility(View.VISIBLE);
 			break;
