@@ -140,6 +140,8 @@ public class NetworkFragment extends BaseFragment implements
 	}
 
 	private void initTitle(View view) {
+		View titleView = view.findViewById(R.id.title);
+		titleView.setVisibility(View.GONE);
 		// Title icon
 		mTitleIcon = (ImageView) view.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_network);

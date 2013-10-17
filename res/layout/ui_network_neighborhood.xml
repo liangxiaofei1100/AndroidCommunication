@@ -7,7 +7,9 @@
 
     <!-- Title -->
 
-    <include layout="@layout/ui_title" />
+    <include 
+        android:id="@+id/title"
+        layout="@layout/ui_title" />
 
     <LinearLayout
         android:id="@+id/ll_network_neighborhood_bluetooth"

@@ -119,6 +119,7 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	
 	private void initTitleVIews(View view){
 		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
+		titleLayout.setVisibility(View.GONE);
 		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
 		mTitleIcon.setImageResource(R.drawable.title_tiandi);
 		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);

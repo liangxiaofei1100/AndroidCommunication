@@ -10,14 +10,18 @@ import com.dreamlink.communication.ui.app.GameFragment;
 import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.app.TiandiFragment;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
+import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.help.HelpFragment;
+import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.image.PictureFragment;
 import com.dreamlink.communication.ui.media.AudioFragment;
 import com.dreamlink.communication.ui.media.VideoFragment;
 import com.dreamlink.communication.ui.network.NetworkFragment;
+import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.ui.settings.SettingsFragment;
 import com.dreamlink.communication.util.Log;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -25,109 +29,182 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.view.ActionMode;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-public class MainFragmentActivity extends FragmentActivity {
+//各个Fragment的位置必须固定
+public class MainFragmentActivity extends ActionBarActivity implements OnPageChangeListener, OnClickListener, OnMenuItemClickListener {
 	private static final String TAG = "MainFragmentActivity";
 	private ViewPager viewPager;
-	private MyFragmentPagerAdapter mAdapter;
-//	private MyPageAdapter myPageAdapter;
-	private FileBrowserFragment mBrowserFragment;
-	private PictureFragment mPictureFragment;
+	private MainFragmentPagerAdapter mPagerAdapter;
 	public static MainFragmentActivity instance;
+	
+	private int mLastPosition = 0;
+	
+	//define fragment position
+	public static final int ZY_TIANDI = 0;
+	public static final int NETWORK = 1;
+	public static final int RECOMMENT = 2;
+	public static final int IMAGE = 3;
+	public static final int AUDIO = 4;
+	public static final int VIDEO = 5;
+	public static final int APP = 6;
+	public static final int GAME = 7;
+	public static final int FILE_BROWSER = 8;
+	
+	private List<Fragment> mFragmentLists = new ArrayList<Fragment>();
+	private TiandiFragment mTiandiFragment;
+	private NetworkFragment mNetworkFragment;
+	private RecommendFragment mRecommendFragment;
+	private PictureFragment mPictureFragment;
+	private AudioFragment mAudioFragment;
+	private VideoFragment mVideoFragment;
+	private AppFragment mAppFragment;
+	private GameFragment mGameFragment;
+	private FileBrowserFragment mBrowserFragment;
+	
+	/**
+	 * must inline
+	 */
+	private static final int[] TITLE_ICON_IDs = {
+		R.drawable.title_tiandi, R.drawable.title_network,
+		R.drawable.title_tuijian, R.drawable.title_image,
+		R.drawable.title_audio, R.drawable.title_video,
+		R.drawable.title_app, R.drawable.title_game,
+		R.drawable.icon_transfer_normal
+	};
+	
+	private static final String[] TITLEs = {
+		"朝颜天地","网上邻居","精品推荐","图片","音频","视频","应用","游戏","批量传输"
+	};
+	
+	//title view
+	private View mCustomTitleView;
+	private View mSelectView;
+	private ImageView mTitleIconView;
+	private TextView mTitleNameView;
+	private TextView mTitleNumView;
+	private View mHistroyView;
+	private View mSettingView;
 	
 	@Override
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_main_fragment);
+		
+		getSupportActionBar().hide();
+		
 		instance = this;
+		
+		initTitle();
 		
 		int position = getIntent().getIntExtra("position", 0);
 		viewPager = (ViewPager) findViewById(R.id.vp_main_frame);
 		//考虑到内存消耗问题，缓存页面不应该设置这么大
 		viewPager.setOffscreenPageLimit(8);
 		
-		int appid = AppUtil.getAppID(this);
-		List<Fragment> fragments = new ArrayList<Fragment>();
-		
-		fragments.add(TiandiFragment.newInstance(appid));//朝颜天地
-		fragments.add(NetworkFragment.newInstance(appid));//网上邻居
-		fragments.add(RecommendFragment.newInstance(appid));//精品推荐
-//		fragments.add(PictureFragment.newInstance(appid));//图库
-		mPictureFragment = PictureFragment.newInstance(appid);
-		fragments.add(mPictureFragment);
-		fragments.add(AudioFragment.newInstance(appid));//音频
-		fragments.add(VideoFragment.newInstance(appid));//视频
-		fragments.add(AppFragment.newInstance(appid));//应用
-		fragments.add(GameFragment.newInstance(appid));//游戏
-		mBrowserFragment = FileBrowserFragment.newInstance(appid);
-		fragments.add(mBrowserFragment);//批量传输
-//		fragments.add(SettingsFragment.newInstance(appid));//设置
-//		fragments.add(HelpFragment.newInstance(appid));//帮助
-		mAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragments);
-		viewPager.setAdapter(mAdapter);
-		viewPager.setCurrentItem(position);
+		addFragments();
+		setCurrentItem(position);
 	}
 	
-	public class MyFragmentPagerAdapter extends FragmentPagerAdapter{
-		List<Fragment> fragments = new ArrayList<Fragment>();
-		public MyFragmentPagerAdapter(FragmentManager fm, List<Fragment> list) {
-			super(fm);
-			this.fragments = list;
-		}
-
-		@Override
-		public Fragment getItem(int position) {
-			return fragments.get(position);
-		}
+	private void addFragments(){
+		int appid = AppUtil.getAppID(this);
+		mTiandiFragment = TiandiFragment.newInstance(appid);
+		mNetworkFragment = NetworkFragment.newInstance(appid);
+		mRecommendFragment = RecommendFragment.newInstance(appid);
+		mPictureFragment = PictureFragment.newInstance(appid);
+		mAudioFragment = AudioFragment.newInstance(appid);
+		mVideoFragment = VideoFragment.newInstance(appid);
+		mAppFragment = AppFragment.newInstance(appid);
+		mGameFragment = GameFragment.newInstance(appid);
+		mBrowserFragment = FileBrowserFragment.newInstance(appid);
 		
-		public void addItem(Fragment fragment){
-			fragments.add(fragment);
-		}
-
-		@Override
-		public int getCount() {
-			return fragments.size();
-		}
+		mFragmentLists.add(mTiandiFragment);
+		mFragmentLists.add(mNetworkFragment);
+		mFragmentLists.add(mRecommendFragment);
+		mFragmentLists.add(mPictureFragment);
+		mFragmentLists.add(mAudioFragment);
+		mFragmentLists.add(mVideoFragment);
+		mFragmentLists.add(mAppFragment);
+		mFragmentLists.add(mGameFragment);
+		mFragmentLists.add(mBrowserFragment);//批量传输
+		mPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager(), mFragmentLists);
+		viewPager.setAdapter(mPagerAdapter);
+		viewPager.setOnPageChangeListener(this);
+	}
+	
+	private void initTitle(){
+		mCustomTitleView = findViewById(R.id.title);
+		//select view
+		mSelectView = mCustomTitleView.findViewById(R.id.ll_menu_select);
+		mSelectView.setOnClickListener(this);
 		
+		//title icon view
+		mTitleIconView = (ImageView) mCustomTitleView.findViewById(R.id.iv_title_icon);
+		
+		//title name view
+		mTitleNameView = (TextView) mCustomTitleView.findViewById(R.id.tv_title_name);
+		mTitleNumView = (TextView) mCustomTitleView.findViewById(R.id.tv_title_num);
+		
+		//history button
+		mHistroyView = mCustomTitleView.findViewById(R.id.ll_history);
+		mHistroyView.setOnClickListener(this);
+		
+		//setting button
+		mSettingView = mCustomTitleView.findViewById(R.id.ll_setting);
+		mSettingView.setOnClickListener(this);
 	}
 	
 	public void setCurrentItem(int position){
+		mLastPosition = position;
 		viewPager.setCurrentItem(position, false);
+		updateTilte(position);
 	}
 	
-	public class MyPageAdapter extends PagerAdapter {
-		private ArrayList<View> views = new ArrayList<View>();
-
-		public MyPageAdapter(ArrayList<View> views) {
-			this.views = views;
+	public void setTitleNum(int position,int num){
+		if (position == viewPager.getCurrentItem()) {
+			mTitleNumView.setText(getString(R.string.num_format, num));
 		}
-
-		@Override
-		public int getCount() {
-			return views.size();
+	}
+	
+	/**
+	 * update title icon & name accrod to the position
+	 * @param position
+	 */
+	private void updateTilte(int position){
+		mTitleIconView.setImageResource(TITLE_ICON_IDs[position]);
+		mTitleNameView.setText(TITLEs[position]);
+		BaseFragment baseFragment = (BaseFragment)mFragmentLists.get(position);
+		switch (position) {
+		case RECOMMENT:
+		case IMAGE:
+		case AUDIO:
+		case VIDEO:
+		case APP:
+		case GAME:
+		case FILE_BROWSER:
+			mTitleNumView.setText(getString(R.string.num_format, baseFragment.getCount()));
+			break;
+		default:
+			mTitleNumView.setText(null);
+			break;
 		}
-
-		@Override
-		public boolean isViewFromObject(View arg0, Object arg1) {
-			return arg0 == arg1;
-		}
-
-		@Override
-		public void destroyItem(View container, int position, Object object) {
-			((ViewPager) container).removeView(views.get(position));
-		}
-
-		@Override
-		public Object instantiateItem(View container, int position) {
-			Log.d(TAG, "position" + position);
-			((ViewPager) container).addView(views.get(position));
-			return views.get(position);
-		}
-
 	}
 	
 	@Override
@@ -136,11 +213,11 @@ public class MainFragmentActivity extends FragmentActivity {
 		case KeyEvent.KEYCODE_BACK:
 			int position = viewPager.getCurrentItem();
 			switch (position) {
-			case 3:
+			case IMAGE:
 				//Picture 
 				mPictureFragment.onBackPressed();
 				return false;
-			case 8:
+			case FILE_BROWSER:
 				//FileBrowser
 				mBrowserFragment.onBackPressed();
 				return false;
@@ -152,5 +229,55 @@ public class MainFragmentActivity extends FragmentActivity {
 			break;
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+
+	@Override
+	public void onPageScrollStateChanged(int arg0) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void onPageScrolled(int arg0, float arg1, int arg2) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void onPageSelected(int position) {
+		// TODO Auto-generated method stub
+		//when scroll out of PictureFragment,set PictureFragment status to Folder View
+		if (IMAGE == mLastPosition) {
+			mPictureFragment.scrollToHomeView();
+		}
+		mLastPosition = position;
+		updateTilte(position);
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.ll_menu_select:
+			PopupMenu popupMenu = new PopupMenu(this, mSelectView);
+			popupMenu.setOnMenuItemClickListener(this);
+			MenuInflater inflater = popupMenu.getMenuInflater();
+			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
+			popupMenu.show();
+			break;
+		case R.id.ll_history:
+			Intent intent = new Intent();
+			intent.setClass(this, HistoryActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.ll_setting:
+			MainUIFrame.startSetting(this);
+			break;
+		default:
+			break;
+		}
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		setCurrentItem(item.getOrder());
+		return true;
 	}
 }

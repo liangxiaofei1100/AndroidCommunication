@@ -69,7 +69,6 @@ public class HistoryActivity extends FragmentActivity implements
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
-				Log.i(TAG, "handleMessage");
 				int num = msg.arg1;
 				mTitleNum.setText(getResources().getString(R.string.num_format,
 						num));

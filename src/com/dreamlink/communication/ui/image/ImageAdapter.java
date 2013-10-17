@@ -18,6 +18,7 @@ import android.widget.ImageView;
 
 /**
  * @unuse 先观察CursorAdapter的使用情况，再决定是否删除
+ * @deprecated {@link PictureCursorAdapter}}
  * */
 public class ImageAdapter extends BaseAdapter{
 	private LayoutInflater inflater;
