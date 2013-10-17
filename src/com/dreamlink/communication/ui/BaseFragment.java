@@ -12,7 +12,7 @@ public class BaseFragment extends Fragment{
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
 	protected UserManager mUserManager = null;
 	protected Notice mNotice = null;
-	protected MainFragmentActivity mMainFragmentActivity;
+	protected MainFragmentActivity mFragmentActivity;
 	
 	/**
 	 * current fragment file size
@@ -25,8 +25,8 @@ public class BaseFragment extends Fragment{
 		
 		mUserManager = UserManager.getInstance();
 		
-		mMainFragmentActivity = (MainFragmentActivity) getActivity();
-		mNotice = new Notice(mMainFragmentActivity);
+		mFragmentActivity = (MainFragmentActivity) getActivity();
+		mNotice = new Notice(mFragmentActivity);
 	}
 	
 	/**
@@ -35,8 +35,8 @@ public class BaseFragment extends Fragment{
 	 * @param startViews The transport item image view.
 	 */
 	public void showTransportAnimation(ImageView... startViews) {
-		if (mMainFragmentActivity != null) {
-			mMainFragmentActivity.showTransportAnimation(startViews);
+		if (mFragmentActivity != null) {
+			mFragmentActivity.showTransportAnimation(startViews);
 		}
 	}
 	

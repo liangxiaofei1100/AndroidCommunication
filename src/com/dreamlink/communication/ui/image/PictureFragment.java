@@ -83,8 +83,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	private static final String CAMERA = "Camera";
 	
-	private MainFragmentActivity mFragmentActivity;
-
 	/**
 	 * Create a new instance of ImageFragment, providing "w" as an
 	 * argument.
@@ -138,7 +136,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		mFragmentActivity = (MainFragmentActivity)getActivity();
 	}
 
 	@Override
@@ -316,7 +313,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 							@Override
 							public void onTransportSuccess() {
 								ViewHolder viewHolder = (ViewHolder) view.getTag();
-								mFragmentActivity.showTransportAnimation(viewHolder.imageView);
+								showTransportAnimation(viewHolder.imageView);
 							}
 							
 							@Override
