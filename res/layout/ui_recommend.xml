@@ -5,9 +5,5 @@
     android:orientation="vertical" 
     android:background="@drawable/main_bg"
     >
-     <include 
-        android:id="@+id/layout_title"
-        layout="@layout/ui_title"
-        />
 
 </LinearLayout>

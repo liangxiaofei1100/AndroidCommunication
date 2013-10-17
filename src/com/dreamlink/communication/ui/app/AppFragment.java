@@ -1,9 +1,7 @@
 package com.dreamlink.communication.ui.app;
 
 import java.text.Collator;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
@@ -21,45 +19,30 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.db.AppData;
-import com.dreamlink.communication.ui.help.HelpActivity;
-import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
 /**
  * use this to load app
  */
-public class AppFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, 
-								OnClickListener, OnMenuItemClickListener {
+public class AppFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
 	private static final String TAG = "AppFragment";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
@@ -68,29 +51,14 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	private AppManager mAppManager = null;
 	private PackageManager pm = null;
 	
-	public static List<AppInfo> mAppLists = new ArrayList<AppInfo>();
-	
 	private Context mContext;
 	
 	private AppReceiver mAppReceiver;
 	private Notice mNotice = null;
 	private QueryHandler mQueryHandler;
 	
-	//title views
-	private ImageView mTitleIcon;
-	private TextView mTitleView;
-	private TextView mTitleNum;
-	private LinearLayout mRefreshLayout;
-	private LinearLayout mHistoryLayout;
-	private LinearLayout mMenuLayout;
-	private LinearLayout mSettingLayout;
-	
-	private RelativeLayout mContainLayout;
-	
 	private int mAppId = -1;
 	private Cursor mCursor;
-	
-	private MainFragmentActivity mFragmentActivity;
 	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
@@ -114,7 +82,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 				int size = msg.arg1;
 				count = size;
 				if (isAdded()) {
-					mTitleNum.setText(getString(R.string.num_format, size));
 					mFragmentActivity.setTitleNum(MainFragmentActivity.APP, size);
 				}
 				break;
@@ -128,9 +95,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		
-		mFragmentActivity = (MainFragmentActivity)getActivity();
-	};
+	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -141,11 +106,8 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		
 		mNotice = new Notice(mContext);
 		
-		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_ui_app);
 		mGridView = (GridView) rootView.findViewById(R.id.app_normal_gridview);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
-		
-		initTitleVIews(rootView);
 		
 		//register broadcast
 		mAppReceiver = new AppReceiver();
@@ -171,32 +133,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	public void onActivityCreated(Bundle savedInstanceState) {
 		query();
 		super.onActivityCreated(savedInstanceState);
-	}
-	
-	private void initTitleVIews(View view){
-		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
-		titleLayout.setVisibility(View.GONE);
-		//title icon
-		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.title_app);
-		// refresh button
-		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
-		mRefreshLayout.setVisibility(View.GONE);
-		// go to history button
-		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
-		//item switch
-		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
-		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
-		mMenuLayout.setOnClickListener(this);
-		mRefreshLayout.setOnClickListener(this);
-		mHistoryLayout.setOnClickListener(this);
-		mSettingLayout.setOnClickListener(this);
-		// title name
-		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText(R.string.app);
-		// show current page's item num
-		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
 	}
 	
 	private static final String[] PROJECTION = {
@@ -406,55 +342,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		super.onDestroyView();
 	}
 
-	@Override
-	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		switch (v.getId()) {
-		case R.id.ll_refresh:
-			
-			break;
-			
-		case R.id.ll_history:
-			Intent intent = new Intent();
-			intent.setClass(mContext, HistoryActivity.class);
-			startActivity(intent);
-			break;
-			
-		case R.id.ll_menu_select:
-			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
-			popupMenu.setOnMenuItemClickListener(this);
-			MenuInflater inflater = popupMenu.getMenuInflater();
-			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
-			popupMenu.show();
-			break;
-		case R.id.ll_setting:
-			MainUIFrame.startSetting(mContext);
-			break;
-
-		default:
-			break;
-		}
-	}
-	
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		Intent intent = null;
-		switch (item.getItemId()) {
-		case R.id.setting:
-			intent = new Intent(mContext, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.help:
-			intent = new Intent(mContext, HelpActivity.class);
-			startActivity(intent);
-			break;
-		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
-	}
-	
 	public void reQuery(Cursor cursor){
 		if (null == cursor) {
 			query();

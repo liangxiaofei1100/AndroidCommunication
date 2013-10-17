@@ -15,18 +15,11 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dreamlink.communication.AllowLoginDialog;
@@ -45,30 +38,17 @@ import com.dreamlink.communication.server.service.ConnectHelper;
 import com.dreamlink.communication.server.service.ServerInfo;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.file.RemoteShareActivity;
-import com.dreamlink.communication.ui.help.HelpActivity;
-import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
 public class NetworkFragment extends BaseFragment implements
 		View.OnClickListener, OnSearchListener, ILoginRequestCallBack,
-		ILoginRespondCallback, OnUserChangedListener, OnMenuItemClickListener {
+		ILoginRespondCallback, OnUserChangedListener {
 	@SuppressWarnings("unused")
 	private static final String TAG = "NetworkFragment";
 	private Context mContext;
-	// Title
-	private ImageView mTitleIcon;
-	private TextView mTitleView;
-	private TextView mTitleNum;
-	private LinearLayout mRefreshLayout;
-	private LinearLayout mHistoryLayout;
-	private LinearLayout mMenuLayout;
-	private LinearLayout mSettingLayout;
 
 	private View mBluetoothInviteView;
 	private View mCreateNetworkView;
@@ -120,7 +100,6 @@ public class NetworkFragment extends BaseFragment implements
 		View rootView = inflater.inflate(R.layout.ui_network_neighborhood,
 				container, false);
 
-		initTitle(rootView);
 		initView(rootView);
 
 		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
@@ -137,31 +116,6 @@ public class NetworkFragment extends BaseFragment implements
 
 		Log.d(TAG, "onCreate end");
 		return rootView;
-	}
-
-	private void initTitle(View view) {
-		View titleView = view.findViewById(R.id.title);
-		titleView.setVisibility(View.GONE);
-		// Title icon
-		mTitleIcon = (ImageView) view.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.title_network);
-		// Title text
-		mTitleView = (TextView) view.findViewById(R.id.tv_title_name);
-		mTitleView.setText(R.string.network_neighborhood);
-		// Title number
-		mTitleNum = (TextView) view.findViewById(R.id.tv_title_num);
-		mTitleNum.setVisibility(View.GONE);
-		// Refresh icon
-		mRefreshLayout = (LinearLayout) view.findViewById(R.id.ll_refresh);
-		mRefreshLayout.setVisibility(View.GONE);
-		// History icon
-		mHistoryLayout = (LinearLayout) view.findViewById(R.id.ll_history);
-		mMenuLayout = (LinearLayout) view.findViewById(R.id.ll_menu_select);
-		mMenuLayout.setOnClickListener(this);
-		mRefreshLayout.setOnClickListener(this);
-		mHistoryLayout.setOnClickListener(this);
-		mSettingLayout = (LinearLayout) view.findViewById(R.id.ll_setting);
-		mSettingLayout.setOnClickListener(this);
 	}
 
 	private void initView(View view) {
@@ -226,43 +180,10 @@ public class NetworkFragment extends BaseFragment implements
 			disconnect();
 			updateNetworkStatus();
 			break;
-		case R.id.ll_history:
-			intent.setClass(mContext, HistoryActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.ll_menu_select:
-			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
-			popupMenu.setOnMenuItemClickListener(this);
-			MenuInflater inflater = popupMenu.getMenuInflater();
-			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
-			popupMenu.show();
-			break;
-		case R.id.ll_setting:
-			MainUIFrame.startSetting(mContext);
-			break;
 		default:
 			break;
 		}
 
-	}
-
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		Intent intent = null;
-		switch (item.getItemId()) {
-		case R.id.setting:
-			intent = new Intent(mContext, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.help:
-			intent = new Intent(mContext, HelpActivity.class);
-			startActivity(intent);
-			break;
-		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
 	}
 
 	private void disconnect() {

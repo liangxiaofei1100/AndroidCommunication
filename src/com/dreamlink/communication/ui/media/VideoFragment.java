@@ -5,7 +5,6 @@ import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -13,29 +12,18 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.MainUIFrame;
-import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainFragmentActivity;
@@ -44,13 +32,10 @@ import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.help.HelpActivity;
-import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.media.VideoCursorAdapter.ViewHolder;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
-public class VideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnClickListener, OnMenuItemClickListener {
+public class VideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
 	private static final String TAG = "VideoFragment";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
@@ -60,18 +45,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	
 	private FileInfoManager mFileInfoManager;
 	private Context mContext;
-	
-	//title views
-	private ImageView mTitleIcon;
-	private TextView mTitleView;
-	private TextView mTitleNum;
-	private LinearLayout mRefreshLayout;
-	private LinearLayout mHistoryLayout;
-	private LinearLayout mMenuLayout;
-	private LinearLayout mSettingLayout;
-	private RelativeLayout mContainLayout;
-	
-	private MainFragmentActivity mFragmentActivity;
 	
 	private int mAppId = -1;
 	
@@ -83,7 +56,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	class VideoContent extends ContentObserver{
 		public VideoContent(Handler handler) {
 			super(handler);
-			// TODO Auto-generated constructor stub
 		}
 		
 		@Override
@@ -102,7 +74,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 				int size = msg.arg1;
 				count = size;
 				if (isAdded()) {
-					mTitleNum.setText(getString(R.string.num_format, size));
 					mFragmentActivity.setTitleNum(MainFragmentActivity.VIDEO, size);
 				}
 				break;
@@ -129,14 +100,12 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		mFragmentActivity = (MainFragmentActivity)getActivity();
 	};
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mContext = getActivity();
 		View rootView = inflater.inflate(R.layout.ui_media_video, container, false);
-		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_video_main);
 		mGridView = (GridView) rootView.findViewById(R.id.video_gridview);
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
@@ -144,7 +113,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		mAdapter = new VideoCursorAdapter(mContext);
 		mGridView.setAdapter(mAdapter);
 		
-		initTitleVIews(rootView);
 		return rootView;
 	}
 	
@@ -163,31 +131,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	public void query() {
 		mQueryHandler.startQuery(0, null, DreamConstant.VIDEO_URI,
 				PROJECTION, null, null, MediaStore.Video.Media.DEFAULT_SORT_ORDER);
-	}
-	
-	private void initTitleVIews(View view){
-		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
-		titleLayout.setVisibility(View.GONE);
-		//title icon
-		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.title_video);
-		//refresh button
-		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
-		mRefreshLayout.setVisibility(View.GONE);
-		//go to history button
-		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
-		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
-		mMenuLayout.setOnClickListener(this);
-		mRefreshLayout.setOnClickListener(this);
-		mHistoryLayout.setOnClickListener(this);
-		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
-		mSettingLayout.setOnClickListener(this);
-		//title name
-		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText(R.string.video);
-		//show current page's item num
-		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText(getResources().getString(R.string.num_format, 0));
 	}
 	
 	// query db
@@ -326,53 +269,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		message.sendToTarget();
 	}
 
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.ll_refresh:
-			mAdapter.getCursor().requery();
-			break;
-			
-		case R.id.ll_history:
-			Intent intent = new Intent();
-			intent.setClass(mContext, HistoryActivity.class);
-			startActivity(intent);
-			break;
-			
-		case R.id.ll_menu_select:
-			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
-			popupMenu.setOnMenuItemClickListener(this);
-			MenuInflater inflater = popupMenu.getMenuInflater();
-			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
-			popupMenu.show();
-			break;
-		case R.id.ll_setting:
-			MainUIFrame.startSetting(mContext);
-			break;
-
-		default:
-			break;
-		}
-	}
-	
-	public boolean onMenuItemClick(MenuItem item) {
-		Intent intent = null;
-		switch (item.getItemId()) {
-		case R.id.setting:
-			intent = new Intent(mContext, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.help:
-			intent = new Intent(mContext, HelpActivity.class);
-			startActivity(intent);
-			break;
-		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
-	}
-	
 	@Override
 	public void onDestroyView() {
 		if (mAdapter != null) {

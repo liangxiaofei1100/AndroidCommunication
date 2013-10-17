@@ -5,18 +5,13 @@
     android:background="@drawable/main_bg"
     android:id="@+id/rl_file_browser_main">
     
-    <include 
-        android:id="@+id/layout_title"
-        android:layout_alignParentTop="true"
-        layout="@layout/ui_title" />
-
     <!-- 路径导航布局 -->
     <LinearLayout
         android:id="@+id/navigation_bar"
         android:layout_width="fill_parent"
         android:layout_height="49dp"
         android:orientation="vertical"
-        android:layout_below="@id/layout_title" >
+        android:layout_alignParentTop="true" >
 
         <View
             android:layout_width="fill_parent"

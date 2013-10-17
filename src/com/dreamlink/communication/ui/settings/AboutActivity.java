@@ -1,4 +1,4 @@
-package com.dreamlink.communication.ui.help;
+package com.dreamlink.communication.ui.settings;
 
 import android.app.Activity;
 import android.content.Context;

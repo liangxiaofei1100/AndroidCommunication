@@ -14,9 +14,7 @@ import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.help.HelpActivity;
 import com.dreamlink.communication.ui.image.PictureCursorAdapter.ViewHolder;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -33,9 +31,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -46,7 +42,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 
-public class PictureFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnScrollListener, OnMenuItemClickListener {
+public class PictureFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnScrollListener {
 	private static final String TAG = "PictureFragment";
 	protected GridView mItemGridView;
 	private GridView mFolderGridView;
@@ -440,25 +436,6 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		message.arg1 = num;
 		message.what = MSG_UPDATE_UI;
 		message.sendToTarget();
-	}
-
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		Intent intent = null;
-		switch (item.getItemId()) {
-		case R.id.setting:
-			intent = new Intent(mContext, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.help:
-			intent = new Intent(mContext, HelpActivity.class);
-			startActivity(intent);
-			break;
-		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
 	}
 
 	@Override

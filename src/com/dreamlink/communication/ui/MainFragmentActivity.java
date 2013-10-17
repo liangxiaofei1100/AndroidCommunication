@@ -10,44 +10,28 @@ import com.dreamlink.communication.ui.app.GameFragment;
 import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.app.TiandiFragment;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
-import com.dreamlink.communication.ui.help.HelpActivity;
-import com.dreamlink.communication.ui.help.HelpFragment;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.image.PictureFragment;
 import com.dreamlink.communication.ui.media.AudioFragment;
 import com.dreamlink.communication.ui.media.VideoFragment;
 import com.dreamlink.communication.ui.network.NetworkFragment;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
-import com.dreamlink.communication.ui.settings.SettingsFragment;
-import com.dreamlink.communication.util.Log;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.view.ActionMode;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 //各个Fragment的位置必须固定
 public class MainFragmentActivity extends ActionBarActivity implements
@@ -55,7 +39,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private static final String TAG = "MainFragmentActivity";
 	private ViewPager viewPager;
 	private MainFragmentPagerAdapter mPagerAdapter;
-	public static MainFragmentActivity instance;
 
 	private int mLastPosition = 0;
 
@@ -110,8 +93,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		setContentView(R.layout.ui_main_fragment);
 
 		getSupportActionBar().hide();
-
-		instance = this;
 
 		mContainLayout = (RelativeLayout) findViewById(R.id.rl_main_fragment);
 		initTitle();

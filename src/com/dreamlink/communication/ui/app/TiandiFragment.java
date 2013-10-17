@@ -16,42 +16,27 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
-import com.dreamlink.communication.ui.MainFragmentActivity;
-import com.dreamlink.communication.ui.MainUIFrame;
-import com.dreamlink.communication.ui.TransportAnimationView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.db.AppData;
-import com.dreamlink.communication.ui.help.HelpActivity;
-import com.dreamlink.communication.ui.history.HistoryActivity;
-import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
 
-public class TiandiFragment extends BaseFragment implements OnClickListener, OnItemClickListener, OnItemLongClickListener, OnMenuItemClickListener {
+public class TiandiFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
 	private static final String TAG = "TiandiFragment2";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
@@ -67,17 +52,6 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 	
 	private Notice mNotice = null;
 	private QueryHandler mQueryHandler;
-	
-	//title views
-	private ImageView mTitleIcon;
-	private TextView mTitleView;
-	private TextView mTitleNum;
-	private LinearLayout mRefreshLayout;
-	private LinearLayout mHistoryLayout;
-	private LinearLayout mMenuLayout;
-	private LinearLayout mSettingLayout;
-	
-	private RelativeLayout mContainLayout;
 	
 	private int mAppId = -1;
 	private Cursor mCursor;
@@ -106,35 +80,11 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 		View rootView = inflater.inflate(R.layout.ui_zytiandi, container, false);
 		mContext = getActivity();
 		
-		mContainLayout = (RelativeLayout) rootView.findViewById(R.id.rl_tiandi_main);
 		mGridView = (GridView) rootView.findViewById(R.id.gv_game);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_progress);
 		mRechargeBtn = (Button) rootView.findViewById(R.id.btn_recharge);
-		mRechargeBtn.setOnClickListener(this);
-		
-		initTitleVIews(rootView);
 		
 		return rootView;
-	}
-	
-	private void initTitleVIews(View view){
-		RelativeLayout titleLayout = (RelativeLayout) view.findViewById(R.id.layout_title);
-		titleLayout.setVisibility(View.GONE);
-		mTitleIcon = (ImageView) titleLayout.findViewById(R.id.iv_title_icon);
-		mTitleIcon.setImageResource(R.drawable.title_tiandi);
-		mRefreshLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_refresh);
-		mRefreshLayout.setVisibility(View.GONE);
-		mHistoryLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_history);
-		mMenuLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_menu_select);
-		mMenuLayout.setOnClickListener(this);
-		mRefreshLayout.setOnClickListener(this);
-		mHistoryLayout.setOnClickListener(this);
-		mSettingLayout = (LinearLayout) titleLayout.findViewById(R.id.ll_setting);
-		mSettingLayout.setOnClickListener(this);
-		mTitleView = (TextView) titleLayout.findViewById(R.id.tv_title_name);
-		mTitleView.setText("朝颜天地");
-		mTitleNum = (TextView) titleLayout.findViewById(R.id.tv_title_num);
-		mTitleNum.setText("");
 	}
 	
 	@Override
@@ -203,53 +153,6 @@ public class TiandiFragment extends BaseFragment implements OnClickListener, OnI
 			return sCollator.compare(object1.getLabel(), object2.getLabel());
 		}
 	};
-
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.ll_refresh:
-			mNotice.showToast("refresh");
-			//get user app
-			break;
-		case R.id.ll_history:
-			Intent intent = new Intent();
-			intent.setClass(mContext, HistoryActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.ll_menu_select:
-			PopupMenu popupMenu = new PopupMenu(mContext, mMenuLayout);
-			popupMenu.setOnMenuItemClickListener(this);
-			MenuInflater inflater = popupMenu.getMenuInflater();
-			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
-			popupMenu.show();
-			break;
-		case R.id.ll_setting:
-			MainUIFrame.startSetting(mContext);
-			break;
-
-		default:
-			break;
-		}
-	}
-	
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		Intent intent = null;
-		switch (item.getItemId()) {
-		case R.id.setting:
-			intent = new Intent(mContext, SettingsActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.help:
-			intent = new Intent(mContext, HelpActivity.class);
-			startActivity(intent);
-			break;
-		default:
-			MainFragmentActivity.instance.setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
-	}
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int position,
