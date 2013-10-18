@@ -185,6 +185,10 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name="com.dreamlink.communication.ui.network.HttpShareActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.ui.network.CreateNetworkActivity"
             android:screenOrientation="portrait"
             android:theme="@style/MyDialogStyle" >

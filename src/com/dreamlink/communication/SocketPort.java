@@ -10,4 +10,6 @@ public class SocketPort {
 
 	public static final int[] FILE_TRANSPORT_PROT = { 55560, 55561, 55562,
 			55563, 55564, 55565, 55566, 55567, 55568, 55569 };
+	
+	public static final int HTTP_SHARE_SERVER_PORT = 60001;
 }
