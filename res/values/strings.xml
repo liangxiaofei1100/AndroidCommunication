@@ -77,7 +77,7 @@
     <string name="settings_user_info_tips">重新设置用户信息</string>
     <string name="about_app_name_version">%1$s: %2$s</string>
     
-    <string name="http_share_title">WiFi邀请</string>
+    <string name="http_share_title">零流量邀请</string>
     <string name="http_share_first_step">第一步:</string>
     <string name="http_share_second_step">第二步:</string>
     <string name="http_share_first_step_tip">请好友打开手机WiFi，连接无线网络到：\n%s</string>
