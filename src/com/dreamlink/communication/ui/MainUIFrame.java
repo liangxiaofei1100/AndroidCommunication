@@ -167,7 +167,7 @@ public class MainUIFrame extends Activity implements OnClickListener,
 			break;
 		case R.id.iv_filetransfer:
 			intent.setClass(this, MainFragmentActivity.class);
-			intent.putExtra("position", 8);
+			intent.putExtra("position", 6);
 			startActivity(intent);
 			break;
 		case R.id.iv_setting:
