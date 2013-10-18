@@ -1063,7 +1063,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		
 		Collections.sort(mDocList, DATE_COMPARATOR);
 		Collections.sort(mEbookList, DATE_COMPARATOR);
-		Collections.sort(mApkList, DATE_COMPARATOR);
+		Collections.sort(mApkList);
 		Collections.sort(mArchiveList, DATE_COMPARATOR);
 	}
 	

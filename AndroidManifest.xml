@@ -217,8 +217,16 @@
             android:name="com.dreamlink.communication.ui.settings.SettingsActivity"
             android:screenOrientation="portrait" >
         </activity>
-         <activity
+        <activity
             android:name="com.dreamlink.communication.ui.network.InviteActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.ui.network.NetworkActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.dreamlink.communication.ui.app.RecommendActivity"
             android:screenOrientation="portrait" >
         </activity>
         <activity

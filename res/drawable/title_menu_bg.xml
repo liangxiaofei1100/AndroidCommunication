@@ -10,20 +10,20 @@
 			<stroke android:dashGap="3dp" android:dashWidth="5dp"
 				android:width="2dp" android:color="#dcdcdc" />-->
 			<!-- 圆角 -->
-			<corners android:radius="2dp" />
+			<corners android:radius="0dp" />
 
-			<padding android:bottom="10dp" android:left="10dp"
-				android:right="10dp" android:top="10dp" />
+			<padding android:bottom="8dp" android:left="8dp"
+				android:right="8dp" android:top="8dp" />
 		</shape>
 	</item>
 	<item android:state_focused="true">
 		<shape>
 			<gradient android:endColor="#888a8a8a" android:startColor="#888a8a8a"
 				android:type="linear" />
-			<stroke android:width="2dp" android:color="#dcdcdc" />
-			<corners android:radius="2dp" />
-			<padding android:bottom="10dp" android:left="10dp"
-				android:right="10dp" android:top="10dp" />
+<!-- 			<stroke android:width="2dp" android:color="#dcdcdc" /> -->
+<!-- 			<corners android:radius="2dp" /> -->
+			<padding android:bottom="8dp" android:left="8dp"
+				android:right="8dp" android:top="8dp" />
 		</shape>
 	</item>
 	<item>
@@ -31,8 +31,8 @@
 			<!-- 渐变 -->
 			<gradient android:endColor="@android:color/transparent" android:startColor="@android:color/transparent"
 				android:type="linear" />
-			<padding android:bottom="10dp" android:left="10dp"
-				android:right="10dp" android:top="10dp" />
+			<padding android:bottom="8dp" android:left="8dp"
+				android:right="8dp" android:top="8dp" />
 		</shape>
 	</item>
 

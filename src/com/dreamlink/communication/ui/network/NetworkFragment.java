@@ -15,6 +15,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +44,7 @@ import com.dreamlink.communication.ui.file.RemoteShareActivity;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
 
-public class NetworkFragment extends BaseFragment implements
+public class NetworkFragment extends Fragment implements
 		View.OnClickListener, OnSearchListener, ILoginRequestCallBack,
 		ILoginRespondCallback, OnUserChangedListener {
 	@SuppressWarnings("unused")

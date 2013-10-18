@@ -7,6 +7,7 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.ui.app.AppFragment;
 import com.dreamlink.communication.ui.app.GameFragment;
+import com.dreamlink.communication.ui.app.RecommendActivity;
 import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.app.TiandiFragment;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
@@ -14,7 +15,9 @@ import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.image.PictureFragment;
 import com.dreamlink.communication.ui.media.AudioFragment;
 import com.dreamlink.communication.ui.media.VideoFragment;
+import com.dreamlink.communication.ui.network.NetworkActivity;
 import com.dreamlink.communication.ui.network.NetworkFragment;
+import com.dreamlink.communication.ui.settings.SettingsActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,6 +32,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -43,19 +47,15 @@ public class MainFragmentActivity extends ActionBarActivity implements
 
 	// define fragment position
 	public static final int ZY_TIANDI = 0;
-	public static final int NETWORK = 1;
-	public static final int RECOMMENT = 2;
-	public static final int IMAGE = 3;
-	public static final int AUDIO = 4;
-	public static final int VIDEO = 5;
-	public static final int APP = 6;
-	public static final int GAME = 7;
-	public static final int FILE_BROWSER = 8;
+	public static final int IMAGE = 1;
+	public static final int AUDIO = 2;
+	public static final int VIDEO = 3;
+	public static final int APP = 4;
+	public static final int GAME = 5;
+	public static final int FILE_BROWSER = 6;
 
 	private List<Fragment> mFragmentLists = new ArrayList<Fragment>();
 	private TiandiFragment mTiandiFragment;
-	private NetworkFragment mNetworkFragment;
-	private RecommendFragment mRecommendFragment;
 	private PictureFragment mPictureFragment;
 	private AudioFragment mAudioFragment;
 	private VideoFragment mVideoFragment;
@@ -67,12 +67,11 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	 * must inline
 	 */
 	private static final int[] TITLE_ICON_IDs = { R.drawable.title_tiandi,
-			R.drawable.title_network, R.drawable.title_tuijian,
 			R.drawable.title_image, R.drawable.title_audio,
 			R.drawable.title_video, R.drawable.title_app,
 			R.drawable.title_game, R.drawable.icon_transfer_normal };
 
-	private static final String[] TITLEs = { "朝颜天地", "网上邻居", "精品推荐", "图片",
+	private static final String[] TITLEs = { "朝颜天地", "图片",
 			"音频", "视频", "应用", "游戏", "批量传输" };
 
 	// title view
@@ -83,8 +82,16 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private TextView mTitleNumView;
 	private View mHistroyView;
 	private View mSettingView;
+	private View mNetworkView;
+	private View mRecommendView;
 
 	private RelativeLayout mContainLayout;
+	
+	//menubar view
+	private View mMenuBarTopView;
+	private View mDoneView;
+	private Button mSelectBtn;
+	private View mMenuBarBottomView;
 
 	@Override
 	protected void onCreate(Bundle arg0) {
@@ -94,12 +101,13 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		getSupportActionBar().hide();
 
 		mContainLayout = (RelativeLayout) findViewById(R.id.rl_main_fragment);
+		initMenuBar();
 		initTitle();
 
 		int position = getIntent().getIntExtra("position", 0);
 		viewPager = (ViewPager) findViewById(R.id.vp_main_frame);
 		// 考虑到内存消耗问题，缓存页面不应该设置这么大
-		viewPager.setOffscreenPageLimit(8);
+		viewPager.setOffscreenPageLimit(6);
 
 		addFragments();
 		setCurrentItem(position);
@@ -108,8 +116,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private void addFragments() {
 		int appid = AppUtil.getAppID(this);
 		mTiandiFragment = TiandiFragment.newInstance(appid);
-		mNetworkFragment = NetworkFragment.newInstance(appid);
-		mRecommendFragment = RecommendFragment.newInstance(appid);
 		mPictureFragment = PictureFragment.newInstance(appid);
 		mAudioFragment = AudioFragment.newInstance(appid);
 		mVideoFragment = VideoFragment.newInstance(appid);
@@ -118,8 +124,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		mBrowserFragment = FileBrowserFragment.newInstance(appid);
 
 		mFragmentLists.add(mTiandiFragment);
-		mFragmentLists.add(mNetworkFragment);
-		mFragmentLists.add(mRecommendFragment);
 		mFragmentLists.add(mPictureFragment);
 		mFragmentLists.add(mAudioFragment);
 		mFragmentLists.add(mVideoFragment);
@@ -131,9 +135,22 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		viewPager.setAdapter(mPagerAdapter);
 		viewPager.setOnPageChangeListener(this);
 	}
+	
+	private void initMenuBar(){
+		mMenuBarTopView = findViewById(R.id.menubar_top);
+		mMenuBarBottomView = findViewById(R.id.menubar_bottom);
+		mMenuBarTopView.setVisibility(View.GONE);
+		mMenuBarBottomView.setVisibility(View.GONE);
+		
+		mDoneView = findViewById(R.id.ll_menubar_done);
+		mSelectBtn = (Button) findViewById(R.id.btn_select);
+		mDoneView.setOnClickListener(this);
+		mSelectBtn.setOnClickListener(this);
+	}
 
 	private void initTitle() {
-		mCustomTitleView = findViewById(R.id.title);
+		mCustomTitleView = findViewById(R.id.rl_title);
+		mCustomTitleView.setVisibility(View.VISIBLE);
 		// select view
 		mSelectView = mCustomTitleView.findViewById(R.id.ll_menu_select);
 		mSelectView.setOnClickListener(this);
@@ -155,6 +172,16 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		// setting button
 		mSettingView = mCustomTitleView.findViewById(R.id.ll_setting);
 		mSettingView.setOnClickListener(this);
+		
+		//recommmend button
+		mRecommendView = mCustomTitleView.findViewById(R.id.ll_recommend);
+		mRecommendView.setVisibility(View.VISIBLE);
+		mRecommendView.setOnClickListener(this);
+		
+		//network button
+		mNetworkView = mCustomTitleView.findViewById(R.id.ll_network);
+		mNetworkView.setVisibility(View.VISIBLE);
+		mNetworkView.setOnClickListener(this);
 	}
 
 	public void setCurrentItem(int position) {
@@ -191,7 +218,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		mTitleNameView.setText(TITLEs[position]);
 		BaseFragment baseFragment = (BaseFragment) mFragmentLists.get(position);
 		switch (position) {
-		case RECOMMENT:
 		case IMAGE:
 		case AUDIO:
 		case VIDEO:
@@ -264,12 +290,16 @@ public class MainFragmentActivity extends ActionBarActivity implements
 			popupMenu.show();
 			break;
 		case R.id.ll_history:
-			Intent intent = new Intent();
-			intent.setClass(this, HistoryActivity.class);
-			startActivity(intent);
+			MainUIFrame.startActivity(this, HistoryActivity.class);
 			break;
 		case R.id.ll_setting:
-			MainUIFrame.startSetting(this);
+			MainUIFrame.startActivity(this, SettingsActivity.class);
+			break;
+		case R.id.ll_network:
+			MainUIFrame.startActivity(this, NetworkActivity.class);
+			break;
+		case R.id.ll_recommend:
+			MainUIFrame.startActivity(this, RecommendActivity.class);
 			break;
 		default:
 			break;

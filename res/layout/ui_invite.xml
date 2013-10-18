@@ -16,17 +16,17 @@
             android:layout_margin="10dp"
             android:orientation="vertical" >
             
-            <ImageView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ic_android" />
+<!--             <ImageView -->
+<!--                 android:layout_width="fill_parent" -->
+<!--                 android:layout_height="wrap_content" -->
+<!--                 android:background="@drawable/ic_android" /> -->
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:orientation="vertical" >
-                <!-- bluetooth invite start -->
+				<!-- bluetooth invite start  -->
                 <LinearLayout
                     android:id="@+id/ll_invite_bluetooth"
                     android:layout_width="match_parent"
@@ -41,6 +41,31 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/invite_bluetooth"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_tip"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+				<!-- bluetooth invite end  -->
+				<!-- weixin invite start -->
+                <LinearLayout
+                    android:id="@+id/ll_invite_weixin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg_middle"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_weixin"
                         android:textSize="14sp" />
 
                     <TextView
@@ -77,9 +102,9 @@
                         android:textSize="12sp" />
                 </LinearLayout>
                 <!-- zero gprs invite end -->
-				<!-- wechat invite start  -->
+				<!-- weibo invite start  -->
                 <LinearLayout
-                    android:id="@+id/ll_invite_weixin"
+                    android:id="@+id/ll_invite_weibo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/setting_item_bg_bottom"
@@ -91,7 +116,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/invite_weixin"
+                        android:text="@string/invite_weibo"
                         android:textSize="14sp" />
 
                     <TextView

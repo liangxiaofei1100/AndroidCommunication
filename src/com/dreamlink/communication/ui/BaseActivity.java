@@ -2,12 +2,13 @@ package com.dreamlink.communication.ui;
 
 import com.dreamlink.communication.R;
 
-import android.app.Activity;
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class BaseActivity extends Activity {
+public class BaseActivity extends ActionBarActivity {
 
 	// title view
 	protected View mCustomTitleView;
@@ -17,6 +18,12 @@ public class BaseActivity extends Activity {
 	protected TextView mTitleNumView;
 	protected View mHistroyView;
 	protected View mSettingView;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+	}
 
 	protected void initTitle(int titleName, int titleIcon) {
 		mCustomTitleView = findViewById(R.id.title);
