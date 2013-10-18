@@ -27,6 +27,9 @@ import com.dreamlink.communication.util.Log;
 public class FileReceiver {
 	private static final String TAG = "FileReceiver";
 	private static final int SOCKET_TIMEOUT = 5000;
+	/** To avoid call back to fast, set the minimum interval callback time。 */
+	private static final int TIME_CALLBACK_INTERVAL = 1000;
+	
 	private User mSendUser;
 	private InetAddress mServerInetAddress;
 	private int mServerPort;
@@ -162,17 +165,18 @@ public class FileReceiver {
 		long receiveBytes = 0;
 		long totalBytes = mFileTransferInfo.getFileSize();
 		long start = System.currentTimeMillis();
-		int lastProgress = 0;
-		int currentProgress = 0;
+		long lastCallbackTime = start;
+		long currentTime = start;
 		
 		try {
 			while ((len = inputStream.read(buf)) != -1) {
 				out.write(buf, 0, len);
 				receiveBytes += len;
-				currentProgress = (int) (((double) receiveBytes / totalBytes) * 100);
-				if (lastProgress != currentProgress) {
-					lastProgress = currentProgress;
+				
+				currentTime = System.currentTimeMillis();
+				if (currentTime - lastCallbackTime >= TIME_CALLBACK_INTERVAL || receiveBytes >= totalBytes) {
 					notifyProgress(receiveBytes, totalBytes);
+					lastCallbackTime = currentTime;
 				}
 			}
 			notifyFinish(true);
@@ -261,7 +265,7 @@ public class FileReceiver {
 	 */
 	public interface OnReceiveListener {
 		/**
-		 * Every receive 1 percent of file, this method is invoked.
+		 * Every {@link #TIME_CALLBACK_INTERVAL} time, this method is invoked.
 		 * 
 		 * @param receivedBytes
 		 * @param totalBytes
