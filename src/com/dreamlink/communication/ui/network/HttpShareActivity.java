@@ -5,7 +5,6 @@ import java.io.File;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketPort;
 import com.dreamlink.communication.ui.BaseActivity;
-import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.util.NetWorkUtil;
 import com.dreamlink.communication.util.WiFiAP;
 import com.dreamlink.net.http.HttpShareServer;
@@ -15,6 +14,7 @@ import com.google.zxing.WriterException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -63,7 +63,9 @@ public class HttpShareActivity extends BaseActivity {
 	}
 
 	private boolean createHttpShareServer() {
-		Uri uri = Uri.fromFile(new File(DreamUtil.package_source_dir));
+		ApplicationInfo packageInfo = getApplicationInfo();
+		Uri uri = Uri.fromFile(new File(packageInfo.sourceDir));
+
 		boolean result = mHttpShareServer.createHttpShare(
 				getApplicationContext(), HTTP_SHARE_SERVER_PORT, uri);
 		if (result) {
@@ -109,7 +111,7 @@ public class HttpShareActivity extends BaseActivity {
 	private void updateView() {
 		mWiFiAPNameTextView.setText(getString(
 				R.string.http_share_first_step_tip, WIFI_AP_NAME));
-		
+
 		mAddressTextView.setText(getString(
 				R.string.http_share_second_step_tip1, getHttpShareUrl()));
 		try {
