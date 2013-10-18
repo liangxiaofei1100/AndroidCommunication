@@ -1,6 +1,7 @@
 package com.dreamlink.communication.ui.app;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +10,7 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 
-public class RecommendFragment extends BaseFragment {
+public class RecommendFragment extends Fragment {
 	private static final String TAG = "RecommendFragment";
 	private int mAppId = -1;
 	

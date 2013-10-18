@@ -7,8 +7,11 @@ import com.dreamlink.communication.UserManager.OnUserChangedListener;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.notification.NotificationMgr;
+import com.dreamlink.communication.ui.app.RecommendActivity;
 import com.dreamlink.communication.ui.db.MetaData;
+import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.history.HistoryManager;
+import com.dreamlink.communication.ui.network.NetworkActivity;
 import com.dreamlink.communication.ui.service.FileTransferService;
 import com.dreamlink.communication.ui.settings.SettingsActivity;
 import com.dreamlink.communication.util.Log;
@@ -168,11 +171,7 @@ public class MainUIFrame extends Activity implements OnClickListener,
 			startActivity(intent);
 			break;
 		case R.id.iv_setting:
-//			intent.setClass(this, MainFragmentActivity.class);
-//			intent.putExtra("position", 9);
-//			startActivity(intent);
-			intent.setClass(this, SettingsActivity.class);
-			startActivity(intent);
+			startActivity(mContext, SettingsActivity.class);
 			break;
 		default:
 			break;
@@ -182,8 +181,18 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		mAdapter.setClickPosition(position);
-		mAdapter.notifyDataSetChanged();
+//		mAdapter.setClickPosition(position);
+//		mAdapter.notifyDataSetChanged();
+		if (1 == position) {
+			startActivity(mContext, NetworkActivity.class);
+			return;
+		}else if (2 == position) {
+			startActivity(mContext, RecommendActivity.class);
+			return;
+		}else if(position >= 3){
+			position = position -2;
+		}
+		
 		Intent intent = new Intent(MainUIFrame.this, MainFragmentActivity.class);
 		intent.putExtra("position", position);
 		startActivity(intent);
@@ -312,10 +321,10 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mHandler.sendEmptyMessage(MSG_USER_DISCONNECTED);
 	}
 	
-	public static void startSetting(Context context){
-		Intent settingIntent = new Intent();
-		settingIntent.setClass(context, SettingsActivity.class);
-		context.startActivity(settingIntent);
+	public static void startActivity(Context context, Class<?> cls){
+		Intent intent = new Intent();
+		intent.setClass(context, cls);
+		context.startActivity(intent);
 	}
 
 }

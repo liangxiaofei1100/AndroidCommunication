@@ -4,37 +4,29 @@
         android:icon="@drawable/ic_menu_paste" android:showAsAction="always"
         android:orderInCategory="0"
          />
-    <item android:id="@+id/network" android:title="网上邻居"
+    <item android:id="@+id/image" android:title="@string/image"
         android:icon="@drawable/ic_menu_cancel" android:showAsAction="always"
         android:orderInCategory="1"
         />
-    <item android:id="@+id/recomment" android:title="精品推荐"
-        android:icon="@drawable/ic_menu_cancel" android:showAsAction="always"
-        android:orderInCategory="2"
-        />
-    <item android:id="@+id/image" android:title="@string/image"
-        android:icon="@drawable/ic_menu_cancel" android:showAsAction="always"
-        android:orderInCategory="3"
-        />
     <item android:id="@+id/audio" android:title="@string/audio"
         android:icon="@drawable/ic_menu_cancel" android:showAsAction="always"
-	android:orderInCategory="4"        
+	android:orderInCategory="2"        
         />
     <item android:id="@+id/video" android:title="@string/video"
         android:icon="@drawable/ic_menu_paste" android:showAsAction="always"
-        android:orderInCategory="5"
+        android:orderInCategory="3"
          />
     <item android:id="@+id/app" android:title="@string/app"
         android:icon="@drawable/ic_menu_cancel" android:showAsAction="always"
-        android:orderInCategory="6"
+        android:orderInCategory="4"
         />
     <item android:id="@+id/game" android:title="@string/game"
         android:icon="@drawable/ic_menu_cancel" android:showAsAction="always"
-        android:orderInCategory="7"
+        android:orderInCategory="5"
         />
     <item android:id="@+id/file_transfer" android:title="批量传输"
         android:icon="@drawable/ic_menu_cancel" android:showAsAction="always"
-        android:orderInCategory="8"
+        android:orderInCategory="6"
         />
 
 </menu>

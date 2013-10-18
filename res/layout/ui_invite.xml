@@ -7,6 +7,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="5dp"
         >
         
         <LinearLayout
@@ -25,7 +26,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:orientation="vertical" >
-				<!-- wechat invite start  -->
+				<!-- bluetooth invite start  -->
                 <LinearLayout
                     android:id="@+id/ll_invite_bluetooth"
                     android:layout_width="match_parent"
@@ -49,8 +50,8 @@
                         android:textColor="@color/gray"
                         android:textSize="12sp" />
                 </LinearLayout>
-				<!-- wechat invite end  -->
-				<!-- bluetooth invite start -->
+				<!-- bluetooth invite end  -->
+				<!-- weixin invite start -->
                 <LinearLayout
                     android:id="@+id/ll_invite_weixin"
                     android:layout_width="match_parent"
@@ -75,37 +76,12 @@
                         android:textSize="12sp" />
                 </LinearLayout>
                 <!-- bluetooth invite end -->
-                <!-- sms invite start -->
-                <LinearLayout
-                    android:id="@+id/ll_invite_weibo"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/setting_item_bg_middle"
-                    android:clickable="true"
-                    android:gravity="center_vertical"
-                    android:orientation="vertical"
-                    android:padding="10dp" >
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/invite_weibo"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/invite_tip"
-                        android:textColor="@color/gray"
-                        android:textSize="12sp" />
-                </LinearLayout>
-                <!-- sms invite end -->
-				<!-- zero gprs invite start -->
+                <!-- zero gprs invite start -->
                 <LinearLayout
                     android:id="@+id/ll_invite_zero_gprs"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/setting_item_bg_bottom"
+                    android:background="@drawable/setting_item_bg_middle"
                     android:clickable="true"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
@@ -126,8 +102,32 @@
                         android:textSize="12sp" />
                 </LinearLayout>
                 <!-- zero gprs invite end -->
-                
-                <!-- erweima start -->
+				<!-- weibo invite start  -->
+                <LinearLayout
+                    android:id="@+id/ll_invite_weibo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg_bottom"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_weibo"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_tip"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+				<!-- wechat invite end  -->
+                <!-- qr code start -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -153,7 +153,7 @@
                         android:layout_gravity="center_horizontal"
                         android:textSize="14sp" />
                 </LinearLayout>
-                <!-- erweima end -->
+                <!-- qr code end -->
 
             </LinearLayout>
         </LinearLayout>
