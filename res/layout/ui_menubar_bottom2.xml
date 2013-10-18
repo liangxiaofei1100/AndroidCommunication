@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_menubar_bottom"
+    android:layout_width="match_parent"
+    android:layout_height="55dp"
+    android:orientation="vertical"
+    android:layout_gravity="bottom"
+    android:background="@color/white"
+     >
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/title_color" />
+
+    <LinearLayout
+        android:id="@+id/ll_menutabs_holder"
+        android:layout_width="match_parent"
+        android:layout_height="53dp"
+        android:orientation="horizontal" 
+        android:weightSum="6"
+        >
+    </LinearLayout>
+
+</LinearLayout>
