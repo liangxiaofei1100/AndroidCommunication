@@ -35,7 +35,7 @@ public class InviteActivity extends ActionBarActivity implements OnClickListener
 	private void initView(){
 		View weixinView = findViewById(R.id.ll_invite_weixin);
 		View bluetoothView = findViewById(R.id.ll_invite_bluetooth);
-		View smsView = findViewById(R.id.ll_invite_sms);
+		View smsView = findViewById(R.id.ll_invite_weibo);
 		View zeroGprsView = findViewById(R.id.ll_invite_zero_gprs);
 		
 		weixinView.setOnClickListener(this);
@@ -55,7 +55,7 @@ public class InviteActivity extends ActionBarActivity implements OnClickListener
 			intent.setClass(this, InviteBluetoothActivity.class);
 			startActivity(intent);
 			break;
-		case R.id.ll_invite_sms:
+		case R.id.ll_invite_weibo:
 			break;
 		case R.id.ll_invite_zero_gprs:
 			break;

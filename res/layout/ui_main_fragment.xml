@@ -1,20 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_main_fragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" 
-    android:id="@+id/rl_main_fragment">
-    
-    <include 
-        android:id="@+id/title"
-        layout="@layout/ui_title"
-        />
-    
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:id="@+id/top"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true" >
+
+        <include
+            layout="@layout/ui_title"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/menubar_top"
+            layout="@layout/ui_menubar_top"
+            android:visibility="visible" />
+    </RelativeLayout>
+
     <android.support.v4.view.ViewPager
         android:id="@+id/vp_main_frame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center" 
-        android:layout_below="@id/title">
+        android:layout_below="@+id/top"
+        android:layout_above="@+id/bottom"
+        >
     </android.support.v4.view.ViewPager>
+
+    <RelativeLayout
+        android:id="@+id/bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" >
+
+        <include
+            android:id="@+id/menubar_bottom"
+            layout="@layout/ui_menubar_bottom2" />
+    </RelativeLayout>
 
 </RelativeLayout>
