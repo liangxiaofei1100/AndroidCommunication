@@ -91,7 +91,7 @@
     <string name="invite_bluetooth_second_step">第二步:</string>
     <string name="invite_bluetooth_send">搜索-发送</string>
     <string name="invite_bluetooth_first_step_tip">请身边好友打开蓝牙,保持对附近的蓝牙设备可见（如图所示）</string>
-    <string name="invite_bluetooth_second_step_tip">好友完成第一步后,请点击搜索-发送按钮，就可以搜索TA的手机并把XX发送过去</string>
+    <string name="invite_bluetooth_second_step_tip">好友完成第一步后,请点击搜索-发送按钮，就可以搜索TA的手机并把朝颜无限发送过去</string>
     <string name="back">返回</string>
     
     <string name="connect_tip_msg">选择与朋友互连</string>
@@ -162,6 +162,7 @@
      <string name="invite_weixin">微信邀请</string>
      <string name="invite_bluetooth">蓝牙邀请</string>
      <string name="invite_sms">短信邀请</string>
+     <string name="invite_weibo">微博邀请</string>
      <string name="invite_zero_gprs">零流量邀请</string>
      <string name="invite_tip">仅支持邀请安卓用户</string>
      <string name="dimen_code_download">扫一扫二维码下载朝颜无限</string>
