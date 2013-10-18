@@ -106,7 +106,6 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Log.d(TAG, "onCreate begin");
 		View rootView = inflater.inflate(R.layout.ui_media_audio, container, false);
 		mContext = getActivity();
 		
@@ -117,7 +116,6 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		mAdapter = new AudioCursorAdapter(mContext);
 		mListView.setAdapter(mAdapter);
 		
-		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 	
@@ -276,5 +274,4 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		message.what = MSG_UPDATE_UI;
 		message.sendToTarget();
 	}
-
 }

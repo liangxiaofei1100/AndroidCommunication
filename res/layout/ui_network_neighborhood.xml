@@ -6,7 +6,7 @@
     android:orientation="vertical" >
 
     <LinearLayout
-        android:id="@+id/ll_network_neighborhood_bluetooth"
+        android:id="@+id/ll_network_neighborhood_invite"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -33,7 +33,7 @@
                 android:id="@+id/tv_ntwknb_item1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/bluetooth_invite"
+                android:text="@string/invite"
                 android:textColor="@color/text_black"
                 android:textSize="14sp" />
 
@@ -42,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:text="@string/bluetooth_invite_tips"
+                android:text="@string/invite_install"
                 android:textColor="@color/text_blue"
                 android:textSize="12sp" />
         </LinearLayout>

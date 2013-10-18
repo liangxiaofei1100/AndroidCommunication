@@ -37,7 +37,7 @@ import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.util.Log;
 
 public class TiandiFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
-	private static final String TAG = "TiandiFragment2";
+	private static final String TAG = "TiandiFragment";
 	private GridView mGridView;
 	private ProgressBar mLoadingBar;
 	private Button mRechargeBtn;
@@ -57,7 +57,7 @@ public class TiandiFragment extends BaseFragment implements OnItemClickListener,
 	private Cursor mCursor;
 	
 	/**
-	 * Create a new instance of AppFragment, providing "appid" as an
+	 * Create a new instance of TiandiFragment, providing "appid" as an
 	 * argument.
 	 */
 	public static TiandiFragment newInstance(int appid) {
@@ -128,7 +128,6 @@ public class TiandiFragment extends BaseFragment implements OnItemClickListener,
 		@Override
 		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
 			// super.onQueryComplete(token, cookie, cursor);
-			Log.d(TAG, "onQueryComplete");
 			mLoadingBar.setVisibility(View.INVISIBLE);
 			if (null != cursor && cursor.getCount() > 0) {
 				mCursor = cursor;
@@ -145,7 +144,7 @@ public class TiandiFragment extends BaseFragment implements OnItemClickListener,
 	/**
 	 * Perform alphabetical comparison of application entry objects.
 	 */
-	public static final Comparator<AppInfo> ALPHA_COMPARATOR = new Comparator<AppInfo>() {
+	public static final Comparator<AppInfo> LABEL_COMPARATOR = new Comparator<AppInfo>() {
 		private final Collator sCollator = Collator.getInstance();
 
 		@Override

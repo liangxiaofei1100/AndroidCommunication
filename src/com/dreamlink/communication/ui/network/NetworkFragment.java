@@ -114,13 +114,12 @@ public class NetworkFragment extends BaseFragment implements
 		mFilter.addAction(ConnectHelper.ACTION_SERVER_CREATED);
 		mContext.registerReceiver(mReceiver, mFilter);
 
-		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 
 	private void initView(View view) {
 		mBluetoothInviteView = view
-				.findViewById(R.id.ll_network_neighborhood_bluetooth);
+				.findViewById(R.id.ll_network_neighborhood_invite);
 		mBluetoothInviteView.setOnClickListener(this);
 		mCreateNetworkView = view
 				.findViewById(R.id.ll_network_neighborhood_create);
@@ -159,8 +158,8 @@ public class NetworkFragment extends BaseFragment implements
 		Intent intent = new Intent();
 		intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		switch (v.getId()) {
-		case R.id.ll_network_neighborhood_bluetooth:
-			intent.setClass(mContext, InviteBluetoothActivity.class);
+		case R.id.ll_network_neighborhood_invite:
+			intent.setClass(mContext, InviteActivity.class);
 			startActivity(intent);
 			break;
 		case R.id.ll_network_neighborhood_create:

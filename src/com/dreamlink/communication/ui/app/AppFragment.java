@@ -99,7 +99,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Log.d(TAG, "onCreateView");
 		View rootView = inflater.inflate(R.layout.ui_app, container, false);
 
 		mContext = getActivity();
@@ -125,7 +124,6 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 		mGridView.setOnItemClickListener(this);
 		mGridView.setOnItemLongClickListener(this);
 		
-		Log.d(TAG, "onCreate end");
 		return rootView;
 	}
 	

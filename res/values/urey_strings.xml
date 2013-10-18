@@ -34,7 +34,6 @@
     <string name="connecting">"正在连接&#8230;"</string>
     <string name="creating">正在创建&#8230;</string>
     <string name="create_ok">创建成功,等待加入&#8230;</string>
-    <string name="invite">邀请</string>
     <string name="close">关闭</string>
     
     <string name="file_classify">文件分类</string>
@@ -87,7 +86,6 @@
     <string name="cannot_start_app">无法从这里启动该程序</string>
     <string name="app_has_started">该程序已经启动</string>
     
-    <string name="invite_install">邀请好友安装</string>
     <string name="invite_bluetooth">蓝牙邀请</string>
     <string name="invite_bluetooth_first_step">第一步:</string>
     <string name="invite_bluetooth_second_step">第二步:</string>
@@ -158,4 +156,13 @@
      <string name="delete_history_msg">删除记录或者文件</string>
      
      <string name="select_msg">已选中%1$s</string>
+     
+     <string name="invite">邀请</string>
+     <string name="invite_install">邀请朋友安装朝颜无限</string>
+     <string name="invite_weixin">微信邀请</string>
+     <string name="invite_bluetooth">蓝牙邀请</string>
+     <string name="invite_sms">短信邀请</string>
+     <string name="invite_zero_gprs">零流量邀请</string>
+     <string name="invite_tip">仅支持邀请安卓用户</string>
+     <string name="dimen_code_download">扫一扫二维码下载朝颜无限</string>
 </resources>

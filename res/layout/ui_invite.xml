@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_bg" >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:orientation="vertical" >
+            
+            <ImageView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_android" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="vertical" >
+				<!-- wechat invite start  -->
+                <LinearLayout
+                    android:id="@+id/ll_invite_weixin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg_top"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_weixin"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_tip"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+				<!-- wechat invite end  -->
+				<!-- bluetooth invite start -->
+                <LinearLayout
+                    android:id="@+id/ll_invite_bluetooth"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg_middle"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_bluetooth"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_tip"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+                <!-- bluetooth invite end -->
+                <!-- sms invite start -->
+                <LinearLayout
+                    android:id="@+id/ll_invite_sms"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg_middle"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_sms"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_tip"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+                <!-- sms invite end -->
+				<!-- zero gprs invite start -->
+                <LinearLayout
+                    android:id="@+id/ll_invite_zero_gprs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/setting_item_bg_bottom"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_zero_gprs"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_help_current_version"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/invite_tip"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </LinearLayout>
+                <!-- zero gprs invite end -->
+                
+                <!-- erweima start -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/setting_item_bg"
+                    android:clickable="false"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="10dp" >
+
+                    <ImageView 
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/photo_l"
+                        android:layout_gravity="center_horizontal"
+                        />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dimen_code_download"
+                        android:layout_marginTop="5dp"
+                        android:gravity="center_horizontal"
+                        android:layout_gravity="center_horizontal"
+                        android:textSize="14sp" />
+                </LinearLayout>
+                <!-- erweima end -->
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

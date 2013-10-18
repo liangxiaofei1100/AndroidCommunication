@@ -39,7 +39,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private static final String TAG = "MainFragmentActivity";
 	private ViewPager viewPager;
 	private MainFragmentPagerAdapter mPagerAdapter;
-
 	private int mLastPosition = 0;
 
 	// define fragment position

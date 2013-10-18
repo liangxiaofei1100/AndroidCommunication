@@ -78,9 +78,8 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	private List<PictureFolderInfo> mFolderInfosList = new ArrayList<PictureFolderInfo>();
 	
 	private static final String CAMERA = "Camera";
-	
 	/**
-	 * Create a new instance of ImageFragment, providing "w" as an
+	 * Create a new instance of PictureFragment, providing "w" as an
 	 * argument.
 	 */
 	public static PictureFragment newInstance(int appid) {

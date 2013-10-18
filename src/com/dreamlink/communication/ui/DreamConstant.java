@@ -100,7 +100,7 @@ public class DreamConstant {
 	/** test for yuri,only for yuri */
 	public static final boolean UREY_TEST = true;
 
+	public static final String DEFAULT_SDCARD = Environment.getExternalStorageDirectory().getAbsolutePath();
 	/** the default folder that save the receive files */
-	public static final String DEFAULT_SAVE_FOLDER = Environment
-			.getExternalStorageDirectory() + "/dreamLink";
+	public static final String DEFAULT_SAVE_FOLDER = DEFAULT_SDCARD + "/dreamLink";
 }
