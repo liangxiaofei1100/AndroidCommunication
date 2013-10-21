@@ -28,7 +28,7 @@ public class FileTransferUtil {
 	public static final int TYPE_MEDIA = 2;
 	public static final int TYPE_FILE = 2;
 
-	public static final int MAX_TRANSFER_NUM = 5;
+	public static final int MAX_TRANSFER_NUM = 10000;//no limit
 
 	private UserManager mUserManager = null;
 	private Notice mNotice = null;

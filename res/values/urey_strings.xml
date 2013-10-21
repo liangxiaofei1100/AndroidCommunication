@@ -163,10 +163,15 @@
      <string name="invite">邀请</string>
      <string name="invite_install">邀请朋友安装朝颜无限</string>
      <string name="invite_weixin">微信邀请</string>
+     <string name="invite_qq">QQ邀请</string>
      <string name="invite_bluetooth">蓝牙邀请</string>
      <string name="invite_sms">短信邀请</string>
-     <string name="invite_weibo">微博邀请</string>
+     <string name="invite_weibo_sina">新浪微博邀请</string>
+     <string name="invite_weibo_tencent">腾讯微博邀请</string>
      <string name="invite_zero_gprs">零流量邀请</string>
      <string name="invite_tip">仅支持邀请安卓用户</string>
      <string name="dimen_code_download">扫一扫二维码下载朝颜无限</string>
+     
+     <string name="select_all">全选</string>
+     <string name="unselect_all">取消全选</string>
 </resources>

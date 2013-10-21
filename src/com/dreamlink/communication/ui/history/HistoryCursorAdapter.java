@@ -190,7 +190,7 @@ public class HistoryCursorAdapter extends CursorAdapter {
 				iconView.setImageBitmap(AsyncImageLoader2.bitmapCache.get(
 						filePath).get());
 			} else {
-				iconView.setImageResource(R.drawable.default_document_icon);
+				iconView.setImageResource(R.drawable.icon_file);
 			}
 			return;
 		} else {
@@ -209,12 +209,12 @@ public class HistoryCursorAdapter extends CursorAdapter {
 				});
 				
 				if (null == bitmap) {
-					iconView.setImageResource(R.drawable.default_document_icon);
+					iconView.setImageResource(R.drawable.icon_file);
 				} else {
 					iconView.setImageBitmap(bitmap);
 				}
 			} else {
-				iconView.setImageResource(R.drawable.default_document_icon);
+				iconView.setImageResource(R.drawable.icon_file);
 			}
 		}
 	}

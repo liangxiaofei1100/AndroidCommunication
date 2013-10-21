@@ -5,37 +5,37 @@
         android:orderInCategory="100"
         android:icon="@drawable/ic_action_delete_enable"
         android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:title="Menu1"/>
     <item
         android:id="@+id/menu_user_info"
         android:orderInCategory="100"
         android:icon="@drawable/ic_action_delete_enable"
         android:showAsAction="never"
-        android:title="@string/menu_user_info"/>
+        android:title="Menu2"/>
     <!-- main ui start test -->
     <item
         android:id="@+id/menu_start_test"
         android:orderInCategory="100"
         android:icon="@drawable/ic_action_delete_enable"
         android:showAsAction="never"
-        android:title="Start main ui"/>
+        android:title="Menu3"/>
     <item
         android:id="@+id/menu_test_apps"
         android:orderInCategory="100"
         android:showAsAction="never"
         android:icon="@drawable/ic_action_delete_enable"
-        android:title="Test apps"/>
+        android:title="Menu4"/>
     <item
         android:id="@+id/menu_network_status"
         android:orderInCategory="100"
         android:showAsAction="ifRoom"
         android:icon="@drawable/ic_action_delete_enable"
-        android:title="@string/menu_network_status"/>
+        android:title="Menu5"/>
     <item
         android:id="@+id/menu_listener_status"
         android:orderInCategory="100"
         android:showAsAction="never"
         android:icon="@drawable/ic_action_delete_enable"
-        android:title="Listener status"/>
+        android:title="Menu6"/>
 
 </menu>

@@ -12,7 +12,7 @@
         android:adjustViewBounds="true"
         android:scaleType="centerCrop"
         android:layout_margin="2dp"
-        android:src="@drawable/default_image_iv" />
+        android:src="@drawable/photo_l" />
 
     <RelativeLayout
         android:layout_width="fill_parent"

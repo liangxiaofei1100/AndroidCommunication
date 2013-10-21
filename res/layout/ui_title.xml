@@ -67,8 +67,8 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_toLeftOf="@+id/ll_recommend"
-        android:background="@drawable/title_menu_bg"
-        android:visibility="gone"
+        android:background="@drawable/title_menu_bg_1"
+        android:visibility="visible"
         android:gravity="center_vertical" >
 
         <ImageView
@@ -87,7 +87,7 @@
         android:layout_height="match_parent"
         android:layout_toLeftOf="@+id/ll_history"
         android:background="@drawable/title_menu_bg"
-        android:visibility="gone"
+        android:visibility="visible"
         android:gravity="center_vertical" >
 
         <ImageView
