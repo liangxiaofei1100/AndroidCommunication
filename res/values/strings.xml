@@ -77,6 +77,8 @@
     <string name="settings_user_info_tips">重新设置用户信息</string>
     <string name="about_app_name_version">%1$s: %2$s</string>
     
+    <string name="http_share_open_warning_dialog_title">零流量邀请</string>
+    <string name="http_share_open_warning_dialog_message">使用零流量邀请将断开当前局域网，是否继续？</string>
     <string name="http_share_title">零流量邀请</string>
     <string name="http_share_first_step">第一步:</string>
     <string name="http_share_second_step">第二步:</string>

@@ -52,6 +52,7 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
+		Log.d(TAG, "onPreExecute");
 		if (server.isServerStarted()) {
 			notice.showToast("Server is already started");
 		}
@@ -59,6 +60,7 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 
 	@Override
 	protected Socket doInBackground(String... arg) {
+		Log.d(TAG, "doInBackground");
 		if (server.isServerStarted()) {
 			notice.showToast("Server is already started");
 			return null;
@@ -70,6 +72,7 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 	@Override
 	protected void onPostExecute(Socket result) {
 		super.onPostExecute(result);
+		Log.d(TAG, "onPostExecute");
 		if (server.isServerStarted()) {
 			return;
 		}

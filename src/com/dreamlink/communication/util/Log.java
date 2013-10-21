@@ -100,4 +100,11 @@ public class Log {
 		return level + " " + TimeUtil.getCurrentTime() + "  " + tag + "  "
 				+ message + "\n";
 	}
+
+	public static void printStackTrace(String tag) {
+		StackTraceElement st[] = Thread.currentThread().getStackTrace();
+		for (int i = 0; i < st.length; i++) {
+			Log.d(TAG + tag, "trace: " + st[i].toString());
+		}
+	}
 }

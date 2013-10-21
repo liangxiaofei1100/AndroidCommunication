@@ -469,6 +469,14 @@ public class WifiOrAPService extends Service {
 
 	public void stopSearch() {
 		scann_flag = false;
+		if (client_register) {
+			unregisterReceiver(mWifiBroadcastReceiver);
+			client_register = false;
+		}
+		if (server_register) {
+			unregisterReceiver(mBroadcastReceiver);
+			server_register = false;
+		}
 		if (mSearchClient != null) {
 			mSearchClient.stopSearch();
 		}
