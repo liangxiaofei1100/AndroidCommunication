@@ -3,14 +3,17 @@
     android:id="@+id/ll_menubar_bottom_item"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/blue_bg" >
+    android:background="@drawable/blue_bg" 
+    android:clickable="true"
+    android:gravity="center"
+    >
 
     <ImageView
         android:id="@+id/iv_menu_icon"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/tv_menu_1"
-        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/tv_menu_name"
         android:src="@drawable/action_delete" />
 
     <TextView
@@ -18,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
         android:text="删除"
         android:textSize="10sp" />
 
