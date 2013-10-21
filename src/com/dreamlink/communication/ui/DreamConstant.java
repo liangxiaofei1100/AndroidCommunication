@@ -17,6 +17,10 @@ public class DreamConstant {
 	public static final int ACTION_MENU_RENAME = 0x07;
 
 	public static final int REQUEST_FOR_MODIFY_NAME = 0x12;
+	
+	//action menu mode,edit is menu mode
+	public static final int MENU_MODE_NORMAL = 0;
+    public static final int MENU_MODE_EDIT = 1;
 
 	// context action menu id
 
