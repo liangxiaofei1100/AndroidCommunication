@@ -8,12 +8,9 @@ import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 import android.content.Context;
 
-import com.dreamlink.communication.UserManager;
-import com.dreamlink.communication.lib.util.ArrayUtil;
 import com.dreamlink.communication.search.SearchProtocol.OnSearchListener;
 import com.dreamlink.communication.util.Log;
 import com.dreamlink.communication.util.NetWorkUtil;
@@ -75,10 +72,22 @@ public class SearchClientLan implements Runnable {
 		} catch (SocketException e) {
 			Log.e(TAG, "Create multicast packet error. " + e);
 		}
+		String ip = NetWorkUtil.getLocalIpAddress();
 		DatagramPacket packet = getSearchPacket();
 
 		while (!mStopped) {
-			sendDataToClient(packet);
+			if (ip == null || ip.equals("")) {
+				// illegal ip, ignore.
+			} else if (ip.endsWith(NetWorkUtil.getLocalIpAddress())) {
+				// ip is not changed.
+				sendDataToClient(packet);
+			} else {
+				// ip is changed.
+				ip = NetWorkUtil.getLocalIpAddress();
+				packet = getSearchPacket();
+				sendDataToClient(packet);
+			}
+
 			try {
 				Thread.sleep(Search.MULTICAST_DELAY_TIME);
 			} catch (InterruptedException e) {
