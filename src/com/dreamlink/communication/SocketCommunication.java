@@ -23,7 +23,7 @@ import com.dreamlink.communication.util.Log;
 public class SocketCommunication extends Thread {
 	private static final String TAG = "SocketCommunication";
 	/** Socket server port */
-	public static final String PORT = SocketPort.COMMUNICATION_SERVER_PORT;
+	public static final int PORT = SocketPort.COMMUNICATION_SERVER_PORT;
 
 	/**
 	 * Listen socket connect and disconnect event.

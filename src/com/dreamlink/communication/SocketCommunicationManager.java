@@ -555,9 +555,9 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	 * @param context
 	 */
 	public void startServer(Context context) {
-		SocketServerTask serverTask = new SocketServerTask(context);
+		SocketServerTask serverTask = new SocketServerTask(context, SocketCommunication.PORT);
 		serverTask.setOnClientConnectedListener(this);
-		serverTask.execute(new String[] { SocketCommunication.PORT });
+		serverTask.start();
 		PlatformManager platformManager=PlatformManager.getInstance(mContext);
 	}
 
@@ -587,7 +587,7 @@ public class SocketCommunicationManager implements OnClientConnectedListener,
 	public void connectServer(Context context, String serverIp) {
 		SocketClientTask clientTask = new SocketClientTask(context);
 		clientTask.setOnConnectedToServerListener(this);
-		clientTask.execute(new String[] { serverIp, SocketCommunication.PORT });
+		clientTask.execute(new String[] { serverIp, String.valueOf(SocketCommunication.PORT) });
 	}
 
 	/**
