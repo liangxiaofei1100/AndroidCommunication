@@ -16,6 +16,7 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Handler.Callback;
 
+import com.dreamlink.communication.TrafficStaticInterface.TrafficStaticsRxListener;
 import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.protocol.FileTransferInfo;
 import com.dreamlink.communication.util.Log;
@@ -53,6 +54,8 @@ public class FileReceiver {
 
 	/** The socket to recieve file. */
 	private Socket mSocket;
+	
+	private TrafficStaticsRxListener mRxListener = TrafficStatics.getInstance();
 
 	public FileReceiver(User sendUser, byte[] serverAddress, int serverPort,
 			FileTransferInfo fileTransferInfo) {
@@ -178,6 +181,8 @@ public class FileReceiver {
 					notifyProgress(receiveBytes, totalBytes);
 					lastCallbackTime = currentTime;
 				}
+				
+				mRxListener.addRxBytes(len);
 			}
 			notifyFinish(true);
 			out.close();

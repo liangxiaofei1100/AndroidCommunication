@@ -13,6 +13,12 @@ public class AppApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 		initImageLoader(getApplicationContext());
+		
+		initTrafficStatics(getApplicationContext());
+	}
+
+	private void initTrafficStatics(Context applicationContext) {
+		TrafficStatics.getInstance().init(applicationContext);
 	}
 
 	public static void initImageLoader(Context context) {

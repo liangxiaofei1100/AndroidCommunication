@@ -14,6 +14,7 @@ import android.os.Handler.Callback;
 import android.os.HandlerThread;
 import android.os.Message;
 
+import com.dreamlink.communication.TrafficStaticInterface.TrafficStaticsTxListener;
 import com.dreamlink.communication.util.Log;
 
 /**
@@ -44,6 +45,8 @@ public class FileSender {
 	private static final int FINISH_RESULT_SUCCESS = 1;
 	private static final int FINISH_RESULT_FAIL = 2;
 	private Object mKey;
+	
+	private TrafficStaticsTxListener mTxListener = TrafficStatics.getInstance();
 
 	public FileSender(){};
 	
@@ -181,6 +184,8 @@ public class FileSender {
 					notifyProgress(sendBytes, totalBytes);
 					lastCallbackTime = currentTime;
 				}
+				
+				mTxListener.addTxBytes(len);
 			}
 			notifyFinish(true);
 			out.close();
