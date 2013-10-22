@@ -130,8 +130,14 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.d(TAG, "onCreate");
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
 	}
+	
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "onResume");
+	};
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -341,13 +347,16 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		switch (parent.getId()) {
 		case R.id.gv_picture_folder:
+			Log.d(TAG, "gv_picture_folder");
 			mStatus = STATUS_ITEM;
+			Log.d(TAG, "gv_picture_folder.mStatus=" + mStatus);
 			String name = mFolderInfosList.get(position).getBucketDisplayName();
 			queryFolderItem(name);
 			mItemGridView.setVisibility(View.VISIBLE);
 			mFolderGridView.setVisibility(View.INVISIBLE);
 			break;
 		case R.id.gv_picture_item:
+			Log.d(TAG, "gv_picture_item");
 			Cursor cursor = mAdapter.getCursor();
 			startPagerActivityByPosition(position, cursor);
 			break;
@@ -461,14 +470,11 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		}
 	}
 	
-	public void onBackPressed(){
+	public boolean onBackPressed(){
 		Log.d(TAG, "onBackPressed.status="+ mStatus);
 		switch (mStatus) {
 		case STATUS_FOLDER:
-			if (mFragmentActivity != null) {
-				mFragmentActivity.finish();
-			}
-			break;
+			return true;
 		case STATUS_ITEM:
 			mStatus = STATUS_FOLDER;
 			//850,880的机器更新图片的时候，每次都会显示上一次的图片，所以讲Adpater清空
@@ -481,5 +487,13 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			mFolderGridView.setVisibility(View.VISIBLE);
 			break;
 		}
+		return false;
+	}
+	
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		Log.d(TAG, "onDestroy");
 	}
 }

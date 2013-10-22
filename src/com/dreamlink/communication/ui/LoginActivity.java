@@ -53,7 +53,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 
 	private void launchMain() {
 		Intent intent = new Intent();
-		intent.setClass(this, MainUIFrame.class);
+		intent.setClass(this, MainFragmentActivity.class);
 		startActivity(intent);
 	}
 }

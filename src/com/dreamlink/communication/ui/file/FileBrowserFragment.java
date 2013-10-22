@@ -1120,21 +1120,20 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	/**
 	 * back key callback
 	 */
-	public void onBackPressed(){
+	@Override
+	public boolean onBackPressed() {
 		switch (mStatus) {
 		case STATUS_HOME:
-			getActivity().finish();
-			break;
+			return true;
 		case STATUS_FILE:
 			//if is root path,back to Home view
 			if (mCurrent_root_path.equals(mCurrentPath)) {
 				goToHome();
-				return;
+			}else {
+				//up to parent path
+				File parentFile = mCurrentFile.getParentFile();
+				browserTo(parentFile.getAbsoluteFile());
 			}
-			
-			//up to parent path
-			File parentFile = mCurrentFile.getParentFile();
-			browserTo(parentFile.getAbsoluteFile());
 			break;
 		case STATUS_DOC:
 		case STATUS_EBOOK:
@@ -1142,11 +1141,8 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		case STATUS_ARCHIVE:
 			goToHome();
 			break;
-
-		default:
-			Log.d(TAG, "default.status:" + mStatus);
-			break;
 		}
+		return false;
 	}
 	
 	@Override
