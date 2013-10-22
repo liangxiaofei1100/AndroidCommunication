@@ -22,8 +22,8 @@
 				android:type="linear" />
 <!-- 			<stroke android:width="2dp" android:color="#dcdcdc" /> -->
 <!-- 			<corners android:radius="2dp" /> -->
-			<padding android:bottom="8dp" android:left="8dp"
-				android:right="8dp" android:top="8dp" />
+<!-- 			<padding android:bottom="8dp" android:left="8dp" -->
+<!-- 				android:right="8dp" android:top="8dp" /> -->
 		</shape>
 	</item>
 	<item>
@@ -31,8 +31,8 @@
 			<!-- 渐变 -->
 			<gradient android:endColor="@android:color/transparent" android:startColor="@android:color/transparent"
 				android:type="linear" />
-			<padding android:bottom="8dp" android:left="8dp"
-				android:right="8dp" android:top="8dp" />
+<!-- 			<padding android:bottom="8dp" android:left="8dp" -->
+<!-- 				android:right="8dp" android:top="8dp" /> -->
 		</shape>
 	</item>
 

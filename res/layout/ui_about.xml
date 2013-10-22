@@ -36,7 +36,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/button_bg"
-            android:text="@android:string/ok"/>
+            android:text="@android:string/ok"
+            android:textColor="@color/white"
+            />
     </RelativeLayout>
 
 </LinearLayout>

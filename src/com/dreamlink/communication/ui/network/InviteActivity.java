@@ -1,18 +1,18 @@
 package com.dreamlink.communication.ui.network;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.BaseActivity;
 
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
-public class InviteActivity extends ActionBarActivity implements OnClickListener{
+public class InviteActivity extends BaseActivity implements OnClickListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -20,7 +20,8 @@ public class InviteActivity extends ActionBarActivity implements OnClickListener
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title_color));
 		actionBar.setIcon(R.drawable.title_tiandi);
-		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(false);
+		actionBar.hide();
 		
 		//modify title text color
 		int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
@@ -28,6 +29,8 @@ public class InviteActivity extends ActionBarActivity implements OnClickListener
 		titleView.setTextColor(getResources().getColor(R.color.white));
 		
 		setTitle(R.string.invite_install);
+		
+		initTitle(R.string.invite_install, R.drawable.title_tiandi);
 		
 		initView();
 	}

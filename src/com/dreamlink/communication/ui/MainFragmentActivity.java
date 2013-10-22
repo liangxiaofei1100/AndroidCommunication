@@ -18,6 +18,7 @@ import com.dreamlink.communication.ui.media.VideoFragment;
 import com.dreamlink.communication.ui.network.NetworkActivity;
 import com.dreamlink.communication.ui.network.NetworkFragment;
 import com.dreamlink.communication.ui.settings.SettingsActivity;
+import com.dreamlink.communication.util.Log;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -238,6 +239,7 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_BACK:
 			int position = viewPager.getCurrentItem();
+			Log.d(TAG, "keycode_back.position=" + position);
 			switch (position) {
 			case IMAGE:
 				// Picture

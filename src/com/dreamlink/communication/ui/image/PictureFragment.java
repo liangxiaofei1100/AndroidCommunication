@@ -462,6 +462,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	}
 	
 	public void onBackPressed(){
+		Log.d(TAG, "onBackPressed.status="+ mStatus);
 		switch (mStatus) {
 		case STATUS_FOLDER:
 			if (mFragmentActivity != null) {

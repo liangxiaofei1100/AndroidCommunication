@@ -171,6 +171,7 @@
      <string name="invite_zero_gprs">零流量邀请</string>
      <string name="invite_tip">仅支持邀请安卓用户</string>
      <string name="dimen_code_download">扫一扫二维码下载朝颜无限</string>
+     <string name="statistics">流量统计</string>
      
      <string name="select_all">全选</string>
      <string name="unselect_all">取消全选</string>
