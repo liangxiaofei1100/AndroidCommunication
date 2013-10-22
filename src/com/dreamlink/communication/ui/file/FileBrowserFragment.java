@@ -918,19 +918,22 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		switch (scrollState) {
 		case OnScrollListener.SCROLL_STATE_FLING:
+			Log.d(TAG, "SCROLL_STATE_FLING");
 			mFileInfoAdapter.setFlag(false);
 			break;
 		case OnScrollListener.SCROLL_STATE_IDLE:
+			Log.d(TAG, "SCROLL_STATE_IDLE");
 			mFileInfoAdapter.setFlag(true);
+			mFileInfoAdapter.notifyDataSetChanged();
 			break;
 		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+			Log.d(TAG, "SCROLL_STATE_TOUCH_SCROLL");
 			mFileInfoAdapter.setFlag(false);
 			break;
 
 		default:
 			break;
 		}
-		mFileInfoAdapter.notifyDataSetChanged();
 	}
 
 	@Override

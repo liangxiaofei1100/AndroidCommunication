@@ -79,6 +79,8 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private static final int STATUS_MAIN = 0x100;
 	private static final int STATUS_ITEM = 0x101;
 	private int mStatus = STATUS_MAIN;
+	//key for save
+	private static final String STATUS = "status";
 
 	/**
 	 * must inline
@@ -156,15 +158,22 @@ public class MainFragmentActivity extends ActionBarActivity implements
 
 	
 	@Override
-	protected void onCreate(Bundle arg0) {
-		super.onCreate(arg0);
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 		Log.d(TAG, "onCreate");
 		mMainFrameView = getLayoutInflater().inflate(R.layout.ui_mainframe, null);
 		mContainLayout = (RelativeLayout) getLayoutInflater().inflate(R.layout.ui_main_fragment, null);
 				
-		setContentView(mMainFrameView);
+		if (null != savedInstanceState) {
+			Log.d(TAG, "savedInstanceState is not null");
+			mStatus = savedInstanceState.getInt(STATUS);
+		}
+		if (STATUS_MAIN == mStatus) {
+			setContentView(mMainFrameView);
+		}else {
+			setContentView(mContainLayout);
+		}
 		
-		mStatus = STATUS_MAIN;
 //		setContentView(mContainLayout);
 		getSupportActionBar().hide();
 		
@@ -194,10 +203,25 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	}
 	
 	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+		Log.d(TAG, "onSaveInstanceState.status=" + mStatus);
+		outState.putInt(STATUS, mStatus);
+	}
+	
+	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
 		Log.d(TAG, "onResume");
+	}
+	
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		Log.d(TAG, "onStart");
 	}
 	
 	private void updateNetworkStatus() {
@@ -511,6 +535,20 @@ public class MainFragmentActivity extends ActionBarActivity implements
 							}
 						}).setNegativeButton(android.R.string.cancel, null)
 				.create().show();
+	}
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		Log.d(TAG, "onPause");
+	}
+	
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+		Log.d(TAG, "onStop");
 	}
 	
 	@Override
