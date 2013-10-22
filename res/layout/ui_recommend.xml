@@ -6,4 +6,7 @@
     android:background="@drawable/main_bg"
     >
 
+    <include 
+        android:id="@+id/title"
+        layout="@layout/ui_title" />
 </LinearLayout>

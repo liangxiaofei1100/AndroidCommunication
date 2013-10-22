@@ -25,7 +25,7 @@
     <string name="userinfo_name">名称：</string>
     <string name="userinfo_name_hint">请输入用户名</string>
     <string name="userinfo_ip">IP：%s</string>
-    <string name="userinfo_android_version">系統版本：%s</string>
+    <string name="userinfo_android_version">系统版本：%s</string>
     <string name="userinfo_message_saved">用户信息已保存</string>
     <string name="ui_menu_save">保存</string>
     <string name="lable_user_info">用户资料</string>
@@ -77,6 +77,8 @@
     <string name="settings_user_info_tips">重新设置用户信息</string>
     <string name="about_app_name_version">%1$s: %2$s</string>
     
+    <string name="http_share_open_warning_dialog_title">零流量邀请</string>
+    <string name="http_share_open_warning_dialog_message">使用零流量邀请将断开当前局域网，是否继续？</string>
     <string name="http_share_title">零流量邀请</string>
     <string name="http_share_first_step">第一步:</string>
     <string name="http_share_second_step">第二步:</string>

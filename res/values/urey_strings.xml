@@ -20,6 +20,7 @@
     <string name="network">网络邻居</string>
     <string name="recommend">精品推荐</string>
     <string name="zy_tiandi">朝颜天地</string>
+    <string name="file_browser">批量传输</string>
     <string name="game">游戏</string>
     <string name="app">应用</string>
     <string name="audio">音频</string>
@@ -171,6 +172,7 @@
      <string name="invite_zero_gprs">零流量邀请</string>
      <string name="invite_tip">仅支持邀请安卓用户</string>
      <string name="dimen_code_download">扫一扫二维码下载朝颜无限</string>
+     <string name="statistics">流量统计</string>
      
      <string name="select_all">全选</string>
      <string name="unselect_all">取消全选</string>

@@ -194,6 +194,7 @@ public class NetworkFragment extends Fragment implements
 		mConnectHelper.stopSearch();
 		// 3. close all communications.
 		mSocketComMgr.closeAllCommunication();
+		mSocketComMgr.stopServer();
 		// 4. reset local user.
 		mUserManager.resetLocalUserID();
 		// 5. close WiFi AP if WiFi AP is enabled.

@@ -58,6 +58,10 @@ public class SettingsActivity extends Activity implements View.OnClickListener{
 
 		mAboutView = findViewById(R.id.ll_help_about);
 		mAboutView.setOnClickListener(this);
+		
+		//statistics
+		View statisticsView = findViewById(R.id.ll_statistics);
+		statisticsView.setOnClickListener(this);
 	}
 
 	public void initTitleVIews() {
@@ -127,6 +131,9 @@ public class SettingsActivity extends Activity implements View.OnClickListener{
 		case R.id.ll_help_about:
 			intent.setClass(SettingsActivity.this, AboutActivity.class);
 			startActivity(intent);
+			break;
+		case R.id.ll_statistics:
+			//流量统计
 			break;
 		default:
 			break;

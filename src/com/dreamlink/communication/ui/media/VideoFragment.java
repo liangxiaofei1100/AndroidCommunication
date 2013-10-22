@@ -106,8 +106,13 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		mFragmentActivity.openOptionsMenu();
-	};
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+	}
 	
 	private Menu mMenu;
 	@Override
@@ -308,14 +313,15 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	}
 
 	@Override
-	public void onBackPressed() {
+	public boolean onBackPressed() {
 		int mode = mAdapter.getMode();
 		Log.d(TAG, "onBackPressed.mode="+ mode);
 		if (DreamConstant.MENU_MODE_EDIT == mode) {
 			mFragmentActivity.dismissActionMenu();
 			onActionMenuDone();
+			return false;
 		}else {
-			mFragmentActivity.finish();
+			return true;
 		}
 	}
 

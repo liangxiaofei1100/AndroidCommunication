@@ -18,7 +18,7 @@ public class NetworkActivity extends BaseActivity {
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title_color));
 		actionBar.setIcon(R.drawable.title_network);
-		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(false);
 		
 		//modify title text color
 		int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");

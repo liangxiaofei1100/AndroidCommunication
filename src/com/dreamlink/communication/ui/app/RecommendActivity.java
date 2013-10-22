@@ -19,6 +19,7 @@ public class RecommendActivity extends BaseActivity {
 		actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title_color));
 		actionBar.setIcon(R.drawable.title_tuijian);
 		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.hide();
 		
 		//modify title text color
 		int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");

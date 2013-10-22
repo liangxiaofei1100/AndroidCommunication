@@ -55,7 +55,8 @@ public class BaseFragment extends Fragment{
 	/**
 	 * when user pressed back key
 	 */
-	public void onBackPressed(){
+	public boolean onBackPressed(){
+		return true;
 	}
 	
 	/**

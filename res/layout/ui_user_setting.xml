@@ -82,6 +82,8 @@
                 android:gravity="center"
                 android:text="@string/save_setting"
                 android:background="@drawable/button_bg"
+                android:textColor="@color/white"
+                android:layout_margin="10dp"
                 />
         </LinearLayout>
     </ScrollView>

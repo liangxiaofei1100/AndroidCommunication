@@ -31,8 +31,8 @@
 			<!-- 渐变 -->
 			<gradient android:endColor="@android:color/transparent" android:startColor="@android:color/transparent"
 				android:type="linear" />
-			<padding android:bottom="4dp" android:left="12dp"
-				android:right="12dp" android:top="4dp" />
+<!-- 			<padding android:bottom="4dp" android:left="15dp" -->
+<!-- 				android:right="15dp" android:top="4dp" /> -->
 		</shape>
 	</item>
 

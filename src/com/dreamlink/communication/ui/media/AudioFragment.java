@@ -107,9 +107,19 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		setHasOptionsMenu(true);
-		mFragmentActivity.openOptionsMenu();
-	};
+		if (null != savedInstanceState) {
+			Log.d(TAG, "savedInstanceState is not null");
+			count = savedInstanceState.getInt("count");
+		}
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+		Log.d(TAG, "onSaveInstanceState.count=" + count);
+		outState.putInt("count", count);
+	}
 	
 	
 	private Menu mMenu;
@@ -368,14 +378,15 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	};
 	
 	@Override
-	public void onBackPressed() {
+	public boolean onBackPressed() {
 		int mode = mAdapter.getMode();
 		Log.d(TAG, "onBackPressed.mode="+ mode);
 		if (DreamConstant.MENU_MODE_EDIT == mode) {
 			mFragmentActivity.dismissActionMenu();
 			onActionMenuDone();
+			return false;
 		}else {
-			mFragmentActivity.finish();
+			return true;
 		}
 	}
 }

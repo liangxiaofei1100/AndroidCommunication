@@ -178,7 +178,13 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-	};
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -918,19 +924,22 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		switch (scrollState) {
 		case OnScrollListener.SCROLL_STATE_FLING:
+			Log.d(TAG, "SCROLL_STATE_FLING");
 			mFileInfoAdapter.setFlag(false);
 			break;
 		case OnScrollListener.SCROLL_STATE_IDLE:
+			Log.d(TAG, "SCROLL_STATE_IDLE");
 			mFileInfoAdapter.setFlag(true);
+			mFileInfoAdapter.notifyDataSetChanged();
 			break;
 		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+			Log.d(TAG, "SCROLL_STATE_TOUCH_SCROLL");
 			mFileInfoAdapter.setFlag(false);
 			break;
 
 		default:
 			break;
 		}
-		mFileInfoAdapter.notifyDataSetChanged();
 	}
 
 	@Override
@@ -1120,21 +1129,20 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	/**
 	 * back key callback
 	 */
-	public void onBackPressed(){
+	@Override
+	public boolean onBackPressed() {
 		switch (mStatus) {
 		case STATUS_HOME:
-			getActivity().finish();
-			break;
+			return true;
 		case STATUS_FILE:
 			//if is root path,back to Home view
 			if (mCurrent_root_path.equals(mCurrentPath)) {
 				goToHome();
-				return;
+			}else {
+				//up to parent path
+				File parentFile = mCurrentFile.getParentFile();
+				browserTo(parentFile.getAbsoluteFile());
 			}
-			
-			//up to parent path
-			File parentFile = mCurrentFile.getParentFile();
-			browserTo(parentFile.getAbsoluteFile());
 			break;
 		case STATUS_DOC:
 		case STATUS_EBOOK:
@@ -1142,11 +1150,8 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		case STATUS_ARCHIVE:
 			goToHome();
 			break;
-
-		default:
-			Log.d(TAG, "default.status:" + mStatus);
-			break;
 		}
+		return false;
 	}
 	
 	@Override
