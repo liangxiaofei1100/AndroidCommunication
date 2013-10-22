@@ -1,7 +1,10 @@
 package com.dreamlink.communication.ui.media;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.common.BaseCursorAdapter;
+import com.dreamlink.communication.util.Log;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -10,16 +13,38 @@ import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class AudioCursorAdapter extends CursorAdapter {
+public class AudioCursorAdapter extends BaseCursorAdapter {
 	private static final String TAG = "AudioCursorAdapter";
 	private LayoutInflater mInflater = null;
 
 	public AudioCursorAdapter(Context context) {
 		super(context, null, true);
 		mInflater = LayoutInflater.from(context);
+		selectAll(false);
+	}
+	
+	@Override
+	public void selectAll(boolean isSelected) {
+		super.selectAll(isSelected);
+		int count = this.getCount();
+		for (int i = 0; i < count; i++) {
+			setSelected(i, isSelected);
+		}
+	}
+	
+	@Override
+	public int getSelectedItemsCount() {
+		int count = 0;
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				count ++;
+			}
+		}
+		return count;
 	}
 
 	@Override
@@ -39,6 +64,9 @@ public class AudioCursorAdapter extends CursorAdapter {
 		holder.artistView.setText(artist);
 		holder.timeView.setText(DreamUtil.mediaTimeFormat(duration));
 		holder.sizeView.setText(DreamUtil.getFormatSize(size));
+		
+		boolean isSelected = isSelected(cursor.getPosition());
+		updateViewBackground(isSelected, cursor.getPosition(), view);
 	}
 
 	@Override

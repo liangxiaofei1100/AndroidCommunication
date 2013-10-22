@@ -12,6 +12,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -23,6 +26,7 @@ import android.widget.ProgressBar;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.MenuTabManager;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainFragmentActivity;
@@ -40,6 +44,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	private AudioCursorAdapter mAdapter;
 	private ProgressBar mLoadingBar;
 	private FileInfoManager mFileInfoManager = null;
+	private MenuTabManager mMenuManager;
 	
 	private QueryHandler mQueryHandler = null;
 	
@@ -102,7 +107,21 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		setHasOptionsMenu(true);
+		mFragmentActivity.openOptionsMenu();
 	};
+	
+	
+	private Menu mMenu;
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		Log.d(TAG, "onCreateOptionsMenu");
+		if (null == mMenu) {
+			Log.d(TAG, "onCreateOptionsMenu.menu is null");
+			inflater.inflate(R.menu.audio_main, menu);
+			mMenu = menu;
+		}
+	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -160,64 +179,85 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		//open audio
-		Cursor cursor = mAdapter.getCursor();
-		cursor.moveToPosition(position);
-		String url = cursor.getString(cursor
-				.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
-		mFileInfoManager.openFile(url);
+		int mode = mAdapter.getMode();
+		Log.d(TAG, "onItemClicl.mode=" + mode);
+		if (DreamConstant.MENU_MODE_NORMAL == mode) {
+			//open audio
+			Cursor cursor = mAdapter.getCursor();
+			cursor.moveToPosition(position);
+			String url = cursor.getString(cursor
+					.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
+			mFileInfoManager.openFile(url);
+		}else {
+			mAdapter.setSelected(position);
+			mAdapter.notifyDataSetChanged();
+			
+			int count = mAdapter.getSelectedItemsCount();
+			mFragmentActivity.updateActionMenuTitle(count);
+		}
 	} 
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
-		final Cursor cursor = mAdapter.getCursor();
-		cursor.moveToPosition(position);
-		final String title = cursor.getString((cursor
-				.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
-		final String url = cursor.getString(cursor
-				.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
-		new AlertDialog.Builder(mContext)
-		.setTitle(title)
-		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						//open
-						mFileInfoManager.openFile(url);
-						break;
-					case 1:
-						//send
-						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(url, new TransportCallback() {
-							
-							@Override
-							public void onTransportSuccess() {
-								ViewHolder viewHolder = (ViewHolder) view.getTag();
-								showTransportAnimation(viewHolder.iconView);
-							}
-							
-							@Override
-							public void onTransportFail() {
-								
-							}
-						});
-						break;
-					case 2:
-						//delete
-						showDeleteDialog(position, url);
-						break;
-					case 3:
-						//info
-						String info = getAudioInfo(cursor);
-						DreamUtil.showInfoDialog(mContext, title, info);
-						break;
-
-					default:
-						break;
-					}
-			}
-		}).create().show();
+		int mode = mAdapter.getMode();
+		if (DreamConstant.MENU_MODE_EDIT == mode) {
+			return true;
+		}else {
+			mAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
+			mFragmentActivity.updateActionMenuTitle(1);
+		}
+		boolean isSelected = mAdapter.isSelected(position);
+		mAdapter.setSelected(position, !isSelected);
+		mAdapter.notifyDataSetChanged();
+		mFragmentActivity.startActionMenu(mMenu, mMenuManager);
+//		final Cursor cursor = mAdapter.getCursor();
+//		cursor.moveToPosition(position);
+//		final String title = cursor.getString((cursor
+//				.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
+//		final String url = cursor.getString(cursor
+//				.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
+//		new AlertDialog.Builder(mContext)
+//		.setTitle(title)
+//		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
+//			@Override
+//			public void onClick(DialogInterface dialog, int which) {
+//					switch (which) {
+//					case 0:
+//						//open
+//						mFileInfoManager.openFile(url);
+//						break;
+//					case 1:
+//						//send
+//						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
+//						fileSendUtil.sendFile(url, new TransportCallback() {
+//							
+//							@Override
+//							public void onTransportSuccess() {
+//								ViewHolder viewHolder = (ViewHolder) view.getTag();
+//								showTransportAnimation(viewHolder.iconView);
+//							}
+//							
+//							@Override
+//							public void onTransportFail() {
+//								
+//							}
+//						});
+//						break;
+//					case 2:
+//						//delete
+//						showDeleteDialog(position, url);
+//						break;
+//					case 3:
+//						//info
+//						String info = getAudioInfo(cursor);
+//						DreamUtil.showInfoDialog(mContext, title, info);
+//						break;
+//
+//					default:
+//						break;
+//					}
+//			}
+//		}).create().show();
 		return true;
 	}
 	
@@ -273,5 +313,69 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		message.arg1 = num;
 		message.what = MSG_UPDATE_UI;
 		message.sendToTarget();
+	}
+	
+	@Override
+	public void onActionMenuItemClick(MenuItem item) {
+		// TODO Auto-generated method stub
+		mNotice.showToast(TAG + ":" + item.getTitle());
+	}
+	
+	@Override
+	public void onActionMenuDone() {
+		mAdapter.changeMode(DreamConstant.MENU_MODE_NORMAL);
+		mAdapter.selectAll(false);
+		mAdapter.notifyDataSetChanged();
+	}
+	
+	@Override
+	public int getMode() {
+		if (null == mAdapter) {
+			return DreamConstant.MENU_MODE_NORMAL;
+		}
+		return mAdapter.getMode();
+	}
+	
+	@Override
+	public int getSelectItemsCount() {
+		if (null == mAdapter) {
+			return super.getSelectItemsCount();
+		}else {
+			return mAdapter.getSelectedItemsCount();
+		}
+	}
+	
+	@Override
+	public void selectAll(boolean isSelectAll) {
+		mAdapter.selectAll(isSelectAll);
+		mAdapter.notifyDataSetChanged();
+	}
+	
+	@Override
+	public Menu getMenu() {
+		Log.d(TAG, "getMenu");
+		return mMenu;
+	}
+	
+	@Override
+	public void setMenuTabManager(MenuTabManager manager) {
+		// TODO Auto-generated method stub
+		mMenuManager = manager;
+	}
+	
+	public MenuTabManager getMenuTabManager() {
+		return mMenuManager;
+	};
+	
+	@Override
+	public void onBackPressed() {
+		int mode = mAdapter.getMode();
+		Log.d(TAG, "onBackPressed.mode="+ mode);
+		if (DreamConstant.MENU_MODE_EDIT == mode) {
+			mFragmentActivity.dismissActionMenu();
+			onActionMenuDone();
+		}else {
+			mFragmentActivity.finish();
+		}
 	}
 }

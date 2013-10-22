@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.AsyncImageLoader;
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.AsyncImageLoader.ILoadImageCallback;
 import com.dreamlink.communication.util.Log;
 
@@ -36,9 +37,7 @@ public class FileInfoAdapter extends BaseAdapter {
 	private boolean flag = true;
 	public boolean isHome = true;
 	
-	public static final int MODE_NORMAL = 0;
-    public static final int MODE_EDIT = 1;
-	public int mMode = MODE_NORMAL;
+	public int mMode = DreamConstant.MENU_MODE_NORMAL;
 	
 	private static final int[] TYPE_ICONS = { R.drawable.default_doc_icon,
 		R.drawable.default_ebook_icon, R.drawable.deafult_apk_icon, R.drawable.default_archive_icon};
@@ -149,7 +148,7 @@ public class FileInfoAdapter extends BaseAdapter {
 	public void changeMode(int mode){
 		Log.d(TAG, "ChangeMode.mode=" + mode);
 		switch (mode) {
-		case MODE_NORMAL:
+		case DreamConstant.MENU_MODE_NORMAL:
 			selectAll(false);
 			break;
 		}
@@ -334,7 +333,7 @@ public class FileInfoAdapter extends BaseAdapter {
 			holder.checkBox.setChecked(is);
 		}
 		
-		if (mMode == MODE_EDIT) {
+		if (mMode == DreamConstant.MENU_MODE_EDIT) {
 			updateListViewBackground(position, view);
 		}else {
 			view.setBackgroundResource(Color.TRANSPARENT);

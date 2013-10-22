@@ -5,10 +5,11 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.AppUtil;
+import com.dreamlink.communication.lib.util.Notice;
+import com.dreamlink.communication.ui.MenuTabManager.onMenuItemClickListener;
 import com.dreamlink.communication.ui.app.AppFragment;
 import com.dreamlink.communication.ui.app.GameFragment;
 import com.dreamlink.communication.ui.app.RecommendActivity;
-import com.dreamlink.communication.ui.app.RecommendFragment;
 import com.dreamlink.communication.ui.app.TiandiFragment;
 import com.dreamlink.communication.ui.file.FileBrowserFragment;
 import com.dreamlink.communication.ui.history.HistoryActivity;
@@ -16,10 +17,9 @@ import com.dreamlink.communication.ui.image.PictureFragment;
 import com.dreamlink.communication.ui.media.AudioFragment;
 import com.dreamlink.communication.ui.media.VideoFragment;
 import com.dreamlink.communication.ui.network.NetworkActivity;
-import com.dreamlink.communication.ui.network.NetworkFragment;
 import com.dreamlink.communication.ui.settings.SettingsActivity;
+import com.dreamlink.communication.util.Log;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -28,6 +28,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,6 +45,8 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private ViewPager viewPager;
 	private MainFragmentPagerAdapter mPagerAdapter;
 	private int mLastPosition = 0;
+	
+	private Notice mNotice;
 
 	// define fragment position
 	public static final int ZY_TIANDI = 0;
@@ -92,6 +95,7 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private View mDoneView;
 	private Button mSelectBtn;
 	private View mMenuBarBottomView;
+	private PopupMenu mSelectPopupMenu;
 
 	@Override
 	protected void onCreate(Bundle arg0) {
@@ -99,6 +103,8 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		setContentView(R.layout.ui_main_fragment);
 
 		getSupportActionBar().hide();
+		
+		mNotice = new Notice(this);
 
 		mContainLayout = (RelativeLayout) findViewById(R.id.rl_main_fragment);
 		initMenuBar();
@@ -136,11 +142,20 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		viewPager.setOnPageChangeListener(this);
 	}
 	
+//	@Override
+//	public boolean onCreateOptionsMenu(Menu menu) {
+//		// TODO Auto-generated method stub
+//		Log.d(TAG, "onCreateOptionsMenu");
+////		this.mMenu = menu;
+//		return super.onCreateOptionsMenu(menu);
+//	}
+	
 	private void initMenuBar(){
 		mMenuBarTopView = findViewById(R.id.menubar_top);
 		mMenuBarBottomView = findViewById(R.id.menubar_bottom);
 		mMenuBarTopView.setVisibility(View.GONE);
 		mMenuBarBottomView.setVisibility(View.GONE);
+//		openOptionsMenu();
 		
 		mDoneView = findViewById(R.id.ll_menubar_done);
 		mSelectBtn = (Button) findViewById(R.id.btn_select);
@@ -237,20 +252,9 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_BACK:
-			int position = viewPager.getCurrentItem();
-			switch (position) {
-			case IMAGE:
-				// Picture
-				mPictureFragment.onBackPressed();
-				return false;
-			case FILE_BROWSER:
-				// FileBrowser
-				mBrowserFragment.onBackPressed();
-				return false;
-			default:
-				break;
-			}
-			break;
+			BaseFragment baseFragment = getBaseFragment();
+			baseFragment.onBackPressed();
+			return false;
 		default:
 			break;
 		}
@@ -272,6 +276,14 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		// TODO Auto-generated method stub
 		// when scroll out of PictureFragment,set PictureFragment status to
 		// Folder View
+		int mode = getBaseFragment().getMode();
+		if (DreamConstant.MENU_MODE_EDIT == mode) {
+			updateActionMenuBar();
+			showActionMenuBar(true);
+		}else {
+			showActionMenuBar(false);
+		}
+		
 		if (IMAGE == mLastPosition) {
 			mPictureFragment.scrollToHomeView();
 		}
@@ -301,14 +313,136 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		case R.id.ll_recommend:
 			MainUIFrame.startActivity(this, RecommendActivity.class);
 			break;
+		case R.id.ll_menubar_done:
+			dismissActionMenu();
+			BaseFragment baseFragment = getBaseFragment();
+			baseFragment.onActionMenuDone();
+			break;
+		case R.id.btn_select:
+			if (null == mSelectPopupMenu) {
+				mSelectPopupMenu = createSelectPopupMenu(mSelectBtn);
+			}
+			updateSelectPopupMenu();
+			mSelectPopupMenu.show();
+			break;
 		default:
 			break;
 		}
 	}
-
+	
+	/**
+	 * create popup view for select button,select all/unselect all
+	 * @param anchorView
+	 * @return
+	 */
+	private PopupMenu createSelectPopupMenu(View anchorView) {
+        final PopupMenu popupMenu = new PopupMenu(MainFragmentActivity.this, anchorView);
+        popupMenu.inflate(R.menu.select_popup_menu);
+        popupMenu.setOnMenuItemClickListener(this);
+        return popupMenu;
+    }
+	
+	private void updateSelectPopupMenu(){
+        if (mSelectPopupMenu == null) {
+            mSelectPopupMenu = createSelectPopupMenu(mSelectBtn);
+            return;
+        }
+        final Menu menu = mSelectPopupMenu.getMenu();
+        int selectedCount = getBaseFragment().getSelectItemsCount();
+        if (getBaseFragment().getCount() == 0) {
+            menu.findItem(R.id.menu_select).setEnabled(false);
+        } else {
+            menu.findItem(R.id.menu_select).setEnabled(true);
+            if (getBaseFragment().getCount() != selectedCount) {
+                menu.findItem(R.id.menu_select).setTitle(R.string.select_all);
+                getBaseFragment().setSelectAll(true);
+            } else {
+                menu.findItem(R.id.menu_select).setTitle(R.string.unselect_all);
+                getBaseFragment().setSelectAll(false);
+            }
+        }
+	}
+	
+	/**
+	 * get BaseFragment object
+	 * @return BaseFragment objcet
+	 */
+	public BaseFragment getBaseFragment(){
+		int position = viewPager.getCurrentItem();
+		return (BaseFragment) mFragmentLists.get(position);
+	}
+	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		setCurrentItem(item.getOrder());
+		switch (item.getItemId()) {
+		case R.id.menu_select:
+			getBaseFragment().selectAll(getBaseFragment().isSelectAll());
+			updateActionMenuTitle(getBaseFragment().getSelectItemsCount());
+			updateSelectPopupMenu();
+			break;
+
+		default:
+			setCurrentItem(item.getOrder());
+			break;
+		}
 		return true;
+	}
+	
+	public void startActionMenu(Menu menu, MenuTabManager manager){
+		showActionMenuBar(true);
+		if (null == manager) {
+			manager = new MenuTabManager(this, mMenuBarBottomView);
+			manager.setOnMenuItemClickListener(new onMenuItemClickListener() {
+				@Override
+				public void onMenuClick(MenuItem item) {
+					BaseFragment baseFragment = getBaseFragment();
+					baseFragment.onActionMenuItemClick(item);
+				}
+			});
+		}
+		manager.refreshMenus(menu);
+	}
+	
+	public void dismissActionMenu(){
+//		mMenu.clear();
+		mSelectBtn.setText(null);
+		showActionMenuBar(false);
+	}
+	
+	public void updateActionMenuBar(){
+		int selectCount = getBaseFragment().getSelectItemsCount();
+		updateActionMenuTitle(selectCount);
+		
+		MenuTabManager manager = getBaseFragment().getMenuTabManager();
+		if (null != manager) {
+			manager.refreshMenus(getBaseFragment().getMenu());
+		}else {
+			Log.e(TAG, "updateActionMenuBar.MenuTabManage is null");
+			manager = new MenuTabManager(this, mMenuBarBottomView);
+			manager.setOnMenuItemClickListener(new onMenuItemClickListener() {
+				@Override
+				public void onMenuClick(MenuItem item) {
+					BaseFragment baseFragment = getBaseFragment();
+					baseFragment.onActionMenuItemClick(item);
+				}
+			});
+			manager.refreshMenus(getBaseFragment().getMenu());
+		}
+	}
+	
+	public void showActionMenuBar(boolean show){
+		if (show) {
+			mCustomTitleView.setVisibility(View.GONE);
+			mMenuBarTopView.setVisibility(View.VISIBLE);
+			mMenuBarBottomView.setVisibility(View.VISIBLE);
+		}else {
+			mCustomTitleView.setVisibility(View.VISIBLE);
+			mMenuBarTopView.setVisibility(View.GONE);
+			mMenuBarBottomView.setVisibility(View.GONE);
+		}
+	}
+	
+	public void updateActionMenuTitle(int count){
+		mSelectBtn.setText(getResources().getString(R.string.select_msg, count));
 	}
 }

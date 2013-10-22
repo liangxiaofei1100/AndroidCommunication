@@ -13,6 +13,9 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -24,6 +27,7 @@ import android.widget.ProgressBar;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.MenuTabManager;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainFragmentActivity;
@@ -42,6 +46,8 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	
 	private VideoCursorAdapter mAdapter;
 	private QueryHandler mQueryHandler = null;
+	
+	private MenuTabManager mMenuManager;
 	
 	private FileInfoManager mFileInfoManager;
 	private Context mContext;
@@ -100,7 +106,19 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		mFragmentActivity.openOptionsMenu();
 	};
+	
+	private Menu mMenu;
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		Log.d(TAG, "onCreateOptionsMenu");
+		if (null == mMenu) {
+			Log.d(TAG, "onCreateOptionsMenu.menu is null");
+			inflater.inflate(R.menu.action_menu_test, menu);
+			mMenu = menu;
+		}
+	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -157,64 +175,84 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		Cursor cursor = mAdapter.getCursor();
-		cursor.moveToPosition(position);
-		String url = cursor.getString(cursor
-				.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
-		mFileInfoManager.openFile(url);
+		int mode = mAdapter.getMode();
+		if (DreamConstant.MENU_MODE_NORMAL == mode) {
+			Cursor cursor = mAdapter.getCursor();
+			cursor.moveToPosition(position);
+			String url = cursor.getString(cursor
+					.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
+			mFileInfoManager.openFile(url);
+		}else {
+			mAdapter.setSelected(position);
+			mAdapter.notifyDataSetChanged();
+			
+			int count = mAdapter.getSelectedItemsCount();
+			mFragmentActivity.updateActionMenuTitle(count);
+		}
 	}
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
-		final Cursor cursor = mAdapter.getCursor();
-		cursor.moveToPosition(position);
-//		final long videoId = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
-		final String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
-		final String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
-			
-			
-		new AlertDialog.Builder(mContext)
-		.setTitle(displayName)
-		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						//open
-						mFileInfoManager.openFile(url);
-						break;
-					case 1:
-						//send
-						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(url, new TransportCallback() {
-							
-							@Override
-							public void onTransportSuccess() {
-								ViewHolder viewHolder = (ViewHolder) view.getTag();
-								showTransportAnimation(viewHolder.iconView);
-							}
-							
-							@Override
-							public void onTransportFail() {
-								
-							}
-						});
-						break;
-					case 2:
-						//delete
-						showDeleteDialog(position, url);
-						break;
-					case 3:
-						//info
-						String info = getVideoInfo(cursor);
-						DreamUtil.showInfoDialog(mContext, displayName, info);
-						break;
-
-					default:
-						break;
-					}
-			}
-		}).create().show();
+		int mode = mAdapter.getMode();
+		if (DreamConstant.MENU_MODE_EDIT == mode) {
+			return true;
+		}else {
+			mAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
+			mFragmentActivity.updateActionMenuTitle(1);
+		}
+		boolean isSelected = mAdapter.isSelected(position);
+		mAdapter.setSelected(position, !isSelected);
+		mAdapter.notifyDataSetChanged();
+		mFragmentActivity.startActionMenu(mMenu, mMenuManager);
+//		final Cursor cursor = mAdapter.getCursor();
+//		cursor.moveToPosition(position);
+////		final long videoId = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
+//		final String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
+//		final String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
+//			
+//			
+//		new AlertDialog.Builder(mContext)
+//		.setTitle(displayName)
+//		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
+//			@Override
+//			public void onClick(DialogInterface dialog, int which) {
+//					switch (which) {
+//					case 0:
+//						//open
+//						mFileInfoManager.openFile(url);
+//						break;
+//					case 1:
+//						//send
+//						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
+//						fileSendUtil.sendFile(url, new TransportCallback() {
+//							
+//							@Override
+//							public void onTransportSuccess() {
+//								ViewHolder viewHolder = (ViewHolder) view.getTag();
+//								showTransportAnimation(viewHolder.iconView);
+//							}
+//							
+//							@Override
+//							public void onTransportFail() {
+//								
+//							}
+//						});
+//						break;
+//					case 2:
+//						//delete
+//						showDeleteDialog(position, url);
+//						break;
+//					case 3:
+//						//info
+//						String info = getVideoInfo(cursor);
+//						DreamUtil.showInfoDialog(mContext, displayName, info);
+//						break;
+//
+//					default:
+//						break;
+//					}
+//			}
+//		}).create().show();
 		return true;
 	}
 	
@@ -267,6 +305,64 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		message.arg1 = num;
 		message.what = MSG_UPDATE_UI;
 		message.sendToTarget();
+	}
+
+	@Override
+	public void onBackPressed() {
+		int mode = mAdapter.getMode();
+		Log.d(TAG, "onBackPressed.mode="+ mode);
+		if (DreamConstant.MENU_MODE_EDIT == mode) {
+			mFragmentActivity.dismissActionMenu();
+			onActionMenuDone();
+		}else {
+			mFragmentActivity.finish();
+		}
+	}
+
+	@Override
+	public void onActionMenuItemClick(MenuItem item) {
+		// TODO Auto-generated method stub
+		mNotice.showToast(TAG + ":" + item.getTitle());
+	}
+
+	@Override
+	public void onActionMenuDone() {
+		// TODO Auto-generated method stub
+		mAdapter.changeMode(DreamConstant.MENU_MODE_NORMAL);
+		mAdapter.selectAll(false);
+		mAdapter.notifyDataSetChanged();
+	}
+
+	@Override
+	public int getMode() {
+		// TODO Auto-generated method stub
+		if (null == mAdapter) {
+			return DreamConstant.MENU_MODE_NORMAL;
+		}
+		return mAdapter.getMode();
+	}
+
+	@Override
+	public int getSelectItemsCount() {
+		// TODO Auto-generated method stub
+		if (null == mAdapter) {
+			return super.getSelectItemsCount();
+		}else {
+			return mAdapter.getSelectedItemsCount();
+		}
+	}
+
+	@Override
+	public void selectAll(boolean isSelectAll) {
+		// TODO Auto-generated method stub
+		mAdapter.selectAll(isSelectAll);
+		mAdapter.notifyDataSetChanged();
+	}
+	
+	@Override
+	public Menu getMenu() {
+		Log.d(TAG, "getMenu");
+		return mMenu;
 	}
 
 	@Override

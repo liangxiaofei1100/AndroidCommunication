@@ -2,6 +2,7 @@ package com.dreamlink.communication.ui.media;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.common.BaseCursorAdapter;
 import com.dreamlink.communication.ui.media.AsyncVideoLoader.ILoadVideoCallback;
 
 import android.content.Context;
@@ -15,7 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class VideoCursorAdapter extends CursorAdapter {
+public class VideoCursorAdapter extends BaseCursorAdapter {
 	private static final String TAG = "VideoCursorAdapter";
 	private LayoutInflater mInflater = null;
 	private AsyncVideoLoader asyncVideoLoader;
@@ -24,6 +25,26 @@ public class VideoCursorAdapter extends CursorAdapter {
 		super(context, null, true);
 		mInflater = LayoutInflater.from(context);
 		asyncVideoLoader = new AsyncVideoLoader(context);
+	}
+	
+	@Override
+	public void selectAll(boolean isSelected) {
+		super.selectAll(isSelected);
+		int count = this.getCount();
+		for (int i = 0; i < count; i++) {
+			setSelected(i, isSelected);
+		}
+	}
+	
+	@Override
+	public int getSelectedItemsCount() {
+		int count = 0;
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				count ++;
+			}
+		}
+		return count;
 	}
 
 	@Override
@@ -49,6 +70,9 @@ public class VideoCursorAdapter extends CursorAdapter {
 		}
 		
 		holder.timeView.setText(DreamUtil.mediaTimeFormat(duration));
+		
+		boolean isSelected = isSelected(cursor.getPosition());
+		updateViewBackground(isSelected, cursor.getPosition(), view);
 	}
 
 	@Override
