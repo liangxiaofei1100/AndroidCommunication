@@ -19,7 +19,9 @@
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
         android:background="@drawable/button_bg"
-        android:text="@string/settings_logout" />
+        android:text="@string/settings_logout" 
+        android:textColor="@color/white"
+        />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -49,9 +51,22 @@
                     android:background="@drawable/setting_item_bg"
                     android:clickable="true"
                     android:gravity="center_vertical"
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:padding="10dp" >
-
+                    
+                    <ImageView 
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="15dp"
+                        android:src="@drawable/user_info"
+                        />
+                    
+                    <LinearLayout 
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:orientation="vertical"
+                         >
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -65,6 +80,7 @@
                         android:text="@string/settings_user_info_tips"
                         android:textColor="@color/gray"
                         android:textSize="12sp" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 			<!-- user info setting end-->
@@ -80,9 +96,22 @@
                     android:background="@drawable/setting_item_bg_top"
                     android:clickable="true"
                     android:gravity="center_vertical"
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:padding="10dp" >
-
+                    
+                    <ImageView 
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="15dp"
+                        android:src="@drawable/function_introduce"
+                        />
+                    
+                    <LinearLayout 
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:orientation="vertical"
+                         >
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -95,6 +124,7 @@
                         android:text="@string/help_introduction_tips"
                         android:textColor="@color/gray"
                         android:textSize="12sp" />
+                    </LinearLayout>
                 </LinearLayout>
 				<!-- function introduce end  -->
 				<!-- suggest start -->
@@ -104,8 +134,22 @@
                     android:background="@drawable/setting_item_bg_middle"
                     android:clickable="true"
                     android:gravity="center_vertical"
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:padding="10dp" >
+                    
+                    <ImageView 
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="15dp"
+                        android:src="@drawable/suggest"
+                        />
+                    
+                    <LinearLayout 
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:orientation="vertical"
+                         >
 
                     <TextView
                         android:layout_width="match_parent"
@@ -119,6 +163,7 @@
                         android:text="@string/help_suggestion_tips"
                         android:textColor="@color/gray"
                         android:textSize="12sp" />
+                    </LinearLayout>
                 </LinearLayout>
                 <!-- suggest end -->
 				<!-- check update start -->
@@ -129,9 +174,22 @@
                     android:background="@drawable/setting_item_bg_bottom"
                     android:clickable="true"
                     android:gravity="center_vertical"
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:padding="10dp" >
-
+					
+                    <ImageView 
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="15dp"
+                        android:src="@drawable/check_update"
+                        />
+                    
+                    <LinearLayout 
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:orientation="vertical"
+                         >
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -145,6 +203,7 @@
                         android:text="@string/help_current_version"
                         android:textColor="@color/gray"
                         android:textSize="12sp" />
+                    </LinearLayout>
                 </LinearLayout>
                 <!-- check update end -->
             </LinearLayout>
@@ -157,8 +216,16 @@
                 android:background="@drawable/setting_item_bg"
                 android:clickable="true"
                 android:gravity="center_vertical"
-                android:orientation="vertical"
+                android:orientation="horizontal"
                 android:padding="10dp" >
+                
+                 <ImageView 
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="15dp"
+                        android:src="@drawable/about"
+                        />
 
                 <TextView
                     android:layout_width="match_parent"
