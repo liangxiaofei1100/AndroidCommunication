@@ -134,6 +134,12 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
 	}
 	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+	}
+	
 	public void onResume() {
 		super.onResume();
 		Log.d(TAG, "onResume");

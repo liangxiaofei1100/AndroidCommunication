@@ -102,7 +102,19 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-	};
+		if (null != savedInstanceState) {
+			Log.d(TAG, "savedInstanceState is not null");
+			count = savedInstanceState.getInt("count");
+		}
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+		Log.d(TAG, "onSaveInstanceState.count=" + count);
+		outState.putInt("count", count);
+	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
