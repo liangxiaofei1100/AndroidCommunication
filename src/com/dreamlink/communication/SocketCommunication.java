@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.io.IOException;
 
+import com.dreamlink.communication.TrafficStaticInterface.TrafficStaticsRxListener;
+import com.dreamlink.communication.TrafficStaticInterface.TrafficStaticsTxListener;
 import com.dreamlink.communication.lib.util.ArrayUtil;
 import com.dreamlink.communication.util.Log;
 
@@ -23,7 +25,7 @@ import com.dreamlink.communication.util.Log;
 public class SocketCommunication extends Thread {
 	private static final String TAG = "SocketCommunication";
 	/** Socket server port */
-	public static final String PORT = SocketPort.COMMUNICATION_SERVER_PORT;
+	public static final int PORT = SocketPort.COMMUNICATION_SERVER_PORT;
 
 	/**
 	 * Listen socket connect and disconnect event.
@@ -78,6 +80,9 @@ public class SocketCommunication extends Thread {
 	private int mLastPacketLength;
 	/** The remain packet of last receive. */
 	private byte[] mRemainPacket;
+
+	private TrafficStaticsRxListener mRxListener = TrafficStatics.getInstance();
+	private TrafficStaticsTxListener mTxListener = TrafficStatics.getInstance();
 
 	public SocketCommunication(Socket socket, OnReceiveMessageListener listener) {
 		this.mSocket = socket;
@@ -194,7 +199,7 @@ public class SocketCommunication extends Thread {
 								+ packetLength);
 				return true;
 			}
-			
+
 			// 2. Read received data.
 			dataReceivedLength = in.read(mReceiveBuffer, 0, packetLength);
 			if (dataReceivedLength == -1) {
@@ -203,8 +208,8 @@ public class SocketCommunication extends Thread {
 			}
 			if (dataReceivedLength == packetLength) {
 				// Received data is just one packet. Return for next read.
-				mOnReceiveMessageListener.onReceiveMessage(Arrays.copyOfRange(
-						mReceiveBuffer, 0, dataReceivedLength), this);
+				receiveMessage(Arrays.copyOfRange(mReceiveBuffer, 0,
+						dataReceivedLength));
 				return true;
 			} else if (dataReceivedLength < packetLength) {
 				// Received data is less than one packet.
@@ -230,9 +235,8 @@ public class SocketCommunication extends Thread {
 			}
 			if (dataReceivedLength + mRemainPacket.length == mLastPacketLength) {
 				// remain packet + received data is one packet.
-				mOnReceiveMessageListener.onReceiveMessage(ArrayUtil.join(
-						mRemainPacket, Arrays.copyOfRange(mReceiveBuffer, 0,
-								dataReceivedLength)), this);
+				receiveMessage(ArrayUtil.join(mRemainPacket, Arrays
+						.copyOfRange(mReceiveBuffer, 0, dataReceivedLength)));
 				mRemainPacket = null;
 				return true;
 			} else if (dataReceivedLength + mRemainPacket.length < mLastPacketLength) {
@@ -243,6 +247,11 @@ public class SocketCommunication extends Thread {
 			}
 		}
 		return true;
+	}
+
+	private void receiveMessage(byte[] msg) {
+		mOnReceiveMessageListener.onReceiveMessage(msg, this);
+		mRxListener.addRxBytes(msg.length);
 	}
 
 	/**
@@ -273,6 +282,8 @@ public class SocketCommunication extends Thread {
 			if (mDataOutputStream != null) {
 				mDataOutputStream.write(encode(msg));
 				mDataOutputStream.flush();
+
+				mTxListener.addTxBytes(msg.length);
 			} else {
 				mListener.OnCommunicationLost(this);
 				return false;

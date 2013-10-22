@@ -4,8 +4,6 @@ import java.net.Socket;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Message;
 
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.server.SocketServer.OnClientConnectedListener;
@@ -19,8 +17,8 @@ import com.dreamlink.communication.util.Log;
  * 
  */
 @SuppressLint("UseValueOf")
-public class SocketServerTask extends AsyncTask<String, Socket, Socket>
-		implements OnClientConnectedListener {
+public class SocketServerTask extends Thread implements
+		OnClientConnectedListener {
 	private static final String TAG = "SocketServerTask";
 
 	public interface OnClientConnectedListener {
@@ -34,15 +32,14 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 
 	private OnClientConnectedListener mOnClientConnectedListener;
 
-	private Message message;
-
 	private Notice notice;
-
 	private SocketServer server;
+	private int mSocketPort;
 
-	public SocketServerTask(Context context) {
+	public SocketServerTask(Context context, int port) {
 		server = SocketServer.getInstance();
 		notice = new Notice(context);
+		mSocketPort = port;
 	}
 
 	public void setOnClientConnectedListener(OnClientConnectedListener listener) {
@@ -50,52 +47,24 @@ public class SocketServerTask extends AsyncTask<String, Socket, Socket>
 	}
 
 	@Override
-	protected void onPreExecute() {
-		super.onPreExecute();
+	public void run() {
+		Log.d(TAG, "run started.");
 		if (server.isServerStarted()) {
 			notice.showToast("Server is already started");
 		}
-	}
 
-	@Override
-	protected Socket doInBackground(String... arg) {
-		if (server.isServerStarted()) {
-			notice.showToast("Server is already started");
-			return null;
-		} else {
-			return server.startServer(new Integer(arg[0]), this);
-		}
-	}
-
-	@Override
-	protected void onPostExecute(Socket result) {
-		super.onPostExecute(result);
-		if (server.isServerStarted()) {
-			return;
-		}
-		if (result != null) {
-			notice.showToast("Client connected.");
-			message.obj = result;
-		} else {
-			Log.d(TAG, "onPostExecute, result is null.");
-		}
-	}
-
-	@Override
-	protected void onProgressUpdate(Socket... values) {
-		if (values == null) {
-			notice.showToast("Waiting for client timeout.");
-		} else if (values.length == 1) {
-			notice.showToast("Client connected.");
-			if (mOnClientConnectedListener != null) {
-				mOnClientConnectedListener.onClientConnected(values[0]);
-			}
-		}
+		server.startServer(mSocketPort, this);
+		Log.d(TAG, "run finished.");
 	}
 
 	@Override
 	public Socket onClientConnected(Socket socket) {
-		publishProgress(socket);
+		if (socket != null) {
+			notice.showToast("Client connected.");
+			if (mOnClientConnectedListener != null) {
+				mOnClientConnectedListener.onClientConnected(socket);
+			}
+		}
 		return socket;
 	}
 

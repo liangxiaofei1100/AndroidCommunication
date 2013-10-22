@@ -2,7 +2,13 @@ package com.dreamlink.communication.ui.network;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseActivity;
+import com.dreamlink.communication.SocketCommunicationManager;
+import com.dreamlink.communication.UserManager;
+import com.dreamlink.communication.server.service.ConnectHelper;
 
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -18,7 +24,8 @@ public class InviteActivity extends BaseActivity implements OnClickListener{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui_invite);
 		ActionBar actionBar = getSupportActionBar();
-		actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title_color));
+		actionBar.setBackgroundDrawable(getResources().getDrawable(
+				R.drawable.title_color));
 		actionBar.setIcon(R.drawable.title_tiandi);
 		actionBar.setDisplayHomeAsUpEnabled(false);
 		actionBar.hide();
@@ -27,22 +34,21 @@ public class InviteActivity extends BaseActivity implements OnClickListener{
 		int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
 		TextView titleView = (TextView) findViewById(titleId);
 		titleView.setTextColor(getResources().getColor(R.color.white));
-		
+
 		setTitle(R.string.invite_install);
 		
 		initTitle(R.string.invite_install, R.drawable.title_tiandi);
-		
 		initView();
 	}
-	
-	private void initView(){
+
+	private void initView() {
 		View weixinView = findViewById(R.id.ll_invite_weixin);
 		View qqView = findViewById(R.id.ll_invite_qq);
 		View bluetoothView = findViewById(R.id.ll_invite_bluetooth);
 		View weiboSinaView = findViewById(R.id.ll_invite_weibo_sina);
 		View weiboTencentView = findViewById(R.id.ll_invite_weibo_tencent);
 		View zeroGprsView = findViewById(R.id.ll_invite_zero_gprs);
-		
+
 		weixinView.setOnClickListener(this);
 		qqView.setOnClickListener(this);
 		bluetoothView.setOnClickListener(this);
@@ -69,14 +75,61 @@ public class InviteActivity extends BaseActivity implements OnClickListener{
 		case R.id.ll_invite_weibo_tencent:
 			break;
 		case R.id.ll_invite_zero_gprs:
-			intent.setClass(this, HttpShareActivity.class);
-			startActivity(intent);
+			zeroGprsInviteCheck();
 			break;
 		default:
 			break;
 		}
 	}
-	
+
+	private void zeroGprsInviteCheck() {
+		final SocketCommunicationManager manager = SocketCommunicationManager
+				.getInstance(getApplicationContext());
+
+		if (manager.isConnected() || manager.isServerAndCreated()) {
+			showDisconnectDialog();
+		} else {
+			launchZeroGprsInvite();
+		}
+	}
+
+	private void showDisconnectDialog() {
+		Builder dialog = new AlertDialog.Builder(this);
+
+		dialog.setTitle(R.string.http_share_open_warning_dialog_title)
+				.setMessage(R.string.http_share_open_warning_dialog_message)
+				.setPositiveButton(android.R.string.ok,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+
+								disconnectCurrentNetwork();
+								launchZeroGprsInvite();
+							}
+						}).setNegativeButton(android.R.string.cancel, null)
+				.create().show();
+	}
+
+	private void launchZeroGprsInvite() {
+		Intent intent = new Intent();
+		intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+		intent.setClass(InviteActivity.this, HttpShareActivity.class);
+		startActivity(intent);
+	}
+
+	private void disconnectCurrentNetwork() {
+		ConnectHelper connectHelper = ConnectHelper
+				.getInstance(getApplicationContext());
+		connectHelper.stopSearch();
+
+		SocketCommunicationManager manager = SocketCommunicationManager
+				.getInstance(getApplicationContext());
+		manager.closeAllCommunication();
+		manager.stopServer();
+		UserManager.getInstance().resetLocalUserID();
+	}
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -88,5 +141,5 @@ public class InviteActivity extends BaseActivity implements OnClickListener{
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 }
