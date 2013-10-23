@@ -29,6 +29,7 @@ import android.widget.ProgressBar;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
@@ -74,6 +75,14 @@ public class TiandiFragment extends BaseFragment implements OnItemClickListener,
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
 	};
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "onResume");
+		mFragmentActivity.addObject(MainFragmentActivity.ZY_TIANDI, (BaseFragment)this);
+		mFragmentActivity.setTitleName(MainFragmentActivity.ZY_TIANDI);
+	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
