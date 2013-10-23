@@ -172,7 +172,11 @@
      <string name="invite_zero_gprs">零流量邀请</string>
      <string name="invite_tip">仅支持邀请安卓用户</string>
      <string name="dimen_code_download">扫一扫二维码下载朝颜无限</string>
-     <string name="statistics">流量统计</string>
+     <string name="traffic_statistics">流量统计</string>
+     <string name="traffic_send">发送流量：%s</string>
+     <string name="traffic_receive">接收流量：%s</string>
+     <string name="traffic_notice">通过朝颜无限手机之间互传文件的时候不会消耗任何一部手机的移动网络流量，
+         某些流量统计软件会有计算错误的情况，请放心使用！</string>
      
      <string name="select_all">全选</string>
      <string name="unselect_all">取消全选</string>

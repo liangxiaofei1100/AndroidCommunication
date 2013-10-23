@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.LoginActivity;
+import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.UserInfoSetting;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
@@ -133,7 +134,7 @@ public class SettingsActivity extends Activity implements View.OnClickListener{
 			startActivity(intent);
 			break;
 		case R.id.ll_statistics:
-			//流量统计
+			MainUIFrame.startActivity(this, TrafficStatisticsActivity.class);
 			break;
 		default:
 			break;

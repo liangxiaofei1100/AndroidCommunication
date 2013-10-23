@@ -1,12 +1,9 @@
 package com.dreamlink.communication.ui.network;
 
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
-import android.widget.TextView;
 
-import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseActivity;
 
 public class NetworkActivity extends BaseActivity {
@@ -16,16 +13,7 @@ public class NetworkActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		
 		ActionBar actionBar = getSupportActionBar();
-		actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title_color));
-		actionBar.setIcon(R.drawable.title_network);
-		actionBar.setDisplayHomeAsUpEnabled(false);
-		
-		//modify title text color
-		int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
-		TextView titleView = (TextView) findViewById(titleId);
-		titleView.setTextColor(getResources().getColor(R.color.white));
-		
-		setTitle(R.string.network);
+		actionBar.hide();
 		
 		getSupportFragmentManager().beginTransaction().replace(
 				android.R.id.content, new NetworkFragment()).commit();
