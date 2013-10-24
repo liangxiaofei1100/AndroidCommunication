@@ -127,6 +127,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	private static final int STATUS_APK = 4;
 	private static final int STATUS_ARCHIVE = 5;
 	private int mStatus = STATUS_HOME;
+	private static final String STATUS = "status";
 	
 	private String sdcard_path;
 	private String internal_path;
@@ -178,7 +179,22 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-	};
+		Log.d(TAG, "onCreate.mStatus=" + mStatus);
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "onResume");
+		mFragmentActivity.addObject(MainFragmentActivity.FILE_BROWSER, (BaseFragment)this);
+		mFragmentActivity.setTitleName(MainFragmentActivity.FILE_BROWSER);
+	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -513,6 +529,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	}
 
 	public void browserTo(File file) {
+		Log.d(TAG, "browserTo.status=" + mStatus);
 		if (file.isDirectory()) {
 			mCurrentPath = file.getAbsolutePath();
 			mCurrentFile = file;
@@ -918,19 +935,22 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		switch (scrollState) {
 		case OnScrollListener.SCROLL_STATE_FLING:
+			Log.d(TAG, "SCROLL_STATE_FLING");
 			mFileInfoAdapter.setFlag(false);
 			break;
 		case OnScrollListener.SCROLL_STATE_IDLE:
+			Log.d(TAG, "SCROLL_STATE_IDLE");
 			mFileInfoAdapter.setFlag(true);
+			mFileInfoAdapter.notifyDataSetChanged();
 			break;
 		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+			Log.d(TAG, "SCROLL_STATE_TOUCH_SCROLL");
 			mFileInfoAdapter.setFlag(false);
 			break;
 
 		default:
 			break;
 		}
-		mFileInfoAdapter.notifyDataSetChanged();
 	}
 
 	@Override
@@ -1120,21 +1140,21 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	/**
 	 * back key callback
 	 */
-	public void onBackPressed(){
+	@Override
+	public boolean onBackPressed() {
+		Log.d(TAG, "onBackPressed.mStatus=" + mStatus);
 		switch (mStatus) {
 		case STATUS_HOME:
-			getActivity().finish();
-			break;
+			return true;
 		case STATUS_FILE:
 			//if is root path,back to Home view
 			if (mCurrent_root_path.equals(mCurrentPath)) {
 				goToHome();
-				return;
+			}else {
+				//up to parent path
+				File parentFile = mCurrentFile.getParentFile();
+				browserTo(parentFile.getAbsoluteFile());
 			}
-			
-			//up to parent path
-			File parentFile = mCurrentFile.getParentFile();
-			browserTo(parentFile.getAbsoluteFile());
 			break;
 		case STATUS_DOC:
 		case STATUS_EBOOK:
@@ -1142,11 +1162,8 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		case STATUS_ARCHIVE:
 			goToHome();
 			break;
-
-		default:
-			Log.d(TAG, "default.status:" + mStatus);
-			break;
 		}
+		return false;
 	}
 	
 	@Override

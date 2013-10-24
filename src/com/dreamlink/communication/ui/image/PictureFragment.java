@@ -54,12 +54,13 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	private QueryHandler mQueryHandler = null;
 	private PictureCursorAdapter mAdapter = null;
-	private PictureAdapter mAdapter2 = null;
+	private PictureAdapter mFolderAdapter = null;
 
 	private int mAppId;
 	private static final int STATUS_FOLDER = 0;
 	private static final int STATUS_ITEM = 1;
-	private int mStatus = STATUS_FOLDER;
+	private int mStatus = -1;
+	private static final String STATUS = "status";
 	
 	private static final int QUERY_TOKEN_FOLDER = 0x11;
 	private static final int QUERY_TOKEN_ITEM = 0x12;
@@ -131,7 +132,22 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		Log.d(TAG, "onCreate.mstatus=" + mStatus);
 	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+	}
+	
+	public void onResume() {
+		super.onResume();
+		mStatus = STATUS_FOLDER;
+		mFragmentActivity.addObject(MainFragmentActivity.IMAGE, (BaseFragment)this);
+		mFragmentActivity.setTitleName(MainFragmentActivity.IMAGE);
+		Log.d(TAG, "onResume.status=" + mStatus);
+	};
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -161,8 +177,8 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		mAdapter = new PictureCursorAdapter(mContext);
 		mItemGridView.setAdapter(mAdapter);
 		
-		mAdapter2 = new PictureAdapter(mContext, mFolderInfosList);
-		mFolderGridView.setAdapter(mAdapter2);
+		mFolderAdapter = new PictureAdapter(mContext, mFolderInfosList,mFolderGridView);
+		mFolderGridView.setAdapter(mFolderAdapter);
 		
 		queryFolder();
 //		
@@ -246,7 +262,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 						cursor.close();
 						if (STATUS_FOLDER == mStatus) {
 							num = mFolderInfosList.size();
-							mAdapter2.notifyDataSetChanged();
+							mFolderAdapter.notifyDataSetChanged();
 							updateUI(num);
 						}
 					}
@@ -341,13 +357,16 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		switch (parent.getId()) {
 		case R.id.gv_picture_folder:
+			Log.d(TAG, "gv_picture_folder");
 			mStatus = STATUS_ITEM;
+			Log.d(TAG, "gv_picture_folder.mStatus=" + mStatus);
 			String name = mFolderInfosList.get(position).getBucketDisplayName();
 			queryFolderItem(name);
 			mItemGridView.setVisibility(View.VISIBLE);
 			mFolderGridView.setVisibility(View.INVISIBLE);
 			break;
 		case R.id.gv_picture_item:
+			Log.d(TAG, "gv_picture_item");
 			Cursor cursor = mAdapter.getCursor();
 			startPagerActivityByPosition(position, cursor);
 			break;
@@ -455,30 +474,36 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		if (mStatus == STATUS_ITEM) {
 			mStatus = STATUS_FOLDER;
 			mAdapter.changeCursor(null);
-			mAdapter2.notifyDataSetChanged();
+			mFolderAdapter.notifyDataSetChanged();
 			mItemGridView.setVisibility(View.INVISIBLE);
 			mFolderGridView.setVisibility(View.VISIBLE);
 		}
 	}
 	
-	public void onBackPressed(){
+	public boolean onBackPressed(){
+		Log.d(TAG, "onBackPressed.status="+ mStatus);
 		switch (mStatus) {
 		case STATUS_FOLDER:
-			if (mFragmentActivity != null) {
-				mFragmentActivity.finish();
-			}
-			break;
+			return true;
 		case STATUS_ITEM:
 			mStatus = STATUS_FOLDER;
 			//850,880的机器更新图片的时候，每次都会显示上一次的图片，所以讲Adpater清空
 			//只在phiee的机器上出现过，好烂的机器，我只想说
 			mAdapter.changeCursor(null);
 			
-			mAdapter2.notifyDataSetChanged();
+			mFolderAdapter.notifyDataSetChanged();
 			updateUI(mFolderInfosList.size());
 			mItemGridView.setVisibility(View.INVISIBLE);
 			mFolderGridView.setVisibility(View.VISIBLE);
 			break;
 		}
+		return false;
+	}
+	
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		Log.d(TAG, "onDestroy");
 	}
 }

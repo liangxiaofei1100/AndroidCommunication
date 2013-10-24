@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.LoginActivity;
+import com.dreamlink.communication.ui.MainUIFrame;
 import com.dreamlink.communication.ui.UserInfoSetting;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.util.Log;
@@ -58,6 +59,10 @@ public class SettingsActivity extends Activity implements View.OnClickListener{
 
 		mAboutView = findViewById(R.id.ll_help_about);
 		mAboutView.setOnClickListener(this);
+		
+		//statistics
+		View statisticsView = findViewById(R.id.ll_statistics);
+		statisticsView.setOnClickListener(this);
 	}
 
 	public void initTitleVIews() {
@@ -127,6 +132,9 @@ public class SettingsActivity extends Activity implements View.OnClickListener{
 		case R.id.ll_help_about:
 			intent.setClass(SettingsActivity.this, AboutActivity.class);
 			startActivity(intent);
+			break;
+		case R.id.ll_statistics:
+			MainUIFrame.startActivity(this, TrafficStatisticsActivity.class);
 			break;
 		default:
 			break;

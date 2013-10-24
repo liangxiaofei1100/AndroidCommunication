@@ -93,11 +93,21 @@
 <!--                     android:layout_alignParentBottom="true" -->
 <!--                     android:src="@drawable/icon_help" -->
 <!--                     /> -->
+				
+				<ImageView 
+                    android:id="@+id/iv_exit"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="8dp"
+                    android:src="@drawable/menu_exit"
+                    />
+				
                  <ImageView 
                     android:id="@+id/iv_setting"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
-                    android:layout_alignParentBottom="true"
+                    android:layout_above="@+id/iv_exit"
                     android:layout_marginBottom="8dp"
                     android:src="@drawable/icon_setting"
                     />

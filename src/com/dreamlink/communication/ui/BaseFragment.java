@@ -47,10 +47,16 @@ public class BaseFragment extends Fragment{
 		return count;
 	}
 	
+//	/**
+//	 * for picture use
+//	 */
+//	public void scrollToHomeView(){};
+	
 	/**
 	 * when user pressed back key
 	 */
-	public void onBackPressed(){
+	public boolean onBackPressed(){
+		return true;
 	}
 	
 	public void onDestroy() {

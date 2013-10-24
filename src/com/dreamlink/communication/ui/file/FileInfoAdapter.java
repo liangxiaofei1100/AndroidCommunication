@@ -33,7 +33,7 @@ public class FileInfoAdapter extends BaseAdapter {
 	
 	private AsyncImageLoader bitmapLoader;
 	
-	private boolean flag = true;
+	private boolean mIdleFlag = true;
 	public boolean isHome = true;
 	
 	public static final int MODE_NORMAL = 0;
@@ -137,8 +137,12 @@ public class FileInfoAdapter extends BaseAdapter {
 		return list;
 	}
 	
+	/**
+	 * set scroll is idle or not
+	 * @param flag
+	 */
 	public void setFlag(boolean flag){
-		this.flag = flag;
+		this.mIdleFlag = flag;
 	}
 	
 	/**
@@ -260,7 +264,7 @@ public class FileInfoAdapter extends BaseAdapter {
 		String date = fileInfo.getFormateDate();
 		//use async thread loader bitmap
 		if(FileInfoManager.TYPE_IMAGE  == fileInfo.type){
-			if (!flag) {
+			if (!mIdleFlag) {
 				if (AsyncImageLoader.bitmapCache.size() > 0 &&
 						AsyncImageLoader.bitmapCache.get(fileInfo.filePath) != null) {
 					holder.iconView.setImageBitmap(AsyncImageLoader.bitmapCache.get(fileInfo.filePath).get());

@@ -24,7 +24,9 @@
             android:layout_marginLeft="50dp"
             android:layout_marginRight="50dp"
             android:background="@drawable/button_bg"
-            android:text="@string/login" />
+            android:text="@string/login" 
+            android:textColor="@color/white"
+            />
     </LinearLayout>
 
 </LinearLayout>

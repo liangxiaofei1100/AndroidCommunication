@@ -53,7 +53,7 @@ public class MainUIFrame extends Activity implements OnClickListener,
 
 	private SocketCommunicationManager mSocketComMgr;
 
-	private ImageView mTransferView, mSettingView, mHelpView;
+	private ImageView mTransferView, mSettingView;
 	private ImageView mUserIconView;
 	private TextView mUserNameView;
 	private TextView mNetWorkStatusView;
@@ -104,7 +104,7 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mUserManager = UserManager.getInstance();
 		mUserManager.registerOnUserChangedListener(this);
 		
-		startFileTransferService();
+		startFileTransferService(this);
 	}
 
 	private void updateNetworkStatus() {
@@ -149,10 +149,10 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		mGridView.setOnItemLongClickListener(this);
 	}
 	
-	public void startFileTransferService() {
+	public static void startFileTransferService(Context context) {
 		Intent intent = new Intent();
-		intent.setClass(this, FileTransferService.class);
-		startService(intent);
+		intent.setClass(context, FileTransferService.class);
+		context.startService(intent);
 	}
 
 	@Override
@@ -224,9 +224,9 @@ public class MainUIFrame extends Activity implements OnClickListener,
 		// unregister listener
 		mUserManager.unregisterOnUserChangedListener(this);
 		// stop file transfer service
-		stopTransferService();
+		stopTransferService(this);
 		// modify history db
-		modifyHistoryDb();
+		modifyHistoryDb(this);
 		// when finish，cloase all connect
 		User tem = UserManager.getInstance().getLocalUser();
 		tem.setUserID(0);
@@ -258,7 +258,6 @@ public class MainUIFrame extends Activity implements OnClickListener,
 							public void onClick(DialogInterface dialog,
 									int which) {
 								mNotificationMgr.cancelNotification();
-
 								MainUIFrame.this.finish();
 							}
 						})
@@ -278,21 +277,21 @@ public class MainUIFrame extends Activity implements OnClickListener,
 	/**
 	 * stop file transfer service
 	 */
-	public void stopTransferService() {
-		Intent intent = new Intent(mContext, FileTransferService.class);
-		stopService(intent);
+	public static void stopTransferService(Context context) {
+		Intent intent = new Intent(context, FileTransferService.class);
+		context.stopService(intent);
 	}
 
 	/**
 	 * when app finish,modfiy all pre(pre_send/pre_receive) status to fail
 	 * status that file transfer history in history stable
 	 */
-	public void modifyHistoryDb() {
+	public static void modifyHistoryDb(Context context) {
 		try {
 			ContentValues values = new ContentValues();
 			// 更新两次，第一次将pre_send,改为send_fail
 			values.put(MetaData.History.STATUS, HistoryManager.STATUS_SEND_FAIL);
-			getContentResolver().update(
+			context.getContentResolver().update(
 					MetaData.History.CONTENT_URI,
 					values,
 					MetaData.History.STATUS + "="
@@ -301,7 +300,7 @@ public class MainUIFrame extends Activity implements OnClickListener,
 			// 第二次，将pre_receive,改为receive_fail
 			values.put(MetaData.History.STATUS,
 					HistoryManager.STATUS_RECEIVE_FAIL);
-			getContentResolver().update(
+			context.getContentResolver().update(
 					MetaData.History.CONTENT_URI,
 					values,
 					MetaData.History.STATUS + "="

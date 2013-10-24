@@ -3,6 +3,7 @@ package com.dreamlink.communication.ui.image;
 import java.util.List;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.image.AsyncPictureLoader.ILoadImagesCallback;
 
 import android.R.integer;
 import android.content.ContentResolver;
@@ -15,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,11 +25,16 @@ public class PictureAdapter extends BaseAdapter {
 	private LayoutInflater inflater = null;
 	private List<PictureFolderInfo> dataList;
 	private ContentResolver contentResolver;
+	private AsyncPictureLoader pictureLoader;
+	private GridView mGridView;
 
-	public PictureAdapter(Context context, List<PictureFolderInfo> folderList){
+	public PictureAdapter(Context context, List<PictureFolderInfo> folderList, GridView gridView){
 		inflater = LayoutInflater.from(context);
 		dataList = folderList;
 		contentResolver = context.getContentResolver();
+		
+		pictureLoader = new AsyncPictureLoader(context);
+		mGridView = gridView;
 	}
 	
 	@Override
@@ -70,7 +77,25 @@ public class PictureAdapter extends BaseAdapter {
 		long id = dataList.get(position).getIdList().get(0);
 		String name = dataList.get(position).getBucketDisplayName();
 		int size = dataList.get(position).getIdList().size();
-		Bitmap bitmap = getBitmap(id);
+		holder.imageView.setTag(id);
+		Bitmap bitmap = pictureLoader.loadBitmap(id, new ILoadImagesCallback() {
+			
+			@Override
+			public void onObtainBitmap(Bitmap bitmap, long id) {
+				ImageView imageView = (ImageView) mGridView.findViewWithTag(id);
+				if (null != bitmap && null != imageView) {
+					imageView.setImageBitmap(bitmap);
+				}
+			}
+		});
+		
+		if (null == bitmap) {
+			//在图片没有读取出来的情况下预先放一张图
+			holder.imageView.setImageResource(R.drawable.photo_l);
+		}else {
+			holder.imageView.setImageBitmap(bitmap);
+		}
+		
 		holder.imageView.setImageBitmap(bitmap);
 		holder.nameView.setText(name);
 		holder.sizeView.setText(size + "");
@@ -83,14 +108,4 @@ public class PictureAdapter extends BaseAdapter {
 		TextView nameView;//folder name
 		TextView sizeView;//picture num
 	}
-	
-	public Bitmap getBitmap(long id){
-		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inDither = false;//采用默认值
-		options.inPreferredConfig = Bitmap.Config.ARGB_8888;//采用默认值
-		// get images thumbail
-		Bitmap bitmap = MediaStore.Images.Thumbnails.getThumbnail(contentResolver, id, Images.Thumbnails.MICRO_KIND, options);
-		return bitmap;
-	}
-
 }

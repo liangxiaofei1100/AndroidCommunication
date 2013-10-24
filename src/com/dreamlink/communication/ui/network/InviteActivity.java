@@ -1,6 +1,7 @@
 package com.dreamlink.communication.ui.network;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.BaseActivity;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserManager;
 import com.dreamlink.communication.server.service.ConnectHelper;
@@ -12,14 +13,12 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
-public class InviteActivity extends ActionBarActivity implements
-		OnClickListener {
+public class InviteActivity extends BaseActivity implements OnClickListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -28,16 +27,17 @@ public class InviteActivity extends ActionBarActivity implements
 		actionBar.setBackgroundDrawable(getResources().getDrawable(
 				R.drawable.title_color));
 		actionBar.setIcon(R.drawable.title_tiandi);
-		actionBar.setDisplayHomeAsUpEnabled(true);
-
-		// modify title text color
-		int titleId = Resources.getSystem().getIdentifier("action_bar_title",
-				"id", "android");
-		TextView titleView = (TextView) findViewById(titleId);
-		titleView.setTextColor(getResources().getColor(R.color.white));
-
-		setTitle(R.string.invite_install);
-
+		actionBar.setDisplayHomeAsUpEnabled(false);
+		actionBar.hide();
+		
+		//modify title text color
+		//2.3 do not support this call way
+//		int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
+//		TextView titleView = (TextView) findViewById(titleId);
+//		titleView.setTextColor(getResources().getColor(R.color.white));
+//		setTitle(R.string.invite_install);
+		
+		initTitle(R.string.invite_install, R.drawable.title_tiandi);
 		initView();
 	}
 
