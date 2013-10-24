@@ -54,12 +54,13 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	private QueryHandler mQueryHandler = null;
 	private PictureCursorAdapter mAdapter = null;
-	private PictureAdapter mAdapter2 = null;
+	private PictureAdapter mFolderAdapter = null;
 
 	private int mAppId;
 	private static final int STATUS_FOLDER = 0;
 	private static final int STATUS_ITEM = 1;
-	private int mStatus = STATUS_FOLDER;
+	private int mStatus = -1;
+	private static final String STATUS = "status";
 	
 	private static final int QUERY_TOKEN_FOLDER = 0x11;
 	private static final int QUERY_TOKEN_ITEM = 0x12;
@@ -130,8 +131,8 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.d(TAG, "onCreate");
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		Log.d(TAG, "onCreate.mstatus=" + mStatus);
 	}
 	
 	@Override
@@ -142,7 +143,10 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	public void onResume() {
 		super.onResume();
-		Log.d(TAG, "onResume");
+		mStatus = STATUS_FOLDER;
+		mFragmentActivity.addObject(MainFragmentActivity.IMAGE, (BaseFragment)this);
+		mFragmentActivity.setTitleName(MainFragmentActivity.IMAGE);
+		Log.d(TAG, "onResume.status=" + mStatus);
 	};
 
 	@Override
@@ -173,8 +177,8 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		mAdapter = new PictureCursorAdapter(mContext);
 		mItemGridView.setAdapter(mAdapter);
 		
-		mAdapter2 = new PictureAdapter(mContext, mFolderInfosList);
-		mFolderGridView.setAdapter(mAdapter2);
+		mFolderAdapter = new PictureAdapter(mContext, mFolderInfosList,mFolderGridView);
+		mFolderGridView.setAdapter(mFolderAdapter);
 		
 		queryFolder();
 //		
@@ -258,7 +262,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 						cursor.close();
 						if (STATUS_FOLDER == mStatus) {
 							num = mFolderInfosList.size();
-							mAdapter2.notifyDataSetChanged();
+							mFolderAdapter.notifyDataSetChanged();
 							updateUI(num);
 						}
 					}
@@ -470,7 +474,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		if (mStatus == STATUS_ITEM) {
 			mStatus = STATUS_FOLDER;
 			mAdapter.changeCursor(null);
-			mAdapter2.notifyDataSetChanged();
+			mFolderAdapter.notifyDataSetChanged();
 			mItemGridView.setVisibility(View.INVISIBLE);
 			mFolderGridView.setVisibility(View.VISIBLE);
 		}
@@ -487,7 +491,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			//只在phiee的机器上出现过，好烂的机器，我只想说
 			mAdapter.changeCursor(null);
 			
-			mAdapter2.notifyDataSetChanged();
+			mFolderAdapter.notifyDataSetChanged();
 			updateUI(mFolderInfosList.size());
 			mItemGridView.setVisibility(View.INVISIBLE);
 			mFolderGridView.setVisibility(View.VISIBLE);

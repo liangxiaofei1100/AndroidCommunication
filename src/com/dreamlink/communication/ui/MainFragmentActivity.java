@@ -1,8 +1,5 @@
 package com.dreamlink.communication.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.SocketCommunicationManager;
 import com.dreamlink.communication.UserHelper;
@@ -33,12 +30,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
+import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -59,8 +56,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private static final String TAG = "MainFragmentActivity";
 	private ViewPager viewPager;
 	private MainFragmentPagerAdapter mPagerAdapter;
-	private int mLastPosition = 0;
-	
 	private Notice mNotice;
 
 	// define fragment position
@@ -71,15 +66,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	public static final int APP = 4;
 	public static final int GAME = 5;
 	public static final int FILE_BROWSER = 6;
-
-	private List<Fragment> mFragmentLists = new ArrayList<Fragment>();
-	private TiandiFragment mTiandiFragment;
-	private PictureFragment mPictureFragment;
-	private AudioFragment mAudioFragment;
-	private VideoFragment mVideoFragment;
-	private AppFragment mAppFragment;
-	private GameFragment mGameFragment;
-	private FileBrowserFragment mBrowserFragment;
 	
 	//保存当前View的状态，用于在主界面和各Item视图切换
 	private static final int STATUS_MAIN = 0x100;
@@ -140,6 +126,8 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	
 	private NotificationMgr mNotificationMgr = null;
 	private SocketCommunicationManager mSocketComMgr;
+	
+	private SparseArray<BaseFragment> mFragmentArray = new SparseArray<BaseFragment>();
 	//main ui frame view
 	
 	private Handler mHandler = new Handler() {
@@ -149,11 +137,11 @@ public class MainFragmentActivity extends ActionBarActivity implements
 			switch (msg.what) {
 			case MSG_USER_CONNECTED:
 				updateNetworkStatus();
-				updateNotification();
+//				updateNotification();
 				break;
 			case MSG_USER_DISCONNECTED:
 				updateNetworkStatus();
-				updateNotification();
+//				updateNotification();
 				break;
 
 			default:
@@ -181,32 +169,28 @@ public class MainFragmentActivity extends ActionBarActivity implements
 			setContentView(mContainLayout);
 		}
 		
-//		setContentView(mContainLayout);
 		getSupportActionBar().hide();
 		
 		mNotice = new Notice(this);
 		UserHelper userHelper = new UserHelper(this);
 		mLocalUser = userHelper.loadUser();
 
-//		mContainLayout = (RelativeLayout) findViewById(R.id.rl_main_fragment);
 		initTitle(mContainLayout);
 		initMainFrameView(mMainFrameView);
 
-		int position = getIntent().getIntExtra("position", 0);
 		viewPager = (ViewPager) mContainLayout.findViewById(R.id.vp_main_frame);
-		// 考虑到内存消耗问题，缓存页面不应该设置这么大
 		viewPager.setOffscreenPageLimit(6);
-
-		addFragments();
-//		setCurrentItem(position);
+		mPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager(), AppUtil.getAppID(this));
+		viewPager.setAdapter(mPagerAdapter);
+		viewPager.setOnPageChangeListener(this);
 		
-		mNotificationMgr = new NotificationMgr(this);
-		mNotificationMgr.showNotificaiton(NotificationMgr.STATUS_UNCONNECTED);
+		//cancel show notification
+//		mNotificationMgr = new NotificationMgr(this);
+//		mNotificationMgr.showNotificaiton(NotificationMgr.STATUS_UNCONNECTED);
 
 		mSocketComMgr = SocketCommunicationManager.getInstance(this);
 		mUserManager = UserManager.getInstance();
 		mUserManager.registerOnUserChangedListener(this);
-		
 		MainUIFrame.startFileTransferService(this);
 	}
 	
@@ -232,6 +216,11 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		Log.d(TAG, "onStart");
 	}
 	
+	public void addObject(int pos,BaseFragment fragment){
+		Log.d(TAG, "pos="+ pos + ",fragment:" + fragment);
+		mFragmentArray.put(pos, fragment);
+	}
+	
 	private void updateNetworkStatus() {
 		if (mSocketComMgr.isConnected()) {
 			mNetWorkStatusView.setText(R.string.connected);
@@ -246,29 +235,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		} else {
 			mNotificationMgr.updateNotification(NotificationMgr.STATUS_UNCONNECTED);
 		}
-	}
-
-	private void addFragments() {
-		int appid = AppUtil.getAppID(this);
-		mTiandiFragment = TiandiFragment.newInstance(appid);
-		mPictureFragment = PictureFragment.newInstance(appid);
-		mAudioFragment = AudioFragment.newInstance(appid);
-		mVideoFragment = VideoFragment.newInstance(appid);
-		mAppFragment = AppFragment.newInstance(appid);
-		mGameFragment = GameFragment.newInstance(appid);
-		mBrowserFragment = FileBrowserFragment.newInstance(appid);
-
-		mFragmentLists.add(mTiandiFragment);
-		mFragmentLists.add(mPictureFragment);
-		mFragmentLists.add(mAudioFragment);
-		mFragmentLists.add(mVideoFragment);
-		mFragmentLists.add(mAppFragment);
-		mFragmentLists.add(mGameFragment);
-		mFragmentLists.add(mBrowserFragment);// 批量传输
-		mPagerAdapter = new MainFragmentPagerAdapter(
-				getSupportFragmentManager(), mFragmentLists);
-		viewPager.setAdapter(mPagerAdapter);
-		viewPager.setOnPageChangeListener(this);
 	}
 	
 //	@Override
@@ -346,9 +312,8 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	}
 
 	public void setCurrentItem(int position) {
-		mLastPosition = position;
+		Log.d(TAG, "setCurrentItem.position=" + position);
 		viewPager.setCurrentItem(position, false);
-		updateTilte(position);
 	}
 
 	/**
@@ -368,6 +333,13 @@ public class MainFragmentActivity extends ActionBarActivity implements
 			mTitleNumView.setText(getString(R.string.num_format, num));
 		}
 	}
+	
+	public void setTitleName(int position){
+		if (position == viewPager.getCurrentItem()) {
+			mTitleIconView.setImageResource(TITLE_ICON_resIDs[position]);
+			mTitleNameView.setText(TITLE_resIDs[position]);
+		}
+	}
 
 	/**
 	 * update title icon & name accrod to the position
@@ -377,19 +349,17 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private void updateTilte(int position) {
 		mTitleIconView.setImageResource(TITLE_ICON_resIDs[position]);
 		mTitleNameView.setText(TITLE_resIDs[position]);
-		BaseFragment baseFragment = (BaseFragment) mFragmentLists.get(position);
+		BaseFragment baseFragment = getBaseFragment();
+		if (null == baseFragment) {
+			return;
+		}
 		switch (position) {
-		case IMAGE:
-		case AUDIO:
-		case VIDEO:
-		case APP:
-		case GAME:
-		case FILE_BROWSER:
-			mTitleNumView.setText(getString(R.string.num_format,
-					baseFragment.getCount()));
+		case ZY_TIANDI:
+			mTitleNumView.setText(null);
 			break;
 		default:
-			mTitleNumView.setText(null);
+			mTitleNumView.setText(getString(R.string.num_format,
+					baseFragment.getCount()));
 			break;
 		}
 	}
@@ -400,7 +370,7 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		case KeyEvent.KEYCODE_BACK:
 			Log.d(TAG, "KEYCODE_BACK.status=" + mStatus);
 			if (STATUS_MAIN == mStatus) {
-				showExitDialog();
+				moveTaskToBack(true);
 				return true;
 			}
 			
@@ -428,7 +398,7 @@ public class MainFragmentActivity extends ActionBarActivity implements
 
 	@Override
 	public void onPageSelected(int position) {
-		// TODO Auto-generated method stub
+		Log.d(TAG, "onPageSelected.position=" + position);
 		// when scroll out of PictureFragment,set PictureFragment status to
 		// Folder View
 		int mode = getBaseFragment().getMode();
@@ -439,10 +409,9 @@ public class MainFragmentActivity extends ActionBarActivity implements
 			showActionMenuBar(false);
 		}
 		
-		if (IMAGE == mLastPosition) {
-			mPictureFragment.scrollToHomeView();
+		if (IMAGE != position && null != getBaseFragment(IMAGE)) {
+			((PictureFragment)getBaseFragment(IMAGE)).scrollToHomeView();
 		}
-		mLastPosition = position;
 		updateTilte(position);
 	}
 
@@ -531,15 +500,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
         }
 	}
 	
-	/**
-	 * get BaseFragment object
-	 * @return BaseFragment objcet
-	 */
-	public BaseFragment getBaseFragment(){
-		int position = viewPager.getCurrentItem();
-		return (BaseFragment) mFragmentLists.get(position);
-	}
-	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		switch (item.getItemId()) {
@@ -548,7 +508,9 @@ public class MainFragmentActivity extends ActionBarActivity implements
 			updateActionMenuTitle(getBaseFragment().getSelectItemsCount());
 			updateSelectPopupMenu();
 			break;
-
+		case R.id.exit:
+			showExitDialog();
+			break;
 		default:
 			setCurrentItem(item.getOrder());
 			break;
@@ -652,29 +614,33 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		}
 	}
 	
+	/**
+	 * get BaseFragment object
+	 * @return BaseFragment objcet
+	 */
+	private BaseFragment getBaseFragment(){
+		int position = viewPager.getCurrentItem();
+		return getBaseFragment(position);
+	}
+	
+	private BaseFragment getBaseFragment(int position){
+		BaseFragment bFragment = mFragmentArray.get(position);
+		Log.d(TAG, "fragment:" + bFragment);
+		return bFragment;
+	}
+	
 	private void showExitDialog() {
 		new AlertDialog.Builder(this)
-				.setTitle(R.string.exit_app)
 				.setMessage(R.string.confirm_exit)
 				.setPositiveButton(android.R.string.ok,
 						new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog,
 									int which) {
-								mNotificationMgr.cancelNotification();
 								MainFragmentActivity.this.finish();
 							}
 						})
-				.setNeutralButton(R.string.hide,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								moveTaskToBack(true);
-								mNotificationMgr
-										.updateNotification(NotificationMgr.STATUS_DEFAULT);
-							}
-						}).setNegativeButton(android.R.string.cancel, null)
+				.setNegativeButton(android.R.string.cancel, null)
 				.create().show();
 	}
 	

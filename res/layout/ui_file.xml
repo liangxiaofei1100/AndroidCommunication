@@ -65,6 +65,7 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" 
             android:cacheColorHint="#00000000"
+            android:fastScrollEnabled="true"
             android:layout_above="@+id/ll_transfer_all"
             />
 

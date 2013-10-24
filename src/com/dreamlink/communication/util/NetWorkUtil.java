@@ -44,6 +44,19 @@ public class NetWorkUtil {
 		}
 	}
 
+	public static boolean isWifiConnected(Context context) {
+		if (context != null) {
+			ConnectivityManager connectivityManager = (ConnectivityManager) context
+					.getSystemService(Context.CONNECTIVITY_SERVICE);
+			NetworkInfo networkInfo = connectivityManager
+					.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+			if (networkInfo != null) {
+				return networkInfo.isAvailable();
+			}
+		}
+		return false;
+	}
+
 	private static boolean isWifiDirectEnabled(Context context) {
 		// TODO need implement.
 		return true;

@@ -126,6 +126,14 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	}
 	
 	@Override
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "onResume");
+		mFragmentActivity.addObject(MainFragmentActivity.VIDEO, (BaseFragment)this);
+		mFragmentActivity.setTitleName(MainFragmentActivity.VIDEO);
+	}
+	
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mContext = getActivity();
 		View rootView = inflater.inflate(R.layout.ui_media_video, container, false);

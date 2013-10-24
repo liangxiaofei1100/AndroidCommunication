@@ -106,6 +106,14 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	}
 	
 	@Override
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "onResume");
+		mFragmentActivity.addObject(MainFragmentActivity.GAME, (BaseFragment)this);
+		mFragmentActivity.setTitleName(MainFragmentActivity.GAME);
+	}
+	
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.ui_app, container, false);
 

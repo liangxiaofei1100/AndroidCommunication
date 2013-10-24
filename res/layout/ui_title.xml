@@ -96,11 +96,7 @@
             android:layout_height="fill_parent"
             android:adjustViewBounds="true"
             android:scaleType="fitXY"
-            android:layout_marginTop="1dp"
-            android:layout_marginBottom="1dp"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"
-            android:src="@drawable/title_tuijian" />
+            android:src="@drawable/icon_tuijian" />
 
     </LinearLayout>
     
@@ -109,7 +105,7 @@
         android:layout_width="45dp"
         android:layout_height="match_parent"
         android:layout_toLeftOf="@+id/ll_recommend"
-        android:background="@drawable/title_menu_bg_1"
+        android:background="@drawable/title_menu_bg"
         android:visibility="gone"
         android:gravity="center_vertical" 
         >
@@ -120,11 +116,7 @@
             android:layout_height="fill_parent"
             android:adjustViewBounds="true"
             android:scaleType="fitXY"
-            android:layout_marginTop="1dp"
-            android:layout_marginBottom="1dp"
-            android:layout_marginLeft="3dp"
-            android:layout_marginRight="3dp"
-            android:src="@drawable/title_network" />
+            android:src="@drawable/icon_network" />
 
     </LinearLayout>
     

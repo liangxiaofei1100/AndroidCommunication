@@ -93,6 +93,7 @@
 <!--                     android:layout_alignParentBottom="true" -->
 <!--                     android:src="@drawable/icon_help" -->
 <!--                     /> -->
+				
                  <ImageView 
                     android:id="@+id/iv_setting"
                     android:layout_width="45dp"

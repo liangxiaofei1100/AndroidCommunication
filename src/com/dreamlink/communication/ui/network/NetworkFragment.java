@@ -19,8 +19,10 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RadioButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dreamlink.communication.AllowLoginDialog;
@@ -102,6 +104,7 @@ public class NetworkFragment extends Fragment implements
 				container, false);
 
 		initView(rootView);
+		initTitle(rootView);
 
 		mSocketComMgr = SocketCommunicationManager.getInstance(mContext);
 		mSocketComMgr.setLoginRequestCallBack(this);
@@ -138,6 +141,28 @@ public class NetworkFragment extends Fragment implements
 				.findViewById(R.id.lv_network_neighborhood_users);
 		mUserListAdapter = new UserListAdapter(mContext, mUserInfos);
 		mUserListView.setAdapter(mUserListAdapter);
+	}
+	
+	protected void initTitle(View rootView) {
+		View customTitleView = rootView.findViewById(R.id.title);
+
+		// title icon view
+		ImageView mTitleIconView = (ImageView) customTitleView
+				.findViewById(R.id.iv_title_icon);
+		mTitleIconView.setImageResource(R.drawable.title_network);
+
+		// title name view
+		TextView mTitleNameView = (TextView) customTitleView
+				.findViewById(R.id.tv_title_name);
+		mTitleNameView.setText(R.string.network);
+
+		// history button
+		View mHistroyView = customTitleView.findViewById(R.id.ll_history);
+		mHistroyView.setVisibility(View.GONE);
+
+		// setting button
+		View mSettingView = customTitleView.findViewById(R.id.ll_setting);
+		mSettingView.setVisibility(View.GONE);
 	}
 
 	private void updateNetworkStatus() {

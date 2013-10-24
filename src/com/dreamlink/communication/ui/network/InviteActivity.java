@@ -31,11 +31,11 @@ public class InviteActivity extends BaseActivity implements OnClickListener{
 		actionBar.hide();
 		
 		//modify title text color
-		int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
-		TextView titleView = (TextView) findViewById(titleId);
-		titleView.setTextColor(getResources().getColor(R.color.white));
-
-		setTitle(R.string.invite_install);
+		//2.3 do not support this call way
+//		int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
+//		TextView titleView = (TextView) findViewById(titleId);
+//		titleView.setTextColor(getResources().getColor(R.color.white));
+//		setTitle(R.string.invite_install);
 		
 		initTitle(R.string.invite_install, R.drawable.title_tiandi);
 		initView();

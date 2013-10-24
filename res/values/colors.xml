@@ -29,5 +29,8 @@
     <!-- 主界面提示语颜色值 -->
 
     <color name="gray">#696969</color>
-
+    
+    <!-- traffic statistics color -->
+    <color name="traffic_send">#5eb95e</color>
+	<color name="traffic_receive">#ff33b5e5</color>
 </resources>

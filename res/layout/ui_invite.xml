@@ -1,24 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="@drawable/main_bg"
     >
 
     <include 
         android:id="@+id/title"
         layout="@layout/ui_title" />
-    <ScrollView 
+    
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/title"
+        android:layout_margin="15dp"
+        android:orientation="vertical" >
+    
+    <ScrollView 
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         >
     
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="15dp"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+         >
 
         <!-- bluetooth invite start -->
 
@@ -287,4 +294,5 @@
         <!-- qr code end -->
     </LinearLayout>
 </ScrollView>
+</LinearLayout>
 </RelativeLayout>

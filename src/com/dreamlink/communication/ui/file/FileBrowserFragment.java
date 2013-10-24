@@ -127,6 +127,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	private static final int STATUS_APK = 4;
 	private static final int STATUS_ARCHIVE = 5;
 	private int mStatus = STATUS_HOME;
+	private static final String STATUS = "status";
 	
 	private String sdcard_path;
 	private String internal_path;
@@ -178,12 +179,21 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
+		Log.d(TAG, "onCreate.mStatus=" + mStatus);
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		// TODO Auto-generated method stub
 		super.onSaveInstanceState(outState);
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "onResume");
+		mFragmentActivity.addObject(MainFragmentActivity.FILE_BROWSER, (BaseFragment)this);
+		mFragmentActivity.setTitleName(MainFragmentActivity.FILE_BROWSER);
 	}
 	
 	@Override
@@ -519,6 +529,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	}
 
 	public void browserTo(File file) {
+		Log.d(TAG, "browserTo.status=" + mStatus);
 		if (file.isDirectory()) {
 			mCurrentPath = file.getAbsolutePath();
 			mCurrentFile = file;
@@ -1131,6 +1142,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	 */
 	@Override
 	public boolean onBackPressed() {
+		Log.d(TAG, "onBackPressed.mStatus=" + mStatus);
 		switch (mStatus) {
 		case STATUS_HOME:
 			return true;

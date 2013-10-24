@@ -230,6 +230,10 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name="com.dreamlink.communication.ui.settings.TrafficStatisticsActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name="com.dreamlink.communication.debug.TestListActivity"
             android:label="Test app list"
             android:screenOrientation="portrait" >
