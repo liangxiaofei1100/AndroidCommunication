@@ -130,8 +130,7 @@ public class WifiOrAPService extends Service {
 			ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 			if (mWifiManager.isWifiEnabled()
 					&& cm.getActiveNetworkInfo() != null) {
-				mSearchClient.startSearch();
-				notifyServerCreated();
+				createServerAndStartSearch();
 			} else {
 				setWifiEnabled(true);
 				/**
@@ -166,7 +165,7 @@ public class WifiOrAPService extends Service {
 				registerReceiver(mBroadcastReceiver, filter);
 				server_register = true;
 			} else {
-				mSearchClient.startSearch();
+				createServerAndStartSearch();
 			}
 		}
 	}
@@ -186,9 +185,9 @@ public class WifiOrAPService extends Service {
 						WIFI_AP_STATE_FAILED));
 			} else if (WifiManager.WIFI_STATE_CHANGED_ACTION.equals(action)) {
 				if (intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,
-						WifiManager.WIFI_STATE_UNKNOWN) == WifiManager.WIFI_STATE_ENABLED)
-					mSearchClient.startSearch();
-				notifyServerCreated();
+						WifiManager.WIFI_STATE_UNKNOWN) == WifiManager.WIFI_STATE_ENABLED) {
+					createServerAndStartSearch();
+				}
 			}
 		}
 
@@ -199,14 +198,8 @@ public class WifiOrAPService extends Service {
 				break;
 			case WIFI_AP_STATE_ENABLED:
 				Log.d(TAG, "WIFI_AP_STATE_ENABLED");
-				if (mSearchClient == null) {
-					mSearchClient = SearchClient
-							.getInstance(getApplicationContext());
-				}
-				mSearchClient.setOnSearchListener(onSearchListener);
-				mSearchClient.startSearch();
 				flag = true;
-				notifyServerCreated();
+				createServerAndStartSearch();
 				break;
 			case WIFI_AP_STATE_DISABLING:
 				Log.d(TAG, "WIFI_AP_STATE_DISABLING");
@@ -228,19 +221,7 @@ public class WifiOrAPService extends Service {
 					if (flag) {
 						break;
 					} else {
-						if (mSearchClient == null) {
-							mSearchClient = SearchClient
-									.getInstance(getApplicationContext());
-						}
-						mSearchClient.setOnSearchListener(onSearchListener);
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						mSearchClient.startSearch();
-						notifyServerCreated();
+						createServerAndStartSearch();
 					}
 				}
 				break;
@@ -274,11 +255,14 @@ public class WifiOrAPService extends Service {
 			unregisterReceiver(mWifiBroadcastReceiver);
 			client_register = false;
 		}
-		// mSearchServer = SearchSever.getInstance(this);
-		// mSearchServer.setOnSearchListener(onSearchListener);
-		// if (mWifiManager.isWifiEnabled()) {
-		// mSearchServer.startSearch();
-		// }
+
+		// If Wifi is connected, start search server.
+		if (NetWorkUtil.isWifiConnected(getApplicationContext())) {
+			 mSearchServer = SearchSever.getInstance(this);
+			 mSearchServer.setOnSearchListener(onSearchListener);
+			 mSearchServer.startSearch();
+		}
+		
 		mWiFiFilter = new IntentFilter();
 		mWiFiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		mWiFiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -387,12 +371,20 @@ public class WifiOrAPService extends Service {
 
 	private void handleNetworkSate(NetworkInfo networkInfo) {
 		if (networkInfo.isConnected()) {
+			// Network is connected.
 			if (mSearchServer != null) {
 				mSearchServer.stopSearch();
+				mSearchServer = null;
 			}
 			mSearchServer = SearchSever.getInstance(getApplicationContext());
 			mSearchServer.setOnSearchListener(onSearchListener);
 			mSearchServer.startSearch();
+		} else {
+			// Network is not connected.
+			if (mSearchServer != null) {
+				mSearchServer.stopSearch();
+				mSearchServer = null;
+			}
 		}
 	}
 
@@ -460,10 +452,23 @@ public class WifiOrAPService extends Service {
 		Log.d(TAG, "enable network result: " + result);
 	}
 
-	private void notifyServerCreated() {
+	private void createServerAndStartSearch() {
 		SocketCommunicationManager.getInstance(getApplicationContext())
 				.startServer(getApplicationContext());
 		UserManager.getInstance().addLocalServerUser();
+
+		// Let server thread start first.
+		try {
+			Thread.sleep(200);
+		} catch (InterruptedException e) {
+			// ignore
+		}
+		if (mSearchClient == null) {
+			mSearchClient = SearchClient.getInstance(getApplicationContext());
+		}
+		mSearchClient.setOnSearchListener(onSearchListener);
+		mSearchClient.startSearch();
+
 		this.sendBroadcast(new Intent(ConnectHelper.ACTION_SERVER_CREATED));
 	}
 
