@@ -104,7 +104,7 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	private View mMainFrameView;
 
 	//main ui frame view
-	private ImageView mTransferIV, mSettingIV, mExitIV;
+	private ImageView mTransferIV, mSettingIV;
 	private ImageView mUserIconView;
 	private TextView mUserNameView;
 	private TextView mNetWorkStatusView;
@@ -282,14 +282,12 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		mUserIconView = (ImageView) rootView.findViewById(R.id.iv_usericon);
 		mTransferIV = (ImageView) rootView.findViewById(R.id.iv_filetransfer);
 		mSettingIV = (ImageView) rootView.findViewById(R.id.iv_setting);
-		mExitIV = (ImageView) rootView.findViewById(R.id.iv_exit);
 		mUserNameView = (TextView) rootView.findViewById(R.id.tv_username);
 		mUserNameView.setText(mLocalUser.getUserName());
 		mNetWorkStatusView = (TextView) rootView.findViewById(R.id.tv_network_status);
 		mUserIconView.setOnClickListener(this);
 		mTransferIV.setOnClickListener(this);
 		mSettingIV.setOnClickListener(this);
-		mExitIV.setOnClickListener(this);
 
 		mGridView = (GridView) rootView.findViewById(R.id.gv_main_menu);
 		mAdapter = new MainUIAdapter(this, mGridView);
@@ -429,9 +427,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		case R.id.iv_setting:
 			MainUIFrame.startActivity(this, SettingsActivity.class);
 			break;
-		case R.id.iv_exit:
-			showExitDialog();
-			break;
 		default:
 			break;
 		}
@@ -439,7 +434,14 @@ public class MainFragmentActivity extends ActionBarActivity implements
 
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		setCurrentItem(item.getOrder());
+		switch (item.getItemId()) {
+		case R.id.exit:
+			showExitDialog();
+			break;
+		default:
+			setCurrentItem(item.getOrder());
+			break;
+		}
 		return true;
 	}
 	
