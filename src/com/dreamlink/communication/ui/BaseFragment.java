@@ -1,10 +1,7 @@
 package com.dreamlink.communication.ui;
 
-import android.R.integer;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.ImageView;
 
 import com.dreamlink.communication.UserManager;
@@ -62,59 +59,6 @@ public class BaseFragment extends Fragment{
 	 */
 	public boolean onBackPressed(){
 		return true;
-	}
-	
-	/**
-	 * custom actionmode menu item click call back
-	 * @param item menu item
-	 */
-	public void onActionMenuItemClick(MenuItem item){
-	}
-
-	/***
-	 * cancle action menu
-	 */
-	public void onActionMenuDone(){};
-	
-	/**
-	 * get current page menu mode,default is normal
-	 * @return 
-	 */
-	public int getMode(){
-		return DreamConstant.MENU_MODE_NORMAL;
-	}
-	
-	/**
-	 * get listview/gridview select items count
-	 * @return count,default is 0
-	 */
-	public int getSelectItemsCount(){
-		return 0;
-	}
-	
-	/**
-	 * select all or unselect all
-	 * @param isSelectAll
-	 */
-	public void selectAll(boolean isSelectAll){};
-	
-	public void setSelectAll(boolean all){
-		mIsSelectAll  = all;
-	}
-	
-	public boolean isSelectAll(){
-		return mIsSelectAll;
-	}
-	
-	public void setMenuTabManager(MenuTabManager manager){
-	}
-	
-	public MenuTabManager getMenuTabManager(){
-		return null;
-	}
-	
-	public Menu getMenu(){
-		return null;
 	}
 	
 	public void onDestroy() {

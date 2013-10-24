@@ -1,5 +1,8 @@
 package com.dreamlink.communication.ui.media;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
@@ -11,15 +14,21 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
@@ -30,15 +39,17 @@ import com.dreamlink.communication.ui.MenuTabManager;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.MenuTabManager.onMenuItemClickListener;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.media.AudioCursorAdapter.ViewHolder;
+import com.dreamlink.communication.ui.media.MyMenu.MyMenuItem;
 import com.dreamlink.communication.util.Log;
 
-public class AudioFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
+public class AudioFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, onMenuItemClickListener, OnClickListener, OnMenuItemClickListener {
 	private static final String TAG = "AudioFragment";
 	private ListView mListView;
 	private AudioCursorAdapter mAdapter;
@@ -49,6 +60,12 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	private QueryHandler mQueryHandler = null;
 	
 	private Context mContext;
+	private View mMenuBottomView;
+	private LinearLayout mMenuHolder;
+	private View mMenuTopView;
+	private View mDoneView;
+	private Button mSelectBtn;
+	private PopupMenu mSelectPopupMenu;
 	
 	private static final String[] PROJECTION = {
 		MediaStore.Audio.Media._ID, MediaStore.Audio.Media.TITLE,
@@ -123,17 +140,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		mFragmentActivity.setTitleName(MainFragmentActivity.AUDIO);
 	}
 	
-	
-	private Menu mMenu;
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		Log.d(TAG, "onCreateOptionsMenu");
-		if (null == mMenu) {
-			Log.d(TAG, "onCreateOptionsMenu.menu is null");
-			inflater.inflate(R.menu.audio_main, menu);
-			mMenu = menu;
-		}
-	}
+	private MyMenu myMenu;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -146,6 +153,16 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		mListView.setOnItemLongClickListener(this);
 		mAdapter = new AudioCursorAdapter(mContext);
 		mListView.setAdapter(mAdapter);
+		
+		mMenuBottomView = rootView.findViewById(R.id.menubar_bottom);
+		mMenuBottomView.setVisibility(View.GONE);
+		mMenuHolder = (LinearLayout) rootView.findViewById(R.id.ll_menutabs_holder);
+		mMenuTopView = rootView.findViewById(R.id.menubar_top);
+		mMenuTopView.setVisibility(View.GONE);
+		mDoneView = rootView.findViewById(R.id.ll_menubar_done);
+		mDoneView.setOnClickListener(this);
+		mSelectBtn = (Button) rootView.findViewById(R.id.btn_select);
+		mSelectBtn.setOnClickListener(this);
 		
 		return rootView;
 	}
@@ -204,8 +221,12 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 			mAdapter.setSelected(position);
 			mAdapter.notifyDataSetChanged();
 			
-			int count = mAdapter.getSelectedItemsCount();
-			mFragmentActivity.updateActionMenuTitle(count);
+			int selectedCount = mAdapter.getSelectedItemsCount();
+			updateActionMenuTitle(selectedCount);
+			if (0 == selectedCount) {
+				showMenuBar(false);
+				onActionMenuDone();
+			}
 		}
 	} 
 	
@@ -216,60 +237,24 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 			return true;
 		}else {
 			mAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
-			mFragmentActivity.updateActionMenuTitle(1);
+			updateActionMenuTitle(1);
 		}
 		boolean isSelected = mAdapter.isSelected(position);
 		mAdapter.setSelected(position, !isSelected);
 		mAdapter.notifyDataSetChanged();
-		mFragmentActivity.startActionMenu(mMenu, mMenuManager);
-//		final Cursor cursor = mAdapter.getCursor();
-//		cursor.moveToPosition(position);
-//		final String title = cursor.getString((cursor
-//				.getColumnIndex(MediaStore.Audio.Media.TITLE))); // 音乐标题
-//		final String url = cursor.getString(cursor
-//				.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
-//		new AlertDialog.Builder(mContext)
-//		.setTitle(title)
-//		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
-//			@Override
-//			public void onClick(DialogInterface dialog, int which) {
-//					switch (which) {
-//					case 0:
-//						//open
-//						mFileInfoManager.openFile(url);
-//						break;
-//					case 1:
-//						//send
-//						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-//						fileSendUtil.sendFile(url, new TransportCallback() {
-//							
-//							@Override
-//							public void onTransportSuccess() {
-//								ViewHolder viewHolder = (ViewHolder) view.getTag();
-//								showTransportAnimation(viewHolder.iconView);
-//							}
-//							
-//							@Override
-//							public void onTransportFail() {
-//								
-//							}
-//						});
-//						break;
-//					case 2:
+		
+		myMenu = new MyMenu();
+		myMenu.addItem(MyMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, "Send");
+		myMenu.addItem(MyMenu.ACTION_MENU_DELETE,R.drawable.ic_action_delete_enable,"Delete");
+		myMenu.addItem(MyMenu.ACTION_MENU_INFO,R.drawable.ic_action_info,"Info");
+		
+		mMenuManager = new MenuTabManager(mContext, mMenuHolder);
+		showMenuBar(true);
+		mMenuManager.refreshMenus(myMenu);
+		mMenuManager.setOnMenuItemClickListener(this);
 //						//delete
 //						showDeleteDialog(position, url);
 //						break;
-//					case 3:
-//						//info
-//						String info = getAudioInfo(cursor);
-//						DreamUtil.showInfoDialog(mContext, title, info);
-//						break;
-//
-//					default:
-//						break;
-//					}
-//			}
-//		}).create().show();
 		return true;
 	}
 	
@@ -327,13 +312,6 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		message.sendToTarget();
 	}
 	
-	@Override
-	public void onActionMenuItemClick(MenuItem item) {
-		// TODO Auto-generated method stub
-		mNotice.showToast(TAG + ":" + item.getTitle());
-	}
-	
-	@Override
 	public void onActionMenuDone() {
 		mAdapter.changeMode(DreamConstant.MENU_MODE_NORMAL);
 		mAdapter.selectAll(false);
@@ -341,54 +319,176 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	}
 	
 	@Override
-	public int getMode() {
-		if (null == mAdapter) {
-			return DreamConstant.MENU_MODE_NORMAL;
-		}
-		return mAdapter.getMode();
-	}
-	
-	@Override
-	public int getSelectItemsCount() {
-		if (null == mAdapter) {
-			return super.getSelectItemsCount();
-		}else {
-			return mAdapter.getSelectedItemsCount();
-		}
-	}
-	
-	@Override
-	public void selectAll(boolean isSelectAll) {
-		mAdapter.selectAll(isSelectAll);
-		mAdapter.notifyDataSetChanged();
-	}
-	
-	@Override
-	public Menu getMenu() {
-		Log.d(TAG, "getMenu");
-		return mMenu;
-	}
-	
-	@Override
-	public void setMenuTabManager(MenuTabManager manager) {
-		// TODO Auto-generated method stub
-		mMenuManager = manager;
-	}
-	
-	public MenuTabManager getMenuTabManager() {
-		return mMenuManager;
-	};
-	
-	@Override
 	public boolean onBackPressed() {
 		int mode = mAdapter.getMode();
 		Log.d(TAG, "onBackPressed.mode="+ mode);
 		if (DreamConstant.MENU_MODE_EDIT == mode) {
-			mFragmentActivity.dismissActionMenu();
+			showMenuBar(false);
 			onActionMenuDone();
 			return false;
 		}else {
 			return true;
 		}
+	}
+
+	@Override
+	public void onMenuClick(MyMenuItem item) {
+		switch (item.getItemId()) {
+		case MyMenu.ACTION_MENU_SEND:
+			ArrayList<String> selectedList = (ArrayList<String>) mAdapter.getSelectItemList();
+			//send
+			FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
+			fileTransferUtil.sendFiles(selectedList, new TransportCallback() {
+				@Override
+				public void onTransportSuccess() {
+					int first = mListView.getFirstVisiblePosition();
+					int last = mListView.getLastVisiblePosition();
+					List<Integer> checkedItems = mAdapter.getSelectedItemPos();
+					ArrayList<ImageView> icons = new ArrayList<ImageView>();
+					for(int id : checkedItems) {
+						if (id >= first && id <= last) {
+							View view = mListView.getChildAt(id - first);
+							if (view != null) {
+								ViewHolder viewHolder = (ViewHolder) view.getTag();
+								icons.add(viewHolder.iconView);
+							}
+						}
+					}
+					
+					if (icons.size() > 0) {
+						ImageView[] imageViews = new ImageView[0];
+						showTransportAnimation(icons.toArray(imageViews));
+					}
+				}
+				
+				@Override
+				public void onTransportFail() {
+				}
+			});
+			showMenuBar(false);
+			onActionMenuDone();
+			break;
+		case MyMenu.ACTION_MENU_DELETE:
+			//delete
+			break;
+		case MyMenu.ACTION_MENU_INFO:
+			Cursor cursor = mAdapter.getCursor();
+			List<Integer> list = mAdapter.getSelectedItemPos();
+			if (1 == list.size()) {
+				cursor.moveToPosition(list.get(0));
+				String info = getAudioInfo(cursor);
+				DreamUtil.showInfoDialog(mContext, "属性", info);
+			}else {
+				mNotice.showToast("shuxing");
+			}
+			//info
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+	/**
+	 * create popup view for select button,select all/unselect all
+	 * @param anchorView
+	 * @return
+	 */
+	private PopupMenu createSelectPopupMenu(View anchorView) {
+        final PopupMenu popupMenu = new PopupMenu(mContext, anchorView);
+        popupMenu.inflate(R.menu.select_popup_menu);
+        popupMenu.setOnMenuItemClickListener(this);
+        return popupMenu;
+    }
+	
+	private void updateSelectPopupMenu(){
+        if (mSelectPopupMenu == null) {
+            mSelectPopupMenu = createSelectPopupMenu(mSelectBtn);
+            return;
+        }
+        final Menu menu = mSelectPopupMenu.getMenu();
+        int selectedCount = mAdapter.getSelectedItemsCount();
+        updateMenuBar(selectedCount);
+        if (mAdapter.getCount() == 0) {
+            menu.findItem(R.id.menu_select).setEnabled(false);
+        } else {
+            menu.findItem(R.id.menu_select).setEnabled(true);
+            if (mAdapter.getCount() != selectedCount) {
+                menu.findItem(R.id.menu_select).setTitle(R.string.select_all);
+                mIsSelectAll = true;
+            } else {
+                menu.findItem(R.id.menu_select).setTitle(R.string.unselect_all);
+                mIsSelectAll = false;
+            }
+        }
+	}
+	
+	/**
+	 * set menubar visible or gone
+	 * @param show
+	 */
+	public void showMenuBar(boolean show){
+		if (show) {
+			mMenuTopView.setVisibility(View.VISIBLE);
+			mMenuBottomView.setVisibility(View.VISIBLE);
+		}else {
+			mMenuTopView.setVisibility(View.GONE);
+			mMenuBottomView.setVisibility(View.GONE);
+		}
+	}
+	
+	public void updateMenuBar(int selectCount){
+		 if (0==selectCount) {
+        	 disableMenuBar();
+		}
+	}
+	
+	public void disableMenuBar(){
+		mMenuManager.refresh(0);
+   	 	mMenuManager.refresh(1);
+   	 	mMenuManager.refresh(2);
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.ll_menubar_done:
+			showMenuBar(false);
+			onActionMenuDone();
+			break;
+		case R.id.btn_select:
+			if (null == mSelectPopupMenu) {
+				mSelectPopupMenu = createSelectPopupMenu(mSelectBtn);
+			}
+			updateSelectPopupMenu();
+			mSelectPopupMenu.show();
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		// TODO Auto-generated method stub
+		switch (item.getItemId()) {
+		case R.id.menu_select:
+			mAdapter.selectAll(mIsSelectAll);
+			mAdapter.notifyDataSetChanged();
+			int selectcout = mAdapter.getSelectedItemsCount();
+			updateActionMenuTitle(selectcout);
+			updateSelectPopupMenu();
+			break;
+
+		default:
+			break;
+		}
+		return false;
+	}
+	
+	public void updateActionMenuTitle(int count){
+		mSelectBtn.setText(getResources().getString(R.string.select_msg, count));
 	}
 }

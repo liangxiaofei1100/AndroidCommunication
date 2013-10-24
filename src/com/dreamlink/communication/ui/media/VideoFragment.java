@@ -115,15 +115,16 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	}
 	
 	private Menu mMenu;
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		Log.d(TAG, "onCreateOptionsMenu");
-		if (null == mMenu) {
-			Log.d(TAG, "onCreateOptionsMenu.menu is null");
-			inflater.inflate(R.menu.action_menu_test, menu);
-			mMenu = menu;
-		}
-	}
+	private MyMenu myMenu;
+//	@Override
+//	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+//		Log.d(TAG, "onCreateOptionsMenu");
+//		if (null == mMenu) {
+//			Log.d(TAG, "onCreateOptionsMenu.menu is null");
+//			inflater.inflate(R.menu.action_menu_test, menu);
+//			mMenu = menu;
+//		}
+//	}
 	
 	@Override
 	public void onResume() {
@@ -200,7 +201,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 			mAdapter.notifyDataSetChanged();
 			
 			int count = mAdapter.getSelectedItemsCount();
-			mFragmentActivity.updateActionMenuTitle(count);
+//			mFragmentActivity.updateActionMenuTitle(count);
 		}
 	}
 	
@@ -211,12 +212,16 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 			return true;
 		}else {
 			mAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
-			mFragmentActivity.updateActionMenuTitle(1);
+//			mFragmentActivity.updateActionMenuTitle(1);
 		}
 		boolean isSelected = mAdapter.isSelected(position);
 		mAdapter.setSelected(position, !isSelected);
 		mAdapter.notifyDataSetChanged();
-		mFragmentActivity.startActionMenu(mMenu, mMenuManager);
+		myMenu = new MyMenu();
+		myMenu.setMenu(mMenu);
+//		getActivity().getMenuInflater().inflate(R.menu.action_menu_test, myMenu);
+//		mFragmentActivity.startActionMenu(mMenu, mMenuManager);
+//		mFragmentActivity.startActionMenu(R.menu.action_menu_test, mMenuManager);
 //		final Cursor cursor = mAdapter.getCursor();
 //		cursor.moveToPosition(position);
 ////		final long videoId = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
@@ -325,58 +330,20 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		int mode = mAdapter.getMode();
 		Log.d(TAG, "onBackPressed.mode="+ mode);
 		if (DreamConstant.MENU_MODE_EDIT == mode) {
-			mFragmentActivity.dismissActionMenu();
-			onActionMenuDone();
+//			mFragmentActivity.dismissActionMenu();
+//			onActionMenuDone();
 			return false;
 		}else {
 			return true;
 		}
 	}
 
-	@Override
-	public void onActionMenuItemClick(MenuItem item) {
-		// TODO Auto-generated method stub
-		mNotice.showToast(TAG + ":" + item.getTitle());
-	}
 
-	@Override
 	public void onActionMenuDone() {
 		// TODO Auto-generated method stub
 		mAdapter.changeMode(DreamConstant.MENU_MODE_NORMAL);
 		mAdapter.selectAll(false);
 		mAdapter.notifyDataSetChanged();
-	}
-
-	@Override
-	public int getMode() {
-		// TODO Auto-generated method stub
-		if (null == mAdapter) {
-			return DreamConstant.MENU_MODE_NORMAL;
-		}
-		return mAdapter.getMode();
-	}
-
-	@Override
-	public int getSelectItemsCount() {
-		// TODO Auto-generated method stub
-		if (null == mAdapter) {
-			return super.getSelectItemsCount();
-		}else {
-			return mAdapter.getSelectedItemsCount();
-		}
-	}
-
-	@Override
-	public void selectAll(boolean isSelectAll) {
-		// TODO Auto-generated method stub
-		mAdapter.selectAll(isSelectAll);
-		mAdapter.notifyDataSetChanged();
-	}
-	
-	@Override
-	public Menu getMenu() {
-		Log.d(TAG, "getMenu");
-		return mMenu;
 	}
 
 	@Override

@@ -13,12 +13,6 @@
         <include
             layout="@layout/ui_title"
             android:visibility="visible" />
-
-        <include
-            android:id="@+id/menubar_top"
-            layout="@layout/ui_menubar_top"
-            android:visibility="gone" 
-            />
     </RelativeLayout>
 
     <android.support.v4.view.ViewPager
@@ -26,21 +20,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/top"
-        android:layout_above="@+id/bottom"
         >
     </android.support.v4.view.ViewPager>
-
-    <RelativeLayout
-        android:id="@+id/bottom"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" 
-        android:visibility="gone"
-        >
-
-        <include
-            android:id="@+id/menubar_bottom"
-            layout="@layout/ui_menubar_bottom2" />
-    </RelativeLayout>
-
 </RelativeLayout>

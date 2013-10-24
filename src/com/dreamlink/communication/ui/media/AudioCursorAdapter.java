@@ -1,5 +1,8 @@
 package com.dreamlink.communication.ui.media;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
@@ -45,6 +48,31 @@ public class AudioCursorAdapter extends BaseCursorAdapter {
 			}
 		}
 		return count;
+	}
+	
+	@Override
+	public List<Integer> getSelectedItemPos() {
+		List<Integer> list = new ArrayList<Integer>();
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				list.add(i);
+			}
+		}
+		return list;
+	}
+	
+	public List<String> getSelectItemList(){
+		List<String> list = new ArrayList<String>();
+		Cursor cursor = getCursor();
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				cursor.moveToPosition(i);
+				String url = cursor.getString(cursor
+						.getColumnIndex(MediaStore.Audio.Media.DATA));
+				list.add(url);
+			}
+		}
+		return list;
 	}
 
 	@Override

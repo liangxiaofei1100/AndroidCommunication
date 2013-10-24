@@ -6,7 +6,11 @@
     android:background="@drawable/main_bg"
     android:id="@+id/rl_audio_main"
      >
-    
+     <include
+        android:id="@+id/menubar_top"
+        layout="@layout/ui_menubar_top"
+        android:visibility="visible" />
+
    <ListView 
        android:id="@+id/audio_listview"
        android:layout_width="fill_parent"
@@ -15,7 +19,7 @@
        android:fastScrollEnabled="true"
        android:fastScrollAlwaysVisible="false"
        android:focusable="true"
-       android:layout_alignParentTop="true"
+       android:layout_below="@+id/menubar_top"
       />
    
    <ProgressBar 
@@ -25,5 +29,18 @@
        android:layout_centerInParent="true"
        android:indeterminateDrawable="@drawable/loading_progressbar"
        />
+   
+   <RelativeLayout
+        android:id="@+id/bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" 
+        android:visibility="visible"
+        >
+        <include
+            android:id="@+id/menubar_bottom"
+            layout="@layout/ui_menubar_bottom2" 
+            />
+    </RelativeLayout>
 
 </RelativeLayout>

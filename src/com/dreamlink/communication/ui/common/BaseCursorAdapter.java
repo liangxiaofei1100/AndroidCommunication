@@ -1,5 +1,7 @@
 package com.dreamlink.communication.ui.common;
 
+import java.util.List;
+
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
 
@@ -57,6 +59,10 @@ public class BaseCursorAdapter extends CursorAdapter {
 	public int getSelectedItemsCount(){
 		return 0;
 	};
+	
+	public List<Integer> getSelectedItemPos(){
+		return null;
+	}
 	
 	public void updateViewBackground(boolean selected, int position, View view){
 		if (selected) {
