@@ -20,6 +20,7 @@
        android:fastScrollAlwaysVisible="false"
        android:focusable="true"
        android:layout_below="@+id/menubar_top"
+       android:layout_above="@+id/bottom"
       />
    
    <ProgressBar 

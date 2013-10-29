@@ -9,13 +9,16 @@
     <string name="cancel">取消</string>
     <string name="delete_confirm">删除确认</string>
     <string name="info">属性: <xliff:g id="info">%1$s</xliff:g></string>
-    <string name="name">名称:<xliff:g id="name">%1$s</xliff:g></string>
-    <string name="version">版本:<xliff:g id="version">%1$s</xliff:g></string>
-    <string name="location">位置:<xliff:g id="location">%1$s</xliff:g></string>
-    <string name="pkg_name">包名:<xliff:g id="package">%1$s</xliff:g></string>
-    <string name="size">大小:<xliff:g id="size">%1$s</xliff:g></string>
-    <string name="modif_date">修改日期:<xliff:g id="date">%1$s</xliff:g></string>
-    <string name="type">类型:<xliff:g id="type">%1$s</xliff:g></string>
+    <string name="name">名称: <xliff:g id="name">%1$s</xliff:g></string>
+    <string name="version">版本: <xliff:g id="version">%1$s</xliff:g></string>
+    <string name="location">位置: <xliff:g id="location">%1$s</xliff:g></string>
+    <string name="pkg_name">包名: <xliff:g id="package">%1$s</xliff:g></string>
+    <string name="size">大小: <xliff:g id="size">%1$s</xliff:g></string>
+    <string name="include_files">包含: %1$d个文件, %2$d个文件夹</string>
+    <string name="modif_date">修改日期: <xliff:g id="date">%1$s</xliff:g></string>
+    <string name="type">类型: <xliff:g id="type">%1$s</xliff:g></string>
+    <string name="type_file">类型: 文件</string>
+    <string name="type_folder">类型: 文件夹</string>
     
     <string name="network">网络邻居</string>
     <string name="recommend">精品推荐</string>
@@ -154,6 +157,7 @@
      <string name="me">我</string>
      
      <string name="num_format">(<xliff:g id="num">%1$d</xliff:g>)</string>
+     <string name="num_format2">( %1$d/%2$d )</string>
      <string name="transfer_all">全部发送(<xliff:g id="num">%1$d</xliff:g>)</string>
      <string name="transfer_limit">超过同时发送文件个数上限(5)</string>
      <string name="check_one_please">至少选中一个文件</string>

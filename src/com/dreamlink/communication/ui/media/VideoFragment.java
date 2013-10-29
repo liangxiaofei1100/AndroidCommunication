@@ -116,15 +116,6 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	
 	private Menu mMenu;
 	private MyMenu myMenu;
-//	@Override
-//	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//		Log.d(TAG, "onCreateOptionsMenu");
-//		if (null == mMenu) {
-//			Log.d(TAG, "onCreateOptionsMenu.menu is null");
-//			inflater.inflate(R.menu.action_menu_test, menu);
-//			mMenu = menu;
-//		}
-//	}
 	
 	@Override
 	public void onResume() {
@@ -199,78 +190,75 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 		}else {
 			mAdapter.setSelected(position);
 			mAdapter.notifyDataSetChanged();
-			
-			int count = mAdapter.getSelectedItemsCount();
-//			mFragmentActivity.updateActionMenuTitle(count);
 		}
 	}
 	
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
-		int mode = mAdapter.getMode();
-		if (DreamConstant.MENU_MODE_EDIT == mode) {
-			return true;
-		}else {
-			mAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
-//			mFragmentActivity.updateActionMenuTitle(1);
-		}
-		boolean isSelected = mAdapter.isSelected(position);
-		mAdapter.setSelected(position, !isSelected);
-		mAdapter.notifyDataSetChanged();
-		myMenu = new MyMenu();
-		myMenu.setMenu(mMenu);
+//		int mode = mAdapter.getMode();
+//		if (DreamConstant.MENU_MODE_EDIT == mode) {
+//			return true;
+//		}else {
+//			mAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
+////			mFragmentActivity.updateActionMenuTitle(1);
+//		}
+//		boolean isSelected = mAdapter.isSelected(position);
+//		mAdapter.setSelected(position, !isSelected);
+//		mAdapter.notifyDataSetChanged();
+//		myMenu = new MyMenu();
+//		myMenu.setMenu(mMenu);
 //		getActivity().getMenuInflater().inflate(R.menu.action_menu_test, myMenu);
 //		mFragmentActivity.startActionMenu(mMenu, mMenuManager);
 //		mFragmentActivity.startActionMenu(R.menu.action_menu_test, mMenuManager);
-//		final Cursor cursor = mAdapter.getCursor();
-//		cursor.moveToPosition(position);
-////		final long videoId = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
-//		final String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
-//		final String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
-//			
-//			
-//		new AlertDialog.Builder(mContext)
-//		.setTitle(displayName)
-//		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
-//			@Override
-//			public void onClick(DialogInterface dialog, int which) {
-//					switch (which) {
-//					case 0:
-//						//open
-//						mFileInfoManager.openFile(url);
-//						break;
-//					case 1:
-//						//send
-//						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-//						fileSendUtil.sendFile(url, new TransportCallback() {
-//							
-//							@Override
-//							public void onTransportSuccess() {
-//								ViewHolder viewHolder = (ViewHolder) view.getTag();
-//								showTransportAnimation(viewHolder.iconView);
-//							}
-//							
-//							@Override
-//							public void onTransportFail() {
-//								
-//							}
-//						});
-//						break;
-//					case 2:
-//						//delete
-//						showDeleteDialog(position, url);
-//						break;
-//					case 3:
-//						//info
-//						String info = getVideoInfo(cursor);
-//						DreamUtil.showInfoDialog(mContext, displayName, info);
-//						break;
-//
-//					default:
-//						break;
-//					}
-//			}
-//		}).create().show();
+		final Cursor cursor = mAdapter.getCursor();
+		cursor.moveToPosition(position);
+//		final long videoId = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
+		final String url = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)); // 文件路径
+		final String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
+			
+			
+		new AlertDialog.Builder(mContext)
+		.setTitle(displayName)
+		.setItems(R.array.media_menu, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case 0:
+						//open
+						mFileInfoManager.openFile(url);
+						break;
+					case 1:
+						//send
+						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
+						fileSendUtil.sendFile(url, new TransportCallback() {
+							
+							@Override
+							public void onTransportSuccess() {
+								ViewHolder viewHolder = (ViewHolder) view.getTag();
+								showTransportAnimation(viewHolder.iconView);
+							}
+							
+							@Override
+							public void onTransportFail() {
+								
+							}
+						});
+						break;
+					case 2:
+						//delete
+						showDeleteDialog(position, url);
+						break;
+					case 3:
+						//info
+						String info = getVideoInfo(cursor);
+						DreamUtil.showInfoDialog(mContext, displayName, info);
+						break;
+
+					default:
+						break;
+					}
+			}
+		}).create().show();
 		return true;
 	}
 	

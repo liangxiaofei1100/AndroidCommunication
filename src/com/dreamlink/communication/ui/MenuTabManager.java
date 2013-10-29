@@ -9,10 +9,7 @@ import com.dreamlink.communication.ui.media.MyMenu.MyMenuItem;
 import com.dreamlink.communication.util.Log;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -25,7 +22,6 @@ public class MenuTabManager implements OnClickListener {
 	private LinearLayout mMenuHolders;
 	private LayoutInflater mInflater;
 	private Context mContext;
-	private List<MenuItem> itemList = new ArrayList<MenuItem>();
 	private List<MyMenuItem> items = new ArrayList<MyMenu.MyMenuItem>();
 	private onMenuItemClickListener mListener; 
 	
@@ -48,6 +44,7 @@ public class MenuTabManager implements OnClickListener {
 		Log.d(TAG, "refreshMenus:" + myMenu.size());
 		int count = mMenuHolders.getChildCount();
 		mMenuHolders.removeViews(0, count);
+		items.clear();
 		
 		for (int i = 0; i < myMenu.size(); i++) {
 			MyMenuItem item = null;
@@ -62,7 +59,7 @@ public class MenuTabManager implements OnClickListener {
 	}
 	
 	public void addMenuItem(MyMenuItem item){
-		Log.d(TAG, "addMenuItem.item:" + item.getTitle());
+//		Log.d(TAG, "addMenuItem.item:" + item.getTitle());
 		View view = null;
 		view = mInflater.inflate(R.layout.ui_menubar_bottom2_item, null);
 		view.setLayoutParams(new LinearLayout.LayoutParams(
@@ -74,6 +71,7 @@ public class MenuTabManager implements OnClickListener {
 		String name = item.getTitle().toString();
 		imageView.setImageResource(icon);
 		textView.setText(name);
+		textView.setTextColor(item.getTextColor());
 		view.setId(items.size());
 		view.setOnClickListener(this);
 		view.setEnabled(item.isEnable());
@@ -85,17 +83,16 @@ public class MenuTabManager implements OnClickListener {
 		mMenuHolders.findViewById(id).setEnabled(false);
 	}
 	
-	@Override
-	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		Log.d(TAG, "onClick.id=" + v.getId());
-//		MenuItem item = itemList.get(v.getId());
-		MyMenuItem item = items.get(v.getId());
-		mListener.onMenuClick(item);
+	public void enableMenuBar(boolean enable){
+		for (int i = 0; i < items.size(); i++) {
+			mMenuHolders.findViewById(i).setEnabled(enable);
+		}
 	}
 	
-	public void clearMenus(){
-		itemList.clear();
+	@Override
+	public void onClick(View v) {
+		MyMenuItem item = items.get(v.getId());
+		mListener.onMenuClick(item);
 	}
 	
 	public interface onMenuItemClickListener{

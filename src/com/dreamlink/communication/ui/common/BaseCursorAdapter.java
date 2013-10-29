@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.util.Log;
 
 import android.R.integer;
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class BaseCursorAdapter extends CursorAdapter {
+	private static final String TAG = "BaseCursorAdapter";
 	protected int mMenuMode = DreamConstant.MENU_MODE_NORMAL;
 	protected SparseBooleanArray mIsSelected = null;
 

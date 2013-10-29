@@ -80,6 +80,10 @@ public class FileInfoAdapter extends BaseAdapter {
 		mIsSelected.put(position, isChecked);
 	}
 	
+	public void setChecked(int position){
+		mIsSelected.put(position, !isChecked(position));
+	}
+	
 	/**
 	 * return current position checked or not
 	 * @param position current position
@@ -107,6 +111,19 @@ public class FileInfoAdapter extends BaseAdapter {
 		return count;
 	}
 	
+	public List<FileInfo> getSelectedList(){
+		if (isHome) {
+			return null;
+		}
+		List<FileInfo> fileList = new ArrayList<FileInfo>();
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				fileList.add(mList.get(i));
+			}
+		}
+		return fileList;
+	}
+	
 	public List<String> getCheckedFiles(){
 		if (isHome) {
 			return null;
@@ -126,7 +143,6 @@ public class FileInfoAdapter extends BaseAdapter {
 		if (isHome) {
 			return null;
 		}
-		
 		List<Integer> list = new ArrayList<Integer>();
 		for (int i = 0; i < mIsSelected.size(); i++) {
 			if (mIsSelected.valueAt(i)) {
@@ -150,14 +166,7 @@ public class FileInfoAdapter extends BaseAdapter {
      * @param mode the mode which will be changed to be.
      */
 	public void changeMode(int mode){
-		Log.d(TAG, "ChangeMode.mode=" + mode);
-		switch (mode) {
-		case DreamConstant.MENU_MODE_NORMAL:
-			selectAll(false);
-			break;
-		}
 		mMode = mode;
-		notifyDataSetChanged();
 	}
 	
 	/**
@@ -177,6 +186,14 @@ public class FileInfoAdapter extends BaseAdapter {
      */
 	public boolean isMode(int mode){
 		return mMode == mode;
+	}
+	
+	public List<FileInfo> getList(){
+		return mList;
+	}
+	
+	public void setList(List<FileInfo> fileList){
+		mList = fileList;
 	}
 	
 	@Override
@@ -202,7 +219,6 @@ public class FileInfoAdapter extends BaseAdapter {
 		ImageView iconView;
 		TextView nameView;
 		TextView dateAndSizeView;
-		CheckBox checkBox;
 	}
 	
 	@Override
@@ -216,7 +232,6 @@ public class FileInfoAdapter extends BaseAdapter {
 			holder.iconView = (ImageView) view.findViewById(R.id.file_icon_imageview);
 			holder.nameView = (TextView) view.findViewById(R.id.file_name_textview);
 			holder.dateAndSizeView = (TextView) view.findViewById(R.id.file_info_textview);
-			holder.checkBox = (CheckBox) view.findViewById(R.id.file_checkbox);
 			view.setTag(holder);
 		}else {
 			view = convertView;
@@ -225,7 +240,6 @@ public class FileInfoAdapter extends BaseAdapter {
 		
 		//home view ui
 		if (isHome) {
-			holder.checkBox.setVisibility(View.GONE);
 			if (position < homeList.size() - 4) {
 				switch (homeList.get(position)) {
 				case FileBrowserFragment.INTERNAL:
@@ -258,6 +272,7 @@ public class FileInfoAdapter extends BaseAdapter {
 			return view;
 		}
 		
+		Log.e(TAG, "getView.size=" + mList.size());
 		FileInfo fileInfo = mList.get(position);
 		String size = fileInfo.getFormatFileSize();
 		String date = fileInfo.getFormateDate();
@@ -330,11 +345,8 @@ public class FileInfoAdapter extends BaseAdapter {
 		
 		if (fileInfo.isDir) {
 			holder.dateAndSizeView.setText(date);
-			holder.checkBox.setVisibility(View.GONE);
 		}else {
 			holder.dateAndSizeView.setText(date + " | " + size);
-			holder.checkBox.setVisibility(View.VISIBLE);
-			holder.checkBox.setChecked(is);
 		}
 		
 		if (mMode == DreamConstant.MENU_MODE_EDIT) {

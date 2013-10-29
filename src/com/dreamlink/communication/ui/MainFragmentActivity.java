@@ -296,6 +296,14 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		}
 	}
 	
+	public void updateTitleSelectNum(int selectCount, int totalCount){
+		if (-1 == selectCount) {
+			mTitleNumView.setText(getString(R.string.num_format, totalCount));
+		}else {
+			mTitleNumView.setText("(" + selectCount + "/" + totalCount + ")");
+		}
+	}
+	
 	public void setTitleName(int position){
 		if (position == viewPager.getCurrentItem()) {
 			mTitleIconView.setImageResource(TITLE_ICON_resIDs[position]);
@@ -320,8 +328,14 @@ public class MainFragmentActivity extends ActionBarActivity implements
 			mTitleNumView.setText(null);
 			break;
 		default:
-			mTitleNumView.setText(getString(R.string.num_format,
-					baseFragment.getCount()));
+			int selectCount = baseFragment.getSelectedCount();
+			if (DreamConstant.MENU_MODE_NORMAL == baseFragment.getMenuMode()) {
+				mTitleNumView.setText(getString(R.string.num_format,
+						baseFragment.getCount()));
+			}else {
+				mTitleNumView.setText(getString(R.string.num_format2,selectCount,
+						baseFragment.getCount()));
+			}
 			break;
 		}
 	}

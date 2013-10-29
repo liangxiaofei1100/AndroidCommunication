@@ -14,7 +14,9 @@
         android:layout_margin="5dp"
         android:textColor="@color/black"
         android:textSize="15sp"
-        android:text="@string/delete_confirm_msg" />
+        android:text="@string/delete_confirm_msg"
+        android:gravity="center_horizontal"
+         />
 
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -26,6 +28,7 @@
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginBottom="15dp"
+        android:visibility="visible"
          >
 
         <TextView
@@ -37,16 +40,17 @@
             android:ellipsize="end"
             android:textColor="@color/black"
             android:textIsSelectable="false" />
-
-        <TextView
-            android:id="@+id/size_view"
-            android:layout_width="wrap_content"
+        
+         <ProgressBar
+            android:id="@+id/bar_delete"
+            style="@style/progressBarHorizontal_color"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
             android:layout_below="@+id/name_view"
-            android:text="显示大小"
-            android:textColor="@color/black"
-            android:textIsSelectable="false" />
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="10dp" 
+            android:visibility="gone"
+            />
 
     </RelativeLayout>
     

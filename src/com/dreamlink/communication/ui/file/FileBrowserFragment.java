@@ -1,6 +1,7 @@
 package com.dreamlink.communication.ui.file;
 
 import java.io.File;
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,7 +12,10 @@ import java.util.TimerTask;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.MenuTabManager;
+import com.dreamlink.communication.ui.MenuTabManager.onMenuItemClickListener;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
@@ -22,6 +26,9 @@ import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoAdapter.ViewHolder;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
+import com.dreamlink.communication.ui.media.MyMenu;
+import com.dreamlink.communication.ui.media.AudioFragment.DeleteTask;
+import com.dreamlink.communication.ui.media.MyMenu.MyMenuItem;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -30,10 +37,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -52,7 +62,7 @@ import android.widget.TextView;
 
 public class FileBrowserFragment extends BaseFragment implements OnClickListener,
 		OnItemClickListener, PopupViewClickListener, OnScrollListener,
-		OnItemLongClickListener {
+		OnItemLongClickListener, onMenuItemClickListener {
 	private static final String TAG = "FileBrowserFragment";
 
 	// 文件路径导航栏
@@ -127,18 +137,16 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	private static final int STATUS_APK = 4;
 	private static final int STATUS_ARCHIVE = 5;
 	private int mStatus = STATUS_HOME;
-	private static final String STATUS = "status";
 	
 	private String sdcard_path;
 	private String internal_path;
 	
-	//transfer all layout view
-	private LinearLayout mTransferAllLayout;
-	//cancel multi transfer button
-	private Button mCancelBtn;
-	//confirm multi transfer button
-	private Button mTransferAllBtn;
+	private MyMenu mActionMenu;
+	private MenuTabManager mMenuTabManager;
+	private LinearLayout mMenuHolder;
+	private View mMenuBarView;
 	
+	private FileDeleteDialog mDeleteDialog;
 	/**
 	 * Create a new instance of FileBrowserFragment, providing "appid" as an
 	 * argument.
@@ -155,6 +163,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	
 	private static final int MSG_UPDATE_UI = 0;
 	private static final int MSG_UPDATE_CLASSIFY = 1;
+	private static final int MSG_UPDATE_LIST = 2;
 	Handler mHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
@@ -168,7 +177,13 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			case MSG_UPDATE_CLASSIFY:
 				mFileInfoAdapter.notifyDataSetChanged();
 				break;
-				
+			case MSG_UPDATE_LIST:
+				List<FileInfo> fileList = mFileInfoAdapter.getList();
+				Log.d(TAG, "MSG_UPDATE_LIST.before remove size=" + fileList.size());
+				fileList.remove(msg.arg1);
+				Log.d(TAG, "MSG_UPDATE_LIST.after remove size=" + fileList.size());
+				mFileInfoAdapter.notifyDataSetChanged();
+				break;
 				
 			default:
 				break;
@@ -219,11 +234,10 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 				.findViewById(R.id.iv_home);
 		mHomeBtn.setOnClickListener(this);
 
-		mTransferAllLayout = (LinearLayout) rootView.findViewById(R.id.ll_transfer_all);
-		mCancelBtn = (Button) rootView.findViewById(R.id.btn_cancel);
-		mTransferAllBtn = (Button) rootView.findViewById(R.id.btn_transfer_all);
-		mCancelBtn.setOnClickListener(this);
-		mTransferAllBtn.setOnClickListener(this);
+		mMenuHolder = (LinearLayout) rootView.findViewById(R.id.ll_menutabs_holder);
+		mMenuBarView = rootView.findViewById(R.id.menubar_bottom);
+		mMenuBarView.setVisibility(View.GONE);
+		
 		return rootView;
 	}
 	
@@ -267,8 +281,6 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			goToHome();
 		}
 		
-		updateTransferAllUI(true);
-		
 		if (null != mGetFileTask && mGetFileTask.getStatus() == AsyncTask.Status.RUNNING) {
 			mGetFileTask.cancel(true);
 		}else {
@@ -281,52 +293,8 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.iv_home:
+			showMenuBar(false);
 			goToHome();
-			break;
-		case R.id.btn_cancel:
-			updateTransferAllUI(false);
-			break;
-		case R.id.btn_transfer_all:
-			ArrayList<String> checkedList = (ArrayList<String>) mFileInfoAdapter.getCheckedFiles();
-			if (null == checkedList || checkedList.size() <= 0) {
-				mNotice.showToast(R.string.check_one_please);
-				return;
-			}
-			
-			//send
-			FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
-			fileTransferUtil.sendFiles(checkedList, new TransportCallback() {
-				
-				@Override
-				public void onTransportSuccess() {
-					int first = mFileListView.getFirstVisiblePosition();
-					int last = mFileListView.getLastVisiblePosition();
-					List<Integer> checkedItems = mFileInfoAdapter.getCheckedItemIds();
-					ArrayList<ImageView> icons = new ArrayList<ImageView>();
-					for(int id : checkedItems) {
-						if (id >= first && id <= last) {
-							View view = mFileListView.getChildAt(id - first);
-							if (view != null) {
-								ViewHolder viewHolder = (ViewHolder) view.getTag();
-								icons.add(viewHolder.iconView);
-							}
-						}
-					}
-					
-					if (icons.size() > 0) {
-						ImageView[] imageViews = new ImageView[0];
-						showTransportAnimation(icons.toArray(imageViews));
-					}
-				}
-				
-				@Override
-				public void onTransportFail() {
-					
-				}
-			});
-			
-			updateTransferAllUI(false);
-			
 			break;
 		default:
 			mTabManager.updateNavigationBar(v.getId(), storge_type);
@@ -383,45 +351,25 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 				break;
 			}
 		}else {
-			List<FileInfo> list;
-			switch (mStatus) {
-			case STATUS_DOC:
-				list = mDocList;
-				break;
-			case STATUS_EBOOK:
-				list = mEbookList;
-				break;
-			case STATUS_APK:
-				list = mApkList;
-				break;
-			case STATUS_ARCHIVE:
-				list = mArchiveList;
-				break;
-			default:
-				list = mAllLists;
-				break;
-			}
-			FileInfo fileInfo = list.get(position);
-			int top = view.getTop();
-			if (fileInfo.isDir) {
-				addToNavigationList(mCurrentPath, top, fileInfo);
-				browserTo(new File(list.get(position).filePath));
-			} else {
-				// file set file checked
-				boolean checked = mFileInfoAdapter.isChecked(position);
-				if (checked) {
-					//cancel checked do not limit
-				}else {
-					// do not support more than five files tranfser at a time.
-					//so need judge
-					if (mFileInfoAdapter.getCheckedItems() >= FileTransferUtil.MAX_TRANSFER_NUM) {
-						mNotice.showToast(R.string.transfer_limit);
-						return;
-					}
-				}
-				mFileInfoAdapter.setChecked(position, !checked);
+			if (mFileInfoAdapter.isMode(DreamConstant.MENU_MODE_EDIT)) {
+				mFileInfoAdapter.setChecked(position);
 				mFileInfoAdapter.notifyDataSetChanged();
-				updateTransferAllUI(true);
+				
+				int selectedCount = mFileInfoAdapter.getCheckedItems();
+				updateActionMenuTitle(selectedCount);
+				updateMenuBar();
+				mMenuTabManager.refreshMenus(mActionMenu);
+			}else {
+				List<FileInfo> list = mFileInfoAdapter.getList();
+				FileInfo fileInfo = list.get(position);
+				int top = view.getTop();
+				if (fileInfo.isDir) {
+					addToNavigationList(mCurrentPath, top, fileInfo);
+					browserTo(new File(list.get(position).filePath));
+				} else {
+					//open file
+					mFileInfoManager.openFile(fileInfo.filePath);
+				}
 			}
 		}
 	}
@@ -441,90 +389,29 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			return false;
 		}
 		
-		List<FileInfo> list;
-		switch (mStatus) {
-		case STATUS_DOC:
-			list = mDocList;
-			break;
-		case STATUS_EBOOK:
-			list = mEbookList;
-			break;
-		case STATUS_APK:
-			list = mApkList;
-			break;
-		case STATUS_ARCHIVE:
-			list = mArchiveList;
-			break;
-		default:
-			list = mAllLists;
-			break;
+		int mode = mFileInfoAdapter.getMode();
+		if (DreamConstant.MENU_MODE_EDIT == mode) {
+			doSelectAll();
+			return true;
+		}else {
+			mFileInfoAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
+			updateActionMenuTitle(1);
 		}
+		boolean isSelected = mFileInfoAdapter.isChecked(position);
+		mFileInfoAdapter.setChecked(position, !isSelected);
+		mFileInfoAdapter.notifyDataSetChanged();
 		
-		final FileInfo fileInfo = list.get(position);
-		int resId = R.array.file_menu;
-		if (fileInfo.isDir) {
-			resId = R.array.folder_menu;
-		}
-		new AlertDialog.Builder(mContext)
-		.setTitle(fileInfo.fileName)
-		.setItems(resId, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				//暂时没想到什么好方法，实现文件和文件夹弹出不同菜单，先就这样
-				if (fileInfo.isDir) {
-					switch (which) {
-					case 0:
-						//info
-						mFileInfoManager.showInfoDialog(fileInfo);
-						break;
-					case 1:
-						//rename
-						showRenameDialog(fileInfo, position);
-						break;
-					}
-					return;
-				}
-				
-				switch (which) {
-				case 0:
-					//open
-					mFileInfoManager.openFile(fileInfo.filePath);
-					break;
-				case 1:
-					//send
-					FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
-					fileTransferUtil.sendFile(fileInfo.filePath, new TransportCallback() {
-						
-						@Override
-						public void onTransportSuccess() {
-							ViewHolder viewHolder = (ViewHolder) view.getTag();
-							showTransportAnimation(viewHolder.iconView);
-						}
-						
-						@Override
-						public void onTransportFail() {
-							
-						}
-					});
-					break;
-				case 2:
-					//delete
-					showDeleteDialog(fileInfo);
-					break;
-				case 3:
-					//info
-					mFileInfoManager.showInfoDialog(fileInfo);
-					break;
-				case 4:
-					//rename
-					showRenameDialog(fileInfo, position);
-					break;
-
-				default:
-					break;
-				}
-			}
-		}).create().show();
+		mActionMenu = new MyMenu(mContext);
+		mActionMenu.addItem(MyMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, R.string.menu_send);
+		mActionMenu.addItem(MyMenu.ACTION_MENU_DELETE,R.drawable.ic_action_delete_enable,R.string.menu_delete);
+		mActionMenu.addItem(MyMenu.ACTION_MENU_INFO,R.drawable.ic_action_info,R.string.menu_info);
+//		mActionMenu.addItem(MyMenu.ACTION_MENU_RENAME, R.drawable.ic_action_rename, R.string.menu_rename);
+		mActionMenu.addItem(MyMenu.ACTION_MENU_SELECT, R.drawable.ic_aciton_select, R.string.select_all);
+		
+		mMenuTabManager = new MenuTabManager(mContext, mMenuHolder);
+		showMenuBar(true);
+		mMenuTabManager.refreshMenus(mActionMenu);
+		mMenuTabManager.setOnMenuItemClickListener(this);
 		return true;
 	}
 
@@ -551,7 +438,6 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			
 			mFileInfoAdapter.selectAll(false);
 			updateUI(mAllLists.size());
-			updateTransferAllUI(true);
 			mTabManager.refreshTab(mCurrentPath, storge_type);
 		} else {
 			Log.e(TAG, "It is a file");
@@ -621,30 +507,76 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			.setNegativeButton(android.R.string.cancel, null)
 			.create().show();
 	}
-
+	
 	/**
-	 * show delete dialog
-	 * @param path  file path
-	 */
-	public void showDeleteDialog(FileInfo fileInfo) {
-		String path = fileInfo.filePath;
-		final int type = fileInfo.type;
-		final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
-		deleteDialog.setOnClickListener(new OnDelClickListener() {
+     * show delete confrim dialog
+     */
+    public void showDeleteDialog(final List<Integer> posList) {
+    	mDeleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, posList.size());
+    	mDeleteDialog.setOnClickListener(new OnDelClickListener() {
 			@Override
 			public void onClick(View view, String path) {
 				switch (view.getId()) {
 				case R.id.left_button:
-					doDelete(path, type);
+					showMenuBar(false);
+					DeleteTask deleteTask = new DeleteTask(posList);
+					deleteTask.execute();
 					break;
-
 				default:
 					break;
 				}
 			}
 		});
-		deleteDialog.show();
-	}
+		mDeleteDialog.show();
+    }
+    
+    /**
+     * Delete file task
+     */
+    public class DeleteTask extends AsyncTask<Void, String, String>{
+    	List<Integer> positionList = new ArrayList<Integer>();
+    	
+    	DeleteTask(List<Integer> list){
+    		positionList = list;
+    	}
+    	
+		@Override
+		protected String doInBackground(Void... params) {
+			List<FileInfo> fileList = mFileInfoAdapter.getList();
+			List<File> deleteList = new ArrayList<File>();
+			//get delete path list
+			File file = null;
+			FileInfo fileInfo = null;
+			for (int i = 0; i < positionList.size(); i++) {
+				int position = positionList.get(i);
+				fileInfo = fileList.get(position);
+				file = new File(fileInfo.filePath);
+				Log.d(TAG, "doInBackground.pos=" + position + ",path:" + file.getAbsolutePath());
+				deleteList.add(file);
+			}
+			
+			for (int i = 0; i < deleteList.size(); i++) {
+				mDeleteDialog.setProgress(i + 1, deleteList.get(i).getName());
+				doDelete(deleteList.get(i));
+				int position = positionList.get(i) - i;		
+				Message message = mHandler.obtainMessage();
+				message.arg1 = position;
+				message.what = MSG_UPDATE_LIST;
+				message.sendToTarget();
+			}	
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			super.onPostExecute(result);
+			if (null != mDeleteDialog) {
+				mDeleteDialog.cancel();
+				mDeleteDialog = null;
+			}
+		}
+    	
+    }
 	
 	/**
 	 * do delete file</br>
@@ -652,34 +584,79 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	 * @param path
 	 * @param type
 	 */
-	public void doDelete(String path, int type){
-		File file = new File(path);
-		if (!file.exists()) {
-			Log.e(TAG, path + " is not exist");
-		} else {
-			boolean ret = true;
+	public void doDelete(File file){
+		if (file.isFile()) {
+			int type = mFileInfoManager.fileFilter(file.getAbsolutePath());
+			Log.d(TAG, "doDelete.type:" + type);
 			switch (type) {
 			case FileInfoManager.TYPE_IMAGE:
-				ret =  mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, path);
+				mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, file.getAbsolutePath());
 				break;
 			case FileInfoManager.TYPE_AUDIO:
-				ret =  mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI, path);
+				mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI, file.getAbsolutePath());
 				break;
 			case FileInfoManager.TYPE_VIDEO:
-				ret =  mFileInfoManager.deleteFileInMediaStore(DreamConstant.VIDEO_URI, path);
+				mFileInfoManager.deleteFileInMediaStore(DreamConstant.VIDEO_URI, file.getAbsolutePath());
 				break;
 			default:
 				//普通文件直接删除，不删除数据库，因为在3.0以前，还没有普通文件的数据哭
-				ret = file.delete();
+				file.delete();
 				break;
 			}
-			if (!ret) {
-				Log.e(TAG, path + " delete failed");
-			} else {
-				mAllLists.remove(mCurrentPosition);
-				mFileInfoAdapter.notifyDataSetChanged();
-			}
+			return;
 		}
+		
+		if (file.isDirectory()) {
+			File[] childFiles = file.listFiles();
+			if (null == childFiles || 0 == childFiles.length) {
+				file.delete();
+				return;
+			}
+			for(File childFile : childFiles){
+				doDelete(childFile);
+			}
+			
+			file.delete();
+		}
+	}
+	
+	/**
+	 * do Tranfer files
+	 */
+	public void doTransfer(){
+		ArrayList<String> checkedList = (ArrayList<String>) mFileInfoAdapter.getCheckedFiles();
+		
+		//send
+		FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
+		fileTransferUtil.sendFiles(checkedList, new TransportCallback() {
+			
+			@Override
+			public void onTransportSuccess() {
+				int first = mFileListView.getFirstVisiblePosition();
+				int last = mFileListView.getLastVisiblePosition();
+				List<Integer> checkedItems = mFileInfoAdapter.getCheckedItemIds();
+				ArrayList<ImageView> icons = new ArrayList<ImageView>();
+				for(int id : checkedItems) {
+					if (id >= first && id <= last) {
+						View view = mFileListView.getChildAt(id - first);
+						if (view != null) {
+							ViewHolder viewHolder = (ViewHolder) view.getTag();
+							icons.add(viewHolder.iconView);
+						}
+					}
+				}
+				
+				if (icons.size() > 0) {
+					ImageView[] imageViews = new ImageView[0];
+					showTransportAnimation(icons.toArray(imageViews));
+				}
+			}
+			
+			@Override
+			public void onTransportFail() {
+				
+			}
+		});
 	}
 
 	public void addToNavigationList(String currentPath, int top,
@@ -871,6 +848,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			Log.d(TAG, "updateNavigationBar,id = " + id);
 			// click current button do not response
 			if (id < mTabNameList.size() - 1) {
+				showMenuBar(false);
 				int count = mTabNameList.size() - id;
 				mTabsHolder.removeViews(id, count);
 
@@ -947,7 +925,6 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			Log.d(TAG, "SCROLL_STATE_TOUCH_SCROLL");
 			mFileInfoAdapter.setFlag(false);
 			break;
-
 		default:
 			break;
 		}
@@ -969,21 +946,6 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		Message message = mHandler.obtainMessage();
 		message.what = MSG_UPDATE_CLASSIFY;
 		message.sendToTarget();
-	}
-	
-	public void updateTransferAllUI(boolean visible){
-		if (visible) {
-			int num = mFileInfoAdapter.getCheckedItems();
-			if (num > 0) {
-				mTransferAllLayout.setVisibility(View.VISIBLE);
-				mTransferAllBtn.setText(getResources().getString(R.string.transfer_all, num));
-			}else {
-				mTransferAllLayout.setVisibility(View.GONE);
-			}
-		}else {
-			mFileInfoAdapter.selectAll(false);
-			mTransferAllLayout.setVisibility(View.GONE);
-		}
 	}
 	
 	public void goToHome(){
@@ -1143,6 +1105,11 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	@Override
 	public boolean onBackPressed() {
 		Log.d(TAG, "onBackPressed.mStatus=" + mStatus);
+		if (mFileInfoAdapter.isMode(DreamConstant.MENU_MODE_EDIT)) {
+			showMenuBar(false);
+			return false;
+		}
+		
 		switch (mStatus) {
 		case STATUS_HOME:
 			return true;
@@ -1172,6 +1139,107 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		if (null != mGetFileTask) {
 			mGetFileTask.cancel(true);
 		}
+	}
+
+	@Override
+	public void onMenuClick(MyMenuItem item) {
+		switch (item.getItemId()) {
+		case MyMenu.ACTION_MENU_SEND:
+			doTransfer();
+			showMenuBar(false);
+			break;
+		case MyMenu.ACTION_MENU_DELETE:
+			List<Integer> posList = mFileInfoAdapter.getCheckedItemIds();
+			showDeleteDialog(posList);
+			break;
+		case MyMenu.ACTION_MENU_INFO:
+			List<FileInfo> list = mFileInfoAdapter.getSelectedList();
+			mFileInfoManager.showInfoDialog(list);
+			showMenuBar(false);
+			break;
+		case MyMenu.ACTION_MENU_SELECT:
+			doSelectAll();
+			break;
+		default:
+			break;
+		}
+	}
+	
+	/**
+	 * set menubar visible or gone
+	 * @param show
+	 */
+	public void showMenuBar(boolean show){
+		if (show) {
+			mMenuBarView.setVisibility(View.VISIBLE);
+		}else {
+			mMenuBarView.setVisibility(View.GONE);
+			onActionMenuDone();
+			updateActionMenuTitle(-1);
+		}
+	}
+	
+	/**
+	 * update menu bar item icon and text color,enable or disable
+	 */
+	public void updateMenuBar(){
+		int selectCount = mFileInfoAdapter.getCheckedItems();
+		updateActionMenuTitle(selectCount);
+		if (0==selectCount) {
+			mActionMenu.findItem(MyMenu.ACTION_MENU_SEND).setEnable(false);
+			mActionMenu.findItem(MyMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.disable_color));
+        	
+			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setEnable(false);
+			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setIcon(R.drawable.ic_action_delete_disable);
+			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.disable_color));
+        	
+			mActionMenu.findItem(MyMenu.ACTION_MENU_INFO).setEnable(false);
+			mActionMenu.findItem(MyMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.disable_color));
+		}else {
+			mActionMenu.findItem(MyMenu.ACTION_MENU_SEND).setEnable(true);
+			mActionMenu.findItem(MyMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.black));
+			
+			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setEnable(true);
+			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setIcon(R.drawable.ic_action_delete_enable);
+			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.black));
+        	
+			mActionMenu.findItem(MyMenu.ACTION_MENU_INFO).setEnable(true);
+			mActionMenu.findItem(MyMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.black));
+		}
+	}
+	
+	//Cancle Action menu
+	public void onActionMenuDone() {
+		mFileInfoAdapter.changeMode(DreamConstant.MENU_MODE_NORMAL);
+		mFileInfoAdapter.selectAll(false);
+		mFileInfoAdapter.notifyDataSetChanged();
+	}
+	
+	/**
+	 * do select all items or unselect all items
+	 */
+	public void doSelectAll(){
+		int selectedCount = mFileInfoAdapter.getCheckedItems();
+		if (mFileInfoAdapter.getCount() != selectedCount) {
+			mFileInfoAdapter.selectAll(true);
+			 mIsSelectAll = true;
+			mActionMenu.findItem(MyMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
+		} else {
+			mFileInfoAdapter.selectAll(false);
+			 mIsSelectAll = false;
+			 mActionMenu.findItem(MyMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
+		}
+		updateMenuBar();
+		mMenuTabManager.refreshMenus(mActionMenu);
+		mFileInfoAdapter.notifyDataSetChanged();
+	}
+	
+	/**
+	 * update main title 
+	 * @param selectCount
+	 */
+	public void updateActionMenuTitle(int selectCount){
+		mFragmentActivity.updateTitleSelectNum(selectCount, count);
 	}
 	
 }

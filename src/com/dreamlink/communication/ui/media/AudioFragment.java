@@ -1,15 +1,15 @@
 package com.dreamlink.communication.ui.media;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -18,7 +18,6 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -66,6 +65,8 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	private View mDoneView;
 	private Button mSelectBtn;
 	private PopupMenu mSelectPopupMenu;
+	
+	private FileDeleteDialog mDeleteDialog;
 	
 	private static final String[] PROJECTION = {
 		MediaStore.Audio.Media._ID, MediaStore.Audio.Media.TITLE,
@@ -199,6 +200,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 			if (null != cursor) {
 				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
 				mAdapter.swapCursor(cursor);
+				mAdapter.selectAll(false);
 				num = cursor.getCount();
 			}
 			updateUI(num);
@@ -223,10 +225,8 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 			
 			int selectedCount = mAdapter.getSelectedItemsCount();
 			updateActionMenuTitle(selectedCount);
-			if (0 == selectedCount) {
-				showMenuBar(false);
-				onActionMenuDone();
-			}
+			updateMenuBar();
+			mMenuManager.refreshMenus(myMenu);
 		}
 	} 
 	
@@ -234,6 +234,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
 		int mode = mAdapter.getMode();
 		if (DreamConstant.MENU_MODE_EDIT == mode) {
+			doSelectAll();
 			return true;
 		}else {
 			mAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
@@ -243,43 +244,83 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		mAdapter.setSelected(position, !isSelected);
 		mAdapter.notifyDataSetChanged();
 		
-		myMenu = new MyMenu();
-		myMenu.addItem(MyMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, "Send");
-		myMenu.addItem(MyMenu.ACTION_MENU_DELETE,R.drawable.ic_action_delete_enable,"Delete");
-		myMenu.addItem(MyMenu.ACTION_MENU_INFO,R.drawable.ic_action_info,"Info");
+		myMenu = new MyMenu(mContext);
+		myMenu.addItem(MyMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, R.string.menu_send);
+		myMenu.addItem(MyMenu.ACTION_MENU_DELETE,R.drawable.ic_action_delete_enable,R.string.menu_delete);
+		myMenu.addItem(MyMenu.ACTION_MENU_INFO,R.drawable.ic_action_info,R.string.menu_info);
+		myMenu.addItem(MyMenu.ACTION_MENU_SELECT, R.drawable.ic_aciton_select, R.string.select_all);
 		
 		mMenuManager = new MenuTabManager(mContext, mMenuHolder);
 		showMenuBar(true);
 		mMenuManager.refreshMenus(myMenu);
 		mMenuManager.setOnMenuItemClickListener(this);
-//						//delete
-//						showDeleteDialog(position, url);
-//						break;
 		return true;
 	}
 	
 	/**
-     * show confrim dialog
+     * show delete confrim dialog
      * @param path file path
      */
-    public void showDeleteDialog(final int pos, final String path) {
-    	final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
-		deleteDialog.setOnClickListener(new OnDelClickListener() {
+    public void showDeleteDialog(final List<Integer> posList) {
+    	mDeleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, posList.size());
+    	mDeleteDialog.setOnClickListener(new OnDelClickListener() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public void onClick(View view, String path) {
 				switch (view.getId()) {
 				case R.id.left_button:
-					doDelete(pos, path);
+					showMenuBar(false);
+					onActionMenuDone();
+					DeleteTask deleteTask = new DeleteTask();
+					deleteTask.execute(posList);
 					break;
 				default:
 					break;
 				}
 			}
 		});
-		deleteDialog.show();
+		mDeleteDialog.show();
     }
     
-    private void doDelete(int position, String path) {
+    /**
+     * Delete file task
+     */
+    public class DeleteTask extends AsyncTask<List<Integer>, String, String>{
+		@Override
+		protected String doInBackground(List<Integer>... params) {
+			List<Integer> fileList = params[0];
+			List<String> deleteList = new ArrayList<String>();
+			
+			//get delete path list
+			Cursor cursor = mAdapter.getCursor();
+			for (int i = 0; i < fileList.size(); i++) {
+				cursor.moveToPosition(fileList.get(i));
+				String url = cursor.getString(cursor
+						.getColumnIndex(MediaStore.Audio.Media.DATA));
+				deleteList.add(url);
+			}
+			
+			//start delete file from delete list
+			for (int i = 0; i < deleteList.size(); i++) {
+				File file = new File(deleteList.get(i));
+				mDeleteDialog.setProgress(i + 1, file.getName());
+				doDelete(deleteList.get(i));
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			super.onPostExecute(result);
+			if (null != mDeleteDialog) {
+				mDeleteDialog.cancel();
+				mDeleteDialog = null;
+			}
+		}
+    	
+    }
+    
+    private void doDelete(String path) {
 		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.AUDIO_URI, path);
 		if (!ret) {
 			mNotice.showToast(R.string.delete_fail);
@@ -295,14 +336,29 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 				.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
 		String url = cursor.getString(cursor
 				.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
+		String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
 		long date = cursor.getLong(cursor
 				.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED));
 		String result = "";
 		result = "类型:" + "音频" + DreamConstant.ENTER
-				+ "位置:" + DreamUtil.getParentPath(url) + DreamConstant.ENTER
+				+ "文件名:" + title + DreamConstant.ENTER
+				+ "位置:" + url + DreamConstant.ENTER
 				+ "大小:" + DreamUtil.getFormatSize(size) + DreamConstant.ENTER
 				+ "修改日期:" + DreamUtil.getFormatDate(date);
 		return result;
+	}
+	
+	public long getTotalSize(List<Integer> list){
+		long totalSize = 0;
+		Cursor cursor = mAdapter.getCursor();
+		for(int pos : list){
+			cursor.moveToPosition(pos);
+			long size = cursor.getLong(cursor
+					.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
+			totalSize += size;
+		}
+		
+		return totalSize;
 	}
 	 
 	public void updateUI(int num) {
@@ -370,18 +426,27 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 			break;
 		case MyMenu.ACTION_MENU_DELETE:
 			//delete
+			List<Integer> selectPosList = mAdapter.getSelectedItemPos();
+			showDeleteDialog(selectPosList);
 			break;
 		case MyMenu.ACTION_MENU_INFO:
-			Cursor cursor = mAdapter.getCursor();
 			List<Integer> list = mAdapter.getSelectedItemPos();
+			Log.d(TAG, "info.list.size=" + list.size() + ",pos=" + list.get(0));
 			if (1 == list.size()) {
+				Cursor cursor = mAdapter.getCursor();
 				cursor.moveToPosition(list.get(0));
 				String info = getAudioInfo(cursor);
 				DreamUtil.showInfoDialog(mContext, "属性", info);
 			}else {
-				mNotice.showToast("shuxing");
+				String size = "文件大小：" + DreamUtil.getFormatSize(getTotalSize(list));
+				DreamUtil.showInfoDialog(mContext, size);
 			}
+			showMenuBar(false);
+			onActionMenuDone();
 			//info
+			break;
+		case MyMenu.ACTION_MENU_SELECT:
+			doSelectAll();
 			break;
 
 		default:
@@ -408,7 +473,7 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
         }
         final Menu menu = mSelectPopupMenu.getMenu();
         int selectedCount = mAdapter.getSelectedItemsCount();
-        updateMenuBar(selectedCount);
+        updateMenuBar();
         if (mAdapter.getCount() == 0) {
             menu.findItem(R.id.menu_select).setEnabled(false);
         } else {
@@ -424,34 +489,68 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	}
 	
 	/**
+	 * do select all items or unselect all items
+	 */
+	public void doSelectAll(){
+		int selectedCount1 = mAdapter.getSelectedItemsCount();
+		if (mAdapter.getCount() != selectedCount1) {
+			mAdapter.selectAll(true);
+			 mIsSelectAll = true;
+			myMenu.findItem(MyMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
+		} else {
+			mAdapter.selectAll(false);
+			 mIsSelectAll = false;
+			myMenu.findItem(MyMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
+		}
+		updateMenuBar();
+		mMenuManager.refreshMenus(myMenu);
+		mAdapter.notifyDataSetChanged();
+	}
+	
+	/**
 	 * set menubar visible or gone
 	 * @param show
 	 */
 	public void showMenuBar(boolean show){
 		if (show) {
-			mMenuTopView.setVisibility(View.VISIBLE);
 			mMenuBottomView.setVisibility(View.VISIBLE);
 		}else {
-			mMenuTopView.setVisibility(View.GONE);
 			mMenuBottomView.setVisibility(View.GONE);
+			updateActionMenuTitle(-1);
 		}
 	}
 	
-	public void updateMenuBar(int selectCount){
-		 if (0==selectCount) {
-        	 disableMenuBar();
+	/**
+	 * update menu bar item icon and text color,enable or disable
+	 */
+	public void updateMenuBar(){
+		int selectCount = mAdapter.getSelectedItemsCount();
+		updateActionMenuTitle(selectCount);
+		if (0==selectCount) {
+        	myMenu.findItem(MyMenu.ACTION_MENU_SEND).setEnable(false);
+        	myMenu.findItem(MyMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.disable_color));
+        	
+        	myMenu.findItem(MyMenu.ACTION_MENU_DELETE).setEnable(false);
+        	myMenu.findItem(MyMenu.ACTION_MENU_DELETE).setIcon(R.drawable.ic_action_delete_disable);
+        	myMenu.findItem(MyMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.disable_color));
+        	
+        	myMenu.findItem(MyMenu.ACTION_MENU_INFO).setEnable(false);
+        	myMenu.findItem(MyMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.disable_color));
+		}else {
+			myMenu.findItem(MyMenu.ACTION_MENU_SEND).setEnable(true);
+			myMenu.findItem(MyMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.black));
+			
+        	myMenu.findItem(MyMenu.ACTION_MENU_DELETE).setEnable(true);
+        	myMenu.findItem(MyMenu.ACTION_MENU_DELETE).setIcon(R.drawable.ic_action_delete_enable);
+        	myMenu.findItem(MyMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.black));
+        	
+        	myMenu.findItem(MyMenu.ACTION_MENU_INFO).setEnable(true);
+        	myMenu.findItem(MyMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.black));
 		}
-	}
-	
-	public void disableMenuBar(){
-		mMenuManager.refresh(0);
-   	 	mMenuManager.refresh(1);
-   	 	mMenuManager.refresh(2);
 	}
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.ll_menubar_done:
 			showMenuBar(false);
@@ -472,7 +571,6 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		// TODO Auto-generated method stub
 		switch (item.getItemId()) {
 		case R.id.menu_select:
 			mAdapter.selectAll(mIsSelectAll);
@@ -488,7 +586,21 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		return false;
 	}
 	
-	public void updateActionMenuTitle(int count){
-		mSelectBtn.setText(getResources().getString(R.string.select_msg, count));
+	/**
+	 * update main title 
+	 * @param selectCount
+	 */
+	public void updateActionMenuTitle(int selectCount){
+		mFragmentActivity.updateTitleSelectNum(selectCount, count);
+	}
+	
+	@Override
+	public int getSelectedCount() {
+		return mAdapter.getSelectedItemsCount();
+	}
+	
+	@Override
+	public int getMenuMode() {
+		return mAdapter.getMode();
 	}
 }

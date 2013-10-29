@@ -1,28 +1,39 @@
 package com.dreamlink.communication.ui.file;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.view.View;
 import android.widget.Toast;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.dialog.FileInfoDialog;
+import com.dreamlink.communication.ui.dialog.FileInfoDialog.OnClickListener;
 import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 
@@ -582,6 +593,7 @@ public class FileInfoManager {
 	 * @param path
 	 */
 	public boolean deleteFileInMediaStore(Uri uri, String path) {
+		Log.d(TAG, "deleteFileInMediaStore:" + path);
 		if (TextUtils.isEmpty(path)) {
 			return false;
 		}
@@ -656,6 +668,98 @@ public class FileInfoManager {
 		String info = getFileInfo(fileInfo);
 		DreamUtil.showInfoDialog(context, fileInfo.fileName, info);
 	}
+	
+	public void showInfoDialog(List<FileInfo> list){
+		GetFileSizeTask task = new GetFileSizeTask(list);
+		task.execute();
+	}
+	
+	private class GetFileSizeTask extends AsyncTask<Void, Void, Void>{
+		long size = 0;
+		int fileNum = 0;
+		int folderNum = 0;
+		FileInfoDialog infoDialog = null;
+		int type;
+		List<FileInfo> fileList;
+		
+		
+		GetFileSizeTask(List<FileInfo> list){
+			fileList = list;
+			if (list.size() == 1) {
+				if (fileList.get(0).isDir) {
+					type = FileInfoDialog.SINGLE_FOLDER;
+				}else {
+					type = FileInfoDialog.SINGLE_FILE;
+				}
+			}else {
+				type = FileInfoDialog.MULTI;
+			}
+		}
+		
+		@Override
+		protected Void doInBackground(Void... params) {
+			Log.d(TAG, "doInBackground");
+			File file = null;
+			switch (type) {
+			case FileInfoDialog.SINGLE_FILE:
+			case FileInfoDialog.SINGLE_FOLDER:
+				FileInfo fileInfo = fileList.get(0);
+				infoDialog.updateUI(fileInfo.fileName, fileInfo.filePath, fileInfo.fileDate);
+				file = new File(fileInfo.filePath);
+				getFileSize(file);
+				break;
+			case FileInfoDialog.MULTI:
+				for(FileInfo info : fileList){
+					file = new File(info.filePath);
+					getFileSize(file);
+				}
+				break;
+			default:
+				break;
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			infoDialog = new FileInfoDialog(context,type);
+			infoDialog.show();
+			infoDialog.setOnCancelListener(new OnCancelListener() {
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					cancel(true);
+					infoDialog = null;
+				}
+			});
+		}
+		
+		@Override
+		protected void onProgressUpdate(Void...values) {
+			super.onProgressUpdate(values);
+			infoDialog.updateUI(size, fileNum, folderNum);
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			Log.d(TAG, "onPostExecute.");
+		}
+		
+		private void getFileSize(File file){
+			if (file.isDirectory()) {
+				folderNum ++ ;
+				File[] files = file.listFiles();
+				for(File file2 : files){
+					getFileSize(file2);
+				}
+			}else {
+				fileNum ++;
+				size += file.length();
+			}
+			onProgressUpdate();
+		}
+	}
 
 	private String getFileInfo(FileInfo fileInfo) {
 		String path = fileInfo.filePath.substring(0, fileInfo.filePath.lastIndexOf("/"));
@@ -709,6 +813,77 @@ public class FileInfoManager {
 			}
 		}
 		return newName;
+	}
+	
+	/**
+	 * get file size
+	 * @param file
+	 * @return
+	 */
+	public long getFileSize(File file){
+		long len = 0;
+		FileInputStream fis = null;
+		if (file.exists()) {
+			try {
+			fis = new FileInputStream(file);
+			len = fis.available();
+			fis.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}else {
+			Log.e(TAG + ".getFileSize", file.getAbsolutePath() + " is not exist.");
+		}
+		
+		return len;
+	}
+	
+	/**
+	 * get folder size
+	 * @param file the dir file
+	 * @return
+	 */
+	public long getFolderSize(File file){
+		long size = 0;
+		if (!file.isDirectory()) {
+			Log.e(TAG + ".getFolderSize", file.getAbsolutePath() + " is not dir.");
+			return 0;
+		}
+		File[] files = file.listFiles();
+		for(File file2 : files){
+			if (file2.isDirectory()) {
+				size += getFileSize(file2);
+			}else {
+				size += file2.length();
+			}
+		}
+		
+		return size;
+	}
+	
+	/**
+	 * get file num that in the dir.
+	 * @param file the dir file.
+	 * @return
+	 */
+	public int getFileCount(File file){
+		int count = 0;
+		if (!file.isDirectory()) {
+			Log.e(TAG + ".getFileCount", file.getAbsolutePath() + " is not dir.");
+			return 0;
+		}
+		
+		File[] files = file.listFiles();
+		count = files.length;
+		
+		for(File file2 : files){
+			if (file2.isDirectory()) {
+				count += getFileCount(file);
+				count --;
+			}
+		}
+		
+		return count;
 	}
 
 	private List<NavigationRecord> mNavigationLists = new LinkedList<FileInfoManager.NavigationRecord>();

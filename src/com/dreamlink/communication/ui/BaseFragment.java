@@ -49,6 +49,14 @@ public class BaseFragment extends Fragment{
 		return count;
 	}
 	
+	public int getSelectedCount(){
+		return -1;
+	}
+	
+	public int getMenuMode(){
+		return DreamConstant.MENU_MODE_NORMAL;
+	}
+	
 //	/**
 //	 * for picture use
 //	 */

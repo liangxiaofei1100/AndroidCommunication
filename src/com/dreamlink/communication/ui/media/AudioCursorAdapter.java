@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.common.BaseCursorAdapter;
 import com.dreamlink.communication.util.Log;
@@ -12,11 +11,9 @@ import com.dreamlink.communication.util.Log;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
-import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,12 +24,10 @@ public class AudioCursorAdapter extends BaseCursorAdapter {
 	public AudioCursorAdapter(Context context) {
 		super(context, null, true);
 		mInflater = LayoutInflater.from(context);
-		selectAll(false);
 	}
 	
 	@Override
 	public void selectAll(boolean isSelected) {
-		super.selectAll(isSelected);
 		int count = this.getCount();
 		for (int i = 0; i < count; i++) {
 			setSelected(i, isSelected);
@@ -69,6 +64,7 @@ public class AudioCursorAdapter extends BaseCursorAdapter {
 				cursor.moveToPosition(i);
 				String url = cursor.getString(cursor
 						.getColumnIndex(MediaStore.Audio.Media.DATA));
+				Log.d(TAG, "getSelectItemList:" + url);
 				list.add(url);
 			}
 		}
