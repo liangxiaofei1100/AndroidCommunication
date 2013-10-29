@@ -7,6 +7,8 @@ import java.util.List;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -43,6 +45,7 @@ import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
+import com.dreamlink.communication.ui.dialog.FileInfoDialog;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.media.AudioCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.media.MyMenu.MyMenuItem;
@@ -262,7 +265,16 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
      * @param path file path
      */
     public void showDeleteDialog(final List<Integer> posList) {
-    	mDeleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, posList.size());
+    	List<String> deleteNameList = new ArrayList<String>();
+    	Cursor cursor = mAdapter.getCursor();
+    	for (int i = 0; i < posList.size(); i++) {
+			cursor.moveToPosition(posList.get(i));
+			String name = cursor.getString(cursor
+					.getColumnIndex(MediaStore.Audio.Media.TITLE));
+			deleteNameList.add(name);
+		}
+//    	mDeleteDialog = new FileDeleteDialog(mContext, posList.size());
+    	mDeleteDialog = new FileDeleteDialog(mContext, deleteNameList);
     	mDeleteDialog.setOnClickListener(new OnDelClickListener() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -431,16 +443,30 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 			break;
 		case MyMenu.ACTION_MENU_INFO:
 			List<Integer> list = mAdapter.getSelectedItemPos();
-			Log.d(TAG, "info.list.size=" + list.size() + ",pos=" + list.get(0));
+			FileInfoDialog dialog = null;
 			if (1 == list.size()) {
+				dialog = new FileInfoDialog(mContext,FileInfoDialog.SINGLE_FILE);
 				Cursor cursor = mAdapter.getCursor();
 				cursor.moveToPosition(list.get(0));
-				String info = getAudioInfo(cursor);
-				DreamUtil.showInfoDialog(mContext, "属性", info);
+				
+				long size = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
+				String url = cursor.getString(cursor
+						.getColumnIndex(MediaStore.Audio.Media.DATA)); // 文件路径
+				String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+				long date = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED));
+				
+				dialog.updateUI(size, 0, 0);
+				dialog.updateUI(title, url, date);
 			}else {
-				String size = "文件大小：" + DreamUtil.getFormatSize(getTotalSize(list));
-				DreamUtil.showInfoDialog(mContext, size);
+				dialog = new FileInfoDialog(mContext,FileInfoDialog.MULTI);
+				int fileNum = list.size();
+				long size = getTotalSize(list);
+				dialog.updateUI(size, fileNum, 0);
 			}
+			dialog.show();
+			
 			showMenuBar(false);
 			onActionMenuDone();
 			//info

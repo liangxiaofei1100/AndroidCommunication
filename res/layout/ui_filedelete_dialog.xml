@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="280dp"
-    android:layout_height="200dp"
-    android:background="@drawable/confirm_dialog_bg"
-    android:gravity="center_horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="300dp"
     >
 
     <TextView
@@ -17,20 +15,40 @@
         android:text="@string/delete_confirm_msg"
         android:gravity="center_horizontal"
          />
+    
+        <ListView 
+            android:id="@+id/lv_delete"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/title_veiw"
+            android:layout_above="@+id/button_layout"
+            android:divider="@color/transparent"
+            android:clickable="false"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:visibility="gone"
+            ></ListView>
 
     <RelativeLayout
+        android:id="@+id/rl_deleting"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_below="@+id/title_veiw"
         android:layout_above="@+id/button_layout"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:visibility="visible"
          >
 
+         <ProgressBar
+            android:id="@+id/bar_delete"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="10dp" 
+            />
+         
         <TextView
             android:id="@+id/name_view"
             android:layout_width="fill_parent"
@@ -39,46 +57,54 @@
             android:maxLines="2"
             android:ellipsize="end"
             android:textColor="@color/black"
-            android:textIsSelectable="false" />
-        
-         <ProgressBar
-            android:id="@+id/bar_delete"
-            style="@style/progressBarHorizontal_color"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/name_view"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="10dp" 
-            android:visibility="gone"
-            />
+            android:textIsSelectable="false"
+            android:layout_above="@+id/bar_delete"
+             />
 
     </RelativeLayout>
     
     <LinearLayout
         android:id="@+id/button_layout"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal" >
+        android:orientation="vertical" >
 
-        <Button
-            android:id="@+id/left_button"
-            android:layout_width="110dp"
+        <View 
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="#d1d1d1"
+            />
+        <LinearLayout 
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_cancel"
-            android:layout_marginRight="5dp"
-            android:textColor="@color/black"
-            android:textSize="16sp" />
-
-        <Button
-            android:id="@+id/right_button"
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:background="@drawable/button_cancel"
-            android:textColor="@color/black"
-            android:textSize="16sp" />
+            android:orientation="horizontal"
+            >
+            
+            <Button
+                android:id="@+id/left_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/blue_bg"
+                android:textColor="@color/black"
+                android:text="删除"
+                android:textSize="16sp" />
+            
+            <View
+                android:layout_width="1dp"
+                android:layout_height="fill_parent"
+                android:background="#d1d1d1" />
+            
+            <Button
+                android:id="@+id/right_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/blue_bg"
+                android:textColor="@color/black"
+                android:text="取消"
+                android:textSize="16sp" />
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

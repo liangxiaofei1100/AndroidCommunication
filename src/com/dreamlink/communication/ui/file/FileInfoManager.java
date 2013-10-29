@@ -26,14 +26,12 @@ import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.view.View;
 import android.widget.Toast;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.dialog.FileInfoDialog;
-import com.dreamlink.communication.ui.dialog.FileInfoDialog.OnClickListener;
 import com.dreamlink.communication.ui.history.HistoryInfo;
 import com.dreamlink.communication.util.Log;
 

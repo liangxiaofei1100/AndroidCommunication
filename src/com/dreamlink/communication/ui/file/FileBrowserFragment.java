@@ -179,10 +179,10 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 				break;
 			case MSG_UPDATE_LIST:
 				List<FileInfo> fileList = mFileInfoAdapter.getList();
-				Log.d(TAG, "MSG_UPDATE_LIST.before remove size=" + fileList.size());
 				fileList.remove(msg.arg1);
-				Log.d(TAG, "MSG_UPDATE_LIST.after remove size=" + fileList.size());
 				mFileInfoAdapter.notifyDataSetChanged();
+				
+				updateUI(fileList.size());
 				break;
 				
 			default:
@@ -512,7 +512,14 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
      * show delete confrim dialog
      */
     public void showDeleteDialog(final List<Integer> posList) {
-    	mDeleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, posList.size());
+    	//get name list
+    	List<String> nameList = new ArrayList<String>();
+    	List<FileInfo> fileList = mFileInfoAdapter.getList();
+    	for(int position : posList){
+    		nameList.add(fileList.get(position).fileName);
+    	}
+    	
+    	mDeleteDialog = new FileDeleteDialog(mContext,nameList);
     	mDeleteDialog.setOnClickListener(new OnDelClickListener() {
 			@Override
 			public void onClick(View view, String path) {

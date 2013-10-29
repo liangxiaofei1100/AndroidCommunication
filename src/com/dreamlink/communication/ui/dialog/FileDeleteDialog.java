@@ -1,35 +1,40 @@
 package com.dreamlink.communication.ui.dialog;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.ui.DreamUtil;
 
-import android.R.integer;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class FileDeleteDialog extends Dialog implements android.view.View.OnClickListener {
 
-	private TextView mFileNameView;
 	private TextView mDialogTitle;
+	
+	private View mDeletingView;
+	private TextView mFileNameView;
+	private ProgressBar mProgressBar;
+	private ListView mDeleteListView;
+	
 	private Button mOkButton,mCancelButton;
-	private ProgressBar mProgressBar; 
 	
 	private String mFilePath;
 	private int mSize;
+	private List<String> mDeleteNameList = new ArrayList<String>();
 	
 	private Context mContext;
 	
 	private OnDelClickListener mClickListener;
 	
-	private int max;
 	private int progress;
 	private String fileName;
 	private static final int MSG_UPDATE_PROGRESS = 0x10;
@@ -60,19 +65,34 @@ public class FileDeleteDialog extends Dialog implements android.view.View.OnClic
 		mSize = size;
 	}
 	
+	public FileDeleteDialog(Context context, List<String> nameList){
+		super(context);
+		mContext = context;
+		mDeleteNameList = nameList;
+	}
+	
+	public FileDeleteDialog(Context context, int size){
+		super(context);
+		mContext = context;
+		mSize = size;
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui_filedelete_dialog);
 		
+		setTitle(R.string.delete_confirm);
+		
+		mDeletingView = findViewById(R.id.rl_deleting);
+		
 		mProgressBar = (ProgressBar) findViewById(R.id.bar_delete);
-		mProgressBar.setMax(mSize);
+		mProgressBar.setMax(mDeleteNameList.size());
 		
 		mFileNameView = (TextView) findViewById(R.id.name_view);
 		mDialogTitle = (TextView) findViewById(R.id.title_veiw);
 		
-		mFileNameView.setText(mSize + "个文件将被删除");
-//		mFileSizeView.setText(mContext.getResources().getString(R.string.size, DreamUtil.getFormatSize(file.length())));
+		mDeleteListView = (ListView) findViewById(R.id.lv_delete);
 		
 		mOkButton = (Button) findViewById(R.id.left_button);
 		mCancelButton = (Button) findViewById(R.id.right_button);
@@ -80,10 +100,17 @@ public class FileDeleteDialog extends Dialog implements android.view.View.OnClic
 		mCancelButton.setText(android.R.string.cancel);
 		mOkButton.setOnClickListener(this);
 		mCancelButton.setOnClickListener(this);
-	}
-	
-	public void setMax(int max){
-		this.max = max;
+		
+		if (mDeleteNameList.size() > 0) {
+			mDeleteListView.setVisibility(View.VISIBLE);
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext, 
+					R.layout.ui_filedelete_dialog_item, mDeleteNameList);
+			mDeleteListView.setAdapter(adapter);
+			mDeletingView.setVisibility(View.GONE);
+		}else {
+			mDeletingView.setVisibility(View.VISIBLE);
+			mDeleteListView.setVisibility(View.GONE);
+		}
 	}
 	
 	public void setProgress(int progress, String fileName){
@@ -97,8 +124,10 @@ public class FileDeleteDialog extends Dialog implements android.view.View.OnClic
 		switch (v.getId()) {
 		case R.id.left_button:
 			mClickListener.onClick(v, mFilePath);
-			mDialogTitle.setText("正在删除文件...");
-			mProgressBar.setVisibility(View.VISIBLE);
+			setTitle("正在删除");
+			mDialogTitle.setVisibility(View.GONE);
+			mDeleteListView.setVisibility(View.GONE);
+			mDeletingView.setVisibility(View.VISIBLE);
 			mOkButton.setVisibility(View.GONE);
 			break;
 		case R.id.right_button:

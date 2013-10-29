@@ -9,6 +9,8 @@
     <string name="cancel">取消</string>
     <string name="delete_confirm">删除确认</string>
     <string name="info">属性: <xliff:g id="info">%1$s</xliff:g></string>
+    <string name="info1">属性</string>
+    <string name="info2">%s 属性</string>
     <string name="name">名称: <xliff:g id="name">%1$s</xliff:g></string>
     <string name="version">版本: <xliff:g id="version">%1$s</xliff:g></string>
     <string name="location">位置: <xliff:g id="location">%1$s</xliff:g></string>
@@ -130,7 +132,7 @@
     <string name="copy_cancel">取消</string>
      <string name="copy_cancel_msg">将不会改变任何文件</string>
      
-     <string name="delete_confirm_msg">确定要删除这个文件？</string>
+     <string name="delete_confirm_msg">确定要删除这些？</string>
      <string name="delete_fail">无法删除这个文件</string>
      
      <string name="remote_share_server_list_msg">远程文件共享列表</string>

@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 public class FileInfoDialog extends Dialog implements android.view.View.OnClickListener {
 
-	private TextView mOkButton,mCancelButton;
+	private TextView mOkButton;
 	
 	private TextView mTypeView,mLoacationView,mSizeView,mIncludeView,mDateView;
 	private View mDividerView;
@@ -27,8 +27,6 @@ public class FileInfoDialog extends Dialog implements android.view.View.OnClickL
 	private long mModified;
 	
 	private Context mContext;
-	
-	private OnClickListener mClickListener;
 	
 	public static final int SINGLE_FILE = 0x01;
 	public static final int SINGLE_FOLDER = 0x02;
@@ -52,7 +50,7 @@ public class FileInfoDialog extends Dialog implements android.view.View.OnClickL
 				break;
 			case MSG_UPDATEUI_SINGLE:
 				String date = DreamUtil.getFormatDate(mModified);
-				setTitle(mFileName + " 属性");
+				setTitle(mContext.getResources().getString(R.string.info2, mFileName));
 				mLoacationView.setText(mContext.getResources().getString(R.string.location, mFilePath));
 				mDateView.setText(mContext.getResources().getString(R.string.modif_date, date));
 				break;
@@ -61,19 +59,6 @@ public class FileInfoDialog extends Dialog implements android.view.View.OnClickL
 			}
 		};
 	};
-	
-	
-	public FileInfoDialog(Context context, int theme, String path) {
-		super(context, theme);
-		mFilePath = path;
-		mContext = context;
-	}
-	
-	public FileInfoDialog(Context context, int theme, int size){
-		super(context, theme);
-		mContext = context;
-		mTotalSize = size;
-	}
 	
 	public FileInfoDialog(Context context, int type) {
 		super(context);
@@ -105,7 +90,7 @@ public class FileInfoDialog extends Dialog implements android.view.View.OnClickL
 			mTypeView.setText(R.string.type_folder);
 		}
 		
-		setTitle("属性");
+		setTitle(R.string.info1);
 		mOkButton = (TextView) findViewById(R.id.btn_info_ok);
 		mOkButton.setOnClickListener(this);
 	}
@@ -132,21 +117,9 @@ public class FileInfoDialog extends Dialog implements android.view.View.OnClickL
 		case R.id.btn_info_ok:
 			cancel();
 			break;
-		case R.id.right_button:
-			dismiss();
-			break;
-
 		default:
 			break;
 		}
-	}
-	
-	public interface OnClickListener{
-		public void onClick(View view);
-	}
-	
-	public void setOnClickListener(OnClickListener listener){
-		mClickListener = listener;
 	}
 
 }
