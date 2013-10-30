@@ -90,12 +90,8 @@ public class LocalFolderDialog extends Activity implements OnItemClickListener, 
 
 		if (MountManager.NO_EXTERNAL_SDCARD.equals(MountManager.SDCARD_PATH)
 				&& MountManager.NO_INTERNAL_SDCARD.equals(MountManager.INTERNAL_PATH)) {
-//			mEmptyView.setText("不存在SD卡");
-//			mMenuLayout.setVisibility(View.INVISIBLE);
-			
-			mCurrentPath = "/mnt/internal_sdcard";
-			browserTo(new File(mCurrentPath));
-			mMenuLayout.setVisibility(View.VISIBLE);
+			mEmptyView.setText("不存在SD卡");
+			mMenuLayout.setVisibility(View.INVISIBLE);
 		} else if (MountManager.NO_EXTERNAL_SDCARD.equals(MountManager.SDCARD_PATH)) {
 			mCurrentPath = MountManager.INTERNAL_PATH;
 			browserTo(new File(MountManager.INTERNAL_PATH));
