@@ -108,6 +108,18 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	public static final int APK = FileInfoManager.TYPE_APK;
 	public static final int ARCHIVE = FileInfoManager.TYPE_ARCHIVE;
 	
+	/**
+	 * save num in sharedPrefernce
+	 */
+	//work document
+	private static final String DOC_NUM = "doc_num";
+	//ebook file
+	private static final String EBOOK_NUM = "ebook_num";
+	//app install package
+	private static final String APP_NUM = "app_num";
+	//archive file
+	private static final String ARCHIVE_NUM = "archive_num";
+	
 	private Timer mClassifyTimer;
 
 	private Context mContext;

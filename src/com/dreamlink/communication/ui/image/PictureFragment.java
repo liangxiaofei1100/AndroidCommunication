@@ -147,21 +147,24 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mAppId = getArguments() != null ? getArguments().getInt(Extra.APP_ID) : 1;
-		Log.d(TAG, "onCreate.mstatus=" + mStatus);
+		if (null != savedInstanceState) {
+			mStatus = savedInstanceState.getInt(STATUS);
+			Log.d(TAG, "onCreate.savedInstanceState is not null.mStatus=" + mStatus);
+		}
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		// TODO Auto-generated method stub
 		super.onSaveInstanceState(outState);
+		Log.d(TAG, "onSaveInstanceState.status=" + mStatus);
+		outState.putInt(STATUS, mStatus);
 	}
 	
 	public void onResume() {
 		super.onResume();
-		mStatus = STATUS_FOLDER;
 		mFragmentActivity.addObject(MainFragmentActivity.IMAGE, (BaseFragment)this);
 		mFragmentActivity.setTitleName(MainFragmentActivity.IMAGE);
-		Log.d(TAG, "onResume.status=" + mStatus);
 	};
 
 	@Override
@@ -350,16 +353,13 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		switch (parent.getId()) {
 		case R.id.gv_picture_folder:
-			Log.d(TAG, "gv_picture_folder");
 			mStatus = STATUS_ITEM;
-			Log.d(TAG, "gv_picture_folder.mStatus=" + mStatus);
 			String name = mFolderInfosList.get(position).getBucketDisplayName();
 			queryFolderItem(name);
 			mItemGridView.setVisibility(View.VISIBLE);
 			mFolderGridView.setVisibility(View.INVISIBLE);
 			break;
 		case R.id.gv_picture_item:
-			Log.d(TAG, "gv_picture_item");
 			if (mAdapter.getMode() == DreamConstant.MENU_MODE_EDIT) {
 				mAdapter.setSelected(position);
 				mAdapter.notifyDataSetChanged();
