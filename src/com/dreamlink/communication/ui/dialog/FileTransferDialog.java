@@ -63,6 +63,11 @@ public class FileTransferDialog extends Dialog implements android.view.View.OnCl
 		mContext = context;
 	}
 	
+	public FileTransferDialog(Context context){
+		super(context);
+		mContext = context;
+	}
+	
 	private FileTransferOnClickListener mListener = null;
 	public interface FileTransferOnClickListener{
 		public void onClick(View view, int state);

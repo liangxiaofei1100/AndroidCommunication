@@ -12,6 +12,7 @@ import com.dreamlink.communication.ui.MountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -89,8 +90,12 @@ public class LocalFolderDialog extends Activity implements OnItemClickListener, 
 
 		if (MountManager.NO_EXTERNAL_SDCARD.equals(MountManager.SDCARD_PATH)
 				&& MountManager.NO_INTERNAL_SDCARD.equals(MountManager.INTERNAL_PATH)) {
-			mEmptyView.setText("不存在SD卡");
-			mMenuLayout.setVisibility(View.INVISIBLE);
+//			mEmptyView.setText("不存在SD卡");
+//			mMenuLayout.setVisibility(View.INVISIBLE);
+			
+			mCurrentPath = "/mnt/internal_sdcard";
+			browserTo(new File(mCurrentPath));
+			mMenuLayout.setVisibility(View.VISIBLE);
 		} else if (MountManager.NO_EXTERNAL_SDCARD.equals(MountManager.SDCARD_PATH)) {
 			mCurrentPath = MountManager.INTERNAL_PATH;
 			browserTo(new File(MountManager.INTERNAL_PATH));

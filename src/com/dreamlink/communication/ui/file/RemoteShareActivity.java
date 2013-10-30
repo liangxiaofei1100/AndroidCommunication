@@ -713,8 +713,7 @@ public class RemoteShareActivity extends Activity implements
 			e.printStackTrace();
 			return;
 		}
-		mFileTransferDialog = new FileTransferDialog(mContext,
-				R.style.TransferDialog);
+		mFileTransferDialog = new FileTransferDialog(mContext);
 		mFileTransferDialog.setDMax(currentCopyFile.fileSize);
 		mFileTransferDialog.setFileName(name);
 		mFileTransferDialog.setState(FileTransferDialog.STATE_COPYING);
