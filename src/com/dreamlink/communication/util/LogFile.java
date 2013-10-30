@@ -29,7 +29,7 @@ public class LogFile {
 	private static final String TAG = "LogFile";
 	private File mFile;
 	private FileWriter mWriter;
-	private static final String LOG_FOLDER_NAME = "DreamlinkLog";
+	public static final String LOG_FOLDER_NAME = "DreamlinkLog";
 
 	/**
 	 * Create log file use the file name.

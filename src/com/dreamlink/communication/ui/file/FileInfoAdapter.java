@@ -17,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -272,7 +271,6 @@ public class FileInfoAdapter extends BaseAdapter {
 			return view;
 		}
 		
-		Log.e(TAG, "getView.size=" + mList.size());
 		FileInfo fileInfo = mList.get(position);
 		String size = fileInfo.getFormatFileSize();
 		String date = fileInfo.getFormateDate();

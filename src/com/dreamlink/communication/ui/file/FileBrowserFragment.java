@@ -28,6 +28,7 @@ import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
 import com.dreamlink.communication.ui.media.ActionMenu;
 import com.dreamlink.communication.ui.media.ActionMenu.ActionMenuItem;
 import com.dreamlink.communication.util.Log;
+import com.dreamlink.communication.util.LogFile;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -142,6 +143,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	private View mMenuBarView;
 	
 	private FileDeleteDialog mDeleteDialog;
+	
 	/**
 	 * Create a new instance of FileBrowserFragment, providing "appid" as an
 	 * argument.
@@ -1010,6 +1012,12 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	}
 	
 	private void listFiles(ClassifyFilenameFileter fileter,File file, int type){
+		if (file.isDirectory() && file.getName().equals(LogFile.LOG_FOLDER_NAME)) {
+			//do not show log folder
+			Log.d(TAG, "listFiles.name:" + file.getName());
+			return;
+		}
+		
 		File[] files = file.listFiles(fileter);
 		FileInfo fileInfo = null;
 		if (null == files) {
