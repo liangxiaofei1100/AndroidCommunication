@@ -4,19 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.util.Log;
-
-import android.R.integer;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.SubMenu;
 
-public class MyMenu{
-	private static final String TAG = "MyMenu";
+public class ActionMenu{
+	private static final String TAG = "ActionMenu";
 	
 	public static final int ACTION_MENU_OPEN = 0x01;
 	public static final int ACTION_MENU_SEND = 0x02;
@@ -27,41 +18,16 @@ public class MyMenu{
 	public static final int ACTION_MENU_RENAME = 0x07;
 	public static final int ACTION_MENU_SELECT = 0x08;
 	
-	private Menu menu;
-	private boolean enable;
-	private MenuItem item;
-	private List<MenuItem> itemList = new ArrayList<MenuItem>();
-	private List<MyMenuItem> items = new ArrayList<MyMenu.MyMenuItem>();
+	private List<ActionMenuItem> items = new ArrayList<ActionMenu.ActionMenuItem>();
 	
 	private Context mContext;
 	
-	public MyMenu(Context context){
+	public ActionMenu(Context context){
 		mContext = context;
 	}
 	
-	public void setMenu(Menu menu){
-		this.menu = menu;
-	}
-	
-	public Menu getMenu(){
-		return menu;
-	}
-	
-	public void setEnable(boolean enable){
-		this.enable = enable;
-	}
-	
-	public boolean isEnable(){
-		return enable;
-	}
-	
-	public void addItem(MenuItem item){
-		Log.d(TAG, "addItem.name=" + item.getTitle());
-		itemList.add(item);
-	}
-	
 	public void addItem(int id, int iconId, String title){
-		MyMenuItem item = new MyMenuItem(id, iconId, title);
+		ActionMenuItem item = new ActionMenuItem(id, iconId, title);
 		items.add(item);
 	}
 	
@@ -74,7 +40,7 @@ public class MyMenu{
 		return items.size();
 	}
 	
-	public MyMenuItem getItem(int index) throws Exception{
+	public ActionMenuItem getItem(int index) throws Exception{
 		if (index >= size()) {
 			throw new Exception("Out of bound,the size is " + size() + ",index is " + index);
 		}else {
@@ -82,8 +48,8 @@ public class MyMenu{
 		}
 	}
 	
-	public MyMenuItem findItem(int id){
-		for(MyMenuItem item : items){
+	public ActionMenuItem findItem(int id){
+		for(ActionMenuItem item : items){
 			if (id == item.getItemId()) {
 				return item;
 			}
@@ -92,14 +58,14 @@ public class MyMenu{
 		return null;
 	}
 	
-	public class MyMenuItem{
+	public class ActionMenuItem{
 		int id;
 		int iconId;
 		String title;
 		boolean enable = true;
 		int text_color;
 		
-		MyMenuItem(int id, int iconid, String title){
+		ActionMenuItem(int id, int iconid, String title){
 			this.id = id;
 			this.iconId = iconid;
 			this.title = title;

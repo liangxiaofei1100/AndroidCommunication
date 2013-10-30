@@ -18,7 +18,7 @@
     <drawable name="list_item_press">#ff5b544d</drawable>
     <drawable name="list_item_normal">#ff787470</drawable>
     <drawable name="list_item_press2">#ff00eeee</drawable>
- <!-- 淡蓝色 -->
+ 	<!-- 淡蓝色 -->
     <drawable name="list_item_normal2">#ffffff</drawable>
     <!-- 深蓝色 -->
     <drawable name="title_color">#1fadff</drawable>
@@ -34,4 +34,5 @@
     <!-- traffic statistics color -->
     <color name="traffic_send">#5eb95e</color>
 	<color name="traffic_receive">#ff33b5e5</color>
+	<color name="orange">#ffa400</color>
 </resources>

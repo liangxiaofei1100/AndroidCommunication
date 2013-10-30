@@ -12,7 +12,6 @@ import java.util.TimerTask;
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MainFragmentActivity;
 import com.dreamlink.communication.ui.MenuTabManager;
 import com.dreamlink.communication.ui.MenuTabManager.onMenuItemClickListener;
@@ -26,9 +25,8 @@ import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoAdapter.ViewHolder;
 import com.dreamlink.communication.ui.file.FileInfoManager.NavigationRecord;
-import com.dreamlink.communication.ui.media.MyMenu;
-import com.dreamlink.communication.ui.media.AudioFragment.DeleteTask;
-import com.dreamlink.communication.ui.media.MyMenu.MyMenuItem;
+import com.dreamlink.communication.ui.media.ActionMenu;
+import com.dreamlink.communication.ui.media.ActionMenu.ActionMenuItem;
 import com.dreamlink.communication.util.Log;
 
 import android.app.AlertDialog;
@@ -37,13 +35,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -141,7 +136,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	private String sdcard_path;
 	private String internal_path;
 	
-	private MyMenu mActionMenu;
+	private ActionMenu mActionMenu;
 	private MenuTabManager mMenuTabManager;
 	private LinearLayout mMenuHolder;
 	private View mMenuBarView;
@@ -401,12 +396,12 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		mFileInfoAdapter.setChecked(position, !isSelected);
 		mFileInfoAdapter.notifyDataSetChanged();
 		
-		mActionMenu = new MyMenu(mContext);
-		mActionMenu.addItem(MyMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, R.string.menu_send);
-		mActionMenu.addItem(MyMenu.ACTION_MENU_DELETE,R.drawable.ic_action_delete_enable,R.string.menu_delete);
-		mActionMenu.addItem(MyMenu.ACTION_MENU_INFO,R.drawable.ic_action_info,R.string.menu_info);
+		mActionMenu = new ActionMenu(mContext);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, R.string.menu_send);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_DELETE,R.drawable.ic_action_delete_enable,R.string.menu_delete);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_INFO,R.drawable.ic_action_info,R.string.menu_info);
 //		mActionMenu.addItem(MyMenu.ACTION_MENU_RENAME, R.drawable.ic_action_rename, R.string.menu_rename);
-		mActionMenu.addItem(MyMenu.ACTION_MENU_SELECT, R.drawable.ic_aciton_select, R.string.select_all);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_SELECT, R.drawable.ic_aciton_select, R.string.select_all);
 		
 		mMenuTabManager = new MenuTabManager(mContext, mMenuHolder);
 		showMenuBar(true);
@@ -540,7 +535,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
     /**
      * Delete file task
      */
-    public class DeleteTask extends AsyncTask<Void, String, String>{
+    private class DeleteTask extends AsyncTask<Void, String, String>{
     	List<Integer> positionList = new ArrayList<Integer>();
     	
     	DeleteTask(List<Integer> list){
@@ -1149,22 +1144,22 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	}
 
 	@Override
-	public void onMenuClick(MyMenuItem item) {
+	public void onMenuClick(ActionMenuItem item) {
 		switch (item.getItemId()) {
-		case MyMenu.ACTION_MENU_SEND:
+		case ActionMenu.ACTION_MENU_SEND:
 			doTransfer();
 			showMenuBar(false);
 			break;
-		case MyMenu.ACTION_MENU_DELETE:
+		case ActionMenu.ACTION_MENU_DELETE:
 			List<Integer> posList = mFileInfoAdapter.getCheckedItemIds();
 			showDeleteDialog(posList);
 			break;
-		case MyMenu.ACTION_MENU_INFO:
+		case ActionMenu.ACTION_MENU_INFO:
 			List<FileInfo> list = mFileInfoAdapter.getSelectedList();
 			mFileInfoManager.showInfoDialog(list);
 			showMenuBar(false);
 			break;
-		case MyMenu.ACTION_MENU_SELECT:
+		case ActionMenu.ACTION_MENU_SELECT:
 			doSelectAll();
 			break;
 		default:
@@ -1193,25 +1188,23 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		int selectCount = mFileInfoAdapter.getCheckedItems();
 		updateActionMenuTitle(selectCount);
 		if (0==selectCount) {
-			mActionMenu.findItem(MyMenu.ACTION_MENU_SEND).setEnable(false);
-			mActionMenu.findItem(MyMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.disable_color));
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(false);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.disable_color));
         	
-			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setEnable(false);
-			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setIcon(R.drawable.ic_action_delete_disable);
-			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.disable_color));
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setEnable(false);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.disable_color));
         	
-			mActionMenu.findItem(MyMenu.ACTION_MENU_INFO).setEnable(false);
-			mActionMenu.findItem(MyMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.disable_color));
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(false);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.disable_color));
 		}else {
-			mActionMenu.findItem(MyMenu.ACTION_MENU_SEND).setEnable(true);
-			mActionMenu.findItem(MyMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.black));
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.black));
 			
-			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setEnable(true);
-			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setIcon(R.drawable.ic_action_delete_enable);
-			mActionMenu.findItem(MyMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.black));
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.black));
         	
-			mActionMenu.findItem(MyMenu.ACTION_MENU_INFO).setEnable(true);
-			mActionMenu.findItem(MyMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.black));
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.black));
 		}
 	}
 	
@@ -1230,11 +1223,11 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		if (mFileInfoAdapter.getCount() != selectedCount) {
 			mFileInfoAdapter.selectAll(true);
 			 mIsSelectAll = true;
-			mActionMenu.findItem(MyMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
 		} else {
 			mFileInfoAdapter.selectAll(false);
 			 mIsSelectAll = false;
-			 mActionMenu.findItem(MyMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
+			 mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
 		}
 		updateMenuBar();
 		mMenuTabManager.refreshMenus(mActionMenu);

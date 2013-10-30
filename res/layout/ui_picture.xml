@@ -13,6 +13,7 @@
     	android:layout_height="fill_parent"
     	android:gravity="center"
     	android:horizontalSpacing="4dip"
+    	android:layout_above="@+id/bottom"
     	android:numColumns="3"
     	android:padding="4dip"
     	android:stretchMode="columnWidth"
@@ -39,7 +40,20 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:indeterminateDrawable="@drawable/loading_progressbar"
-        android:visibility="gone" />
+        android:visibility="visible" />
+    
+    <RelativeLayout
+        android:id="@+id/bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" 
+        android:visibility="visible"
+        >
+        <include
+            android:id="@+id/menubar_bottom"
+            layout="@layout/ui_menubar_bottom2" 
+            />
+    </RelativeLayout>
     
 </RelativeLayout>
 

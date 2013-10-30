@@ -115,7 +115,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 	}
 	
 	private Menu mMenu;
-	private MyMenu myMenu;
+	private ActionMenu myMenu;
 	
 	@Override
 	public void onResume() {

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.ui.media.MyMenu;
-import com.dreamlink.communication.ui.media.MyMenu.MyMenuItem;
+import com.dreamlink.communication.ui.media.ActionMenu;
+import com.dreamlink.communication.ui.media.ActionMenu.ActionMenuItem;
 import com.dreamlink.communication.util.Log;
 
 import android.content.Context;
@@ -22,7 +22,7 @@ public class MenuTabManager implements OnClickListener {
 	private LinearLayout mMenuHolders;
 	private LayoutInflater mInflater;
 	private Context mContext;
-	private List<MyMenuItem> items = new ArrayList<MyMenu.MyMenuItem>();
+	private List<ActionMenuItem> items = new ArrayList<ActionMenu.ActionMenuItem>();
 	private onMenuItemClickListener mListener; 
 	
 	public MenuTabManager(Context context, View rootView){
@@ -40,14 +40,14 @@ public class MenuTabManager implements OnClickListener {
 		this.mListener = listener;
 	}
 	
-	public void refreshMenus(MyMenu myMenu){
+	public void refreshMenus(ActionMenu myMenu){
 		Log.d(TAG, "refreshMenus:" + myMenu.size());
 		int count = mMenuHolders.getChildCount();
 		mMenuHolders.removeViews(0, count);
 		items.clear();
 		
 		for (int i = 0; i < myMenu.size(); i++) {
-			MyMenuItem item = null;
+			ActionMenuItem item = null;
 			try {
 				item = myMenu.getItem(i);
 			} catch (Exception e) {
@@ -58,7 +58,7 @@ public class MenuTabManager implements OnClickListener {
 		}
 	}
 	
-	public void addMenuItem(MyMenuItem item){
+	public void addMenuItem(ActionMenuItem item){
 //		Log.d(TAG, "addMenuItem.item:" + item.getTitle());
 		View view = null;
 		view = mInflater.inflate(R.layout.ui_menubar_bottom2_item, null);
@@ -91,11 +91,11 @@ public class MenuTabManager implements OnClickListener {
 	
 	@Override
 	public void onClick(View v) {
-		MyMenuItem item = items.get(v.getId());
+		ActionMenuItem item = items.get(v.getId());
 		mListener.onMenuClick(item);
 	}
 	
 	public interface onMenuItemClickListener{
-		public void onMenuClick(MyMenuItem item);
+		public void onMenuClick(ActionMenuItem item);
 	}
 }

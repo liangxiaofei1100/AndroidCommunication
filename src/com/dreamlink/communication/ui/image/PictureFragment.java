@@ -1,5 +1,6 @@
 package com.dreamlink.communication.ui.image;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,24 +8,27 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.MenuTabManager;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.MenuTabManager.onMenuItemClickListener;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
+import com.dreamlink.communication.ui.dialog.FileInfoDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
-import com.dreamlink.communication.ui.image.PictureCursorAdapter.ViewHolder;
+import com.dreamlink.communication.ui.media.ActionMenu;
+import com.dreamlink.communication.ui.media.ActionMenu.ActionMenuItem;
 import com.dreamlink.communication.util.Log;
 
-import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -40,9 +44,11 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-public class PictureFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnScrollListener {
+public class PictureFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, OnScrollListener, onMenuItemClickListener {
 	private static final String TAG = "PictureFragment";
 	protected GridView mItemGridView;
 	private GridView mFolderGridView;
@@ -79,6 +85,14 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	private List<PictureFolderInfo> mFolderInfosList = new ArrayList<PictureFolderInfo>();
 	
 	private static final String CAMERA = "Camera";
+	
+	private ActionMenu mActionMenu;
+	private MenuTabManager mMenuManager;
+	
+	private View mMenuBottomView;
+	private LinearLayout mMenuHolder;
+	
+	private FileDeleteDialog mDeleteDialog;
 	/**
 	 * Create a new instance of PictureFragment, providing "w" as an
 	 * argument.
@@ -121,6 +135,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
 			int count = mAdapter.getCount();
+			count = count == 0 ? count : count -1;
 			Log.i(TAG, "PictureContent.onChange.count=" + count);
 			updateUI(count);
 			
@@ -157,6 +172,10 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		mItemGridView.setVisibility(View.INVISIBLE);
 		mFolderGridView.setVisibility(View.VISIBLE);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.bar_loading_image);
+		
+		mMenuBottomView = rootView.findViewById(R.id.menubar_bottom);
+		mMenuBottomView.setVisibility(View.GONE);
+		mMenuHolder = (LinearLayout) rootView.findViewById(R.id.ll_menutabs_holder);
 		return rootView;
 	}
 
@@ -269,6 +288,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 					break;
 				case QUERY_TOKEN_ITEM:
 					mAdapter.changeCursor(cursor);
+					mAdapter.selectAll(false);
 					num = cursor.getCount();
 					updateUI(num);
 					break;
@@ -301,55 +321,28 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position, long id) {
-		final Cursor cursor = mAdapter.getCursor();
-		cursor.moveToPosition(position);
-		final String url = cursor.getString(cursor.getColumnIndex(MediaColumns.DATA));
-		final String name = cursor.getString(cursor.getColumnIndex(MediaColumns.DISPLAY_NAME));
+		int mode = mAdapter.getMode();
+		if (DreamConstant.MENU_MODE_EDIT == mode) {
+			doSelectAll();
+			return true;
+		}else {
+			mAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
+			updateActionMenuTitle(1);
+		}
+		boolean isSelected = mAdapter.isSelected(position);
+		mAdapter.setSelected(position, !isSelected);
+		mAdapter.notifyDataSetChanged();
 		
-		new AlertDialog.Builder(mContext)
-			.setTitle(name)
-			.setItems(R.array.picture_menu, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						//open
-						startPagerActivityByPosition(position, cursor);
-						break;
-					case 1:
-						//send
-						FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-						fileSendUtil.sendFile(url, new TransportCallback() {
-							
-							@Override
-							public void onTransportSuccess() {
-								ViewHolder viewHolder = (ViewHolder) view.getTag();
-								showTransportAnimation(viewHolder.imageView);
-							}
-							
-							@Override
-							public void onTransportFail() {
-								
-							}
-						});
-						
-						
-						break;
-					case 2:
-						//delete
-						showDeleteDialog(position, url);
-						break;
-					case 3:
-						//info
-						String info = getImageInfo(cursor);
-						DreamUtil.showInfoDialog(mContext, name, info);
-						break;
+		mActionMenu = new ActionMenu(mContext);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, R.string.menu_send);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_DELETE,R.drawable.ic_action_delete_enable,R.string.menu_delete);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_INFO,R.drawable.ic_action_info,R.string.menu_info);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_SELECT, R.drawable.ic_aciton_select, R.string.select_all);
 
-					default:
-						break;
-					}
-				}
-			}).create().show();
+		mMenuManager = new MenuTabManager(mContext, mMenuHolder);
+		showMenuBar(true);
+		mMenuManager.refreshMenus(mActionMenu);
+		mMenuManager.setOnMenuItemClickListener(this);
 		return true;
 	}
 
@@ -367,38 +360,20 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			break;
 		case R.id.gv_picture_item:
 			Log.d(TAG, "gv_picture_item");
-			Cursor cursor = mAdapter.getCursor();
-			startPagerActivityByPosition(position, cursor);
+			if (mAdapter.getMode() == DreamConstant.MENU_MODE_EDIT) {
+				mAdapter.setSelected(position);
+				mAdapter.notifyDataSetChanged();
+				
+				int selectedCount = mAdapter.getSelectedItemsCount();
+				updateActionMenuTitle(selectedCount);
+				updateMenuBar();
+				mMenuManager.refreshMenus(mActionMenu);
+			}else {
+				Cursor cursor = mAdapter.getCursor();
+				startPagerActivityByPosition(position, cursor);
+			}
 			break;
 		}
-	}
-	
-	private String getImageInfo(Cursor cursor){
-		String result = "";
-		String url = cursor.getString(cursor
-				.getColumnIndex(MediaStore.MediaColumns.DATA));
-		long size = cursor.getLong(cursor.getColumnIndex(MediaColumns.SIZE));
-		long date = cursor.getLong(cursor.getColumnIndex(MediaColumns.DATE_MODIFIED));
-		long width = 0;
-		long height = 0;
-		if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			width = cursor.getLong(cursor.getColumnIndex("width"));
-			height = cursor.getLong(cursor.getColumnIndex("height"));
-		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			result = "类型:" + "图片" + DreamConstant.ENTER
-					+ "位置:" + DreamUtil.getParentPath(url) + DreamConstant.ENTER
-					+ "大小:" + DreamUtil.getFormatSize(size) + DreamConstant.ENTER
-					+ "宽度:" +  width + DreamConstant.ENTER
-					+ "高度:" + height + DreamConstant.ENTER
-					+ "修改日期:" + DreamUtil.getFormatDate(date);
-		}else {
-			result = "类型:" + "图片" + DreamConstant.ENTER
-					+ "位置:" + DreamUtil.getParentPath(url) + DreamConstant.ENTER
-					+ "大小:" + size + DreamConstant.ENTER
-					+ "修改日期:" + date;
-		}
-		return result;
 	}
 	
 	private void startPagerActivityByPosition(int position, Cursor cursor){
@@ -420,32 +395,66 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
      * show confrim dialog
      * @param path file path
      */
-    public void showDeleteDialog(final int pos, final String path) {
+    public void showDeleteDialog() {
+    	List<String> deleteNameList = mAdapter.getSelectItemNameList();
     	//do not use dialogfragment
-		final FileDeleteDialog deleteDialog = new FileDeleteDialog(mContext, R.style.TransferDialog, path);
-		deleteDialog.setOnClickListener(new OnDelClickListener() {
+		mDeleteDialog = new FileDeleteDialog(mContext, deleteNameList);
+		mDeleteDialog.setOnClickListener(new OnDelClickListener() {
 			@Override
 			public void onClick(View view, String path) {
 				switch (view.getId()) {
 				case R.id.left_button:
-					doDelete(pos, path);
+					List<String> deleteList = mAdapter.getSelectItemList();
+					DeleteTask deleteTask = new DeleteTask(deleteList);
+					deleteTask.execute();
+					showMenuBar(false);
 					break;
 				default:
 					break;
 				}
 			}
 		});
-		deleteDialog.show();
+		mDeleteDialog.show();
     }
     
-	private void doDelete(int position, String path) {
+    /**
+     * Delete file task
+     */
+    private class DeleteTask extends AsyncTask<Void, String, String>{
+    	private List<String> deleteList = new ArrayList<String>();
+    	
+    	DeleteTask(List<String> list){
+    		deleteList = list;
+    	}
+    	
+		@Override
+		protected String doInBackground(Void... params) {
+			Log.d(TAG, "doInBackground.size=" + deleteList.size());
+			//start delete file from delete list
+			for (int i = 0; i < deleteList.size(); i++) {
+				File file = new File(deleteList.get(i));
+				mDeleteDialog.setProgress(i + 1, file.getName());
+				doDelete(deleteList.get(i));
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			super.onPostExecute(result);
+			if (null != mDeleteDialog) {
+				mDeleteDialog.cancel();
+				mDeleteDialog = null;
+			}
+		}
+    }
+    
+	private void doDelete(String path) {
+		Log.d(TAG, "doDelete.path:" + path);
 		boolean ret = mFileInfoManager.deleteFileInMediaStore(DreamConstant.IMAGE_URI, path);
 		if (!ret) {
 			mNotice.showToast(R.string.delete_fail);
 			Log.e(TAG, path + " delete failed");
-		}else {
-			int num = mAdapter.getCount();
-			updateUI(num);
 		}
 	}
 	
@@ -463,11 +472,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	
 	/**
-	 * 我真的不想写这个方法，由由于850,880图片滑动的时候会很卡，所以要求每次滑出图片fragment的时候</br>
-	 * 状态重新回到Folder界面</br>
-	 * 不想写的原因真的是逻辑不好定义啊
-	 * ei。。。
-	 * 
+	 * when out of PictureFragment,make the view to folder view
 	 */
 	public void scrollToHomeView() {
 		Log.d(TAG, "scrollToHomeView");
@@ -482,13 +487,16 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	
 	public boolean onBackPressed(){
 		Log.d(TAG, "onBackPressed.status="+ mStatus);
+		if (mAdapter.getMode() == DreamConstant.MENU_MODE_EDIT) {
+			showMenuBar(false);
+			return false;
+		}
+		
 		switch (mStatus) {
 		case STATUS_FOLDER:
 			return true;
 		case STATUS_ITEM:
 			mStatus = STATUS_FOLDER;
-			//850,880的机器更新图片的时候，每次都会显示上一次的图片，所以讲Adpater清空
-			//只在phiee的机器上出现过，好烂的机器，我只想说
 			mAdapter.changeCursor(null);
 			
 			mFolderAdapter.notifyDataSetChanged();
@@ -498,6 +506,180 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 			break;
 		}
 		return false;
+	}
+
+	@Override
+	public void onMenuClick(ActionMenuItem item) {
+		switch (item.getItemId()) {
+		case ActionMenu.ACTION_MENU_SEND:
+			ArrayList<String> selectedList = (ArrayList<String>) mAdapter.getSelectItemList();
+			//send
+			FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
+			fileTransferUtil.sendFiles(selectedList, new TransportCallback() {
+				@Override
+				public void onTransportSuccess() {
+					int first = mItemGridView.getFirstVisiblePosition();
+					int last = mItemGridView.getLastVisiblePosition();
+					List<Integer> checkedItems = mAdapter.getSelectedItemPos();
+					ArrayList<ImageView> icons = new ArrayList<ImageView>();
+					for(int id : checkedItems) {
+						if (id >= first && id <= last) {
+							View view = mItemGridView.getChildAt(id - first);
+							if (view != null) {
+//								ViewHolder viewHolder = (ViewHolder) view.getTag();
+//								icons.add(viewHolder.iconView);
+							}
+						}
+					}
+					
+					if (icons.size() > 0) {
+						ImageView[] imageViews = new ImageView[0];
+						showTransportAnimation(icons.toArray(imageViews));
+					}
+				}
+				
+				@Override
+				public void onTransportFail() {
+				}
+			});
+			showMenuBar(false);
+			break;
+		case ActionMenu.ACTION_MENU_DELETE:
+			showDeleteDialog();
+			break;
+		case ActionMenu.ACTION_MENU_INFO:
+			List<Integer> list = mAdapter.getSelectedItemPos();
+			FileInfoDialog dialog = null;
+			if (1 == list.size()) {
+				dialog = new FileInfoDialog(mContext,FileInfoDialog.SINGLE_FILE);
+				Cursor cursor = mAdapter.getCursor();
+				cursor.moveToPosition(list.get(0));
+				
+				long size = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Images.Media.SIZE)); // 文件大小
+				String url = cursor.getString(cursor
+						.getColumnIndex(MediaStore.Images.Media.DATA)); // 文件路径
+				String name = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
+				long date = cursor.getLong(cursor
+						.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED));
+				
+				dialog.updateUI(size, 0, 0);
+				dialog.updateUI(name, url, date);
+			}else {
+				dialog = new FileInfoDialog(mContext,FileInfoDialog.MULTI);
+				int fileNum = list.size();
+				long size = getTotalSize(list);
+				dialog.updateUI(size, fileNum, 0);
+			}
+			dialog.show();
+			
+			showMenuBar(false);
+			break;
+		case ActionMenu.ACTION_MENU_SELECT:
+			doSelectAll();
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+	public long getTotalSize(List<Integer> list){
+		long totalSize = 0;
+		Cursor cursor = mAdapter.getCursor();
+		for(int pos : list){
+			cursor.moveToPosition(pos);
+			long size = cursor.getLong(cursor
+					.getColumnIndex(MediaStore.Images.Media.SIZE)); // 文件大小
+			totalSize += size;
+		}
+		
+		return totalSize;
+	}
+	
+	/**
+	 * do select all items or unselect all items
+	 */
+	public void doSelectAll(){
+		int selectedCount1 = mAdapter.getSelectedItemsCount();
+		if (mAdapter.getCount() != selectedCount1) {
+			mAdapter.selectAll(true);
+			 mIsSelectAll = true;
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
+		} else {
+			mAdapter.selectAll(false);
+			 mIsSelectAll = false;
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
+		}
+		updateMenuBar();
+		mMenuManager.refreshMenus(mActionMenu);
+		mAdapter.notifyDataSetChanged();
+	}
+	
+	/**
+	 * set menubar visible or gone
+	 * @param show
+	 */
+	public void showMenuBar(boolean show){
+		if (show) {
+			mMenuBottomView.setVisibility(View.VISIBLE);
+		}else {
+			mMenuBottomView.setVisibility(View.GONE);
+			updateActionMenuTitle(-1);
+			onActionMenuDone();
+		}
+	}
+	
+	
+	public void onActionMenuDone() {
+		mAdapter.changeMode(DreamConstant.MENU_MODE_NORMAL);
+		mAdapter.selectAll(false);
+		mAdapter.notifyDataSetChanged();
+	}
+	
+	/**
+	 * update menu bar item icon and text color,enable or disable
+	 */
+	public void updateMenuBar(){
+		int selectCount = mAdapter.getSelectedItemsCount();
+		updateActionMenuTitle(selectCount);
+		if (0==selectCount) {
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(false);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.disable_color));
+        	
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setEnable(false);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.disable_color));
+        	
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(false);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.disable_color));
+		}else {
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.black));
+			
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setEnable(true);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.black));
+        	
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(true);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.black));
+		}
+	}
+	
+	/**
+	 * update main title 
+	 * @param selectCount
+	 */
+	public void updateActionMenuTitle(int selectCount){
+		mFragmentActivity.updateTitleSelectNum(selectCount, count);
+	}
+	
+	@Override
+	public int getSelectedCount() {
+		return mAdapter.getSelectedItemsCount();
+	}
+	
+	@Override
+	public int getMenuMode() {
+		return mAdapter.getMode();
 	}
 	
 	@Override
