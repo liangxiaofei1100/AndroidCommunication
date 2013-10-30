@@ -111,7 +111,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:background="@drawable/button_bg"
+                android:background="@drawable/button_blue"
                 android:text="@string/create_remote_share" />
 
             <Button
@@ -119,7 +119,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:background="@drawable/button_bg"
+                android:background="@drawable/button_blue"
                 android:text="@string/stop_file_share" />
         </LinearLayout>
 

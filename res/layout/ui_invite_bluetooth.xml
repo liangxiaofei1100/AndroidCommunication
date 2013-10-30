@@ -70,7 +70,7 @@
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
                 android:layout_marginTop="5dp"
-                android:background="@drawable/button_bg"
+                android:background="@drawable/button_blue"
                 android:text="@string/invite_bluetooth_send"
                 android:textColor="@color/white" />
         </LinearLayout>

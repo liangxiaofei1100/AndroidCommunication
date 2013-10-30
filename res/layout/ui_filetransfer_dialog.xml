@@ -3,7 +3,6 @@
     android:id="@+id/exit_layout"
     android:layout_width="280dp"
     android:layout_height="200dp"
-    android:background="@drawable/confirm_dialog_bg"
     android:gravity="center_horizontal"
     >
 
@@ -86,7 +85,6 @@
             android:id="@+id/left_button"
             android:layout_width="110dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_cancel"
             android:layout_marginRight="5dp"
             android:text="Stop"
             android:textColor="@color/black"
@@ -97,7 +95,6 @@
             android:layout_width="110dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
-            android:background="@drawable/button_cancel"
             android:text="Stop"
             android:textColor="@color/black"
             android:textSize="16sp" />

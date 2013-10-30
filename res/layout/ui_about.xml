@@ -35,7 +35,7 @@
             android:id="@+id/btn_about_ok"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_bg"
+            android:background="@drawable/button_blue"
             android:text="@android:string/ok"
             android:textColor="@color/white"
             />
