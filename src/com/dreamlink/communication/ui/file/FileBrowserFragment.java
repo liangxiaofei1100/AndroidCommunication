@@ -1187,6 +1187,13 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	public void updateMenuBar(){
 		int selectCount = mFileInfoAdapter.getCheckedItems();
 		updateActionMenuTitle(selectCount);
+		
+		if (mFileInfoAdapter.getCount() == selectCount) {
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
+		}else {
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
+		}
+		
 		if (0==selectCount) {
 			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(false);
 			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.disable_color));
@@ -1222,12 +1229,8 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		int selectedCount = mFileInfoAdapter.getCheckedItems();
 		if (mFileInfoAdapter.getCount() != selectedCount) {
 			mFileInfoAdapter.selectAll(true);
-			 mIsSelectAll = true;
-			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
 		} else {
 			mFileInfoAdapter.selectAll(false);
-			 mIsSelectAll = false;
-			 mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
 		}
 		updateMenuBar();
 		mMenuTabManager.refreshMenus(mActionMenu);

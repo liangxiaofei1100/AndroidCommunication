@@ -441,12 +441,8 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 		int selectedCount1 = mAdapter.getSelectedItemsCount();
 		if (mAdapter.getCount() != selectedCount1) {
 			mAdapter.selectAll(true);
-			 mIsSelectAll = true;
-			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
 		} else {
 			mAdapter.selectAll(false);
-			 mIsSelectAll = false;
-			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
 		}
 		updateMenuBar();
 		mMenuManager.refreshMenus(mActionMenu);
@@ -473,6 +469,13 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 	public void updateMenuBar(){
 		int selectCount = mAdapter.getSelectedItemsCount();
 		updateActionMenuTitle(selectCount);
+		
+		if (mAdapter.getCount() == selectCount) {
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
+		}else {
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
+		}
+		
 		if (0==selectCount) {
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(false);
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.disable_color));

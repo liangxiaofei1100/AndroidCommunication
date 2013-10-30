@@ -78,7 +78,6 @@ public class PictureCursorAdapter extends BaseCursorAdapter {
 				cursor.moveToPosition(i);
 				String url = cursor.getString(cursor
 						.getColumnIndex(MediaStore.Images.Media.DATA));
-				Log.d(TAG, "getSelectItemList:" + url);
 				list.add(url);
 			}
 		}
@@ -97,7 +96,6 @@ public class PictureCursorAdapter extends BaseCursorAdapter {
 				cursor.moveToPosition(i);
 				String name = cursor.getString(cursor
 						.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
-				Log.d(TAG, "getSelectItemNameList:" + name);
 				list.add(name);
 			}
 		}

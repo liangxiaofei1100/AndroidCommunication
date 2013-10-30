@@ -12,12 +12,9 @@
     	android:layout_width="fill_parent"
     	android:layout_height="fill_parent"
     	android:gravity="center"
-    	android:horizontalSpacing="4dip"
     	android:layout_above="@+id/bottom"
     	android:numColumns="3"
-    	android:padding="4dip"
     	android:stretchMode="columnWidth"
-    	android:verticalSpacing="4dip"
     	android:visibility="gone"
      />
     

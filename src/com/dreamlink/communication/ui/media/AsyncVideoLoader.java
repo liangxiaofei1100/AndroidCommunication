@@ -2,6 +2,9 @@ package com.dreamlink.communication.ui.media;
 
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
+import java.util.Map;
+
+import com.dreamlink.communication.util.Log;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -14,15 +17,16 @@ import android.provider.MediaStore.Images;
 
 public class AsyncVideoLoader {
 	// SoftReference是软引用，是为了更好的为了系统回收变量
-		public static HashMap<Long, SoftReference<Bitmap>> bitmapCaches;
-		private ContentResolver contentResolver = null;
-		
-		public AsyncVideoLoader(Context context) {
-			bitmapCaches = new HashMap<Long, SoftReference<Bitmap>>();
-			contentResolver = context.getContentResolver();
-		}
-		
-	public Bitmap loadBitmap(final long videoId, final ILoadVideoCallback videoCallback) {
+	public static HashMap<Long, SoftReference<Bitmap>> bitmapCaches;
+	private ContentResolver contentResolver = null;
+
+	public AsyncVideoLoader(Context context) {
+		bitmapCaches = new HashMap<Long, SoftReference<Bitmap>>();
+		contentResolver = context.getContentResolver();
+	}
+
+	public Bitmap loadBitmap(final long videoId,
+			final ILoadVideoCallback videoCallback) {
 		if (bitmapCaches.containsKey(videoId)) {
 			// 从缓存中获取
 			SoftReference<Bitmap> softReference = bitmapCaches.get(videoId);
@@ -45,7 +49,9 @@ public class AsyncVideoLoader {
 				options.inDither = false;
 				options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 				// get video thumbail
-				Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(contentResolver, videoId, Images.Thumbnails.MICRO_KIND, options);
+				Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(
+						contentResolver, videoId, Images.Thumbnails.MICRO_KIND,
+						options);
 				bitmapCaches.put(videoId, new SoftReference<Bitmap>(bitmap));
 				Message message = handler.obtainMessage(0, bitmap);
 				handler.sendMessage(message);
@@ -54,7 +60,7 @@ public class AsyncVideoLoader {
 
 		return null;
 	}
-		
+
 	/**
 	 * 异步加载的回调接口
 	 */

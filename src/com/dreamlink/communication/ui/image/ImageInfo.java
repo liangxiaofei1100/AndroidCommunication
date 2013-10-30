@@ -20,6 +20,8 @@ public class ImageInfo implements Parcelable{
 	/**height*/
 	private long height;
 	
+	public static final String FILTER_MIMETYPE = "image/png";
+	
 	public static final Parcelable.Creator<ImageInfo> CREATOR = new Parcelable.Creator<ImageInfo>() {
 
 		@Override
