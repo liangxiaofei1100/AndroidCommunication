@@ -54,33 +54,40 @@ public class FileInfoAdapter extends BaseAdapter {
 		this.mList = list;
 		this.mContext = context;
 		mIsSelected = new SparseBooleanArray();
-		//init checkbox
-		selectAll(false);
 		bitmapLoader = new AsyncImageLoader(context);
 	}
 	
 	/**
 	 * Select All or not
-	 * @param isChecked true or false
+	 * @param isSelected true or false
 	 */
-	public void selectAll(boolean isChecked){
+	public void selectAll(boolean isSelected){
 		int count = this.getCount();
+		Log.d(TAG, "selectALl.count=" + count);
 		for (int i = 0; i < count; i++) {
-			setChecked(i, isChecked);
+			setSelected(i, isSelected);
 		}
 	}
 	
 	/**
-	 * set checkbox checked or not
+	 * set selected or not
 	 * @param position the position that clicked
-	 * @param isChecked checked or not
+	 * @param isSelected checked or not
 	 */
-	public void setChecked(int position, boolean isChecked){
-		mIsSelected.put(position, isChecked);
+	public void setSelected(int position, boolean isSelected){
+		mIsSelected.put(position, isSelected);
 	}
 	
-	public void setChecked(int position){
-		mIsSelected.put(position, !isChecked(position));
+	public void setSelected(int position){
+		mIsSelected.put(position, !isSelected(position));
+	}
+	
+	public void clearSelected(){
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				setSelected(i, false);
+			}
+		}
 	}
 	
 	/**
@@ -88,7 +95,7 @@ public class FileInfoAdapter extends BaseAdapter {
 	 * @param position current position
 	 * @return checked or not
 	 */
-	public boolean isChecked(int position){
+	public boolean isSelected(int position){
 		return mIsSelected.get(position);
 	}
 	
@@ -96,7 +103,7 @@ public class FileInfoAdapter extends BaseAdapter {
 	 * get how many item that has cheked
 	 * @return checked items num.
 	 */
-	public int getCheckedItems(){
+	public int getSelectedItems(){
 		if (isHome) {
 			return 0;
 		}
@@ -195,6 +202,22 @@ public class FileInfoAdapter extends BaseAdapter {
 		mList = fileList;
 	}
 	
+	/**
+     * This method gets index of certain fileInfo(item) in fileInfoList
+     * 
+     * @param fileInfo the fileInfo which wants to be located.
+     * @return the index of the item in the listView.
+     */
+    public int getPosition(FileInfo fileInfo) {
+    	Log.d(TAG, "getPosition:" + fileInfo.filePath);
+    	for (int i = 0; i < mList.size(); i++) {
+			if (fileInfo.filePath.equals(mList.get(i).filePath)) {
+				return i;
+			}
+		}
+        return mList.indexOf(fileInfo);
+    }
+	
 	@Override
 	public int getCount() {
 		if (isHome) {
@@ -213,7 +236,7 @@ public class FileInfoAdapter extends BaseAdapter {
 	public long getItemId(int position) {
 		return position;
 	}
-
+	
 	class ViewHolder{
 		ImageView iconView;
 		TextView nameView;
@@ -336,7 +359,7 @@ public class FileInfoAdapter extends BaseAdapter {
 		
 		holder.nameView.setText(fileInfo.fileName);
 		
-		Boolean is = isChecked(position);
+		Boolean is = isSelected(position);
 		if (null == is) {
 			is = false;
 		}
@@ -358,7 +381,7 @@ public class FileInfoAdapter extends BaseAdapter {
 	}
 	
 	private void updateListViewBackground(int position, View view){
-		if (isChecked(position)) {
+		if (isSelected(position)) {
 			view.setBackgroundResource(R.color.bright_blue);
 		}else {
 			view.setBackgroundResource(Color.TRANSPARENT);

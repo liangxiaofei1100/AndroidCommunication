@@ -74,6 +74,8 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	private TabManager mTabManager;
 	private View rootView = null;
 	private MountManager mountManager;
+	private FileInfo mSelectedFileInfo = null;
+	private int mTop = -1;
 
 	private FileInfoAdapter mFileInfoAdapter = null;
 	private FileInfoManager mFileInfoManager = null;
@@ -311,6 +313,19 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		}
 	}
 	
+	private int restoreSelectedPosition() {
+		if (mSelectedFileInfo == null) {
+			Log.d(TAG, "restoreSelectedPosition.mSelectedFileInfo is null");
+			return -1;
+		} else {
+			int curSelectedItemPosition = mFileInfoAdapter
+					.getPosition(mSelectedFileInfo);
+			Log.d(TAG, "restoreSelectedPosition.curSelectedItemPosition=" + curSelectedItemPosition);
+			mSelectedFileInfo = null;
+			return curSelectedItemPosition;
+		}
+	}
+	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
@@ -361,23 +376,23 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			}
 		}else {
 			if (mFileInfoAdapter.isMode(DreamConstant.MENU_MODE_EDIT)) {
-				mFileInfoAdapter.setChecked(position);
+				mFileInfoAdapter.setSelected(position);
 				mFileInfoAdapter.notifyDataSetChanged();
 				
-				int selectedCount = mFileInfoAdapter.getCheckedItems();
+				int selectedCount = mFileInfoAdapter.getSelectedItems();
 				updateActionMenuTitle(selectedCount);
 				updateMenuBar();
 				mMenuTabManager.refreshMenus(mActionMenu);
 			}else {
-				List<FileInfo> list = mFileInfoAdapter.getList();
-				FileInfo fileInfo = list.get(position);
-				int top = view.getTop();
-				if (fileInfo.isDir) {
-					addToNavigationList(mCurrentPath, top, fileInfo);
-					browserTo(new File(list.get(position).filePath));
+				FileInfo selectedFileInfo = mFileInfoAdapter.getItem(position);
+				if (selectedFileInfo.isDir) {
+					int top = view.getTop();
+					Log.d(TAG, "onItemClick.fromtop:" + top);
+					addToNavigationList(mCurrentPath, top, selectedFileInfo);
+					browserTo(new File(selectedFileInfo.filePath));
 				} else {
 					//open file
-					mFileInfoManager.openFile(fileInfo.filePath);
+					mFileInfoManager.openFile(selectedFileInfo.filePath);
 				}
 			}
 		}
@@ -406,8 +421,8 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			mFileInfoAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
 			updateActionMenuTitle(1);
 		}
-		boolean isSelected = mFileInfoAdapter.isChecked(position);
-		mFileInfoAdapter.setChecked(position, !isSelected);
+		boolean isSelected = mFileInfoAdapter.isSelected(position);
+		mFileInfoAdapter.setSelected(position, !isSelected);
 		mFileInfoAdapter.notifyDataSetChanged();
 		
 		mActionMenu = new ActionMenu(mContext);
@@ -424,6 +439,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		return true;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void browserTo(File file) {
 		Log.d(TAG, "browserTo.status=" + mStatus);
 		if (file.isDirectory()) {
@@ -442,8 +458,20 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			mAllLists.addAll(mFileLists);
 			
 			mFileInfoAdapter.notifyDataSetChanged();
-			//back to the listview top,every time
-			mFileListView.setSelection(0);
+			int seletedItemPosition = restoreSelectedPosition();
+			Log.d(TAG, "seletedItemPosition:" + seletedItemPosition);
+			if (seletedItemPosition == -1) {
+				mFileListView.setSelectionAfterHeaderView();
+			} else if (seletedItemPosition >= 0
+					&& seletedItemPosition < mFileInfoAdapter.getCount()) {
+				if (mTop == -1) {
+					mFileListView.setSelection(seletedItemPosition);
+				} else {
+					mFileListView
+							.setSelectionFromTop(seletedItemPosition, mTop);
+					mTop = -1;
+				}
+			}
 			
 			mFileInfoAdapter.selectAll(false);
 			updateUI(mAllLists.size());
@@ -677,7 +705,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 
 	public void addToNavigationList(String currentPath, int top,
 			FileInfo selectFile) {
-		mFileInfoManager.addNavigationList(new NavigationRecord(currentPath,
+		mFileInfoManager.addToNavigationList(new NavigationRecord(currentPath,
 				top, selectFile));
 	}
 
@@ -896,7 +924,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 					top = view.getTop();
 				}
 				browserTo(new File(curFilePath));
-				// addToNavigationList(mCurrentPath, top, selectedFileInfo);
+				addToNavigationList(mCurrentPath, top, selectedFileInfo);
 				updateHomeButton(type);
 			}
 		}
@@ -1140,9 +1168,18 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			if (mCurrent_root_path.equals(mCurrentPath)) {
 				goToHome();
 			}else {
-				//up to parent path
-				File parentFile = mCurrentFile.getParentFile();
-				browserTo(parentFile.getAbsoluteFile());
+				NavigationRecord navRecord = mFileInfoManager
+						.getPrevNavigation();
+				String prevPath = null;
+				if (null != navRecord) {
+					prevPath = navRecord.getRecordPath();
+					mSelectedFileInfo = navRecord.getSelectedFile();
+					mTop = navRecord.getTop();
+					if (null != prevPath) {
+						mTabManager.showPrevNavigationView(prevPath);
+						Log.d(TAG, "onBackPressed.prevPath=" + prevPath);
+					}
+				}
 			}
 			break;
 		case STATUS_DOC:
@@ -1205,7 +1242,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	 * update menu bar item icon and text color,enable or disable
 	 */
 	public void updateMenuBar(){
-		int selectCount = mFileInfoAdapter.getCheckedItems();
+		int selectCount = mFileInfoAdapter.getSelectedItems();
 		updateActionMenuTitle(selectCount);
 		
 		if (mFileInfoAdapter.getCount() == selectCount) {
@@ -1228,7 +1265,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	//Cancle Action menu
 	public void onActionMenuDone() {
 		mFileInfoAdapter.changeMode(DreamConstant.MENU_MODE_NORMAL);
-		mFileInfoAdapter.selectAll(false);
+		mFileInfoAdapter.clearSelected();
 		mFileInfoAdapter.notifyDataSetChanged();
 	}
 	
@@ -1236,7 +1273,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	 * do select all items or unselect all items
 	 */
 	public void doSelectAll(){
-		int selectedCount = mFileInfoAdapter.getCheckedItems();
+		int selectedCount = mFileInfoAdapter.getSelectedItems();
 		if (mFileInfoAdapter.getCount() != selectedCount) {
 			mFileInfoAdapter.selectAll(true);
 		} else {
