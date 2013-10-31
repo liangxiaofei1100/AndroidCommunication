@@ -648,22 +648,12 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 		
 		if (0==selectCount) {
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(false);
-        	mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.disable_color));
-        	
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setEnable(false);
-        	mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.disable_color));
-        	
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(false);
-        	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.disable_color));
 		}else {
 			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(true);
-			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setTextColor(getResources().getColor(R.color.black));
-			
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setEnable(true);
-        	mActionMenu.findItem(ActionMenu.ACTION_MENU_DELETE).setTextColor(getResources().getColor(R.color.black));
-        	
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(true);
-        	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setTextColor(getResources().getColor(R.color.black));
 		}
 	}
 	

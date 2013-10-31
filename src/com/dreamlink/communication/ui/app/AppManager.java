@@ -21,6 +21,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 
 public class AppManager {
 	private static final String TAG = "AppManager";
@@ -195,6 +197,22 @@ public class AppManager {
 		deleteIntent.setAction(Intent.ACTION_DELETE);
 		deleteIntent.setData(packageUri);
 		mContext.startActivity(deleteIntent);
+	}
+	
+	
+	public void showInstalledAppDetails(String packageName){
+		Intent intent = new Intent();
+		final int apiLevel = Build.VERSION.SDK_INT;
+		if (apiLevel >= Build.VERSION_CODES.GINGERBREAD) {
+			intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+			Uri uri = Uri.fromParts("package", packageName, null);
+			intent.setData(uri);
+		}else {
+			intent.setAction(Intent.ACTION_VIEW);
+			intent.setClassName("com.android.settings", "com.android.settings.InstalledAppDetails");
+			intent.putExtra("pkg", packageName);
+		}
+		mContext.startActivity(intent);
 	}
 	
 	public void showInfoDialog(AppInfo appInfo){
