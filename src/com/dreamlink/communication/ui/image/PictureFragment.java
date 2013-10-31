@@ -65,7 +65,7 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
 	private int mAppId;
 	private static final int STATUS_FOLDER = 0;
 	private static final int STATUS_ITEM = 1;
-	private int mStatus = -1;
+	private int mStatus = STATUS_FOLDER;
 	private static final String STATUS = "status";
 	
 	private static final int QUERY_TOKEN_FOLDER = 0x11;

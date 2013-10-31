@@ -884,34 +884,74 @@ public class FileInfoManager {
 		return count;
 	}
 
-	private List<NavigationRecord> mNavigationLists = new LinkedList<FileInfoManager.NavigationRecord>();
+	private List<NavigationRecord> mNavigationList = new LinkedList<FileInfoManager.NavigationRecord>();
+	
+	/**
+     * This method gets the previous navigation directory path
+     * 
+     * @return the previous navigation path
+     */
+    protected NavigationRecord getPrevNavigation() {
+        while (!mNavigationList.isEmpty()) {
+            NavigationRecord navRecord = mNavigationList.get(mNavigationList.size() - 1);
+            removeFromNavigationList();
+            String path = navRecord.getRecordPath();
+            if (!TextUtils.isEmpty(path)) {
+                if (new File(path).exists()) {
+                    return navRecord;
+                }
+            }
+        }
+        return null;
+    }
 
-	public void addNavigationList(NavigationRecord navigationRecord) {
-		if (mNavigationLists.size() <= 20) {
-			mNavigationLists.add(navigationRecord);
-		} else {
-			mNavigationLists.remove(0);
-			mNavigationLists.add(navigationRecord);
-		}
-	}
+    /**
+     * This method adds a navigationRecord to the navigation history
+     * 
+     * @param navigationRecord the Record
+     */
+    protected void addToNavigationList(NavigationRecord navigationRecord) {
+        if (mNavigationList.size() <= 20) {
+            mNavigationList.add(navigationRecord);
+        } else {
+            mNavigationList.remove(0);
+            mNavigationList.add(navigationRecord);
+        }
+    }
+
+    /**
+     * This method removes a directory path from the navigation history
+     */
+    protected void removeFromNavigationList() {
+        if (!mNavigationList.isEmpty()) {
+            mNavigationList.remove(mNavigationList.size() - 1);
+        }
+    }
+
+    /**
+     * This method clears the navigation history list. Keep the root path only
+     */
+    protected void clearNavigationList() {
+        mNavigationList.clear();
+    }
 
 	/** record current path navigation */
 	public static class NavigationRecord {
 		private String path;
 		private int top;
-		private FileInfo selectFile;
+		private FileInfo selectedFile;
 
 		public NavigationRecord(String path, int top, FileInfo fileInfo) {
 			this.path = path;
 			this.top = top;
-			this.selectFile = fileInfo;
+			this.selectedFile = fileInfo;
 		}
 
-		public String getPath() {
+		public String getRecordPath() {
 			return path;
 		}
 
-		public void setPath(String path) {
+		public void setRecordPath(String path) {
 			this.path = path;
 		}
 
@@ -923,12 +963,12 @@ public class FileInfoManager {
 			this.top = top;
 		}
 
-		public FileInfo getSelectFile() {
-			return selectFile;
+		public FileInfo getSelectedFile() {
+			return selectedFile;
 		}
 
 		public void setSelectFile(FileInfo selectFile) {
-			this.selectFile = selectFile;
+			this.selectedFile = selectFile;
 		}
 	}
 }
