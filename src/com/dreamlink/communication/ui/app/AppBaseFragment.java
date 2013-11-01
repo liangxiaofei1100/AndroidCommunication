@@ -15,6 +15,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
@@ -113,6 +114,11 @@ public class AppBaseFragment extends BaseFragment{
     
     @SuppressWarnings("unchecked")
 	protected void showBackupDialog(List<String> packageList){
+    	Log.d(TAG, "Environment.getExternalStorageState():" + Environment.getExternalStorageState());
+    	if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+			mNotice.showToast(R.string.no_sdcard);
+			return;
+		}
     	final BackupAsyncTask task = new BackupAsyncTask();
     	task.execute(packageList);
     	mMyDialog = new MyDialog(mContext, packageList.size());
@@ -131,13 +137,6 @@ public class AppBaseFragment extends BaseFragment{
     }
     
     private class BackupAsyncTask extends AsyncTask<List<String>, Integer, Void>{
-    	
-    	@Override
-    	protected void onPreExecute() {
-    		// TODO Auto-generated method stub
-    		super.onPreExecute();
-    		
-    	}
     	
 		@Override
 		protected Void doInBackground(List<String>... params) {
@@ -183,7 +182,6 @@ public class AppBaseFragment extends BaseFragment{
 		
 		@Override
 		protected void onPostExecute(Void result) {
-			// TODO Auto-generated method stub
 			super.onPostExecute(result);
 			Log.d(TAG, "onPostExecute");
 			if (null != mMyDialog) {

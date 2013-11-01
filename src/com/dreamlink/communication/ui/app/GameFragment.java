@@ -137,6 +137,7 @@ public class GameFragment extends AppBaseFragment implements OnItemClickListener
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
+		mAdapter = new AppCursorAdapter(mContext);
 		query();
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -171,7 +172,6 @@ public class GameFragment extends AppBaseFragment implements OnItemClickListener
 			Message message = mHandler.obtainMessage();
 			if (null != cursor && cursor.getCount() > 0) {
 				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
-				mAdapter = new AppCursorAdapter(mContext);
 				mAdapter.changeCursor(cursor);
 				mGridView.setAdapter(mAdapter);
 				mAdapter.selectAll(false);
@@ -273,12 +273,16 @@ public class GameFragment extends AppBaseFragment implements OnItemClickListener
 	}
 
 	public void reQuery(){
-		mAdapter.getCursor().requery();
-		notifyUpdateUI();
+		if (null == mAdapter || mAdapter.getCursor() == null) {
+			query();
+		}else {
+			mAdapter.getCursor().requery();
+			notifyUpdateUI();
+		}
 	}
 	
 	public boolean onBackPressed(){
-		if (mAdapter.getMode() == DreamConstant.MENU_MODE_EDIT) {
+		if (null != mAdapter && mAdapter.getMode() == DreamConstant.MENU_MODE_EDIT) {
 			showMenuBar(false);
 			return false;
 		}
@@ -353,6 +357,7 @@ public class GameFragment extends AppBaseFragment implements OnItemClickListener
 		case ActionMenu.ACTION_MENU_BACKUP:
 			List<String> backupList = mAdapter.getSelectedPkgList();
 			showBackupDialog(backupList);
+			showMenuBar(false);
 			break;
 
 		default:
@@ -504,11 +509,17 @@ public class GameFragment extends AppBaseFragment implements OnItemClickListener
 	
 	@Override
 	public int getSelectedCount() {
-		return mAdapter.getSelectedItemsCount();
+		if (null != mAdapter) {
+			return mAdapter.getSelectedItemsCount();
+		}
+		return super.getSelectedCount();
 	}
 	
 	@Override
 	public int getMenuMode() {
-		return mAdapter.getMode();
+		if (null != mAdapter) {
+			return mAdapter.getMode();
+		}
+		return super.getMenuMode();
 	}
 }

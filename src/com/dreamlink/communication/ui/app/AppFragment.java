@@ -138,6 +138,7 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
+		mAdapter = new AppCursorAdapter(mContext);
 		query();
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -171,7 +172,6 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 			Message message = mHandler.obtainMessage();
 			if (null != cursor && cursor.getCount() > 0) {
 				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
-				mAdapter = new AppCursorAdapter(mContext);
 				mAdapter.changeCursor(cursor);
 				mGridView.setAdapter(mAdapter);
 				mAdapter.selectAll(false);
@@ -281,13 +281,17 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 		super.onDestroyView();
 	}
 
-	public void reQuery(){
-		mAdapter.getCursor().requery();
-		notifyUpdateUI();
+	public void reQuery() {
+		if (null == mAdapter || mAdapter.getCursor() == null) {
+			query();
+		} else {
+			mAdapter.getCursor().requery();
+			notifyUpdateUI();
+		}
 	}
 	
 	public boolean onBackPressed(){
-		if (mAdapter.getMode() == DreamConstant.MENU_MODE_EDIT) {
+		if (null != mAdapter && mAdapter.getMode() == DreamConstant.MENU_MODE_EDIT) {
 			showMenuBar(false);
 			return false;
 		}
@@ -523,7 +527,10 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 	
 	@Override
 	public int getSelectedCount() {
-		return mAdapter.getSelectedItemsCount();
+		if (null != mAdapter) {
+			return mAdapter.getSelectedItemsCount();
+		}
+		return super.getSelectedCount();
 	}
 	
 	@Override

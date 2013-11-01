@@ -15,6 +15,7 @@ import android.widget.TextView;
 public class MyDialog extends Dialog implements android.view.View.OnClickListener {
 	
 	private TextView mNameView;
+	private TextView mNumView;
 	private ProgressBar mProgressBar;
 	
 	private Button mCancelButton;
@@ -30,6 +31,7 @@ public class MyDialog extends Dialog implements android.view.View.OnClickListene
 			case MSG_UPDATE_PROGRESS:
 				mProgressBar.setProgress(progress);
 				mNameView.setText(mName);
+				mNumView.setText(progress + "/" + max);
 				break;
 
 			default:
@@ -53,6 +55,7 @@ public class MyDialog extends Dialog implements android.view.View.OnClickListene
 		mProgressBar.setMax(max);
 		
 		mNameView = (TextView) findViewById(R.id.name_view);
+		mNumView = (TextView) findViewById(R.id.num_view);
 		
 		mCancelButton = (Button) findViewById(R.id.button);
 		mCancelButton.setText(android.R.string.cancel);
