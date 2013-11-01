@@ -56,6 +56,7 @@
     <string name="menu_start">启动</string>
     <string name="menu_open">打开</string>
     <string name="menu_send">发送</string>
+    <string name="menu_backup">备份</string>
     <string name="menu_delete">删除</string>
     <string name="menu_rename">重命名</string>
     <string name="menu_info">属性</string>
@@ -188,4 +189,6 @@
      <string name="unselect_all">取消全选</string>
      
      <string name="handling">正在处理：</string>
+     <string name="backuping">正在备份：</string>
+     <string name="backup_fail">%s 备份失败</string>
 </resources>

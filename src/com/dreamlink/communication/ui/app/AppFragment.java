@@ -240,6 +240,7 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 		
 		mActionMenu = new ActionMenu(mContext);
 		mActionMenu.addItem(ActionMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, R.string.menu_send);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_BACKUP, R.drawable.ic_action_backup, R.string.menu_backup);
 		mActionMenu.addItem(ActionMenu.ACTION_MENU_UNINSTALL,R.drawable.ic_aciton_uninstall,R.string.menu_uninstall);
 		mActionMenu.addItem(ActionMenu.ACTION_MENU_MOVE_TO_GAME,R.drawable.ic_action_move_game,R.string.menu_move_to_game);
 		mActionMenu.addItem(ActionMenu.ACTION_MENU_INFO,R.drawable.ic_action_app_info,R.string.menu_app_info);
@@ -331,9 +332,9 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 			break;
 		case ActionMenu.ACTION_MENU_UNINSTALL:
 			mUninstallList = mAdapter.getSelectedPkgList();
-			mUninstallDialog = new MyDialog(mContext, mUninstallList.size());
-			mUninstallDialog.setTitle(R.string.handling);
-			mUninstallDialog.setOnCancelListener(new OnCancelListener() {
+			mMyDialog = new MyDialog(mContext, mUninstallList.size());
+			mMyDialog.setTitle(R.string.handling);
+			mMyDialog.setOnCancelListener(new OnCancelListener() {
 				
 				@Override
 				public void onCancel(DialogInterface dialog) {
@@ -343,7 +344,7 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 					}
 				}
 			});
-			mUninstallDialog.show();
+			mMyDialog.show();
 			uninstallApp();
 			showMenuBar(false);
 			break;
@@ -357,6 +358,11 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 			break;
 		case ActionMenu.ACTION_MENU_SELECT:
 			doSelectAll();
+			break;
+		case ActionMenu.ACTION_MENU_BACKUP:
+			List<String> backupList = mAdapter.getSelectedPkgList();
+			showBackupDialog(backupList);
+			showMenuBar(false);
 			break;
 
 		default:
@@ -399,7 +405,7 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 			String label = null;
 			for (int i = 0; i < pkgList.size(); i++) {
 				label = mAppManager.getAppLabel(pkgList.get(i));
-				dialog.setProgress(i + 1, label);
+				dialog.updateUI(i + 1, label);
 				moveToGame(pkgList.get(i));
 			}
 			return null;
@@ -488,16 +494,19 @@ public class AppFragment extends AppBaseFragment implements OnItemClickListener,
 		
 		if (0==selectCount) {
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(false);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_BACKUP).setEnable(false);
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_UNINSTALL).setEnable(false);
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_MOVE_TO_GAME).setEnable(false);
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(false);
 		} else if (1 == selectCount) {
 			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_BACKUP).setEnable(true);
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_UNINSTALL).setEnable(true);
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_MOVE_TO_GAME).setEnable(true);
 			mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(true);
 		} else {
 			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_BACKUP).setEnable(true);
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_UNINSTALL).setEnable(true);
         	mActionMenu.findItem(ActionMenu.ACTION_MENU_MOVE_TO_GAME).setEnable(true);
 			mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(false);

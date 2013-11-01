@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="2"
-        android:text="显示名称"
+        android:text="等待开始"
         android:textColor="@color/black"
         android:textIsSelectable="false"
         android:layout_margin="10dp"
@@ -18,7 +18,7 @@
 
     <ProgressBar
         android:id="@+id/bar_move"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        style="@style/progressBarHorizontal_color"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
 		android:layout_margin="10dp"        

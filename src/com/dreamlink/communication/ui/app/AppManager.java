@@ -11,6 +11,7 @@ import java.util.List;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.db.AppData;
+import com.dreamlink.communication.ui.file.FileUtil;
 import com.dreamlink.communication.util.Log;
 
 import android.content.ContentValues;
@@ -62,7 +63,6 @@ public class AppManager {
 
 	public List<ApplicationInfo> getAllApps() {
 		List<ApplicationInfo> allApps = pm.getInstalledApplications(0);
-		System.out.println("getallapps.size=" + allApps.size());
 		return allApps;
 	}
 	
@@ -205,10 +205,33 @@ public class AppManager {
 		try {
 			applicationInfo = pm.getApplicationInfo(packageName, 0);
 		} catch (NameNotFoundException e) {
+			Log.e(TAG, "getAppLabel.name not found:" + packageName);
 			Log.e(TAG, e.toString());
 			return null;
 		}
 		return applicationInfo.loadLabel(pm).toString();
+	}
+	
+	public String getAppVersion(String packageName){
+		String version = "";
+		try {
+			version = pm.getPackageInfo(packageName, 0).versionName;
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, "getAppVersion.name not found:" + packageName);
+			e.printStackTrace();
+		}
+		return version;
+	}
+	
+	public String getAppSourceDir(String packageName){
+		ApplicationInfo applicationInfo = null;
+		try {
+			applicationInfo = pm.getApplicationInfo(packageName, 0);
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, "getAppSourceDir:" + packageName + " name not found.");
+			e.printStackTrace();
+		}
+		return applicationInfo.sourceDir;
 	}
 	
 	
@@ -252,38 +275,10 @@ public class AppManager {
 		String src = appInfo.sourceDir;
 		String name = appInfo.loadLabel(pm).toString() + ".apk";
 		Log.d(TAG, "backuping..." + name);
-		fileStreamCopy(src, directory + name);
-	}
-
-	/**
-	 * io拷贝
-	 * 
-	 * @param inFile
-	 *            源文件
-	 * @param outFile
-	 *            目标文件
-	 * @return
-	 * @throws Exception
-	 */
-	public void fileStreamCopy(String inFile, String outFile) {
-
 		try {
-			File files = new File(outFile);// 创建文件
-			/* 将文件写入暂存盘 */
-			FileOutputStream fos = new FileOutputStream(files);
-			byte buf[] = new byte[128];
-			InputStream fis = new BufferedInputStream(new FileInputStream(
-					inFile), 8192 * 4);
-			do {
-				int numread = fis.read(buf);
-				if (numread <= 0) {
-					break;
-				}
-				fos.write(buf, 0, numread);
-			} while (true);
-			fis.close();
-			fos.close();
+			FileUtil.fileStreamCopy(src, directory + name);
 		} catch (IOException e) {
+			Log.e(TAG, "IO ERROR:" + name);
 			e.printStackTrace();
 		}
 	}

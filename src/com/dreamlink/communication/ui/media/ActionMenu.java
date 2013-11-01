@@ -20,6 +20,7 @@ public class ActionMenu{
 	public static final int ACTION_MENU_UNINSTALL = 0x09;
 	public static final int ACTION_MENU_MOVE_TO_GAME = 0x10;
 	public static final int ACTION_MENU_MOVE_TO_APP = 0x11;
+	public static final int ACTION_MENU_BACKUP = 0x12;
 	
 	private List<ActionMenuItem> items = new ArrayList<ActionMenu.ActionMenuItem>();
 	

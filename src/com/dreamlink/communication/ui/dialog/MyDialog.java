@@ -1,6 +1,7 @@
 package com.dreamlink.communication.ui.dialog;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.util.Log;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -56,9 +57,21 @@ public class MyDialog extends Dialog implements android.view.View.OnClickListene
 		mCancelButton = (Button) findViewById(R.id.button);
 		mCancelButton.setText(android.R.string.cancel);
 		mCancelButton.setOnClickListener(this);
+		
+		setCancelable(false);
 	}
 	
-	public void setProgress(int progress, String fileName){
+	public void updateName(String name){
+		this.mName = name;
+		mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_PROGRESS));
+	}
+	
+	public void updateProgress(int progress){
+		this.progress = progress;
+		mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_PROGRESS));
+	}
+	
+	public void updateUI(int progress, String fileName){
 		this.progress = progress;
 		this.mName = fileName;
 		mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_PROGRESS));
