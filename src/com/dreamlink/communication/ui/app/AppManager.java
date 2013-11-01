@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -197,6 +198,17 @@ public class AppManager {
 		deleteIntent.setAction(Intent.ACTION_DELETE);
 		deleteIntent.setData(packageUri);
 		mContext.startActivity(deleteIntent);
+	}
+	
+	public String getAppLabel(String packageName){
+		ApplicationInfo applicationInfo = null;
+		try {
+			applicationInfo = pm.getApplicationInfo(packageName, 0);
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, e.toString());
+			return null;
+		}
+		return applicationInfo.loadLabel(pm).toString();
 	}
 	
 	

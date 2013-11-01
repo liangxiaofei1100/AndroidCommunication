@@ -1,8 +1,6 @@
 package com.dreamlink.communication.ui.app;
 
-import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import android.content.AsyncQueryHandler;
@@ -10,16 +8,16 @@ import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.content.DialogInterface.OnCancelListener;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +41,7 @@ import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.db.AppData;
-import com.dreamlink.communication.ui.dialog.AppMoveDialog;
+import com.dreamlink.communication.ui.dialog.MyDialog;
 import com.dreamlink.communication.ui.media.ActionMenu;
 import com.dreamlink.communication.ui.media.ActionMenu.ActionMenuItem;
 import com.dreamlink.communication.util.Log;
@@ -51,32 +49,14 @@ import com.dreamlink.communication.util.Log;
 /**
  * use this to load app
  */
-public class GameFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, onMenuItemClickListener {
+public class GameFragment extends AppBaseFragment implements OnItemClickListener, OnItemLongClickListener, onMenuItemClickListener {
 	private static final String TAG = "GameFragment";
-	private GridView mGridView;
-	private ProgressBar mLoadingBar;
-
-	private AppCursorAdapter mAdapter = null;
-	private AppManager mAppManager = null;
-	private PackageManager pm = null;
-	
-	private Context mContext;
 	
 	private AppReceiver mAppReceiver;
-	private Notice mNotice = null;
 	private QueryHandler mQueryHandler;
 	
-	private int mAppId = -1;
-	private Cursor mCursor;
-	
-	private ActionMenu mActionMenu;
-	private MenuTabManager mMenuManager;
-	
-	private View mMenuBottomView;
-	private LinearLayout mMenuHolder;
-	
 	/**
-	 * Create a new instance of AppFragment, providing "appid" as an
+	 * Create a new instance of GameFragment, providing "appid" as an
 	 * argument.
 	 */
 	public static GameFragment newInstance(int appid) {
@@ -104,8 +84,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			case MSG_UPDATE_LIST:
 				Intent intent = new Intent(AppManager.ACTION_REFRESH_APP);
 				mContext.sendBroadcast(intent);
-				
-				reQuery(mCursor);
 				break;
 
 			default:
@@ -136,10 +114,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.ui_app, container, false);
-
-		mContext = getActivity();
-		
-		mNotice = new Notice(mContext);
 		
 		mGridView = (GridView) rootView.findViewById(R.id.app_normal_gridview);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
@@ -153,8 +127,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		IntentFilter filter = new IntentFilter(AppManager.ACTION_REFRESH_APP);
 		getActivity().registerReceiver(mAppReceiver, filter);
 		
-		mAppManager = new AppManager(mContext);
-		pm = mContext.getPackageManager();
 		mQueryHandler = new QueryHandler(getActivity().getContentResolver());
 
 		mGridView.setOnItemClickListener(this);
@@ -198,7 +170,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			mLoadingBar.setVisibility(View.INVISIBLE);
 			Message message = mHandler.obtainMessage();
 			if (null != cursor && cursor.getCount() > 0) {
-				mCursor = cursor;
 				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
 				mAdapter = new AppCursorAdapter(mContext);
 				mAdapter.changeCursor(cursor);
@@ -226,8 +197,9 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			updateMenuBar();
 			mMenuManager.refreshMenus(mActionMenu);
 		}else {
-			mCursor.moveToPosition(position);
-			String packagename = mCursor.getString(mCursor.getColumnIndex(AppData.App.PKG_NAME));
+			Cursor cursor = mAdapter.getCursor();
+			cursor.moveToPosition(position);
+			String packagename = cursor.getString(cursor.getColumnIndex(AppData.App.PKG_NAME));
 			if (DreamConstant.PACKAGE_NAME.equals(packagename)) {
 				mNotice.showToast(R.string.app_has_started);
 				return;
@@ -259,9 +231,9 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		
 		mActionMenu = new ActionMenu(mContext);
 		mActionMenu.addItem(ActionMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, R.string.menu_send);
-		mActionMenu.addItem(ActionMenu.ACTION_MENU_UNINSTALL,R.drawable.ic_action_delete_enable,R.string.menu_uninstall);
-		mActionMenu.addItem(ActionMenu.ACTION_MENU_MOVE_TO_APP,R.drawable.ic_action_info,R.string.menu_move_to_app);
-		mActionMenu.addItem(ActionMenu.ACTION_MENU_INFO,R.drawable.ic_action_info,R.string.menu_app_info);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_UNINSTALL,R.drawable.ic_aciton_uninstall,R.string.menu_uninstall);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_MOVE_TO_APP,R.drawable.ic_action_move_app,R.string.menu_move_to_app);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_INFO,R.drawable.ic_action_app_info,R.string.menu_app_info);
 		mActionMenu.addItem(ActionMenu.ACTION_MENU_SELECT, R.drawable.ic_aciton_select, R.string.select_all);
 
 		mMenuManager = new MenuTabManager(mContext, mMenuHolder);
@@ -278,44 +250,30 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			String action = intent.getAction();
 			Log.d(TAG, "get receiver:" + action);
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
-				reQuery(mCursor);
+				reQuery();
 			}
 		}
 	}
     
     public void notifyUpdateUI(){
 		Message message = mHandler.obtainMessage();
-		message.arg1 = mCursor.getCount();
+		message.arg1 = mAdapter.getCount();
 		message.what = MSG_UPDATE_UI;
 		message.sendToTarget();
 	}
-    
-    /**
-     * Perform alphabetical comparison of application entry objects.
-     */
-    public static final Comparator<AppInfo> ALPHA_COMPARATOR = new Comparator<AppInfo>() {
-        private final Collator sCollator = Collator.getInstance();
-        @Override
-        public int compare(AppInfo object1, AppInfo object2) {
-            return sCollator.compare(object1.getLabel(), object2.getLabel());
-        }
-    };
     
 	@Override
 	public void onDestroyView() {
 		if (mContext != null && mAppReceiver != null) {
 			mContext.unregisterReceiver(mAppReceiver);
+			mAppReceiver = null;
 		}
 		super.onDestroyView();
 	}
 
-	public void reQuery(Cursor cursor){
-		if (null == cursor) {
-			query();
-		}else {
-			cursor.requery();
-			notifyUpdateUI();
-		}
+	public void reQuery(){
+		mAdapter.getCursor().requery();
+		notifyUpdateUI();
 	}
 	
 	public boolean onBackPressed(){
@@ -363,10 +321,21 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 			showMenuBar(false);
 			break;
 		case ActionMenu.ACTION_MENU_UNINSTALL:
-			List<String> selectedList2 = mAdapter.getSelectedPkgList();
-			for (int i = 0; i < selectedList2.size(); i++) {
-				mAppManager.uninstallApp(selectedList2.get(i));
-			}
+			mUninstallList = mAdapter.getSelectedPkgList();
+			mUninstallDialog = new MyDialog(mContext, mUninstallList.size());
+			mUninstallDialog.setTitle(R.string.handling);
+			mUninstallDialog.setOnCancelListener(new OnCancelListener() {
+				
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					if (null != mUninstallList) {
+						mUninstallList.clear();
+						mUninstallList = null;
+					}
+				}
+			});
+			mUninstallDialog.show();
+			uninstallApp();
 			showMenuBar(false);
 			break;
 		case ActionMenu.ACTION_MENU_MOVE_TO_APP:
@@ -394,7 +363,7 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 	
 	private class MoveAsyncTask extends AsyncTask<Void, Void, Void>{
 		List<String> pkgList = new ArrayList<String>();
-		AppMoveDialog dialog = null;
+		MyDialog dialog = null;
 		
 		MoveAsyncTask(List<String> list){
 			pkgList = list;
@@ -404,15 +373,18 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		protected void onPreExecute() {
 			super.onPreExecute();
 			if (null == dialog) {
-				dialog = new AppMoveDialog(mContext, pkgList.size());
+				dialog = new MyDialog(mContext, pkgList.size());
+				dialog.setTitle(R.string.handling);
 				dialog.show();
 			}
 		}
 		
 		@Override
 		protected Void doInBackground(Void... params) {
+			String label = null;
 			for (int i = 0; i < pkgList.size(); i++) {
-				dialog.setProgress(i + 1, pkgList.get(i));
+				label = mAppManager.getAppLabel(pkgList.get(i));
+				dialog.setProgress(i + 1, label);
 				moveToApp(pkgList.get(i));
 			}
 			return null;
@@ -445,19 +417,6 @@ public class GameFragment extends BaseFragment implements OnItemClickListener, O
 		values.put(AppData.App.TYPE, AppManager.NORMAL_APP);
 		contentResolver.update(AppData.App.CONTENT_URI, values, 
 				AppData.App.PKG_NAME + "='" + packageName + "'", null);
-	}
-	
-	public long getTotalSize(List<Integer> list){
-		long totalSize = 0;
-		Cursor cursor = mAdapter.getCursor();
-		for(int pos : list){
-			cursor.moveToPosition(pos);
-			long size = cursor.getLong(cursor
-					.getColumnIndex(MediaStore.Images.Media.SIZE)); // 文件大小
-			totalSize += size;
-		}
-		
-		return totalSize;
 	}
 	
 	/**

@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class AppMoveDialog extends Dialog implements android.view.View.OnClickListener {
+public class MyDialog extends Dialog implements android.view.View.OnClickListener {
 	
 	private TextView mNameView;
 	private ProgressBar mProgressBar;
@@ -20,7 +20,7 @@ public class AppMoveDialog extends Dialog implements android.view.View.OnClickLi
 	private Context mContext;
 	
 	private int progress;
-	private String mAppLabel;
+	private String mName;
 	private int max;
 	private static final int MSG_UPDATE_PROGRESS = 0x10;
 	private Handler mHandler = new Handler(){
@@ -28,7 +28,7 @@ public class AppMoveDialog extends Dialog implements android.view.View.OnClickLi
 			switch (msg.what) {
 			case MSG_UPDATE_PROGRESS:
 				mProgressBar.setProgress(progress);
-				mNameView.setText(mAppLabel);
+				mNameView.setText(mName);
 				break;
 
 			default:
@@ -37,7 +37,7 @@ public class AppMoveDialog extends Dialog implements android.view.View.OnClickLi
 		};
 	};
 	
-	public AppMoveDialog(Context context, int size){
+	public MyDialog(Context context, int size){
 		super(context);
 		mContext = context;
 		max = size;
@@ -46,9 +46,7 @@ public class AppMoveDialog extends Dialog implements android.view.View.OnClickLi
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.ui_app_move_dialog);
-		
-		setTitle("移动应用");
+		setContentView(R.layout.ui_my_dialog);
 		
 		mProgressBar = (ProgressBar) findViewById(R.id.bar_move);
 		mProgressBar.setMax(max);
@@ -62,15 +60,19 @@ public class AppMoveDialog extends Dialog implements android.view.View.OnClickLi
 	
 	public void setProgress(int progress, String fileName){
 		this.progress = progress;
-		this.mAppLabel = fileName;
+		this.mName = fileName;
 		mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_PROGRESS));
+	}
+	
+	public int getMax(){
+		return max;
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.right_button:
-			dismiss();
+		case R.id.button:
+			cancel();
 			break;
 
 		default:
