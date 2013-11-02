@@ -11,7 +11,7 @@ import android.os.Parcelable;
 /**
  *description a file infos 
  */
-public class FileInfo implements Parcelable,Comparable{
+public class FileInfo implements Parcelable,Comparable<FileInfo>{
 	
 	public boolean isDir = false;
 	//File name
@@ -60,7 +60,6 @@ public class FileInfo implements Parcelable,Comparable{
 	public String getFormateDate(){
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String dateString = format.format(new Date(fileDate));
-		
 		return dateString;
 	}
 	
@@ -101,11 +100,10 @@ public class FileInfo implements Parcelable,Comparable{
 
 	//make it can sort
 	@Override
-	public int compareTo(Object another) {
-		FileInfo tmp = (FileInfo) another;
-		if (fileName.compareToIgnoreCase(tmp.fileName) < 0) {
-			return -1 ;
-		}else if (fileName.compareToIgnoreCase(tmp.fileName) > 0) {
+	public int compareTo(FileInfo another) {
+		if (fileName.compareToIgnoreCase(another.fileName) < 0) {
+			return -1;
+		}else if (fileName.compareToIgnoreCase(another.fileName) > 0) {
 			return 1;
 		}
 		return 0;
