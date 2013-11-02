@@ -256,12 +256,12 @@ public class FileTransferService extends Service implements
 		Log.d(TAG, "onReceiveFile:" + fileName + "," + sendUserName + ",size="
 				+ fileSize);
 		// define a file to save the receive file
-		File fileDir = new File(DreamConstant.DEFAULT_SAVE_FOLDER);
+		File fileDir = new File(DreamConstant.DREAMLINK_FOLDER);
 		if (!fileDir.exists()) {
 			fileDir.mkdirs();
 		}
 
-		String filePath = DreamConstant.DEFAULT_SAVE_FOLDER + File.separator
+		String filePath = DreamConstant.DREAMLINK_FOLDER + File.separator
 				+ fileName;
 		file = new File(filePath);
 		if (!file.exists()) {
@@ -275,11 +275,11 @@ public class FileTransferService extends Service implements
 		} else {
 			// if file is exist,auto rename
 			fileName = FileInfoManager.autoRename(fileName);
-			while (new File(DreamConstant.DEFAULT_SAVE_FOLDER + File.separator
+			while (new File(DreamConstant.DREAMLINK_FOLDER + File.separator
 					+ fileName).exists()) {
 				fileName = FileInfoManager.autoRename(fileName);
 			}
-			filePath = DreamConstant.DEFAULT_SAVE_FOLDER + File.separator
+			filePath = DreamConstant.DREAMLINK_FOLDER + File.separator
 					+ fileName;
 			file = new File(filePath);
 		}

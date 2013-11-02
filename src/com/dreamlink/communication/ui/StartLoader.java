@@ -78,7 +78,7 @@ public class StartLoader extends Activity {
 	}
 
 	private void createFileSaveFolder() {
-		File file = new File(DreamConstant.DEFAULT_SAVE_FOLDER);
+		File file = new File(DreamConstant.DREAMLINK_FOLDER);
 		if (!file.exists()) {
 			file.mkdirs();
 		}

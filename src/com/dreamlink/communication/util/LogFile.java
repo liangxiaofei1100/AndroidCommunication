@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.file.FileUtil;
 import android.util.Log;
 
@@ -29,7 +30,7 @@ public class LogFile {
 	private static final String TAG = "LogFile";
 	private File mFile;
 	private FileWriter mWriter;
-	public static final String LOG_FOLDER_NAME = "DreamlinkLog";
+	public static final String LOG_FOLDER_NAME = "Log";
 
 	/**
 	 * Create log file use the file name.
@@ -52,8 +53,7 @@ public class LogFile {
 	}
 
 	private void createFile(String fileName) {
-		String path = Environment.getExternalStorageDirectory()
-				.getAbsolutePath()
+		String path = DreamConstant.DREAMLINK_FOLDER
 				+ File.separator
 				+ LOG_FOLDER_NAME
 				+ File.separator + TimeUtil.getDate();
