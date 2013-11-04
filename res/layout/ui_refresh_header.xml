@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+    <RelativeLayout
+        android:layout_gravity="center"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="3" >
+
+        <ProgressBar
+            android:id="@+id/bar_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" 
+            android:visibility="invisible"/>
+
+        <ImageView
+            android:id="@+id/iv_arrow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" 
+            android:layout_alignBottom="@id/bar_header"
+            android:layout_alignTop="@id/bar_header"
+            android:src="@drawable/pull_refresh"/>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="40dp"
+        android:layout_weight="4"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/tv_tip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="15dp"
+            android:text="下拉刷新"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2013-09-29 13:12:11" 
+            />
+    </LinearLayout>
+
+</LinearLayout>

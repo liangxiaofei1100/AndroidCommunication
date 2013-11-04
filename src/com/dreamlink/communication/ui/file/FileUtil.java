@@ -1,9 +1,17 @@
 package com.dreamlink.communication.ui.file;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
+
+import com.dreamlink.communication.util.Log;
 
 public class FileUtil {
 
@@ -30,12 +38,12 @@ public class FileUtil {
 	 * @return
 	 */
 	public static char[] getChars(byte[] bytes) {
-        Charset cs = Charset.forName("UTF-8");
-        ByteBuffer bb = ByteBuffer.allocate(bytes.length);
-        bb.put(bytes);
-        bb.flip();
-        CharBuffer cb = cs.decode(bb);
-        return cb.array();
-}
+		Charset cs = Charset.forName("UTF-8");
+		ByteBuffer bb = ByteBuffer.allocate(bytes.length);
+		bb.put(bytes);
+		bb.flip();
+		CharBuffer cb = cs.decode(bb);
+		return cb.array();
+	}
 
 }

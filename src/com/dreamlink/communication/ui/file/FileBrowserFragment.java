@@ -20,7 +20,9 @@ import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.RefreshListView;
 import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
+import com.dreamlink.communication.ui.common.RefreshListView.OnRefreshListener;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoAdapter.ViewHolder;
@@ -64,7 +66,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	// 文件路径导航栏
 	private SlowHorizontalScrollView mNavigationBar = null;
 	// 显示所有文件
-	private ListView mFileListView = null;
+	private RefreshListView mFileListView = null;
 	private TextView mNoSDcardView;
 	private LinearLayout mNavBarLayout;
 
@@ -228,10 +230,18 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		rootView = inflater.inflate(R.layout.ui_file, container, false);
 		mContext = getActivity();
 		
-		mFileListView = (ListView) rootView.findViewById(R.id.lv_file);
+		mFileListView = (RefreshListView) rootView.findViewById(R.id.lv_file);
 		mFileListView.setOnItemClickListener(this);
 		mFileListView.setOnScrollListener(this);
 		mFileListView.setOnItemLongClickListener(this);
+//		mFileListView.setOnRefreshListener(new OnRefreshListener() {
+//			@Override
+//			public void onRefresh() {
+//				// TODO Auto-generated method stub
+//				new TopAsyncTask().execute();
+//			}
+//		});
+		
 		mNoSDcardView = (TextView) rootView.findViewById(R.id.tv_no_sdcard);
 		mNavBarLayout = (LinearLayout) rootView.findViewById(R.id.navigation_bar);
 		mNavigationBar = (SlowHorizontalScrollView) rootView
@@ -299,6 +309,34 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			mGetFileTask.execute(0);
 		}
 	}
+	
+	private class TopAsyncTask extends AsyncTask<Object,Integer,Object> {
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			mFileListView.onPrepareRefresh();//耗时操作之前调用该方法
+		}
+
+		@Override
+		protected Object doInBackground(Object... params) {
+			if (mFileInfoAdapter.isHome) {
+				
+			}
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Object result) {
+			super.onPostExecute(result);
+			mFileListView.onCompleteRefresh();//耗时操作之后调用该方法
+		}
+	}
 
 	@Override
 	public void onClick(View v) {
@@ -329,6 +367,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
+		position = position - 1;
 		if (mFileInfoAdapter.isHome) {
 			int type = mHomeList.get(position);
 			//when get files,the item cannot click,fix the update ui error bug
@@ -408,7 +447,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	@Override
 	public boolean onItemLongClick(AdapterView<?> arg0, final View view, final int position,
 			long arg3) {
-		mCurrentPosition = position;
+		mCurrentPosition = position - 1;
 		if (mFileInfoAdapter.isHome) {
 			return false;
 		}
@@ -421,8 +460,8 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			mFileInfoAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
 			updateActionMenuTitle(1);
 		}
-		boolean isSelected = mFileInfoAdapter.isSelected(position);
-		mFileInfoAdapter.setSelected(position, !isSelected);
+		boolean isSelected = mFileInfoAdapter.isSelected(position - 1);
+		mFileInfoAdapter.setSelected(position - 1, !isSelected);
 		mFileInfoAdapter.notifyDataSetChanged();
 		
 		mActionMenu = new ActionMenu(mContext);
@@ -1049,6 +1088,54 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		protected void onProgressUpdate(Integer... values) {
 			super.onProgressUpdate(values);
 		}
+	}
+	
+	private void listClassifyFiles(ClassifyFilenameFileter fileter,File file, int type){
+		if (file.isDirectory() && file.getName().equals(LogFile.LOG_FOLDER_NAME)) {
+			//do not show log folder
+			Log.d(TAG, "listFiles.name:" + file.getName());
+			return;
+		}
+		
+		File[] files = file.listFiles(fileter);
+		FileInfo fileInfo = null;
+		if (null == files) {
+			return;
+		}
+
+		for(File file2 : files){
+			if (file2.isHidden()) {
+				//do not handler hide file
+			}else {
+				if (file2.isDirectory()) {
+					listFiles(fileter, file2, type);
+				}else {
+					fileInfo = mFileInfoManager.getFileInfo(file2);
+					int fileType = fileInfo.type;
+					switch (fileType) {
+					case DOC:
+						mDocList.add(fileInfo);
+						break;
+					case EBOOK:
+						mEbookList.add(fileInfo);
+						break;
+					case APK:
+						mApkList.add(fileInfo);
+						break;
+					case ARCHIVE:
+						mArchiveList.add(fileInfo);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+		
+		Collections.sort(mDocList, DATE_COMPARATOR);
+		Collections.sort(mEbookList, DATE_COMPARATOR);
+		Collections.sort(mApkList);
+		Collections.sort(mArchiveList, DATE_COMPARATOR);
 	}
 	
 	private void listFiles(ClassifyFilenameFileter fileter,File file, int type){
