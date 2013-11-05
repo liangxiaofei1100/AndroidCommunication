@@ -11,6 +11,7 @@ import java.util.List;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.db.AppData;
+import com.dreamlink.communication.ui.file.FileUtil;
 import com.dreamlink.communication.util.Log;
 
 import android.content.ContentValues;
@@ -19,8 +20,11 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 
 public class AppManager {
 	private static final String TAG = "AppManager";
@@ -59,7 +63,6 @@ public class AppManager {
 
 	public List<ApplicationInfo> getAllApps() {
 		List<ApplicationInfo> allApps = pm.getInstalledApplications(0);
-		System.out.println("getallapps.size=" + allApps.size());
 		return allApps;
 	}
 	
@@ -197,6 +200,56 @@ public class AppManager {
 		mContext.startActivity(deleteIntent);
 	}
 	
+	public String getAppLabel(String packageName){
+		ApplicationInfo applicationInfo = null;
+		try {
+			applicationInfo = pm.getApplicationInfo(packageName, 0);
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, "getAppLabel.name not found:" + packageName);
+			Log.e(TAG, e.toString());
+			return null;
+		}
+		return applicationInfo.loadLabel(pm).toString();
+	}
+	
+	public String getAppVersion(String packageName){
+		String version = "";
+		try {
+			version = pm.getPackageInfo(packageName, 0).versionName;
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, "getAppVersion.name not found:" + packageName);
+			e.printStackTrace();
+		}
+		return version;
+	}
+	
+	public String getAppSourceDir(String packageName){
+		ApplicationInfo applicationInfo = null;
+		try {
+			applicationInfo = pm.getApplicationInfo(packageName, 0);
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, "getAppSourceDir:" + packageName + " name not found.");
+			e.printStackTrace();
+		}
+		return applicationInfo.sourceDir;
+	}
+	
+	
+	public void showInstalledAppDetails(String packageName){
+		Intent intent = new Intent();
+		final int apiLevel = Build.VERSION.SDK_INT;
+		if (apiLevel >= Build.VERSION_CODES.GINGERBREAD) {
+			intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+			Uri uri = Uri.fromParts("package", packageName, null);
+			intent.setData(uri);
+		}else {
+			intent.setAction(Intent.ACTION_VIEW);
+			intent.setClassName("com.android.settings", "com.android.settings.InstalledAppDetails");
+			intent.putExtra("pkg", packageName);
+		}
+		mContext.startActivity(intent);
+	}
+	
 	public void showInfoDialog(AppInfo appInfo){
 		String info  = getAppInfo(appInfo);
 		DreamUtil.showInfoDialog(mContext, appInfo.getLabel(), info);
@@ -222,38 +275,10 @@ public class AppManager {
 		String src = appInfo.sourceDir;
 		String name = appInfo.loadLabel(pm).toString() + ".apk";
 		Log.d(TAG, "backuping..." + name);
-		fileStreamCopy(src, directory + name);
-	}
-
-	/**
-	 * io拷贝
-	 * 
-	 * @param inFile
-	 *            源文件
-	 * @param outFile
-	 *            目标文件
-	 * @return
-	 * @throws Exception
-	 */
-	public void fileStreamCopy(String inFile, String outFile) {
-
 		try {
-			File files = new File(outFile);// 创建文件
-			/* 将文件写入暂存盘 */
-			FileOutputStream fos = new FileOutputStream(files);
-			byte buf[] = new byte[128];
-			InputStream fis = new BufferedInputStream(new FileInputStream(
-					inFile), 8192 * 4);
-			do {
-				int numread = fis.read(buf);
-				if (numread <= 0) {
-					break;
-				}
-				fos.write(buf, 0, numread);
-			} while (true);
-			fis.close();
-			fos.close();
+			FileUtil.fileStreamCopy(src, directory + name);
 		} catch (IOException e) {
+			Log.e(TAG, "IO ERROR:" + name);
 			e.printStackTrace();
 		}
 	}

@@ -1,24 +1,25 @@
 package com.dreamlink.communication.ui.app;
 
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
-import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,39 +27,34 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.dreamlink.communication.R;
-import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.MenuTabManager;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.MainFragmentActivity;
+import com.dreamlink.communication.ui.MenuTabManager.onMenuItemClickListener;
 import com.dreamlink.communication.ui.app.AppCursorAdapter.ViewHolder;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
+import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.db.AppData;
+import com.dreamlink.communication.ui.dialog.MyDialog;
+import com.dreamlink.communication.ui.media.ActionMenu;
+import com.dreamlink.communication.ui.media.ActionMenu.ActionMenuItem;
 import com.dreamlink.communication.util.Log;
 
 /**
  * use this to load app
  */
-public class AppFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener {
+public class AppFragment extends AppBaseFragment implements OnItemClickListener, OnItemLongClickListener, onMenuItemClickListener {
 	private static final String TAG = "AppFragment";
-	private GridView mGridView;
-	private ProgressBar mLoadingBar;
-
-	private AppCursorAdapter mAdapter = null;
-	private AppManager mAppManager = null;
-	private PackageManager pm = null;
-	
-	private Context mContext;
 	
 	private AppReceiver mAppReceiver;
-	private Notice mNotice = null;
 	private QueryHandler mQueryHandler;
-	
-	private int mAppId = -1;
-	private Cursor mCursor;
 	
 	/**
 	 * Create a new instance of AppFragment, providing "appid" as an
@@ -75,7 +71,8 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	}
 	
 	private static final int MSG_UPDATE_UI = 0;
-	Handler mHandler = new Handler(){
+	private static final int MSG_UPDATE_LIST= 1;
+	private Handler mHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATE_UI:
@@ -84,6 +81,10 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 				if (isAdded()) {
 					mFragmentActivity.setTitleNum(MainFragmentActivity.APP, size);
 				}
+				break;
+			case MSG_UPDATE_LIST:
+				Intent intent = new Intent(AppManager.ACTION_REFRESH_APP);
+				mContext.sendBroadcast(intent);
 				break;
 
 			default:
@@ -114,25 +115,19 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.ui_app, container, false);
-
-		mContext = getActivity();
-		
-		mNotice = new Notice(mContext);
 		
 		mGridView = (GridView) rootView.findViewById(R.id.app_normal_gridview);
 		mLoadingBar = (ProgressBar) rootView.findViewById(R.id.app_progressbar);
 		
+		mMenuBottomView = rootView.findViewById(R.id.menubar_bottom);
+		mMenuBottomView.setVisibility(View.GONE);
+		mMenuHolder = (LinearLayout) rootView.findViewById(R.id.ll_menutabs_holder);
+		
 		//register broadcast
 		mAppReceiver = new AppReceiver();
 		IntentFilter filter = new IntentFilter(AppManager.ACTION_REFRESH_APP);
-		filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-		filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
-        filter.addDataScheme("package");
 		getActivity().registerReceiver(mAppReceiver, filter);
 		
-		mAppManager = new AppManager(mContext);
-		pm = mContext.getPackageManager();
 		mQueryHandler = new QueryHandler(getActivity().getContentResolver());
 
 		mGridView.setOnItemClickListener(this);
@@ -143,6 +138,7 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
+		mAdapter = new AppCursorAdapter(mContext);
 		query();
 		super.onActivityCreated(savedInstanceState);
 	}
@@ -171,16 +167,14 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 
 		@Override
 		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
-			// super.onQueryComplete(token, cookie, cursor);
 			Log.d(TAG, "onQueryComplete");
 			mLoadingBar.setVisibility(View.INVISIBLE);
 			Message message = mHandler.obtainMessage();
 			if (null != cursor && cursor.getCount() > 0) {
-				mCursor = cursor;
 				Log.d(TAG, "onQueryComplete.count=" + cursor.getCount());
-				mAdapter = new AppCursorAdapter(mContext);
 				mAdapter.changeCursor(cursor);
 				mGridView.setAdapter(mAdapter);
+				mAdapter.selectAll(false);
 				message.arg1 = cursor.getCount();
 			} else {
 				message.arg1 = 0;
@@ -201,119 +195,62 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		mCursor.moveToPosition(position);
-		String packagename = mCursor.getString(mCursor.getColumnIndex(AppData.App.PKG_NAME));
-		if (DreamConstant.PACKAGE_NAME.equals(packagename)) {
-			mNotice.showToast(R.string.app_has_started);
-			return;
-		}
-		
-		Intent intent = pm.getLaunchIntentForPackage(packagename);
-		if (null != intent) {
-			startActivity(intent);
-		}else {
-			mNotice.showToast(R.string.cannot_start_app);
-			return;
+		if (mAdapter.getMode() == DreamConstant.MENU_MODE_EDIT) {
+			mAdapter.setSelected(position);
+			mAdapter.notifyDataSetChanged();
+			
+			int selectedCount = mAdapter.getSelectedItemsCount();
+			updateActionMenuTitle(selectedCount);
+			updateMenuBar();
+			mMenuManager.refreshMenus(mActionMenu);
+		} else {
+			Cursor cursor = mAdapter.getCursor();
+			cursor.moveToPosition(position);
+			String packagename = cursor.getString(cursor
+					.getColumnIndex(AppData.App.PKG_NAME));
+			if (DreamConstant.PACKAGE_NAME.equals(packagename)) {
+				mNotice.showToast(R.string.app_has_started);
+				return;
+			}
+
+			Intent intent = pm.getLaunchIntentForPackage(packagename);
+			if (null != intent) {
+				startActivity(intent);
+			} else {
+				mNotice.showToast(R.string.cannot_start_app);
+				return;
+			}
 		}
 	}
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view,
 			final int position, long id) {
-		mCursor.moveToPosition(position);
-		final String packagename = mCursor.getString(mCursor
-				.getColumnIndex(AppData.App.PKG_NAME));
-		ApplicationInfo applicationInfo = null;
-		AppInfo appInfo = null;
-		try {
-			applicationInfo = pm.getApplicationInfo(packagename, 0);
-			appInfo = new AppInfo(getActivity(), applicationInfo);
-			appInfo.setPackageName(packagename);
-			appInfo.setAppIcon(applicationInfo.loadIcon(pm));
-			appInfo.loadLabel();
-			appInfo.loadVersion();
+		int mode = mAdapter.getMode();
+		if (DreamConstant.MENU_MODE_EDIT == mode) {
+			doSelectAll();
+			return true;
+		}else {
+			mAdapter.changeMode(DreamConstant.MENU_MODE_EDIT);
+			updateActionMenuTitle(1);
+		}
+		boolean isSelected = mAdapter.isSelected(position);
+		mAdapter.setSelected(position, !isSelected);
+		mAdapter.notifyDataSetChanged();
+		
+		mActionMenu = new ActionMenu(mContext);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_SEND, R.drawable.ic_action_send, R.string.menu_send);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_BACKUP, R.drawable.ic_action_backup, R.string.menu_backup);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_UNINSTALL,R.drawable.ic_aciton_uninstall,R.string.menu_uninstall);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_MOVE_TO_GAME,R.drawable.ic_action_move_game,R.string.menu_move_to_game);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_INFO,R.drawable.ic_action_app_info,R.string.menu_app_info);
+		mActionMenu.addItem(ActionMenu.ACTION_MENU_SELECT, R.drawable.ic_aciton_select, R.string.select_all);
 
-			showMenuDialog(appInfo, view);
-		} catch (NameNotFoundException e) {
-			Log.e(TAG, e.toString());
-		}
+		mMenuManager = new MenuTabManager(mContext, mMenuHolder);
+		showMenuBar(true);
+		mMenuManager.refreshMenus(mActionMenu);
+		mMenuManager.setOnMenuItemClickListener(this);
 		return true;
-	}
-	
-	private void showMenuDialog(final AppInfo appInfo, final View view){
-		int resId = R.array.app_menu_normal;
-		if (DreamConstant.PACKAGE_NAME.equals(appInfo.getPackageName())) {
-			//本身这个程序不允许卸载，不允许移动到游戏，已经打开了，所以没有打开选项
-			//总之，菜单要不一样
-			resId = R.array.app_menu_myself;
-		}
-		final String[] current_menus = getResources().getStringArray(resId);
-		final String[] normal_menus = getResources().getStringArray(R.array.app_menu_normal);
-		new AlertDialog.Builder(mContext)
-		.setIcon(appInfo.getAppIcon())
-		.setTitle(appInfo.getLabel())
-		.setItems(resId, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				String currentMenu = current_menus[which];
-				if (normal_menus[0].equals(currentMenu)) {
-					//open
-					Intent intent = pm.getLaunchIntentForPackage(appInfo.getPackageName());
-					if (null != intent) {
-						startActivity(intent);
-					}else {
-						mNotice.showToast(R.string.cannot_start_app);
-						return;
-					}
-				}else if (normal_menus[1].equals(currentMenu)) {
-					//send
-					FileTransferUtil fileSendUtil = new FileTransferUtil(getActivity());
-					fileSendUtil.sendFile(appInfo.getInstallPath(), new FileTransferUtil.TransportCallback() {
-						
-						@Override
-						public void onTransportSuccess() {
-							ViewHolder viewHolder = (ViewHolder)view.getTag();
-							showTransportAnimation(viewHolder.iconView);
-						}
-						
-						@Override
-						public void onTransportFail() {
-							
-						}
-					});
-				}else if (normal_menus[2].equals(currentMenu)) {
-					//uninstall
-					mAppManager.uninstallApp(appInfo.getPackageName());
-				}else if (normal_menus[4].equals(currentMenu)) {
-					//app info
-					mAppManager.showInfoDialog(appInfo);
-				}else if (normal_menus[3].equals(currentMenu)) {
-					//move to game
-					//1，将该记录的type设置为game
-					//2，将数据插入到game表中
-					//3，通知GameFragment
-					//4，重新查询数据库
-					ContentResolver contentResolver = getActivity().getContentResolver();
-					ContentValues values = null;
-					
-					values = new ContentValues();
-					values.put(AppData.App.TYPE, AppManager.GAME_APP);
-					contentResolver.update(AppData.App.CONTENT_URI, values, 
-							AppData.App.PKG_NAME + "='" + appInfo.getPackageName() + "'", null);
-					
-					//insert to db
-					values = new ContentValues();
-					values.put(AppData.App.PKG_NAME, appInfo.getPackageName());
-					contentResolver.insert(AppData.AppGame.CONTENT_URI, values);
-					
-//					
-					Intent intent = new Intent(AppManager.ACTION_REFRESH_APP);
-					mContext.sendBroadcast(intent);
-					
-					reQuery(mCursor);
-				}
-			}
-		}).create().show();
 	}
 	
 	//recevier that can update ui
@@ -323,43 +260,281 @@ public class AppFragment extends BaseFragment implements OnItemClickListener, On
 			String action = intent.getAction();
 			Log.d(TAG, "get receiver:" + action);
 			if (AppManager.ACTION_REFRESH_APP.equals(action)) {
-				reQuery(mCursor);
+				reQuery();
 			}
 		}
 	}
     
     public void notifyUpdateUI(){
 		Message message = mHandler.obtainMessage();
-		message.arg1 = mCursor.getCount();
+		message.arg1 = mAdapter.getCount();
 		message.what = MSG_UPDATE_UI;
 		message.sendToTarget();
 	}
-    
-    /**
-     * Perform alphabetical comparison of application entry objects.
-     */
-    public static final Comparator<AppInfo> ALPHA_COMPARATOR = new Comparator<AppInfo>() {
-        private final Collator sCollator = Collator.getInstance();
-        @Override
-        public int compare(AppInfo object1, AppInfo object2) {
-            return sCollator.compare(object1.getLabel(), object2.getLabel());
-        }
-    };
     
 	@Override
 	public void onDestroyView() {
 		if (mContext != null && mAppReceiver != null) {
 			mContext.unregisterReceiver(mAppReceiver);
+			mAppReceiver = null;
 		}
 		super.onDestroyView();
 	}
 
-	public void reQuery(Cursor cursor){
-		if (null == cursor) {
+	public void reQuery() {
+		if (null == mAdapter || mAdapter.getCursor() == null) {
 			query();
-		}else {
-			cursor.requery();
+		} else {
+			mAdapter.getCursor().requery();
 			notifyUpdateUI();
 		}
+	}
+	
+	public boolean onBackPressed(){
+		if (null != mAdapter && mAdapter.getMode() == DreamConstant.MENU_MODE_EDIT) {
+			showMenuBar(false);
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public void onMenuClick(ActionMenuItem item) {
+		switch (item.getItemId()) {
+		case ActionMenu.ACTION_MENU_SEND:
+			ArrayList<String> selectedList = (ArrayList<String>) mAdapter.getSelectItemPathList();
+			//send
+			FileTransferUtil fileTransferUtil = new FileTransferUtil(getActivity());
+			fileTransferUtil.sendFiles(selectedList, new TransportCallback() {
+				@Override
+				public void onTransportSuccess() {
+					int first = mGridView.getFirstVisiblePosition();
+					int last = mGridView.getLastVisiblePosition();
+					List<Integer> checkedItems = mAdapter.getSelectedItemPos();
+					ArrayList<ImageView> icons = new ArrayList<ImageView>();
+					for(int id : checkedItems) {
+						if (id >= first && id <= last) {
+							View view = mGridView.getChildAt(id - first);
+							if (view != null) {
+								ViewHolder viewHolder = (ViewHolder)view.getTag();
+								icons.add(viewHolder.iconView);
+							}
+						}
+					}
+//					
+					if (icons.size() > 0) {
+						ImageView[] imageViews = new ImageView[0];
+						showTransportAnimation(icons.toArray(imageViews));
+					}
+				}
+				
+				@Override
+				public void onTransportFail() {
+				}
+			});
+			showMenuBar(false);
+			break;
+		case ActionMenu.ACTION_MENU_UNINSTALL:
+			mUninstallList = mAdapter.getSelectedPkgList();
+			mMyDialog = new MyDialog(mContext, mUninstallList.size());
+			mMyDialog.setTitle(R.string.handling);
+			mMyDialog.setOnCancelListener(new OnCancelListener() {
+				
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					if (null != mUninstallList) {
+						mUninstallList.clear();
+						mUninstallList = null;
+					}
+				}
+			});
+			mMyDialog.show();
+			uninstallApp();
+			showMenuBar(false);
+			break;
+		case ActionMenu.ACTION_MENU_MOVE_TO_GAME:
+			showMoveDialog();
+			break;
+		case ActionMenu.ACTION_MENU_INFO:
+			String packageName = mAdapter.getSelectedPkgList().get(0);
+			mAppManager.showInstalledAppDetails(packageName);
+			showMenuBar(false);
+			break;
+		case ActionMenu.ACTION_MENU_SELECT:
+			doSelectAll();
+			break;
+		case ActionMenu.ACTION_MENU_BACKUP:
+			List<String> backupList = mAdapter.getSelectedPkgList();
+			showBackupDialog(backupList);
+			showMenuBar(false);
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+	public void showMoveDialog(){
+		final List<String> packageList = mAdapter.getSelectedPkgList();
+		new MoveAsyncTask(packageList).execute();
+		showMenuBar(false);
+	}
+	
+	private class MoveAsyncTask extends AsyncTask<Void, Void, Void>{
+		List<String> pkgList = new ArrayList<String>();
+		MyDialog dialog;
+		
+		MoveAsyncTask(List<String> list){
+			pkgList = list;
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			if (null == dialog) {
+				dialog = new MyDialog(mContext, pkgList.size());
+				dialog.setTitle(R.string.handling);
+				dialog.setOnCancelListener(new OnCancelListener() {
+					@Override
+					public void onCancel(DialogInterface dialog) {
+						cancel(true);
+					}
+				});
+				dialog.show();
+			}
+		}
+		
+		@Override
+		protected Void doInBackground(Void... params) {
+			String label = null;
+			for (int i = 0; i < pkgList.size(); i++) {
+				label = mAppManager.getAppLabel(pkgList.get(i));
+				dialog.updateUI(i + 1, label);
+				moveToGame(pkgList.get(i));
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			if (null != dialog) {
+				dialog.cancel();
+				dialog = null;
+			}
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_LIST));
+		}
+	}
+	
+	private void moveToGame(String packageName){
+		Log.d(TAG, "moveToGame:" + packageName);
+		//move to game
+		//1，将该记录的type设置为game
+		//2，将数据插入到game表中
+		//3，通知GameFragment
+		//4，重新查询数据库
+		ContentResolver contentResolver = getActivity().getContentResolver();
+		ContentValues values = null;
+		
+		values = new ContentValues();
+		values.put(AppData.App.TYPE, AppManager.GAME_APP);
+		contentResolver.update(AppData.App.CONTENT_URI, values, 
+				AppData.App.PKG_NAME + "='" + packageName + "'", null);
+		
+		//insert to db
+		values = new ContentValues();
+		values.put(AppData.App.PKG_NAME, packageName);
+		contentResolver.insert(AppData.AppGame.CONTENT_URI, values);
+	}
+	
+	/**
+	 * do select all items or unselect all items
+	 */
+	public void doSelectAll(){
+		int selectedCount1 = mAdapter.getSelectedItemsCount();
+		if (mAdapter.getCount() != selectedCount1) {
+			mAdapter.selectAll(true);
+		} else {
+			mAdapter.selectAll(false);
+		}
+		updateMenuBar();
+		mMenuManager.refreshMenus(mActionMenu);
+		mAdapter.notifyDataSetChanged();
+	}
+	
+	/**
+	 * set menubar visible or gone
+	 * @param show
+	 */
+	public void showMenuBar(boolean show){
+		if (show) {
+			mMenuBottomView.setVisibility(View.VISIBLE);
+		}else {
+			mMenuBottomView.setVisibility(View.GONE);
+			updateActionMenuTitle(-1);
+			onActionMenuDone();
+		}
+	}
+	
+	
+	public void onActionMenuDone() {
+		mAdapter.changeMode(DreamConstant.MENU_MODE_NORMAL);
+		mAdapter.selectAll(false);
+		mAdapter.notifyDataSetChanged();
+	}
+	
+	/**
+	 * update menu bar item icon and text color,enable or disable
+	 */
+	public void updateMenuBar(){
+		int selectCount = mAdapter.getSelectedItemsCount();
+		updateActionMenuTitle(selectCount);
+		
+		if (mAdapter.getCount() == selectCount) {
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.unselect_all);
+		}else {
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SELECT).setTitle(R.string.select_all);
+		}
+		
+		if (0==selectCount) {
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(false);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_BACKUP).setEnable(false);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_UNINSTALL).setEnable(false);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_MOVE_TO_GAME).setEnable(false);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(false);
+		} else if (1 == selectCount) {
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_BACKUP).setEnable(true);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_UNINSTALL).setEnable(true);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_MOVE_TO_GAME).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(true);
+		} else {
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_SEND).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_BACKUP).setEnable(true);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_UNINSTALL).setEnable(true);
+        	mActionMenu.findItem(ActionMenu.ACTION_MENU_MOVE_TO_GAME).setEnable(true);
+			mActionMenu.findItem(ActionMenu.ACTION_MENU_INFO).setEnable(false);
+		}
+	}
+	
+	/**
+	 * update main title 
+	 * @param selectCount
+	 */
+	public void updateActionMenuTitle(int selectCount){
+		mFragmentActivity.updateTitleSelectNum(selectCount, count);
+	}
+	
+	@Override
+	public int getSelectedCount() {
+		if (null != mAdapter) {
+			return mAdapter.getSelectedItemsCount();
+		}
+		return super.getSelectedCount();
+	}
+	
+	@Override
+	public int getMenuMode() {
+		return mAdapter.getMode();
 	}
 }

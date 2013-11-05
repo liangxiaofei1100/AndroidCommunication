@@ -24,6 +24,8 @@ public class MenuTabManager implements OnClickListener {
 	private Context mContext;
 	private List<ActionMenuItem> items = new ArrayList<ActionMenu.ActionMenuItem>();
 	private onMenuItemClickListener mListener; 
+	private int enable_color;
+	private int disable_color;
 	
 	public MenuTabManager(Context context, View rootView){
 		mContext = context;
@@ -34,6 +36,9 @@ public class MenuTabManager implements OnClickListener {
 	public MenuTabManager(Context context, LinearLayout menuHodlers){
 		mInflater = LayoutInflater.from(context);
 		mMenuHolders = menuHodlers;
+		
+		enable_color = context.getResources().getColor(R.color.black);
+		disable_color = context.getResources().getColor(R.color.disable_color);
 	}
 	
 	public void setOnMenuItemClickListener(onMenuItemClickListener listener){
@@ -71,10 +76,10 @@ public class MenuTabManager implements OnClickListener {
 		String name = item.getTitle().toString();
 		imageView.setImageResource(icon);
 		textView.setText(name);
-		textView.setTextColor(item.getTextColor());
 		view.setId(items.size());
 		view.setOnClickListener(this);
 		view.setEnabled(item.isEnable());
+		textView.setTextColor(item.isEnable() ? enable_color : disable_color);
 		mMenuHolders.addView(view);
 		items.add(item);
 	}

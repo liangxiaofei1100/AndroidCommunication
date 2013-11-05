@@ -56,13 +56,14 @@
     <string name="menu_start">启动</string>
     <string name="menu_open">打开</string>
     <string name="menu_send">发送</string>
+    <string name="menu_backup">备份</string>
     <string name="menu_delete">删除</string>
     <string name="menu_rename">重命名</string>
     <string name="menu_info">属性</string>
     <string name="menu_play">播放</string>
     <string name="menu_more">更多</string>
-    <string name="menu_app_info">应用程序信息</string>
-    <string name="menu_uninstall">卸载程序</string>
+    <string name="menu_app_info">应用信息</string>
+    <string name="menu_uninstall">卸载</string>
     <string name="menu_move_to_game">移至游戏</string>
     <string name="menu_move_to_app">移至应用</string>
     <string name="menu_install">安装</string>
@@ -71,12 +72,16 @@
     <string name="video_type">电影视频</string>
     <string name="video_type_tip">支持rmvb,mkv,mov,flv等格式</string>
     <string name="doc_type">办公文档</string>
+    <string name="doc_type_format">办公文档(%d)</string>
     <string name="doc_type_tip">支持doc,ppt,xls,pdf等格式</string>
     <string name="ebook_type">电子书籍</string>
+    <string name="ebook_type_format">电子书籍(%d)</string>
     <string name="ebook_type_tip">支持umd,ebk,txt,chm等格式</string>
     <string name="apk_type">应用安装包</string>
+    <string name="apk_type_format">应用安装包(%d)</string>
     <string name="apk_type_tip">支持apk格式</string>
     <string name="archive_type">压缩包文件</string>
+    <string name="archive_type_format">压缩包文件(%d)</string>
     <string name="archive_type_tip">支持7z,rar,zip,iso等格式</string>
     <string name="big_file_type">大文件</string>
     <string name="big_file_type_tip">支持50M以上任意格式文件</string>
@@ -186,4 +191,8 @@
      
      <string name="select_all">全选</string>
      <string name="unselect_all">取消全选</string>
+     
+     <string name="handling">正在处理：</string>
+     <string name="backuping">正在备份：</string>
+     <string name="backup_fail">%s 备份失败</string>
 </resources>

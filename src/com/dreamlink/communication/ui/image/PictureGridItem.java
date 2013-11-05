@@ -43,7 +43,7 @@ public class PictureGridItem extends RelativeLayout implements Checkable {
 		// TODO Auto-generated method stub
 		mChecked = checked;
 //		setBackgroundResource(checked ? R.color.bright_blue : null);
-		setBackgroundDrawable(checked ? mContext.getResources().getDrawable(R.color.blue1) : null);
+		setBackgroundDrawable(checked ? mContext.getResources().getDrawable(R.color.holo_blue2) : null);
 //		mSelectView.setImageResource(checked ? R.drawable.item_checked : R.drawable.item_unchecked);
 		mSelectView.setVisibility(checked ? View.VISIBLE : View.GONE);
 	}

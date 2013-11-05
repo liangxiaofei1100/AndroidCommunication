@@ -36,4 +36,7 @@
 	<color name="traffic_receive">#ff33b5e5</color>
 	<color name="orange">#ffa400</color>
 	<color name="blue1">#8BCFFC</color>
+	
+	<color name="holo_blue1">#33b5e5</color>
+	<color name="holo_blue2">#0099cc</color>
 </resources>

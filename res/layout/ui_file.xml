@@ -60,7 +60,7 @@
         android:layout_height="match_parent" 
         android:layout_below="@id/navigation_bar">
 
-        <com.dreamlink.communication.ui.common.RefreshListView
+        <ListView
             android:id="@+id/lv_file"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" 
@@ -70,13 +70,12 @@
             />
 
         <TextView
-            android:id="@+id/tv_no_sdcard"
+            android:id="@+id/tv_file_listview_tip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_below="@+id/bar_loading_file"
-            android:text="@string/no_sdcard"
-            android:visibility="gone"
+            android:visibility="invisible"
              />
         
         <ProgressBar
@@ -85,7 +84,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:indeterminateDrawable="@drawable/loading_progressbar"
-            android:visibility="gone" />
+            android:visibility="invisible" />
         
         <RelativeLayout
             android:id="@+id/bottom"
@@ -98,31 +97,5 @@
                 android:id="@+id/menubar_bottom"
                 layout="@layout/ui_menubar_bottom2" />
         </RelativeLayout>
-    
-        <LinearLayout 
-            android:id="@+id/ll_transfer_all"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:orientation="horizontal"
-            android:visibility="gone"
-            >
-            <Button 
-                android:id="@+id/btn_cancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.3"
-                android:text="@string/cancel"
-                android:background="@drawable/button_bg"
-                />
-            
-            <Button 
-                android:id="@+id/btn_transfer_all"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                 android:layout_weight="0.7"
-                android:background="@drawable/button_bg"
-                />
-        </LinearLayout>
     </RelativeLayout>
 </RelativeLayout>

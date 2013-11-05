@@ -7,14 +7,10 @@ import com.dreamlink.communication.R;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -101,12 +97,14 @@ public class RefreshListView extends ListView {
 					state = RELEASE;
 					mHeaderText.setText("松手以刷新");
 					mHeaderArrow.setImageDrawable(mReleaseDraw);
+//					mHeaderBar.setVisibility(View.INVISIBLE);
 				} else if((state == NORMAL || state == RELEASE) ){
 					preState = state;    state = PULL;
 					if(preState == NORMAL && state == PULL && instance >= 18) mDownY = mMoveY;
 					else if(preState != RELEASE && instance < 20) state = NORMAL;
 					mHeaderText.setText("向下拖动刷新");
 					mHeaderArrow.setImageDrawable(mPullDraw);
+//					mHeaderBar.setVisibility(View.INVISIBLE);
 				}
 			}
 			break;
@@ -154,9 +152,8 @@ public class RefreshListView extends ListView {
 	public void onCompleteRefresh() {
 		setPadding(0,-mHeader.getLayoutParams().height, 0, 0);
 		state = PULL;
-//		removeHeaderView(mHeader);
-//		mHeaderText.setText("向下拖动刷新");
-//		mHeaderArrow.setVisibility(View.VISIBLE);
-//		mHeaderBar.setVisibility(View.INVISIBLE);
+		mHeaderText.setText("向下拖动刷新");
+		mHeaderArrow.setVisibility(View.VISIBLE);
+		mHeaderBar.setVisibility(View.INVISIBLE);
 	}
 }

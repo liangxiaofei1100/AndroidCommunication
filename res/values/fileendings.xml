@@ -102,7 +102,7 @@
     <item>.iso</item>
 </array>
 
-<array name="classify_doc">
+<array name="doc_file">
     <item>.doc</item>
     <item>.docx</item>
     <item>.xls</item>
@@ -111,6 +111,22 @@
     <item>.pptx</item>
     <item>.pps</item>
     <item>.ppsx</item>
-    <item>.pdf</item>
+</array>
+<array name="ebook_file">
+     <item>.pdf</item>
+    <item>.txt</item>
+    <item>.uml</item>
+    <item>.ebk</item>
+    <item>.chm</item>
+</array>
+<array name="apk_file">
+    <item>.apk</item>
+</array>
+<array name="archive_file">
+    <item>.zip</item>
+    <item>.rar</item>
+    <item>.gz</item>
+    <item>.7z</item>
+    <item>.iso</item>
 </array>
 </resources>

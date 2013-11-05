@@ -1,9 +1,12 @@
 package com.dreamlink.communication.ui.app;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.common.BaseCursorAdapter;
 import com.dreamlink.communication.ui.db.AppData;
 import com.dreamlink.communication.util.Log;
 
@@ -12,6 +15,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
+import android.provider.MediaStore;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +23,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class AppCursorAdapter extends CursorAdapter {
+public class AppCursorAdapter extends BaseCursorAdapter {
 	private static final String TAG = "AppCursorAdapter";
 	private LayoutInflater inflater = null;
 	private PackageManager pm = null;
@@ -31,6 +35,98 @@ public class AppCursorAdapter extends CursorAdapter {
 		inflater = LayoutInflater.from(context);
 		
 		pm = context.getPackageManager();
+	}
+	
+	@Override
+	public void selectAll(boolean isSelected) {
+		int count = this.getCount();
+		for (int i = 0; i < count; i++) {
+			setSelected(i, isSelected);
+		}
+	}
+	
+	@Override
+	public int getSelectedItemsCount() {
+		int count = 0;
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				count ++;
+			}
+		}
+		return count;
+	}
+	
+	@Override
+	public List<Integer> getSelectedItemPos() {
+		List<Integer> list = new ArrayList<Integer>();
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				list.add(i);
+			}
+		}
+		return list;
+	}
+	
+	/**
+	 * get Select item pakcageName list
+	 * @return
+	 */
+	public List<String> getSelectedPkgList(){
+		Log.d(TAG, "getSelectedPkgList");
+		List<String> list = new ArrayList<String>();
+		Cursor cursor = getCursor();
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				cursor.moveToPosition(i);
+				String url = cursor.getString(cursor
+						.getColumnIndex(AppData.App.PKG_NAME));
+				list.add(url);
+			}
+		}
+		return list;
+	}
+	
+	/**
+	 * get Select item installed path list
+	 * @return
+	 */
+	public List<String> getSelectItemPathList(){
+		Log.d(TAG, "getSelectItemPathList");
+		List<String> list = new ArrayList<String>();
+		Cursor cursor = getCursor();
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				cursor.moveToPosition(i);
+				String packagename = cursor.getString(cursor
+						.getColumnIndex(AppData.App.PKG_NAME));
+				ApplicationInfo applicationInfo = null;
+				try {
+					applicationInfo = pm.getApplicationInfo(packagename, 0);
+					list.add(applicationInfo.sourceDir);
+				} catch (NameNotFoundException e) {
+					Log.e(TAG, "getSelectItemPathList:" + packagename + " name not found.");
+				}
+			}
+		}
+		return list;
+	}
+	
+	/**
+	 * get Select item filename  list
+	 * @return
+	 */
+	public List<String> getSelectItemNameList(){
+		List<String> list = new ArrayList<String>();
+		Cursor cursor = getCursor();
+		for (int i = 0; i < mIsSelected.size(); i++) {
+			if (mIsSelected.valueAt(i)) {
+				cursor.moveToPosition(i);
+				String name = cursor.getString(cursor
+						.getColumnIndex(AppData.App.PKG_NAME));
+				list.add(name);
+			}
+		}
+		return list;
 	}
 	
 	@Override
@@ -55,6 +151,9 @@ public class AppCursorAdapter extends CursorAdapter {
 		holder.nameView.setText(applicationInfo.loadLabel(pm));
 		long size = new File(applicationInfo.sourceDir).length();
 		holder.sizeView.setText(DreamUtil.getFormatSize(size));
+		
+		boolean isSelected = isSelected(cursor.getPosition());
+		updateViewBackground(isSelected, cursor.getPosition(), view);
 	}
 	
 	@Override

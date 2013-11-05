@@ -9,9 +9,6 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -60,6 +57,18 @@ public class FileInfoManager {
 	public static final int TYPE_BIG_FILE = 0x26;
 	public static final int TYPE_IMAGE = 0x27;
 	public static final int TYPE_AUDIO = 0x28;//40
+	
+	/**
+	 * save num in sharedPrefernce
+	 */
+	//work document
+	public static final String DOC_NUM = "doc_num";
+	//ebook file
+	public static final String EBOOK_NUM = "ebook_num";
+	//app install package
+	public static final String APK_NUM = "app_num";
+	//archive file
+	public static final String ARCHIVE_NUM = "archive_num";
 
 	private Context context;
 

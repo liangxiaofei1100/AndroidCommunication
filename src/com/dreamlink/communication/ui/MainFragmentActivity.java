@@ -328,11 +328,11 @@ public class MainFragmentActivity extends ActionBarActivity implements
 			mTitleNumView.setText(null);
 			break;
 		default:
-			int selectCount = baseFragment.getSelectedCount();
 			if (DreamConstant.MENU_MODE_NORMAL == baseFragment.getMenuMode()) {
 				mTitleNumView.setText(getString(R.string.num_format,
 						baseFragment.getCount()));
 			}else {
+				int selectCount = baseFragment.getSelectedCount();
 				mTitleNumView.setText(getString(R.string.num_format2,selectCount,
 						baseFragment.getCount()));
 			}

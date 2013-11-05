@@ -6,20 +6,26 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.search.WifiNameSuffixLoader;
+import com.dreamlink.communication.ui.DreamConstant.Extra;
 import com.dreamlink.communication.ui.app.AppInfo;
 import com.dreamlink.communication.ui.app.AppManager;
 import com.dreamlink.communication.ui.db.AppData;
+import com.dreamlink.communication.ui.file.FileInfo;
+import com.dreamlink.communication.ui.file.FileInfoManager;
 
 import com.dreamlink.communication.util.Log;
 
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.KeyEvent;
 
 /**
@@ -30,12 +36,24 @@ public class StartLoader extends Activity {
 	private static final String TAG = "StartLoader";
 	/** The minimum time(ms) of loading page. */
 	private static final int MIN_LOADING_TIME = 1500;
+	private SharedPreferences sp = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui_loader);
-
+		
+		sp = getSharedPreferences(Extra.SHARED_PERFERENCE_NAME, MODE_PRIVATE);
+		//get classify num
+		int doc = sp.getInt(FileInfoManager.DOC_NUM, -1);
+		int ebook = sp.getInt(FileInfoManager.EBOOK_NUM, -1);
+		int apk = sp.getInt(FileInfoManager.APK_NUM, -1);
+		int archive = sp.getInt(FileInfoManager.ARCHIVE_NUM, -1);
+		//if there is one not exist,start search
+		if (doc == -1 || ebook == -1 || apk == -1 || archive == -1) {
+			//only when the app is the first start, need loading 
+			new LoadClassifyTask().execute();
+		}
 		LoadAsyncTask loadAsyncTask = new LoadAsyncTask();
 		loadAsyncTask.execute();
 	}
@@ -78,7 +96,7 @@ public class StartLoader extends Activity {
 	}
 
 	private void createFileSaveFolder() {
-		File file = new File(DreamConstant.DEFAULT_SAVE_FOLDER);
+		File file = new File(DreamConstant.DREAMLINK_FOLDER);
 		if (!file.exists()) {
 			file.mkdirs();
 		}
@@ -221,6 +239,127 @@ public class StartLoader extends Activity {
 		getContentResolver().bulkInsert(AppData.App.CONTENT_URI, contentValues);
 		Log.d(TAG, "loadAppToDb cost time = "
 				+ (System.currentTimeMillis() - start));
+	}
+	
+	/**
+	 * load classify file
+	 */
+	/**get sdcard classify files*/
+	class LoadClassifyTask extends AsyncTask<Object, Integer, Object>{
+		List<FileInfo> docList = new ArrayList<FileInfo>();
+		List<FileInfo> ebookList = new ArrayList<FileInfo>();
+		List<FileInfo> apkList = new ArrayList<FileInfo>();
+		List<FileInfo> archiveList = new ArrayList<FileInfo>();
+		String[] docTypes = null;
+		String[] ebookTypes = null;
+		String[] apkTypes = null;
+		String[] archiveTypes = null;
+		
+		FileInfoManager mFileInfoManager = null;
+		
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			docTypes = getResources().getStringArray(R.array.doc_file);
+			ebookTypes = getResources().getStringArray(R.array.ebook_file);
+			apkTypes = getResources().getStringArray(R.array.apk_file);
+			archiveTypes = getResources().getStringArray(R.array.archive_file);
+			
+			mFileInfoManager = new FileInfoManager(StartLoader.this);
+		}
+		
+		@Override
+		protected List<FileInfo> doInBackground(Object... params) {
+			Log.d(TAG, "doInBackground");
+			List<FileInfo> filterList = new ArrayList<FileInfo>(); 
+			File[] files = Environment.getExternalStorageDirectory().getAbsoluteFile().listFiles();
+			listFile(files);
+			return filterList;
+		}
+		
+		@Override
+		protected void onPostExecute(Object result) {
+			super.onPostExecute(result);
+			Log.d(TAG, "onPostExecute");
+			saveSharedPreference();
+		}
+		
+		protected void listFile(final File[] files){
+			if (null != files && files.length > 0) {
+				for (int i = 0; i < files.length; i++) {
+					if (files[i].isDirectory()) {
+						final int tag = i;
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								listFile(files[tag].listFiles());
+							}
+						}).start();
+					}else {
+						String name = files[i].getName();
+						FileInfo fileInfo = null;
+						if (isDocFile(name)) {
+							fileInfo = mFileInfoManager.getFileInfo(files[i]);
+							docList.add(fileInfo);
+						}else if (isEbookFile(name)) {
+							fileInfo = mFileInfoManager.getFileInfo(files[i]);
+							ebookList.add(fileInfo);
+						}else if (isApkFile(name)) {
+							fileInfo = mFileInfoManager.getFileInfo(files[i]);
+							apkList.add(fileInfo);
+						}else if (isArchiveFile(name)) {
+							fileInfo = mFileInfoManager.getFileInfo(files[i]);
+							archiveList.add(fileInfo);
+						}
+					}
+				}
+			}
+		}
+		
+		public boolean isDocFile(String name){
+			for(String str : docTypes){
+				if (name.endsWith(str)) {
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		public boolean isEbookFile(String name){
+			for(String str : ebookTypes){
+				if (name.endsWith(str)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean isApkFile(String name){
+			for(String str : apkTypes){
+				if (name.endsWith(str)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean isArchiveFile(String name){
+			for(String str : archiveTypes){
+				if (name.endsWith(str)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		private void saveSharedPreference() {
+			Editor editor = sp.edit();
+			editor.putInt(FileInfoManager.DOC_NUM, docList.size());
+			editor.putInt(FileInfoManager.EBOOK_NUM, ebookList.size());
+			editor.putInt(FileInfoManager.APK_NUM, apkList.size());
+			editor.putInt(FileInfoManager.ARCHIVE_NUM, archiveList.size());
+			editor.commit();
+		}
 	}
 
 	@Override
