@@ -141,6 +141,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	private static final int MSG_UPDATE_HOME = 3;
 	private static final int MSG_UPDATE_FILE = 4;
 	private static final int MSG_START_LOADING_CLASSIFY = 5;
+	private static final int MSG_LOADED_CLASSIFY = 6;
 	private Handler mHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
@@ -165,6 +166,19 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 				break;
 			case MSG_START_LOADING_CLASSIFY:
 //				new GetFileTask(true).execute(mStatus);
+				break;
+			case MSG_LOADED_CLASSIFY:
+				int type = msg.arg1;
+				if (APK == type) {
+					Collections.sort(mAllLists);
+				}else {
+					Collections.sort(mAllLists, DATE_COMPARATOR);
+				}
+				
+				mItemAdapter.setList(mAllLists);
+				mItemAdapter.selectAll(false);
+				mItemAdapter.notifyDataSetChanged();
+				updateUI(mAllLists.size());
 				break;
 			default:
 				break;
@@ -350,7 +364,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 	
 	/**get sdcard classify files*/
 	class GetFileTask extends AsyncTask<Integer, Integer, Object>{
-		List<FileInfo> currentList = new ArrayList<FileInfo>();
+		List<FileInfo> fileList = new ArrayList<FileInfo>();
 		String[]  filterType = null;
 		int type = -1;
 		
@@ -363,9 +377,9 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		}
 		
 		@Override
-		protected List<FileInfo> doInBackground(Integer... params) {
+		protected Object doInBackground(Integer... params) {
 			type = params[0];
-			Log.d(TAG, "doInBackground>type:" + type);
+			Log.d(TAG, "GetFileTask.doInBackground>type:" + type);
 			if (DOC == type) {
 				filterType = getResources().getStringArray(R.array.doc_file);
 			}else if (EBOOK == type) {
@@ -377,23 +391,23 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			}else {
 				Log.e(TAG, "doInBackground.error.type:" + type);
 			}
-			List<FileInfo> filterList = new ArrayList<FileInfo>(); 
 			File[] files = Environment.getExternalStorageDirectory().getAbsoluteFile().listFiles();
 			listFile(files);
-			return filterList;
+			return null;
 		}
 		
 		@Override
 		protected void onPostExecute(Object result) {
 			super.onPostExecute(result);
+			Log.d(TAG, "GetFileTask.onPostExecute");
 			mLoadingBar.setVisibility(View.INVISIBLE);
 			mListViewTip.setVisibility(View.INVISIBLE);
 			
-			Collections.sort(currentList, DATE_COMPARATOR);
-			mItemAdapter.setList(currentList);
-			mItemAdapter.selectAll(false);
-			updateUI(currentList.size());
-			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_FILE));
+			mAllLists = fileList;
+			Message message = mHandler.obtainMessage();
+			message.arg1 = type;
+			message.what = MSG_LOADED_CLASSIFY;
+			message.sendToTarget();
 			
 			saveSharedPreference();
 		}
@@ -414,7 +428,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 						FileInfo fileInfo = null;
 						if (isSpeicFile(name)) {
 							fileInfo = mFileInfoManager.getFileInfo(files[i]);
-							currentList.add(fileInfo);
+							fileList.add(fileInfo);
 						}
 					}
 				}
@@ -434,16 +448,16 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			Editor editor = sp.edit();
 			switch (type) {
 			case DOC:
-				editor.putInt(FileInfoManager.DOC_NUM, currentList.size());
+				editor.putInt(FileInfoManager.DOC_NUM, mAllLists.size());
 				break;
 			case EBOOK:
-				editor.putInt(FileInfoManager.EBOOK_NUM, currentList.size());
+				editor.putInt(FileInfoManager.EBOOK_NUM, mAllLists.size());
 				break;
 			case APK:
-				editor.putInt(FileInfoManager.APK_NUM, currentList.size());
+				editor.putInt(FileInfoManager.APK_NUM, mAllLists.size());
 				break;
 			case ARCHIVE:
-				editor.putInt(FileInfoManager.ARCHIVE_NUM, currentList.size());
+				editor.putInt(FileInfoManager.ARCHIVE_NUM, mAllLists.size());
 				break;
 			default:
 				Log.e(TAG, "saveSharedPreference.type=" + type);
@@ -663,6 +677,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 				mDeleteDialog.cancel();
 				mDeleteDialog = null;
 			}
+			mNotice.showToast("操作完成");
 		}
     	
     }

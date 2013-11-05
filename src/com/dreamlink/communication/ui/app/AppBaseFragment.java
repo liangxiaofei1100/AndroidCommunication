@@ -11,7 +11,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,7 +26,6 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MenuTabManager;
 import com.dreamlink.communication.ui.dialog.MyDialog;
 import com.dreamlink.communication.ui.file.FileUtil;
@@ -133,7 +131,6 @@ public class AppBaseFragment extends BaseFragment{
 			}
 		});
 		mMyDialog.show();
-//		new BackupAsyncTask().execute(packageList);
     }
     
     private class BackupAsyncTask extends AsyncTask<List<String>, Integer, Void>{
@@ -188,6 +185,7 @@ public class AppBaseFragment extends BaseFragment{
 				mMyDialog.cancel();
 				mMyDialog = null;
 			}
+			mNotice.showToast("备份完成");
 		}
     }
 	

@@ -317,6 +317,7 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
 				mDeleteDialog.cancel();
 				mDeleteDialog = null;
 			}
+			mNotice.showToast("操作完成");
 		}
     }
     

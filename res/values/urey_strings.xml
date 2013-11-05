@@ -73,10 +73,10 @@
     <string name="video_type_tip">支持rmvb,mkv,mov,flv等格式</string>
     <string name="doc_type">办公文档</string>
     <string name="doc_type_format">办公文档(%d)</string>
-    <string name="doc_type_tip">支持doc,ppt,xls,pdf等格式</string>
+    <string name="doc_type_tip">支持doc,ppt,xls等格式</string>
     <string name="ebook_type">电子书籍</string>
     <string name="ebook_type_format">电子书籍(%d)</string>
-    <string name="ebook_type_tip">支持umd,ebk,txt,chm等格式</string>
+    <string name="ebook_type_tip">支持umd,pdf,txt,chm等格式</string>
     <string name="apk_type">应用安装包</string>
     <string name="apk_type_format">应用安装包(%d)</string>
     <string name="apk_type_tip">支持apk格式</string>

@@ -125,7 +125,6 @@
 <array name="archive_file">
     <item>.zip</item>
     <item>.rar</item>
-    <item>.gz</item>
     <item>.7z</item>
     <item>.iso</item>
 </array>
