@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -42,7 +43,6 @@ import com.dreamlink.communication.ui.dialog.FileInfoDialog;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog.OnDelClickListener;
 import com.dreamlink.communication.ui.file.FileInfoManager;
 import com.dreamlink.communication.ui.media.ActionMenu.ActionMenuItem;
-import com.dreamlink.communication.ui.media.VideoCursorAdapter.ViewHolder;
 import com.dreamlink.communication.util.Log;
 
 public class VideoFragment extends BaseFragment implements OnItemClickListener, OnItemLongClickListener, onMenuItemClickListener, OnScrollListener {
@@ -270,21 +270,16 @@ public class VideoFragment extends BaseFragment implements OnItemClickListener, 
     public void showDeleteDialog() {
     	List<String> deleteNameList = mAdapter.getSelectItemNameList();
     	mDeleteDialog = new FileDeleteDialog(mContext, deleteNameList);
-    	mDeleteDialog.setOnClickListener(new OnDelClickListener() {
+    	mDeleteDialog.setButton(AlertDialog.BUTTON_POSITIVE, R.string.menu_delete, new OnDelClickListener() {
 			@Override
 			public void onClick(View view, String path) {
-				switch (view.getId()) {
-				case R.id.left_button:
-					List<String> deleteList = mAdapter.getSelectItemList();
-					DeleteTask deleteTask = new DeleteTask(deleteList);
-					deleteTask.execute();
-					showMenuBar(false);
-					break;
-				default:
-					break;
-				}
+				List<String> deleteList = mAdapter.getSelectItemList();
+				DeleteTask deleteTask = new DeleteTask(deleteList);
+				deleteTask.execute();
+				showMenuBar(false);
 			}
 		});
+    	mDeleteDialog.setButton(AlertDialog.BUTTON_NEGATIVE, R.string.cancel, null);
     	mDeleteDialog.show();
     }
     

@@ -22,6 +22,7 @@ import com.dreamlink.communication.ui.media.ActionMenu;
 import com.dreamlink.communication.ui.media.ActionMenu.ActionMenuItem;
 import com.dreamlink.communication.util.Log;
 
+import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -399,21 +400,16 @@ public class PictureFragment extends BaseFragment implements OnItemClickListener
     	List<String> deleteNameList = mAdapter.getSelectItemNameList();
     	//do not use dialogfragment
 		mDeleteDialog = new FileDeleteDialog(mContext, deleteNameList);
-		mDeleteDialog.setOnClickListener(new OnDelClickListener() {
+		mDeleteDialog.setButton(AlertDialog.BUTTON_POSITIVE, R.string.menu_delete, new OnDelClickListener() {
 			@Override
 			public void onClick(View view, String path) {
-				switch (view.getId()) {
-				case R.id.left_button:
-					List<String> deleteList = mAdapter.getSelectItemList();
-					DeleteTask deleteTask = new DeleteTask(deleteList);
-					deleteTask.execute();
-					showMenuBar(false);
-					break;
-				default:
-					break;
-				}
+				List<String> deleteList = mAdapter.getSelectItemList();
+				DeleteTask deleteTask = new DeleteTask(deleteList);
+				deleteTask.execute();
+				showMenuBar(false);
 			}
 		});
+		mDeleteDialog.setButton(AlertDialog.BUTTON_NEGATIVE, R.string.cancel, null);
 		mDeleteDialog.show();
     }
     

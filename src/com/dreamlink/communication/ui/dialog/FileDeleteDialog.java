@@ -5,8 +5,10 @@ import java.util.List;
 
 import com.dreamlink.communication.R;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -26,6 +28,10 @@ public class FileDeleteDialog extends Dialog implements android.view.View.OnClic
 	private ListView mDeleteListView;
 	
 	private Button mOkButton,mCancelButton;
+	private Button mButton1,mButton2, mButton3;
+	private View mDividerOne,mDividerTwo;
+	private List<Integer> mButtonList = new ArrayList<Integer>();
+	private String mBtnText1,mBtnText2,mBtnText3;
 	
 	private String mFilePath;
 	private int mSize;
@@ -33,7 +39,9 @@ public class FileDeleteDialog extends Dialog implements android.view.View.OnClic
 	
 	private Context mContext;
 	
-	private OnDelClickListener mClickListener;
+	private OnDelClickListener mClickListener1;
+	private OnDelClickListener mClickListener2;
+	private OnDelClickListener mClickListener3;
 	
 	private int progress;
 	private String fileName;
@@ -94,12 +102,14 @@ public class FileDeleteDialog extends Dialog implements android.view.View.OnClic
 		
 		mDeleteListView = (ListView) findViewById(R.id.lv_delete);
 		
-		mOkButton = (Button) findViewById(R.id.left_button);
-		mCancelButton = (Button) findViewById(R.id.right_button);
-		mOkButton.setText(android.R.string.ok);
-		mCancelButton.setText(android.R.string.cancel);
-		mOkButton.setOnClickListener(this);
-		mCancelButton.setOnClickListener(this);
+		mDividerOne = findViewById(R.id.divider_one);
+		mDividerTwo = findViewById(R.id.divider_two);
+		
+		View buttonView = findViewById(R.id.button_layout);
+		if (mButtonList.size() > 0) {
+			buttonView.setVisibility(View.VISIBLE);
+			initButton();
+		}
 		
 		if (mDeleteNameList.size() > 0) {
 			mDeleteListView.setVisibility(View.VISIBLE);
@@ -113,6 +123,39 @@ public class FileDeleteDialog extends Dialog implements android.view.View.OnClic
 		}
 	}
 	
+	public void initButton(){
+		for(int whichButton : mButtonList){
+			switch (whichButton) {
+			case AlertDialog.BUTTON_POSITIVE:
+				mButton3 = (Button) findViewById(R.id.button3);
+				mButton3.setVisibility(View.VISIBLE);
+				mButton3.setOnClickListener(this);
+				mButton3.setText(mBtnText3);
+				break;
+			case AlertDialog.BUTTON_NEUTRAL:
+				mButton2 = (Button) findViewById(R.id.button2);
+				mButton2.setVisibility(View.VISIBLE);
+				mButton2.setOnClickListener(this);
+				mButton2.setText(mBtnText2);
+				break;
+			case AlertDialog.BUTTON_NEGATIVE:
+				mButton1 = (Button) findViewById(R.id.button1);
+				mButton1.setVisibility(View.VISIBLE);
+				mButton1.setOnClickListener(this);
+				mButton1.setText(mBtnText1);
+				break;
+			default:
+				break;
+			}
+		}
+		
+		if (mButtonList.size() == 2) {
+			mDividerOne.setVisibility(View.VISIBLE);
+		}else if (mButtonList.size() == 3) {
+			mDividerTwo.setVisibility(View.VISIBLE);
+		}
+	}
+	
 	public void setProgress(int progress, String fileName){
 		this.progress = progress;
 		this.fileName = fileName;
@@ -122,17 +165,31 @@ public class FileDeleteDialog extends Dialog implements android.view.View.OnClic
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.left_button:
-			mClickListener.onClick(v, mFilePath);
-			setTitle("正在删除");
-			mDialogTitle.setVisibility(View.GONE);
-			mDeleteListView.setVisibility(View.GONE);
-			mDeletingView.setVisibility(View.VISIBLE);
-			mOkButton.setVisibility(View.GONE);
+		case R.id.button1:
+			if (null != mClickListener1) {
+				mClickListener1.onClick(v, mFilePath);
+			}else {
+				dismiss();
+			}
 			break;
-		case R.id.right_button:
-			mClickListener.onClick(v, mFilePath);
-			dismiss();
+		case R.id.button2:
+			if (null != mClickListener2) {
+				mClickListener2.onClick(v, mFilePath);
+			}else {
+				dismiss();
+			}
+			break;
+		case R.id.button3:
+			if (null != mClickListener3) {
+				mClickListener3.onClick(v, mFilePath);
+				setTitle("正在删除");
+				mDialogTitle.setVisibility(View.GONE);
+				mDeleteListView.setVisibility(View.GONE);
+				mDeletingView.setVisibility(View.VISIBLE);
+				mButton3.setVisibility(View.GONE);
+			}else {
+				dismiss();
+			}
 			break;
 
 		default:
@@ -140,12 +197,33 @@ public class FileDeleteDialog extends Dialog implements android.view.View.OnClic
 		}
 	}
 	
-	public interface OnDelClickListener{
-		public void onClick(View view, String path);
+	public void setButton(int whichButton, int textResId, OnDelClickListener listener){
+		String text = mContext.getResources().getString(textResId);
+		setButton(whichButton, text, listener);
 	}
 	
-	public void setOnClickListener(OnDelClickListener listener){
-		mClickListener = listener;
+	public void setButton(int whichButton, String text, OnDelClickListener listener){
+		mButtonList.add(whichButton);
+		switch (whichButton) {
+		case AlertDialog.BUTTON_POSITIVE:
+			mClickListener3 = listener;
+			mBtnText3 = text;
+			break;
+		case AlertDialog.BUTTON_NEUTRAL:
+			mClickListener2 = listener;
+			mBtnText2 = text;
+			break;
+		case AlertDialog.BUTTON_NEGATIVE:
+			mClickListener1 = listener;
+			mBtnText1 = text;
+			break;
+		default:
+			break;
+		}
+	}
+	
+	public interface OnDelClickListener{
+		public void onClick(View view, String path);
 	}
 
 }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -258,22 +259,16 @@ public class AudioFragment extends BaseFragment implements OnItemClickListener, 
 			deleteNameList.add(name);
 		}
     	mDeleteDialog = new FileDeleteDialog(mContext, deleteNameList);
-    	mDeleteDialog.setOnClickListener(new OnDelClickListener() {
-			@SuppressWarnings("unchecked")
+    	mDeleteDialog.setButton(AlertDialog.BUTTON_POSITIVE, R.string.menu_delete, new OnDelClickListener() {
 			@Override
 			public void onClick(View view, String path) {
-				switch (view.getId()) {
-				case R.id.left_button:
-					List<String> deleteList = mAdapter.getSelectItemList();
-					DeleteTask deleteTask = new DeleteTask(deleteList);
-					deleteTask.execute(posList);
-					showMenuBar(false);
-					break;
-				default:
-					break;
-				}
+				List<String> deleteList = mAdapter.getSelectItemList();
+				DeleteTask deleteTask = new DeleteTask(deleteList);
+				deleteTask.execute(posList);
+				showMenuBar(false);
 			}
 		});
+    	mDeleteDialog.setButton(AlertDialog.BUTTON_NEGATIVE, R.string.cancel, null);
 		mDeleteDialog.show();
     }
     

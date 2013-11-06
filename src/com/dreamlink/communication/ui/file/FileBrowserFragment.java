@@ -616,20 +616,15 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
     	}
     	
     	mDeleteDialog = new FileDeleteDialog(mContext,nameList);
-    	mDeleteDialog.setOnClickListener(new OnDelClickListener() {
+    	mDeleteDialog.setButton(AlertDialog.BUTTON_POSITIVE, R.string.menu_delete, new OnDelClickListener() {
 			@Override
 			public void onClick(View view, String path) {
-				switch (view.getId()) {
-				case R.id.left_button:
-					showMenuBar(false);
-					DeleteTask deleteTask = new DeleteTask(posList);
-					deleteTask.execute();
-					break;
-				default:
-					break;
-				}
+				showMenuBar(false);
+				DeleteTask deleteTask = new DeleteTask(posList);
+				deleteTask.execute();
 			}
 		});
+    	mDeleteDialog.setButton(AlertDialog.BUTTON_NEGATIVE, R.string.cancel, null);
 		mDeleteDialog.show();
     }
     
