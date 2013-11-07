@@ -1,8 +1,8 @@
 package com.dreamlink.communication.ui.network;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
+import android.view.Window;
 
 import com.dreamlink.communication.ui.BaseActivity;
 
@@ -11,10 +11,7 @@ public class NetworkActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		
-		ActionBar actionBar = getSupportActionBar();
-		actionBar.hide();
-		
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getSupportFragmentManager().beginTransaction().replace(
 				android.R.id.content, new NetworkFragment()).commit();
 	}

@@ -10,25 +10,17 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
-import android.widget.TextView;
 
 public class InviteActivity extends BaseActivity implements OnClickListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui_invite);
-		ActionBar actionBar = getSupportActionBar();
-		actionBar.setBackgroundDrawable(getResources().getDrawable(
-				R.drawable.title_color));
-		actionBar.setIcon(R.drawable.title_tiandi);
-		actionBar.setDisplayHomeAsUpEnabled(false);
-		actionBar.hide();
 		
 		//modify title text color
 		//2.3 do not support this call way

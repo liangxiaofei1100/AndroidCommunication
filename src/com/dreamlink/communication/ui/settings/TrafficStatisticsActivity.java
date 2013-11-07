@@ -2,6 +2,7 @@ package com.dreamlink.communication.ui.settings;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -20,9 +21,8 @@ public class TrafficStatisticsActivity extends BaseActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_traffic_statistics);
-		
-		getSupportActionBar().hide();
 		
 		initTitle(R.string.traffic_statistics, R.drawable.title_tiandi);
 		

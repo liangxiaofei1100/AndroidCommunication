@@ -9,9 +9,6 @@
         android:id="@+id/popup_view_listView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:cacheColorHint="@null"
-        android:divider="@drawable/list_selector"
-        android:listSelector="@android:color/transparent"
         android:scrollbars="none" >
     </ListView>
 

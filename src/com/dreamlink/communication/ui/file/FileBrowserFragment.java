@@ -15,7 +15,6 @@ import com.dreamlink.communication.ui.MenuTabManager.onMenuItemClickListener;
 import com.dreamlink.communication.ui.MountManager;
 import com.dreamlink.communication.ui.SlowHorizontalScrollView;
 import com.dreamlink.communication.ui.DreamConstant.Extra;
-import com.dreamlink.communication.ui.PopupView.PopupViewClickListener;
 import com.dreamlink.communication.ui.common.FileTransferUtil;
 import com.dreamlink.communication.ui.common.FileTransferUtil.TransportCallback;
 import com.dreamlink.communication.ui.dialog.FileDeleteDialog;
@@ -55,7 +54,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class FileBrowserFragment extends BaseFragment implements OnClickListener,
-		OnItemClickListener, PopupViewClickListener, OnScrollListener,
+		OnItemClickListener, OnScrollListener,
 		OnItemLongClickListener, onMenuItemClickListener {
 	private static final String TAG = "FileBrowserFragment";
 
@@ -990,7 +989,6 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		// end tab manager
 	}
 
-	@Override
 	public void doInternal() {
 		storge_type = MountManager.INTERNAL;
 		if (MountManager.NO_INTERNAL_SDCARD.equals(internal_path)) {
@@ -1001,7 +999,6 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		browserTo(new File(mCurrent_root_path));
 	}
 
-	@Override
 	public void doSdcard() {
 		storge_type = MountManager.SDCARD;
 		mCurrent_root_path = sdcard_path;

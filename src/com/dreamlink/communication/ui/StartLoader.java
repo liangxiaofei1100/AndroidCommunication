@@ -27,6 +27,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.KeyEvent;
+import android.view.Window;
 
 /**
  * This is the first ui to show logo, initialize application and load resource.
@@ -41,6 +42,7 @@ public class StartLoader extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.ui_loader);
 		
 		sp = getSharedPreferences(Extra.SHARED_PERFERENCE_NAME, MODE_PRIVATE);

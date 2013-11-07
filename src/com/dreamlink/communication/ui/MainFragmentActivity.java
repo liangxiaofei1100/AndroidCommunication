@@ -9,6 +9,7 @@ import com.dreamlink.communication.aidl.User;
 import com.dreamlink.communication.lib.util.AppUtil;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.notification.NotificationMgr;
+import com.dreamlink.communication.ui.SelectPopupView.SelectItemClickListener;
 import com.dreamlink.communication.ui.app.RecommendActivity;
 import com.dreamlink.communication.ui.history.HistoryActivity;
 import com.dreamlink.communication.ui.network.NetworkActivity;
@@ -17,21 +18,21 @@ import com.dreamlink.communication.util.Log;
 
 import com.dreamlink.communication.util.NetWorkUtil;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -41,8 +42,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 //各个Fragment的位置必须固定
-public class MainFragmentActivity extends ActionBarActivity implements
-		OnPageChangeListener, OnClickListener, OnMenuItemClickListener, OnItemClickListener, OnUserChangedListener {
+public class MainFragmentActivity extends FragmentActivity implements
+		OnPageChangeListener, OnClickListener, OnItemClickListener, OnUserChangedListener {
 	private static final String TAG = "MainFragmentActivity";
 	private ViewPager viewPager;
 	private MainFragmentPagerAdapter mPagerAdapter;
@@ -138,6 +139,7 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		Log.d(TAG, "onCreate");
 		mMainFrameView = getLayoutInflater().inflate(R.layout.ui_mainframe, null);
 		mContainLayout = (RelativeLayout) getLayoutInflater().inflate(R.layout.ui_main_fragment, null);
@@ -151,8 +153,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		}else {
 			setContentView(mContainLayout);
 		}
-		
-		getSupportActionBar().hide();
 		
 		mNotice = new Notice(this);
 		UserHelper userHelper = new UserHelper(this);
@@ -387,11 +387,18 @@ public class MainFragmentActivity extends ActionBarActivity implements
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.ll_menu_select:
-			PopupMenu popupMenu = new PopupMenu(this, mSelectView);
-			popupMenu.setOnMenuItemClickListener(this);
-			MenuInflater inflater = popupMenu.getMenuInflater();
-			inflater.inflate(R.menu.main_menu_item, popupMenu.getMenu());
-			popupMenu.show();
+			SelectPopupView selectPopupView = new SelectPopupView(this);
+			selectPopupView.showAsDropDown(mSelectView);
+			selectPopupView.setOnSelectedItemClickListener(new SelectItemClickListener() {
+				@Override
+				public void onItemClick(int position) {
+					if (7 == position) {
+						showExitDialog();
+					}else {
+						setCurrentItem(position);
+					}
+				}
+			});
 			break;
 		case R.id.ll_history:
 			MainUIFrame.startActivity(this, HistoryActivity.class);
@@ -422,20 +429,6 @@ public class MainFragmentActivity extends ActionBarActivity implements
 		default:
 			break;
 		}
-	}
-	
-	
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.exit:
-			showExitDialog();
-			break;
-		default:
-			setCurrentItem(item.getOrder());
-			break;
-		}
-		return true;
 	}
 
 	@Override

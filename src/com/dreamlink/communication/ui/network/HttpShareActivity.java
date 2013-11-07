@@ -41,8 +41,6 @@ public class HttpShareActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui_network_http_share);
 		
-		getSupportActionBar().hide();
-		
 		mContext = this;
 		WIFI_AP_NAME = getString(R.string.app_name);
 

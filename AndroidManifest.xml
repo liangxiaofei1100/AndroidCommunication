@@ -23,13 +23,11 @@
         android:allowBackup="true"
         android:icon="@drawable/app_logo"
         android:label="@string/app_name"
-        android:theme="@style/Theme.AppCompat.Light"
-         >
+        android:theme="@style/AppTheme" >
         <activity
             android:name="com.dreamlink.communication.ui.StartLoader"
-            android:theme="@android:style/Theme.NoTitleBar"
             android:screenOrientation="portrait"
-             >
+            android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,12 +42,12 @@
         <activity
             android:name="com.dreamlink.communication.ui.MainFragmentActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-             >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="app_id"
                 android:value="100" />
         </activity>
+
         <service android:name="com.dreamlink.communication.ui.service.FileTransferService" >
             <meta-data
                 android:name="app_id"
@@ -162,15 +160,20 @@
                 android:name="app_id"
                 android:value="112" />
         </activity>
+
         <service android:name="com.dreamlink.communication.ui.file.RemoteShareServerService" >
             <meta-data
                 android:name="app_id"
                 android:value="112" />
         </service>
-        <activity android:name="com.dreamlink.communication.ui.image.ImagePagerActivity" 
-            android:screenOrientation="portrait"/>
-	 	<activity android:name="com.dreamlink.communication.ui.image.PicturePagerActivity" 
-	 	    android:screenOrientation="portrait"/>
+
+        <activity
+            android:name="com.dreamlink.communication.ui.image.ImagePagerActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.dreamlink.communication.ui.image.PicturePagerActivity"
+            android:screenOrientation="portrait" />
+
         <service android:name="com.dreamlink.communication.ui.service.FileManagerService" />
 
         <activity android:name="com.dreamlink.communication.ui.history.HistoryActivity" >
@@ -243,12 +246,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity 
+        <activity
             android:name="com.dreamlink.communication.debug.GetAllHostNumber"
-            android:label="Get All host"
-            >
+            android:label="Get All host" >
             <intent-filter>
                 <action android:name="com.dreamlink.communication.action.debug" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -272,7 +275,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-         <activity
+        <activity
             android:name="com.dreamlink.communication.debug.ServiceStatus"
             android:label="Service status"
             android:screenOrientation="portrait" >
