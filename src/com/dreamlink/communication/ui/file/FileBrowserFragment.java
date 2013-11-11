@@ -168,10 +168,15 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 				break;
 			case MSG_LOADED_CLASSIFY:
 				int type = msg.arg1;
-				if (APK == type) {
-					Collections.sort(mAllLists);
-				}else {
-					Collections.sort(mAllLists, DATE_COMPARATOR);
+				
+				try {
+					if (APK == type) {
+						Collections.sort(mAllLists);
+					}else {
+						Collections.sort(mAllLists, DATE_COMPARATOR);
+					}
+				} catch (Exception e) {
+					Log.e(TAG, "handlerMessage.exception:" + e.toString());
 				}
 				
 				mItemAdapter.setList(mAllLists);
