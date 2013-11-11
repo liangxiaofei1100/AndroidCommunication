@@ -224,10 +224,6 @@ public class StartLoader extends Activity {
 					}
 					values = appManager.getValuesByAppInfo(entry);
 					valuesList.add(values);
-					// 为了蓝牙邀请准备材料
-					if (DreamConstant.PACKAGE_NAME.equals(info.packageName)) {
-						DreamUtil.package_source_dir = info.sourceDir;
-					}
 				}
 			} else {
 				// system app

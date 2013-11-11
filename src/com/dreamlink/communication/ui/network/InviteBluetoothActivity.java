@@ -75,7 +75,7 @@ public class InviteBluetoothActivity extends Activity implements
 			Intent intent = new Intent();
 			intent.setType("*/*");
 			intent.setAction(Intent.ACTION_SEND);
-			Uri uri = Uri.fromFile(new File(DreamUtil.package_source_dir));
+			Uri uri = Uri.fromFile(new File(getPackageDir()));
 			intent.putExtra(Intent.EXTRA_STREAM, uri);
 			try {
 				// set send by bluetooth ,only bluetooth
@@ -103,6 +103,10 @@ public class InviteBluetoothActivity extends Activity implements
 		default:
 			break;
 		}
+	}
+	
+	public String getPackageDir(){
+		return getApplicationInfo().sourceDir;
 	}
 
 	public void exitActivity() {

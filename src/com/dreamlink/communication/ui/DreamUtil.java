@@ -1,8 +1,16 @@
 package com.dreamlink.communication.ui;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.text.Collator;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -21,11 +29,11 @@ import android.net.Uri;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.ui.app.AppInfo;
+import com.dreamlink.communication.util.Log;
 
 public class DreamUtil {
+	private static final String TAG = "DreamUtil";
 	
-	/**my app 's install path*/
-	public static String package_source_dir;
 	/**
 	 * 插入一个数据到已经排好序的list中
 	 * @param list 已经排好序的list
@@ -175,5 +183,49 @@ public class DreamUtil {
 	public static String getParentPath(String path){
 		File file = new File(path);
 		return file.getParent();
+	}
+	
+	/**
+	 * bytes tp chars
+	 * 
+	 * @param bytes
+	 * @return
+	 */
+	public static char[] getChars(byte[] bytes) {
+		Charset cs = Charset.forName("UTF-8");
+		ByteBuffer bb = ByteBuffer.allocate(bytes.length);
+		bb.put(bytes);
+		bb.flip();
+		CharBuffer cb = cs.decode(bb);
+		return cb.array();
+	}
+	
+	/**
+	 * io copy
+	 * 
+	 * @param srcPath
+	 *           src file path
+	 * @param desPath
+	 *           des file path
+	 * @return
+	 * @throws Exception
+	 */
+	public static void fileStreamCopy(String srcPath, String desPath) throws IOException{
+		Log.d(TAG, "fileStreamCopy.src:" + srcPath);
+		Log.d(TAG, "fileStreamCopy.dec:" + desPath);
+		File files = new File(desPath);// 创建文件
+		FileOutputStream fos = new FileOutputStream(files);
+		byte buf[] = new byte[128];
+		InputStream fis = new BufferedInputStream(new FileInputStream(srcPath),
+				8192 * 4);
+		do {
+			int read = fis.read(buf);
+			if (read <= 0) {
+				break;
+			}
+			fos.write(buf, 0, read);
+		} while (true);
+		fis.close();
+		fos.close();
 	}
 }

@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import com.dreamlink.communication.ui.DreamConstant;
-import com.dreamlink.communication.ui.file.FileUtil;
+import com.dreamlink.communication.ui.DreamUtil;
 import android.util.Log;
 
 import android.content.Context;
@@ -122,7 +122,7 @@ public class LogFile {
 				return;
 			}
 		}
-		char[] log = FileUtil.getChars(logs);
+		char[] log = DreamUtil.getChars(logs);
 		try {
 			mWriter.write(log);
 			mWriter.flush();

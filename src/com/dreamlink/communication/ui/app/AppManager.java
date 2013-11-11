@@ -1,17 +1,12 @@
 package com.dreamlink.communication.ui.app;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.db.AppData;
-import com.dreamlink.communication.ui.file.FileUtil;
 import com.dreamlink.communication.util.Log;
 
 import android.content.ContentValues;
@@ -276,7 +271,7 @@ public class AppManager {
 		String name = appInfo.loadLabel(pm).toString() + ".apk";
 		Log.d(TAG, "backuping..." + name);
 		try {
-			FileUtil.fileStreamCopy(src, directory + name);
+			DreamUtil.fileStreamCopy(src, directory + name);
 		} catch (IOException e) {
 			Log.e(TAG, "IO ERROR:" + name);
 			e.printStackTrace();

@@ -26,9 +26,9 @@ import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
+import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MenuTabManager;
 import com.dreamlink.communication.ui.dialog.MyDialog;
-import com.dreamlink.communication.ui.file.FileUtil;
 import com.dreamlink.communication.ui.media.ActionMenu;
 import com.dreamlink.communication.util.Log;
 
@@ -163,7 +163,7 @@ public class AppBaseFragment extends BaseFragment{
 				String desPath = DreamConstant.BACKUP_FOLDER + "/" + label + "_" + version + ".apk";
 				if (!new File(desPath).exists()) {
 					try {
-						FileUtil.fileStreamCopy(sourceDir, desPath);
+						DreamUtil.fileStreamCopy(sourceDir, desPath);
 					} catch (IOException e) {
 						Log.e(TAG, "doInBackground.Error:" + e.toString());
 						Message message = mHandler.obtainMessage();
