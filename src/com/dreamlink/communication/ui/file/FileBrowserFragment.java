@@ -267,7 +267,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 		mHomeList.add(ARCHIVE);
 		
 		mHomeAdapter = new FileHomeAdapter(mContext, mHomeList);
-		mItemAdapter = new FileInfoAdapter(mContext, mAllLists);
+		mItemAdapter = new FileInfoAdapter(mContext, mAllLists, mFileListView);
 		
 		if (mHomeList.size() <= 0) {
 			mNavBarLayout.setVisibility(View.GONE);
@@ -473,8 +473,7 @@ public class FileBrowserFragment extends BaseFragment implements OnClickListener
 			return false;
 		}
 		
-		int mode = mItemAdapter.getMode();
-		if (DreamConstant.MENU_MODE_EDIT == mode) {
+		if (mItemAdapter.isMode(DreamConstant.MENU_MODE_EDIT)) {
 			doSelectAll();
 			return true;
 		}else {

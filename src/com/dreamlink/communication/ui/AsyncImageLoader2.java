@@ -102,51 +102,6 @@ public class AsyncImageLoader2 {
 				handler.sendMessage(msg);
 			}
 		});
-		
-//		switch (type) {
-//		case FileInfoManager.TYPE_APK:
-//			pool.execute(new Runnable() {
-//				@Override
-//				public void run() {
-//					Bitmap bitmap = null;
-//					Drawable drawable = fileInfoManager.getApkIcon(path);
-//					BitmapDrawable bd = (BitmapDrawable) drawable;
-//					if (null != bd) {
-//						bitmap = bd.getBitmap();
-//					}
-//					
-//					bitmapCache.put(path, new SoftReference<Bitmap>(bitmap));
-//					Message msg = handler.obtainMessage(0, bitmap);
-//					handler.sendMessage(msg);
-//				}
-//			});
-//			break;
-//		case FileInfoManager.TYPE_IMAGE:
-//			pool.execute(new Runnable() {
-//				@Override
-//				public void run() {
-//					Bitmap bitmap = null;
-//					bitmap = getBitmapFromUrl(path, caches);
-//					bitmapCache.put(path, new SoftReference<Bitmap>(bitmap));
-//					Message msg = handler.obtainMessage(0, bitmap);
-//					handler.sendMessage(msg);
-//				}
-//			});
-//			break;
-//		case FileInfoManager.TYPE_VIDEO:
-//			pool.execute(new Runnable() {
-//				@Override
-//				public void run() {
-//					Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(path, Thumbnails.MINI_KIND);
-//					bitmapCache.put(path, new SoftReference<Bitmap>(bitmap));
-//					Message msg = handler.obtainMessage(0, bitmap);
-//					handler.sendMessage(msg);
-//				}
-//			});
-//			break;
-//		default:
-//			break;
-//		}
 		return null;
 	}
 	

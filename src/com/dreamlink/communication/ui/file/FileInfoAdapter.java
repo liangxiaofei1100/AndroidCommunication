@@ -12,12 +12,14 @@ import com.dreamlink.communication.util.Log;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class FileInfoAdapter extends BaseAdapter {
@@ -32,12 +34,14 @@ public class FileInfoAdapter extends BaseAdapter {
 	private boolean mIdleFlag = true;
 
 	public int mMode = DreamConstant.MENU_MODE_NORMAL;
+	private ListView mListView;
 
-	public FileInfoAdapter(Context context, List<FileInfo> list) {
+	public FileInfoAdapter(Context context, List<FileInfo> list, ListView listView) {
 		mInflater = LayoutInflater.from(context);
 		this.mList = list;
 		mIsSelected = new SparseBooleanArray();
 		bitmapLoader = new AsyncImageLoader(context);
+		mListView = listView;
 	}
 
 	/**
@@ -156,15 +160,6 @@ public class FileInfoAdapter extends BaseAdapter {
 	}
 
 	/**
-	 * This method gets current display mode of the adapter.
-	 * 
-	 * @return current display mode of adapter
-	 */
-	public int getMode() {
-		return mMode;
-	}
-
-	/**
 	 * This method checks that current mode equals to certain mode, or not.
 	 * 
 	 * @param mode
@@ -245,80 +240,38 @@ public class FileInfoAdapter extends BaseAdapter {
 		}
 
 		FileInfo fileInfo = mList.get(position);
+		holder.iconView.setTag(fileInfo.filePath);
 		String size = fileInfo.getFormatFileSize();
 		String date = fileInfo.getFormateDate();
 		// use async thread loader bitmap
-		if (FileInfoManager.TYPE_IMAGE == fileInfo.type) {
-			if (!mIdleFlag) {
-				if (AsyncImageLoader.bitmapCache.size() > 0
-						&& AsyncImageLoader.bitmapCache.get(fileInfo.filePath) != null) {
-					holder.iconView.setImageBitmap(AsyncImageLoader.bitmapCache
-							.get(fileInfo.filePath).get());
-				} else {
-					holder.iconView.setImageDrawable(fileInfo.icon);
-				}
+		if (!mIdleFlag) {
+			if (AsyncImageLoader.bitmapCache.size() > 0
+					&& AsyncImageLoader.bitmapCache.get(fileInfo.filePath) != null) {
+				holder.iconView.setImageBitmap(AsyncImageLoader.bitmapCache
+						.get(fileInfo.filePath).get());
 			} else {
-				Bitmap bitmap = bitmapLoader.loadImage(fileInfo.filePath,
-						fileInfo.type, holder.iconView,
-						new ILoadImageCallback() {
-							@Override
-							public void onObtainBitmap(Bitmap bitmap,
-									ImageView imageView) {
-								imageView.setImageBitmap(bitmap);
-							}
-						});
-				if (null != bitmap) {
-					holder.iconView.setImageBitmap(bitmap);
-				} else {
-					holder.iconView.setImageDrawable(fileInfo.icon);
-				}
-			}
-		} else if (FileInfoManager.TYPE_APK == fileInfo.type) {
-			Bitmap cacheDrawable = bitmapLoader.loadImage(fileInfo.filePath,
-					fileInfo.type, holder.iconView, new ILoadImageCallback() {
-						@Override
-						public void onObtainBitmap(Bitmap bitmap,
-								ImageView imageView) {
-							if (null != bitmap) {
-								imageView.setImageBitmap(bitmap);
-							}
-						}
-					});
-
-			if (null != cacheDrawable) {
-				holder.iconView.setImageBitmap(cacheDrawable);
-			} else {
-				holder.iconView.setImageResource(R.drawable.icon_apk);
-			}
-		} else if (FileInfoManager.TYPE_AUDIO == fileInfo.type) {
-			holder.iconView.setImageDrawable(fileInfo.icon);
-		} else if (FileInfoManager.TYPE_VIDEO == fileInfo.type) {
-			Bitmap videoBitmap = bitmapLoader.loadImage(fileInfo.filePath,
-					fileInfo.type, holder.iconView, new ILoadImageCallback() {
-						@Override
-						public void onObtainBitmap(Bitmap bitmap,
-								ImageView imageView) {
-							if (null != bitmap) {
-								imageView.setImageBitmap(bitmap);
-							}
-						}
-					});
-
-			if (null != videoBitmap) {
-				holder.iconView.setImageBitmap(videoBitmap);
-			} else {
-				holder.iconView.setImageDrawable(fileInfo.icon);
+				setIconView(holder.iconView, fileInfo.type, fileInfo.icon);
 			}
 		} else {
-			holder.iconView.setImageDrawable(fileInfo.icon);
+			Bitmap bitmap = bitmapLoader.loadImage(fileInfo.filePath,
+					fileInfo.type, new ILoadImageCallback() {
+						@Override
+						public void onObtainBitmap(Bitmap bitmap,
+								String url) {
+							ImageView imageView = (ImageView) mListView.findViewWithTag(url);
+							if (null != imageView) {
+								imageView.setImageBitmap(bitmap);
+							}
+						}
+					});
+			if (null != bitmap) {
+				holder.iconView.setImageBitmap(bitmap);
+			} else {
+				setIconView(holder.iconView, fileInfo.type, fileInfo.icon);
+			}
 		}
 
 		holder.nameView.setText(fileInfo.fileName);
-
-		Boolean is = isSelected(position);
-		if (null == is) {
-			is = false;
-		}
 
 		if (fileInfo.isDir) {
 			holder.dateAndSizeView.setText(date);
@@ -340,6 +293,23 @@ public class FileInfoAdapter extends BaseAdapter {
 			view.setBackgroundResource(R.color.bright_blue);
 		} else {
 			view.setBackgroundResource(Color.TRANSPARENT);
+		}
+	}
+	
+	private void setIconView(ImageView imageView, int type, Drawable defaultIcon){
+		switch (type) {
+		case FileInfoManager.TYPE_IMAGE:
+			imageView.setImageResource(R.drawable.icon_image);
+			break;
+		case FileInfoManager.TYPE_APK:
+			imageView.setImageResource(R.drawable.icon_apk);
+			break;
+		case FileInfoManager.TYPE_VIDEO:
+			imageView.setImageResource(R.drawable.icon_video);
+			break;
+		default:
+			imageView.setImageDrawable(defaultIcon);
+			break;
 		}
 	}
 
