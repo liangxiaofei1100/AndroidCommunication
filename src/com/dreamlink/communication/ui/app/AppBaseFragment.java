@@ -78,7 +78,9 @@ public class AppBaseFragment extends BaseFragment{
 				mNotificationMgr.updateBackupNotification(progress, max, name);
 				break;
 			case MSG_BACKUP_OVER:
-				mNotificationMgr.cancelBackupNotification();
+//				mNotificationMgr.cancelBackupNotification();
+				long duration = (Long) msg.obj;
+				mNotificationMgr.appBackupOver(duration);
 				break;
 			default:
 				break;
@@ -164,9 +166,12 @@ public class AppBaseFragment extends BaseFragment{
     	public int currentProgress = 0;
     	public int size = 0;
     	public String currentAppLabel;
+    	private long startTime = 0;
+    	private long endTime = 0;
     	
 		@Override
 		protected Void doInBackground(List<String>... params) {
+			startTime = System.currentTimeMillis();
 			size = params[0].size();
 			File file = new File(DreamConstant.BACKUP_FOLDER); 
 			if (!file.exists()){
@@ -223,10 +228,15 @@ public class AppBaseFragment extends BaseFragment{
 				mMyDialog.cancel();
 				mMyDialog = null;
 			}
-			mNotice.showToast("备份完成");
+			mNotice.showToast(R.string.backup_over);
+			endTime = System.currentTimeMillis();
 			if (mIsBackupHide) {
 				mIsBackupHide = false;
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_BACKUP_OVER));
+				
+				Message message = mHandler.obtainMessage();
+				message.obj = endTime - startTime;
+				message.what = MSG_BACKUP_OVER;
+				message.sendToTarget();
 			}
 		}
     }

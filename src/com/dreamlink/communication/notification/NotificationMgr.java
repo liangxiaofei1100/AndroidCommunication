@@ -1,6 +1,8 @@
 package com.dreamlink.communication.notification;
 
 import com.dreamlink.communication.R;
+import com.dreamlink.communication.ui.DreamUtil;
+import com.dreamlink.communication.ui.MainFragmentActivity;
 
 import android.R.integer;
 import android.app.Notification;
@@ -102,6 +104,26 @@ public class NotificationMgr {
 		mNotification.contentIntent = null;
 		
 		mNotificationManager.notify(BACKUP_NOTIFICATION_ID, mNotification);
+	}
+	
+	/**
+	 * when app backup over,update notification
+	 * @param duration
+	 */
+	public void appBackupOver(long duration){
+		Notification notification = new Notification();
+		notification.icon = R.drawable.icon_notification;
+		notification.tickerText = mContext.getString(R.string.backup_over);
+		notification.when = System.currentTimeMillis();
+		
+		notification.flags |= Notification.FLAG_AUTO_CANCEL;
+		
+		Intent intent = new Intent(mContext, MainFragmentActivity.class);
+		PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
+		notification.setLatestEventInfo(mContext, "备份完成", 
+				"本次备份共花费 " + duration / 1000 + "s", pendingIntent);
+		
+		mNotificationManager.notify(BACKUP_NOTIFICATION_ID, notification);
 	}
 	
 	public void cancelBackupNotification(){
