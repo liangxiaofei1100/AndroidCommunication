@@ -24,11 +24,13 @@ import android.widget.ProgressBar;
 
 import com.dreamlink.communication.R;
 import com.dreamlink.communication.lib.util.Notice;
+import com.dreamlink.communication.notification.NotificationMgr;
 import com.dreamlink.communication.ui.BaseFragment;
 import com.dreamlink.communication.ui.DreamConstant;
 import com.dreamlink.communication.ui.DreamUtil;
 import com.dreamlink.communication.ui.MenuTabManager;
 import com.dreamlink.communication.ui.dialog.MyDialog;
+import com.dreamlink.communication.ui.dialog.MyDialog.OnHideListener;
 import com.dreamlink.communication.ui.media.ActionMenu;
 import com.dreamlink.communication.util.Log;
 
@@ -56,13 +58,27 @@ public class AppBaseFragment extends BaseFragment{
 	protected Notice mNotice = null;
 	private static final int REQUEST_CODE_UNINSTALL = 0x101;
 	
+	private NotificationMgr mNotificationMgr;
+	private boolean mIsBackupHide = false;
+	
 	private static final int MSG_TOAST = 0;
+	private static final int MSG_BACKUPING = 1;
+	private static final int MSG_BACKUP_OVER = 2;
 	private Handler mHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_TOAST:
 				String message = (String) msg.obj;
 				mNotice.showToast(message);
+				break;
+			case MSG_BACKUPING:
+				int progress = msg.arg1;
+				int max = msg.arg2;
+				String name = (String) msg.obj;
+				mNotificationMgr.updateBackupNotification(progress, max, name);
+				break;
+			case MSG_BACKUP_OVER:
+				mNotificationMgr.cancelBackupNotification();
 				break;
 			default:
 				break;
@@ -77,6 +93,8 @@ public class AppBaseFragment extends BaseFragment{
 		mAppManager = new AppManager(mContext);
 		mNotice = new Notice(mContext);
 		pm = mContext.getPackageManager();
+		
+		mNotificationMgr = new NotificationMgr(mContext);
 	}
 	
 	protected void uninstallApp(){
@@ -130,13 +148,26 @@ public class AppBaseFragment extends BaseFragment{
 				}
 			}
 		});
+		mMyDialog.setOnHideListener(new OnHideListener() {
+			
+			@Override
+			public void onHide() {
+				mIsBackupHide = true;
+				mNotificationMgr.startBackupNotification();
+				updateNotification(task.currentProgress, task.size, task.currentAppLabel);
+			}
+		});
 		mMyDialog.show();
     }
     
     private class BackupAsyncTask extends AsyncTask<List<String>, Integer, Void>{
+    	public int currentProgress = 0;
+    	public int size = 0;
+    	public String currentAppLabel;
     	
 		@Override
 		protected Void doInBackground(List<String>... params) {
+			size = params[0].size();
 			File file = new File(DreamConstant.BACKUP_FOLDER); 
 			if (!file.exists()){
 				boolean ret = file.mkdirs();
@@ -150,7 +181,7 @@ public class AppBaseFragment extends BaseFragment{
 			String version = "";
 			String sourceDir = "";
 			String packageName = "";
-			for (int i = 0; i < params[0].size(); i++) {
+			for (int i = 0; i < size; i++) {
 				if (isCancelled()) {
 					Log.d(TAG, "doInBackground.isCancelled");
 					return null;
@@ -159,6 +190,10 @@ public class AppBaseFragment extends BaseFragment{
 				label = mAppManager.getAppLabel(packageName);
 				version = mAppManager.getAppVersion(packageName);
 				sourceDir = mAppManager.getAppSourceDir(packageName);
+				
+				currentAppLabel = label;
+				currentProgress = i + 1;
+				
 				mMyDialog.updateName(label);
 				String desPath = DreamConstant.BACKUP_FOLDER + "/" + label + "_" + version + ".apk";
 				if (!new File(desPath).exists()) {
@@ -173,6 +208,9 @@ public class AppBaseFragment extends BaseFragment{
 					}
 				}
 				mMyDialog.updateProgress(i + 1); 
+				if (mIsBackupHide) {
+					updateNotification(currentProgress, size, currentAppLabel);
+				}
 			}
 			return null;
 		}
@@ -186,7 +224,20 @@ public class AppBaseFragment extends BaseFragment{
 				mMyDialog = null;
 			}
 			mNotice.showToast("备份完成");
+			if (mIsBackupHide) {
+				mIsBackupHide = false;
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_BACKUP_OVER));
+			}
 		}
+    }
+    
+    public void updateNotification(int progress, int max, String name){
+    	Message message = mHandler.obtainMessage();
+    	message.arg1 = progress;
+    	message.arg2 = max;
+    	message.obj = name;
+    	message.what = MSG_BACKUPING;
+    	message.sendToTarget();
     }
 	
 	@Override

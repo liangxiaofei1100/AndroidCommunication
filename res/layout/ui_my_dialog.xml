@@ -55,12 +55,39 @@
         android:layout_height="1dp"
         android:background="#d1d1d1" />
 
-    <Button
-        android:id="@+id/button"
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/blue_bg"
-        android:textColor="@color/black"
-        android:textSize="16sp" />
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/blue_bg"
+            android:text="Cancel"
+            android:textColor="@color/black"
+            android:textSize="16sp" 
+            />
+
+        <View
+            android:id="@+id/divider_one"
+            android:layout_width="1dp"
+            android:layout_height="fill_parent"
+            android:background="#d1d1d1" 
+            />
+
+        <Button
+            android:id="@+id/btn_hide"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/blue_bg"
+            android:text="@string/hide"
+            android:textColor="@color/black"
+            android:textSize="16sp" 
+            />
+    </LinearLayout>
 
 </LinearLayout>

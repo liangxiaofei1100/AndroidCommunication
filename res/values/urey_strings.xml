@@ -195,4 +195,6 @@
      <string name="handling">正在处理：</string>
      <string name="backuping">正在备份：</string>
      <string name="backup_fail">%s 备份失败</string>
+     <string name="backuping_app">正在备份应用：%1s</string>
+     <string name="backup_tip">滑动此处查看备份进度</string>
 </resources>

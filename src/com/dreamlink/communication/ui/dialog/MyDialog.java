@@ -18,8 +18,10 @@ public class MyDialog extends Dialog implements android.view.View.OnClickListene
 	private TextView mNumView;
 	private ProgressBar mProgressBar;
 	
-	private Button mCancelButton;
+	private Button mCancelButton, mHideButton;
 	private Context mContext;
+	
+	private OnHideListener mHideListener;
 	
 	private int progress;
 	private String mName;
@@ -57,9 +59,12 @@ public class MyDialog extends Dialog implements android.view.View.OnClickListene
 		mNameView = (TextView) findViewById(R.id.name_view);
 		mNumView = (TextView) findViewById(R.id.num_view);
 		
-		mCancelButton = (Button) findViewById(R.id.button);
+		mCancelButton = (Button) findViewById(R.id.btn_cancel);
 		mCancelButton.setText(android.R.string.cancel);
 		mCancelButton.setOnClickListener(this);
+		
+		mHideButton = (Button) findViewById(R.id.btn_hide);
+		mHideButton.setOnClickListener(this);
 		
 		setCancelable(false);
 	}
@@ -87,13 +92,25 @@ public class MyDialog extends Dialog implements android.view.View.OnClickListene
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.button:
+		case R.id.btn_cancel:
 			cancel();
+			break;
+		case R.id.btn_hide:
+			mHideListener.onHide();
+			dismiss();
 			break;
 
 		default:
 			break;
 		}
+	}
+	
+	public interface OnHideListener{
+		void onHide();
+	}
+	
+	public void setOnHideListener(OnHideListener listener){
+		mHideListener = listener;
 	}
 
 }

@@ -2,16 +2,19 @@ package com.dreamlink.communication.notification;
 
 import com.dreamlink.communication.R;
 
+import android.R.integer;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.widget.RemoteViews;
 
 public class NotificationMgr {
 	private Context mContext;
 	
 	private static final int NOTIFICATION_ID = 111;
+	private static final int BACKUP_NOTIFICATION_ID = 112;
 	
 	public static final int STATUS_DEFAULT = 0;
 	public static final int STATUS_UNCONNECTED = 1;
@@ -19,6 +22,9 @@ public class NotificationMgr {
 	
 	private int mPreStatus = -1;
 	private NotificationManager mNotificationManager = null;
+	private Notification mNotification;
+	private RemoteViews mNotificationViews;
+	
 	public NotificationMgr(Context context){
 		mContext = context;
 		mNotificationManager = (NotificationManager) mContext 
@@ -65,6 +71,41 @@ public class NotificationMgr {
 			cancelNotification();
 			showNotificaiton(status);
 		}
+	}
+	
+	/**
+	 * app backup notification setting
+	 */
+	public void startBackupNotification(){
+		mNotification = new Notification();
+		mNotification.icon = R.drawable.icon_notification;
+		mNotification.tickerText = mContext.getString(R.string.backup_tip);
+		mNotification.when = System.currentTimeMillis();
+		mNotification.flags |= Notification.FLAG_NO_CLEAR; 
+		
+		mNotificationViews = new RemoteViews(mContext.getPackageName(), R.layout.ui_app_backup_notification);
+	}
+	
+	/**
+	 * update app backup notification progress
+	 * @param progress current backup app progress
+	 * @param max the size of backup app list's size
+	 * @param name current backup app label
+	 */
+	public void updateBackupNotification(int progress, int max, String name){
+		mNotificationViews.setProgressBar(R.id.bar_progress, max, progress, false);
+		mNotificationViews.setTextViewText(R.id.tv_name, name);
+		String progressStr = mContext.getString(R.string.backuping_app, progress + "/" + max);
+		mNotificationViews.setTextViewText(R.id.tv_progress, progressStr);
+		
+		mNotification.contentView = mNotificationViews;
+		mNotification.contentIntent = null;
+		
+		mNotificationManager.notify(BACKUP_NOTIFICATION_ID, mNotification);
+	}
+	
+	public void cancelBackupNotification(){
+		mNotificationManager.cancel(BACKUP_NOTIFICATION_ID);
 	}
 	
 	public void cancelNotification() {
