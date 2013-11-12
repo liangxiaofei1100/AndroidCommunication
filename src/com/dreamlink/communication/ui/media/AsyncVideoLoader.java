@@ -50,7 +50,7 @@ public class AsyncVideoLoader {
 				options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 				// get video thumbail
 				Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(
-						contentResolver, videoId, Images.Thumbnails.MICRO_KIND,
+						contentResolver, videoId, Images.Thumbnails.MINI_KIND,
 						options);
 				bitmapCaches.put(videoId, new SoftReference<Bitmap>(bitmap));
 				Message message = handler.obtainMessage(0, bitmap);
