@@ -25,6 +25,12 @@
         <item name="android:windowTitleBackgroundStyle">@style/CustomWindowTitleBackground</item>
     </style>
     
+    <style name="CustomTheme.NoTitleBar" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/loader_back</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+    
     <style name="note_list_style">
         <item name="android:divider">@drawable/list_divider</item>
         <item name="android:orientation">vertical</item>
